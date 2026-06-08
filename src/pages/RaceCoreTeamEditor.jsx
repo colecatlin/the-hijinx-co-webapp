@@ -41,7 +41,7 @@ export default function RaceCoreTeamEditor() {
 
   const handleTeamCreated = (newTeam) => {
     toast.success('Team created successfully!');
-    navigate('/race-core/teams/' + newTeam.id);
+    navigate('/racecore/teams/' + newTeam.id);
   };
 
   if (!isNew && isLoading) {

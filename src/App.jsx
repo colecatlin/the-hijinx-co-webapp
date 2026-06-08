@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -69,6 +69,7 @@ import ManageStorefrontSettings from './pages/admin/ManageStorefrontSettings';
 import EventFile from './pages/EventFile';
 import RaceControlEvents from './pages/RaceControlEvents';
 import RaceControlLayout from './components/racecontrol/RaceControlLayout';
+import { RaceControlProvider } from './components/racecontrol/RaceControlProvider';
 import RaceCoreDashboard from './pages/RaceCoreDashboard';
 import ManageDrivers from './pages/ManageDrivers';
 import ManageTeams from './pages/ManageTeams';
@@ -77,7 +78,34 @@ import ManageSeries from './pages/ManageSeries';
 import ManageEvents from './pages/ManageEvents';
 import RaceCoreStandings from './pages/RaceCoreStandings';
 import RaceCoreLayout from './components/racecore/RaceCoreLayout';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
+
+// R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
+function RaceCoreEditorRedirect({ base }) {
+  const { id } = useParams();
+  return <Navigate to={`/racecore/${base}/${id}`} replace />;
+}
+
+// R9BI: Redirect /race-control/events/:eventId → /racecore/event-files/:eventId
+function RaceControlEventRedirect() {
+  const { eventId } = useParams();
+  return <Navigate to={`/racecore/event-files/${eventId}`} replace />;
+}
+
+// R9BI: Redirect /race-control/events/:eventId/:panel → /racecore/event-files/:eventId/:panel
+function RaceControlEventPanelRedirect() {
+  const { eventId, panel } = useParams();
+  return <Navigate to={`/racecore/event-files/${eventId}/${panel}`} replace />;
+}
+
+// R9BI: Thin shell providing RaceControlProvider context to /racecore/event-files/* routes
+function RaceControlProviderShell() {
+  return (
+    <RaceControlProvider>
+      <Outlet />
+    </RaceControlProvider>
+  );
+}
 import ManageSessions from './pages/ManageSessions';
 import ManageResults from './pages/ManageResults';
 import ManagePointsConfig from './pages/ManagePointsConfig';
@@ -147,10 +175,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/narratives" element={<LayoutWrapper currentPageName="management/editorial/narratives"><EditorialNarratives /></LayoutWrapper>} />
       <Route path="/management/editorial/research-packets" element={<LayoutWrapper currentPageName="management/editorial/research-packets"><EditorialResearchPackets /></LayoutWrapper>} />
       <Route path="/management/editorial/writer-workspace" element={<LayoutWrapper currentPageName="management/editorial/writer-workspace"><WriterWorkspace /></LayoutWrapper>} />
-      <Route path="/management/media/applications" element={<LayoutWrapper currentPageName="management/media/applications"><ManageMediaApplications /></LayoutWrapper>} />
-      <Route path="/management/media/assignments" element={<LayoutWrapper currentPageName="management/media/assignments"><ManageAssignments /></LayoutWrapper>} />
-      <Route path="/management/media/requests" element={<LayoutWrapper currentPageName="management/media/requests"><ManageRequests /></LayoutWrapper>} />
-      <Route path="/management/media/revenue" element={<LayoutWrapper currentPageName="management/media/revenue"><ManageRevenue /></LayoutWrapper>} />
+      {/* R9BI: /management/media/* now redirect to canonical /racecore/media/* (handled above) */}
       <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><MediaHome /></LayoutWrapper>} />
       <Route path="/creators" element={<LayoutWrapper currentPageName="creators"><CreatorDirectory /></LayoutWrapper>} />
       <Route path="/creators/:slug" element={<LayoutWrapper currentPageName="creators"><CreatorProfile /></LayoutWrapper>} />
@@ -164,12 +189,12 @@ const AuthenticatedApp = () => {
       <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/management/champ-import" element={<LayoutWrapper currentPageName="ChampImportAdmin"><ChampImportAdmin /></LayoutWrapper>} />
-      {/* Race Core canonical editor routes */}
-      <Route path="/race-core/drivers/:id" element={<LayoutWrapper currentPageName="RaceCoreDriverEditor"><RaceCoreDriverEditor /></LayoutWrapper>} />
-      <Route path="/race-core/teams/:id" element={<LayoutWrapper currentPageName="RaceCoreTeamEditor"><RaceCoreTeamEditor /></LayoutWrapper>} />
-      <Route path="/race-core/tracks/:id" element={<LayoutWrapper currentPageName="RaceCoreTrackEditor"><RaceCoreTrackEditor /></LayoutWrapper>} />
-      <Route path="/race-core/series/:id" element={<LayoutWrapper currentPageName="RaceCoreSeriesEditor"><RaceCoreSeriesEditor /></LayoutWrapper>} />
-      <Route path="/race-core/events/:id" element={<LayoutWrapper currentPageName="RaceCoreEventEditor"><RaceCoreEventEditor /></LayoutWrapper>} />
+      {/* R9BI: Legacy /race-core/* editor routes → redirect to canonical /racecore/* */}
+      <Route path="/race-core/drivers/:id" element={<RaceCoreEditorRedirect base="drivers" />} />
+      <Route path="/race-core/teams/:id" element={<RaceCoreEditorRedirect base="teams" />} />
+      <Route path="/race-core/tracks/:id" element={<RaceCoreEditorRedirect base="tracks" />} />
+      <Route path="/race-core/series/:id" element={<RaceCoreEditorRedirect base="series" />} />
+      <Route path="/race-core/events/:id" element={<RaceCoreEditorRedirect base="events" />} />
       <Route path="/DriverProfileSetup" element={<LayoutWrapper currentPageName="DriverProfileSetup"><DriverProfileSetup /></LayoutWrapper>} />
       <Route path="/management/products" element={<LayoutWrapper currentPageName="ManageProducts"><ManageProducts /></LayoutWrapper>} />
       <Route path="/management/invoices" element={<LayoutWrapper currentPageName="ManageInvoices"><ManageInvoices /></LayoutWrapper>} />
@@ -211,10 +236,31 @@ const AuthenticatedApp = () => {
       <Route path="/admin/hero-slides" element={<LayoutWrapper currentPageName="ManageHeroSlides"><ManageHeroSlides /></LayoutWrapper>} />
       <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
       
+      {/* ─── R9BI: Legacy /Manage* → canonical /racecore/* redirects ─── */}
+      <Route path="/ManageDrivers" element={<Navigate to="/racecore/records/drivers" replace />} />
+      <Route path="/ManageTeams" element={<Navigate to="/racecore/records/teams" replace />} />
+      <Route path="/ManageTracks" element={<Navigate to="/racecore/records/tracks" replace />} />
+      <Route path="/ManageSeries" element={<Navigate to="/racecore/records/series" replace />} />
+      <Route path="/ManageEvents" element={<Navigate to="/racecore/records/events" replace />} />
+      <Route path="/ManageSessions" element={<Navigate to="/racecore/records/sessions" replace />} />
+      <Route path="/ManageResults" element={<Navigate to="/racecore/records/results" replace />} />
+      <Route path="/ManagePointsConfig" element={<Navigate to="/racecore/records/points-rulesets" replace />} />
+      <Route path="/ManageStandings" element={<Navigate to="/racecore/standings" replace />} />
+      <Route path="/ManageMediaApplications" element={<Navigate to="/racecore/media/applications" replace />} />
+      <Route path="/ManageAssignments" element={<Navigate to="/racecore/media/assignments" replace />} />
+      <Route path="/ManageRequests" element={<Navigate to="/racecore/media/requests" replace />} />
+      <Route path="/ManageRevenue" element={<Navigate to="/racecore/media/revenue" replace />} />
+      {/* Note: /ManageDriverClaims, /ManageEntityClaims, /ManageAccess, /ManageCSVImportExport,
+           /ManageCalendarSync, /management/champ-import, /Diagnostics remain served by pagesConfig loop */}
+      {/* Legacy /management/media/* → canonical RaceCore */}
+      <Route path="/management/media/applications" element={<Navigate to="/racecore/media/applications" replace />} />
+      <Route path="/management/media/assignments" element={<Navigate to="/racecore/media/assignments" replace />} />
+      <Route path="/management/media/requests" element={<Navigate to="/racecore/media/requests" replace />} />
+      <Route path="/management/media/revenue" element={<Navigate to="/racecore/media/revenue" replace />} />
       {/* Legacy route redirect */}
       <Route path="/RegistrationDashboard" element={<Navigate to="/racecore" replace />} />
 
-      {/* R8AO: All /racecore/* routes inside RaceCoreLayout — no public LayoutWrapper */}
+      {/* R9BI: All /racecore/* routes inside RaceCoreLayout — no public LayoutWrapper */}
       <Route element={<RaceCoreLayout />}>
         <Route path="/racecore" element={<RaceCoreDashboard />} />
         <Route path="/racecore/standings" element={<RaceCoreStandings />} />
@@ -226,33 +272,43 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/records/tracks" element={<ManageTracks embedded={true} />} />
         <Route path="/racecore/records/series" element={<ManageSeries embedded={true} />} />
         <Route path="/racecore/records/events" element={<ManageEvents embedded={true} />} />
-        {/* R9AE: Operational system routes */}
+        {/* Operational records */}
         <Route path="/racecore/records/sessions" element={<ManageSessions embedded={true} />} />
         <Route path="/racecore/records/results" element={<ManageResults embedded={true} />} />
         <Route path="/racecore/records/points-rulesets" element={<ManagePointsConfig embedded={true} />} />
+        {/* Media operations */}
         <Route path="/racecore/media/applications" element={<ManageMediaApplications embedded={true} />} />
         <Route path="/racecore/media/assignments" element={<ManageAssignments embedded={true} />} />
         <Route path="/racecore/media/requests" element={<ManageRequests embedded={true} />} />
         <Route path="/racecore/media/revenue" element={<ManageRevenue embedded={true} />} />
-        <Route path="/racecore/access/claims" element={<ManageDriverClaims embedded={true} />} />
-        <Route path="/racecore/access/entity-claims" element={<ManageEntityClaims embedded={true} />} />
-        <Route path="/racecore/access/management" element={<ManageAccess embedded={true} />} />
-        <Route path="/racecore/data/csv" element={<ManageCSVImportExport embedded={true} />} />
-        <Route path="/racecore/data/calendar-sync" element={<ManageCalendarSync embedded={true} />} />
-        <Route path="/racecore/data/champ-import" element={<ChampImportAdmin embedded={true} />} />
-        <Route path="/racecore/diagnostics" element={<Diagnostics embedded={true} />} />
+        {/* R9BI: Deep entity editors — canonical /racecore/:entity/:id inside RaceCoreLayout */}
+        <Route path="/racecore/drivers/:id" element={<RaceCoreDriverEditor />} />
+        <Route path="/racecore/teams/:id" element={<RaceCoreTeamEditor />} />
+        <Route path="/racecore/tracks/:id" element={<RaceCoreTrackEditor />} />
+        <Route path="/racecore/series/:id" element={<RaceCoreSeriesEditor />} />
+        <Route path="/racecore/events/:id" element={<RaceCoreEventEditor />} />
+        {/* R9BI: Event Files — canonical /racecore/event-files/* wrapped with RaceControlProvider for context */}
+        <Route element={<RaceControlProviderShell />}>
+          <Route path="/racecore/event-files" element={<RaceControlEvents />} />
+          <Route path="/racecore/event-files/:eventId" element={<EventFile />} />
+          <Route path="/racecore/event-files/:eventId/:panel" element={<EventFile />} />
+        </Route>
+        {/* R9BI: Legacy /racecore/access/* and /racecore/data/* → redirect to Management */}
+        <Route path="/racecore/access/claims" element={<Navigate to="/ManageDriverClaims" replace />} />
+        <Route path="/racecore/access/entity-claims" element={<Navigate to="/ManageEntityClaims" replace />} />
+        <Route path="/racecore/access/management" element={<Navigate to="/ManageAccess" replace />} />
+        <Route path="/racecore/data/csv" element={<Navigate to="/ManageCSVImportExport" replace />} />
+        <Route path="/racecore/data/calendar-sync" element={<Navigate to="/ManageCalendarSync" replace />} />
+        <Route path="/racecore/data/champ-import" element={<Navigate to="/management/champ-import" replace />} />
+        <Route path="/racecore/diagnostics" element={<Navigate to="/Diagnostics" replace />} />
       </Route>
 
       {/* Legacy /Manage* routes remain alive via the pagesConfig loop above — unchanged */}
       
-      {/* R8G: RaceControlLayout wraps all /race-control/* routes with RaceControlProvider */}
-      <Route element={<LayoutWrapper currentPageName="RaceControl"><RaceControlLayout /></LayoutWrapper>}>
-        {/* R8D: Event Directory */}
-        <Route path="/race-control/events" element={<RaceControlEvents />} />
-        {/* R8B: Event-first race control routes */}
-        <Route path="/race-control/events/:eventId" element={<EventFile />} />
-        <Route path="/race-control/events/:eventId/:panel" element={<EventFile />} />
-      </Route>
+      {/* R9BI: /race-control/events/* → redirect to canonical /racecore/event-files/* */}
+      <Route path="/race-control/events" element={<Navigate to="/racecore/event-files" replace />} />
+      <Route path="/race-control/events/:eventId" element={<RaceControlEventRedirect />} />
+      <Route path="/race-control/events/:eventId/:panel" element={<RaceControlEventPanelRedirect />} />
       
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -43,7 +43,7 @@ export default function RaceCoreDriverEditor() {
   const handleSaveSuccess = (newDriverId) => {
     if (newDriverId && isNew) {
       toast.success('Driver created successfully!');
-      navigate('/race-core/drivers/' + newDriverId);
+      navigate('/racecore/drivers/' + newDriverId);
     } else {
       queryClient.invalidateQueries({ queryKey: ['driver', id] });
     }

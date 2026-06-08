@@ -55,6 +55,8 @@ export default function RaceCoreSidebar({
     canAction(dashboardPermissions, 'create_event') && { label: 'New Event', icon: Plus, onClick: onCreateEvent },
     canTab(dashboardPermissions, 'media') && { label: 'Media Portal', icon: Film, onClick: onMediaPortal },
     { label: announcerMode ? 'ANN ON' : 'Announcer', icon: Mic, onClick: () => onAnnouncerModeToggle?.(!announcerMode), active: announcerMode },
+    // R9BI: Quick link to Management for admin tools
+
   ].filter(Boolean);
 
   return (

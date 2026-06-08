@@ -28,7 +28,7 @@ export default function RaceCoreEventEditor() {
   });
 
   const handleEventCreated = (newEventId) => {
-    navigate('/race-core/events/' + newEventId);
+    navigate('/racecore/events/' + newEventId);
   };
 
   return (

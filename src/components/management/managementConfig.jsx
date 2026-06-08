@@ -1,7 +1,10 @@
-import { Users, Trophy, MapPin, Calendar, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, Wrench, GitMerge, Palette, Gauge, ShoppingCart, Package, Tag, Star, Settings, Image } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, Wrench, GitMerge, Palette, Gauge, ShoppingCart, Package, Tag, Star, Settings, Image, MonitorPlay } from 'lucide-react';
 
 /**
  * Single source of truth for management navigation.
+ * R9BI: Removed "Core Entity Oversight" and "Race Core Records" sections — canonical home is RaceCore.
+ * Removed "Media" section — canonical home is RaceCore (/racecore/media/*).
+ * Added "Race Operations" link to RaceCore.
  */
 
 export const DASHBOARD_ITEM = {
@@ -11,6 +14,17 @@ export const DASHBOARD_ITEM = {
 };
 
 export const MANAGEMENT_SECTIONS = [
+  // ─────────────────────────────────────────────────────
+  // RACE OPERATIONS — link to RaceCore OS
+  // ─────────────────────────────────────────────────────
+  {
+    title: 'Race Operations',
+    description: 'Motorsports operating system — drivers, events, results, standings, media, and more.',
+    items: [
+      { name: 'RaceCore OS', href: '/racecore', icon: MonitorPlay, description: 'Go to the RaceCore motorsports operating system' },
+    ]
+  },
+
   // ─────────────────────────────────────────────────────
   // PLATFORM — site-level control
   // ─────────────────────────────────────────────────────
@@ -70,20 +84,6 @@ export const MANAGEMENT_SECTIONS = [
   },
 
   // ─────────────────────────────────────────────────────
-  // MEDIA — contributor applications, assignments, payments
-  // ─────────────────────────────────────────────────────
-  {
-    title: 'Media',
-    description: 'Media contributor management, credentials, assignments, and revenue',
-    items: [
-      { name: 'Media Applications', page: 'management/media/applications', icon: Camera, description: 'Review and approve media contributor applications' },
-      { name: 'Assignments', page: 'management/media/assignments', icon: Briefcase, description: 'Create and manage contributor assignments with deliverables' },
-      { name: 'Requests', page: 'management/media/requests', icon: Send, description: 'Hiring and collaboration requests from teams, outlets, and brands' },
-      { name: 'Revenue & Payments', page: 'management/media/revenue', icon: DollarSign, description: 'Payout approvals, revenue events, agreements, and payment accounts' },
-    ]
-  },
-
-  // ─────────────────────────────────────────────────────
   // PEOPLE / ACCESS — claims, collaborators, permissions
   // ─────────────────────────────────────────────────────
   {
@@ -91,6 +91,7 @@ export const MANAGEMENT_SECTIONS = [
     description: 'Claims review, collaborator access, and entity ownership management',
     items: [
       { name: 'Driver Claims', page: 'ManageDriverClaims', icon: FileText, description: 'Review and approve driver profile claims' },
+      { name: 'Entity Claims', page: 'ManageEntityClaims', icon: FileText, description: 'Review and approve entity ownership claims' },
       { name: 'Access Management', page: 'ManageAccess', icon: Handshake, description: 'Manage user collaborator access to entities' },
     ]
   },
@@ -106,34 +107,6 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Schedule Sync', page: 'ManageCalendarSync', icon: RefreshCw, description: 'Sync ICS/webcal schedules into Events' },
       { name: 'Champ Import', page: 'management/champ-import', icon: GitMerge, description: 'Import championship data from external sources' },
       { name: 'Diagnostics', page: 'Diagnostics', icon: Wrench, description: 'Platform integrity checks, duplicate detection, and repair tools' },
-    ]
-  },
-
-  // ─────────────────────────────────────────────────────
-  // CORE ENTITY OVERSIGHT — admin list/moderation views
-  // ─────────────────────────────────────────────────────
-  {
-    title: 'Core Entity Oversight',
-    description: 'Admin list views, moderation, bulk actions. Deep editing → Race Core editors.',
-    items: [
-      { name: 'Drivers (Admin)', page: 'ManageDrivers', icon: User, description: 'Admin overview: bulk ops, visibility, claims, duplicate detection. Edit → Race Core.' },
-      { name: 'Teams (Admin)', page: 'ManageTeams', icon: Users, description: 'Admin overview: bulk ops, status, duplicate detection. Edit → Race Core.' },
-      { name: 'Tracks (Admin)', page: 'ManageTracks', icon: MapPin, description: 'Admin overview: status, duplicate detection. Edit → Race Core.' },
-      { name: 'Series (Admin)', page: 'ManageSeries', icon: Trophy, description: 'Admin overview: status, bulk ops. Edit → Race Core.' },
-      { name: 'Events Data Overview', page: 'ManageEvents', icon: Calendar, description: 'Platform-wide event records and metadata overview. Use Race Operations Hub for active event management.' },
-    ]
-  },
-
-  // ─────────────────────────────────────────────────────
-  // RACE CORE RECORDS — operational data under admin review
-  // ─────────────────────────────────────────────────────
-  {
-    title: 'Race Core Records',
-    description: 'Operational racing data — review and repair. Use the Race Operations Hub for live management.',
-    items: [
-      { name: 'Sessions Records', page: 'ManageSessions', icon: BarChart3, description: 'Review and repair race session records. Use Race Operations Hub for active session management.' },
-      { name: 'Results Records', page: 'ManageResults', icon: Award, description: 'Review and repair race results records. Use Race Operations Hub for active result publishing.' },
-      { name: 'Points Rulesets', page: 'ManagePointsConfig', icon: Trophy, description: 'Define points scoring rules. Use Race Operations Hub for standings recalculation.' },
     ]
   },
 ];
