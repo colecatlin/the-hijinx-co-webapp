@@ -78,6 +78,15 @@ import ManageSeries from './pages/ManageSeries';
 import ManageEvents from './pages/ManageEvents';
 import RaceCoreStandings from './pages/RaceCoreStandings';
 import RaceCoreLayout from './components/racecore/RaceCoreLayout';
+import ManageSessions from './pages/ManageSessions';
+import ManageResults from './pages/ManageResults';
+import ManagePointsConfig from './pages/ManagePointsConfig';
+import ManageDriverClaims from './pages/ManageDriverClaims';
+import ManageAccess from './pages/ManageAccess';
+import ManageEntityClaims from './pages/ManageEntityClaims';
+import ManageCSVImportExport from './pages/ManageCSVImportExport';
+import ManageCalendarSync from './pages/ManageCalendarSync';
+import Diagnostics from './pages/Diagnostics';
 import { Navigate, useParams } from 'react-router-dom';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
@@ -106,15 +115,6 @@ function RaceControlProviderShell() {
     </RaceControlProvider>
   );
 }
-import ManageSessions from './pages/ManageSessions';
-import ManageResults from './pages/ManageResults';
-import ManagePointsConfig from './pages/ManagePointsConfig';
-import ManageDriverClaims from './pages/ManageDriverClaims';
-import ManageAccess from './pages/ManageAccess';
-import ManageEntityClaims from './pages/ManageEntityClaims';
-import ManageCSVImportExport from './pages/ManageCSVImportExport';
-import ManageCalendarSync from './pages/ManageCalendarSync';
-import Diagnostics from './pages/Diagnostics';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
