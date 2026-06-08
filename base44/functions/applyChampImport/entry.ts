@@ -142,6 +142,58 @@ Deno.serve(async (req) => {
       errors: summary.errors,
     });
 
+    // ── Auto-recalculate standings for affected series/seasons ───────────────
+    // Failures here must NOT rollback the successful import.
+    summary.standings_recalculated = [];
+    summary.standings_recalc_errors = [];
+    try {
+      // Collect unique series+season combinations from staged results
+      const affectedResultRows = await db.entities.ImportedResultStaging.filter({
+        import_run_id: importRunId,
+      }).catch(() => []);
+
+      const seen = new Set();
+      const toRecalc = [];
+      for (const row of affectedResultRows) {
+        if (!row.mapped_series_id && !row.series_id) continue;
+        const seriesId = row.mapped_series_id || row.series_id;
+        const seasonYear = row.season_year || row.season;
+        if (!seriesId || !seasonYear) continue;
+        const key = `${seriesId}:${seasonYear}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        toRecalc.push({ series_id: seriesId, season: seasonYear });
+      }
+
+      for (const { series_id, season } of toRecalc) {
+        try {
+          const res = await base44.functions.invoke('recalculateStandings', {
+            series_id,
+            season,
+          });
+          const standingsCount = res?.data?.standingsCount || 0;
+          summary.standings_recalculated.push({ series_id, season, standingsCount });
+
+          await db.entities.OperationLog.create({
+            operation_type: 'standings_recalculated',
+            status: 'success',
+            entity_name: 'Standings',
+            message: `Auto-recalculated standings for series ${series_id} season ${season} after CHAMP import (${standingsCount} records)`,
+            metadata: { series_id, season, import_run_id: importRunId, trigger: 'applyChampImport', standingsCount },
+          }).catch(() => {});
+        } catch (recalcErr) {
+          summary.standings_recalc_errors.push({
+            series_id,
+            season,
+            error: recalcErr.message,
+          });
+        }
+      }
+    } catch (outerErr) {
+      // Standings recalc failure is non-fatal — import remains successful
+      summary.standings_recalc_errors.push({ error: outerErr.message });
+    }
+
     return Response.json(summary);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

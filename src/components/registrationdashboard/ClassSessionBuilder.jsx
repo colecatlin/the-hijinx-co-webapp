@@ -280,6 +280,11 @@ export default function ClassSessionBuilder({
     if (!sessionForm.name.trim()) { toast.error('Session name required'); return; }
     if (!sessionForm.event_class_id) { toast.error('Select a class'); return; }
     const pointsFields = derivePointsFields(sessionForm);
+    // Guard: lifecycle statuses (Official/Locked) must go through updateSessionStatus state machine
+    const safeStatus = ['Official', 'Locked'].includes(sessionForm.status)
+      ? (editingSession?.status || 'Draft')
+      : sessionForm.status;
+
     const payload = {
       event_id: eventId,
       event_class_id: sessionForm.event_class_id,
@@ -296,7 +301,7 @@ export default function ClassSessionBuilder({
           ? editingSession.run_order
           : (sessions.length ? Math.max(...sessions.map((s) => s.run_order || 0)) + 1 : 0),
       input_source: sessionForm.input_source,
-      status: sessionForm.status,
+      status: safeStatus,
       advancement_rules: sessionForm.advancement_rules || undefined,
       round_label: sessionForm.round_label || undefined,
       ...pointsFields,
@@ -338,9 +343,23 @@ export default function ClassSessionBuilder({
     ]);
   };
 
-  const handleToggleLock = (session) => {
+  const handleToggleLock = async (session) => {
     const newStatus = session.status === 'Locked' ? 'Draft' : 'Locked';
-    updateSession({ id: session.id, data: { status: newStatus, locked: newStatus === 'Locked' } });
+    try {
+      // Route through updateSessionStatus state machine (validates transition, logs, syncs results)
+      const res = await base44.functions.invoke('updateSessionStatus', {
+        session_id: session.id,
+        new_status: newStatus,
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      await invalidateAfterOperation('session_status_changed', {
+        eventId: session.event_id,
+        sessionId: session.id,
+      });
+      toast.success(`Session ${newStatus === 'Locked' ? 'locked' : 'unlocked'}`);
+    } catch (err) {
+      toast.error(`Failed: ${err.message}`);
+    }
     setLockConfirm(null);
   };
 
@@ -857,10 +876,14 @@ export default function ClassSessionBuilder({
                   <SelectContent className="bg-[#262626] border-gray-700">
                     <SelectItem value="Draft">Draft</SelectItem>
                     <SelectItem value="Provisional">Provisional</SelectItem>
-                    <SelectItem value="Official">Official</SelectItem>
-                    <SelectItem value="Locked">Locked</SelectItem>
+                    {/* Official and Locked transitions must use the state machine (lock button / Results tab) */}
                   </SelectContent>
                 </Select>
+                {(sessionForm.status === 'Official' || sessionForm.status === 'Locked') && (
+                  <p className="text-[10px] text-amber-500 mt-1">
+                    Official/Locked — use the Results tab or lock button to manage this transition.
+                  </p>
+                )}
               </div>
             </div>
             <div>

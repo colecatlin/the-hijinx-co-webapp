@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 async function isEventCollaborator(base44, userId, userEmail, eventId, seriesId) {
   const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
@@ -43,15 +43,27 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3) Determine shouldBePublic
+    // 3) Determine shouldBePublic + status_state from session status
     const shouldBePublic = ['Official', 'Locked'].includes(session.status);
+
+    // Map Session.status → Result.status_state
+    const STATUS_STATE_MAP = {
+      'Draft':       'Draft',
+      'Provisional': 'Provisional',
+      'Official':    'Official',
+      'Locked':      'Locked',
+    };
+    const status_state = STATUS_STATE_MAP[session.status] || 'Draft';
 
     // 4) Load all Results for this session
     const results = await base44.asServiceRole.entities.Results.filter({ session_id });
 
-    // 5) Update is_public for each result
+    // 5) Update is_public + status_state for each result
     const updates = results.map(r =>
-      base44.asServiceRole.entities.Results.update(r.id, { is_public: shouldBePublic })
+      base44.asServiceRole.entities.Results.update(r.id, {
+        is_public: shouldBePublic,
+        status_state,
+      })
     );
     await Promise.all(updates);
 
@@ -62,11 +74,12 @@ Deno.serve(async (req) => {
       entity_name: 'Results',
       entity_id: session_id,
       event_id: session.event_id,
-      message: `Results visibility synced: ${results.length} rows set is_public=${shouldBePublic}`,
+      message: `Results visibility synced: ${results.length} rows set is_public=${shouldBePublic}, status_state=${status_state}`,
       metadata: {
         session_id,
         session_status: session.status,
         shouldBePublic,
+        status_state,
         resultCount: results.length,
       },
     }).catch(() => {});
@@ -88,6 +101,7 @@ Deno.serve(async (req) => {
     return Response.json({
       session_id,
       shouldBePublic,
+      status_state,
       updatedCount: results.length,
     });
   } catch (error) {
