@@ -118,6 +118,13 @@ Deno.serve(async (req) => {
 
     const updated = await base44.asServiceRole.entities.Session.update(session_id, updateData);
 
+    // AUTO-SYNC: When session becomes Official or Locked, automatically sync result visibility.
+    // When session rolls back below Official, also sync to retract visibility.
+    const visibilityStates = new Set(['Official', 'Locked', 'Provisional', 'Draft']);
+    if (visibilityStates.has(new_status)) {
+      base44.functions.invoke('syncResultsVisibilityFromSession', { session_id }).catch(() => {});
+    }
+
     // Log the transition
     await base44.asServiceRole.entities.OperationLog.create({
       operation_type: 'session_status_changed',
