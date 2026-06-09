@@ -7,9 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, RefreshCw, CheckCircle, AlertCircle, Loader2, Calendar } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import EventDuplicateScanner from '@/components/management/EventDuplicateScanner';
-import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
-import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
+import RaceCorePageShell from '@/components/racecore/RaceCorePageShell';
 
 const DEFAULT_CALENDARS = [];
 
@@ -82,19 +80,19 @@ export default function ManageCalendarSync({ embedded = false }) {
   if (!currentUser) { base44.auth.redirectToLogin(); return null; }
   if (!isAdmin) {
     return (
-      <ManagementLayout currentPage="ManageCalendarSync" embedded={embedded}>
-        <AdminAccessDenied />
-      </ManagementLayout>
+      <RaceCorePageShell title="Schedule Sync" description="Sync ICS/webcal schedules into Events" icon={Calendar}>
+        <div className="py-20 text-center text-gray-600 text-sm">Admin access required.</div>
+      </RaceCorePageShell>
     );
   }
 
   return (
-    <ManagementLayout currentPage="ManageCalendarSync" embedded={embedded}>
-      <ManagementShell
-        title="Schedule Sync"
-        subtitle="Sync ICS/webcal schedules into Events"
-        actions={<Button onClick={syncAll} disabled={!!syncingId} className="bg-gray-900 gap-2">{syncingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}Sync All</Button>}
-      >
+    <RaceCorePageShell
+      title="Schedule Sync"
+      description="Sync ICS/webcal schedules into Events"
+      icon={Calendar}
+      actions={<Button onClick={syncAll} disabled={!!syncingId} className="bg-teal-700 hover:bg-teal-600 text-white gap-2">{syncingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}Sync All</Button>}
+    ><div>
 
       {/* Calendar list */}
       <div className="space-y-4 mb-8">
@@ -208,7 +206,6 @@ export default function ManageCalendarSync({ embedded = false }) {
           <Plus className="w-4 h-4 mr-1" /> Add Schedule
         </Button>
       </div>
-      </ManagementShell>
-    </ManagementLayout>
+      </div></RaceCorePageShell>
   );
 }

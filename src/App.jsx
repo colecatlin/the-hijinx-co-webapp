@@ -77,7 +77,6 @@ import ManageSeries from './pages/ManageSeries';
 import ManageEvents from './pages/ManageEvents';
 import RaceCoreStandings from './pages/RaceCoreStandings';
 import RaceCoreLayout from './components/racecore/RaceCoreLayout';
-import ManageSessions from './pages/ManageSessions';
 import ManageResults from './pages/ManageResults';
 import ManagePointsConfig from './pages/ManagePointsConfig';
 import ManageDriverClaims from './pages/ManageDriverClaims';
@@ -86,6 +85,7 @@ import ManageEntityClaims from './pages/ManageEntityClaims';
 import ManageCSVImportExport from './pages/ManageCSVImportExport';
 import ManageCalendarSync from './pages/ManageCalendarSync';
 import Diagnostics from './pages/Diagnostics';
+import ResultsRepairPage from './pages/ResultsRepairPage';
 import { Navigate, useParams } from 'react-router-dom';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
@@ -306,7 +306,7 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/data/points-rulesets" element={<ManagePointsConfig embedded={true} />} />
         <Route path="/racecore/data/imports"         element={<ManageCSVImportExport embedded={true} />} />
         <Route path="/racecore/data/calendar-sync"   element={<ManageCalendarSync embedded={true} />} />
-        <Route path="/racecore/data/results-repair"  element={<ManageResults embedded={true} />} />
+        <Route path="/racecore/data/results-repair"  element={<ResultsRepairPage />} />
         <Route path="/racecore/data/diagnostics"     element={<Diagnostics embedded={true} />} />
         {/* Legacy data paths → new canonical */}
         <Route path="/racecore/data/csv"         element={<Navigate to="/racecore/data/imports"       replace />} />

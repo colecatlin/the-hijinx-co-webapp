@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
+import RaceCorePageShell from '@/components/racecore/RaceCorePageShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -653,11 +652,9 @@ export default function Diagnostics({ embedded = false }) {
 
   if (user?.role !== 'admin') {
     return (
-      <ManagementLayout currentPage="Diagnostics" embedded={embedded}>
-        <ManagementShell title="Access Denied" subtitle="">
-          <div className="py-20 text-center"><p className="text-gray-600">This page is for administrators only.</p></div>
-        </ManagementShell>
-      </ManagementLayout>
+      <RaceCorePageShell title="Platform Diagnostics" description="Admin-only integrity audit and safe repair tooling" icon={FlaskConical}>
+        <div className="py-20 text-center text-gray-600 text-sm">This page is for administrators only.</div>
+      </RaceCorePageShell>
     );
   }
 
@@ -668,8 +665,7 @@ export default function Diagnostics({ embedded = false }) {
   const rte = report?.route_audit  || {};
 
   return (
-    <ManagementLayout currentPage="Diagnostics" embedded={embedded}>
-      <ManagementShell title="Platform Diagnostics" subtitle="Admin-only integrity audit and safe repair tooling">
+    <RaceCorePageShell title="Platform Diagnostics" description="Admin-only integrity audit and safe repair tooling" icon={FlaskConical}><div>
 
         {/* ── Media Ecosystem Health ───────────────────────────────────── */}
         <DiagnosticsMediaEcosystem />
@@ -1539,8 +1535,8 @@ export default function Diagnostics({ embedded = false }) {
             </TabsContent>
           </Tabs>
         )}
-      </ManagementShell>
+      </div>
       <ReportIssueModal open={reportIssueOpen} onClose={() => setReportIssueOpen(false)} />
-    </ManagementLayout>
+    </RaceCorePageShell>
   );
 }

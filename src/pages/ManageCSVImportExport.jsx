@@ -8,9 +8,8 @@ import { Download, Upload, Loader2, CheckCircle2, AlertCircle, RotateCcw } from 
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import SmartCSVImport from '@/components/management/SmartCSVImport';
-import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
-import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
+import RaceCorePageShell from '@/components/racecore/RaceCorePageShell';
+import { Database } from 'lucide-react';
 
 const ENTITY_TYPES = [
   'Driver', 'Team', 'Track', 'Series', 'Event', 'Results', 'Session',
@@ -162,15 +161,14 @@ export default function ManageCSVImportExport({ embedded = false }) {
   if (!currentUser) { base44.auth.redirectToLogin(); return null; }
   if (!isAdmin) {
     return (
-      <ManagementLayout currentPage="ManageCSVImportExport" embedded={embedded}>
-        <AdminAccessDenied />
-      </ManagementLayout>
+      <RaceCorePageShell title="CSV Import / Export" description="Bulk import and export entity data" icon={Database}>
+        <div className="py-20 text-center text-gray-600 text-sm">Admin access required.</div>
+      </RaceCorePageShell>
     );
   }
 
   return (
-    <ManagementLayout currentPage="ManageCSVImportExport" embedded={embedded}>
-      <ManagementShell title="CSV Import / Export" subtitle="Bulk import and export entity data as CSV files" maxWidth="max-w-2xl">
+    <RaceCorePageShell title="CSV Import / Export" description="Bulk import and export entity data as CSV files" icon={Database}><div>
 
 
       <Card>
@@ -422,7 +420,6 @@ export default function ManageCSVImportExport({ embedded = false }) {
           </div>
         </Alert>
       )}
-      </ManagementShell>
-    </ManagementLayout>
+      </div></RaceCorePageShell>
   );
 }

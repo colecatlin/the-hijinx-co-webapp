@@ -91,8 +91,6 @@ import ManageIssues from './pages/ManageIssues';
 import ManagePointsConfig from './pages/ManagePointsConfig';
 import ManageResults from './pages/ManageResults';
 import ManageSeries from './pages/ManageSeries';
-import ManageSessions from './pages/ManageSessions';
-import ManageStandings from './pages/ManageStandings';
 import ManageStories from './pages/ManageStories';
 import ManageTeams from './pages/ManageTeams';
 import ManageTech from './pages/ManageTech';
@@ -172,8 +170,6 @@ export const PAGES = {
     "ManagePointsConfig": ManagePointsConfig,
     "ManageResults": ManageResults,
     "ManageSeries": ManageSeries,
-    "ManageSessions": ManageSessions,
-    "ManageStandings": ManageStandings,
     "ManageStories": ManageStories,
     "ManageTeams": ManageTeams,
     "ManageTech": ManageTech,

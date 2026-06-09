@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import ManagementLayout from '@/components/management/ManagementLayout';
+import RaceCorePageShell from '@/components/racecore/RaceCorePageShell';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -340,27 +340,22 @@ export default function ManagePointsConfig({ embedded = false }) {
 
   if (!isAdmin) {
     return (
-      <ManagementLayout currentPage="ManagePointsConfig" embedded={embedded}>
-        <div className="p-6 text-center text-gray-400">Admin access required.</div>
-      </ManagementLayout>
+      <RaceCorePageShell title="Points Rulesets" description="Manage points rules and scoring configuration" icon={CheckCircle2}>
+        <div className="py-20 text-center text-gray-600 text-sm">Admin access required.</div>
+      </RaceCorePageShell>
     );
   }
 
   return (
-    <ManagementLayout currentPage="ManagePointsConfig" embedded={embedded}>
-    <div className="space-y-6 p-6 bg-gray-950 min-h-screen">
+    <RaceCorePageShell title="Points Rulesets" description="Manage points rules and scoring configuration for all series and classes" icon={CheckCircle2}>
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white">Points Rulesets & Configuration</h1>
           <p className="text-sm text-gray-400 mt-1">Manage points rules and scoring configuration for all series and classes.</p>
         </div>
         <div className="flex items-center gap-3">
-          <a href="/racecore">
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white gap-2">
-              <span>↗</span> Go to Race Operations Hub
-            </Button>
-          </a>
-          <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => { setEditingId(null); setOpenDialog(true); }} className="bg-teal-700 hover:bg-teal-600 text-white">
             <Plus className="w-4 h-4 mr-2" /> New Ruleset
           </Button>
         </div>
@@ -560,7 +555,7 @@ export default function ManagePointsConfig({ embedded = false }) {
         </AlertDialog>
       )}
     </div>
-    </ManagementLayout>
+    </RaceCorePageShell>
   );
 }
 
