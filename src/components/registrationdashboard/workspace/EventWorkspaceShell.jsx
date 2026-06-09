@@ -26,6 +26,7 @@ import EventSessionsPanel from './panels/EventSessionsPanel';
 import EventStandingsPanel from './panels/EventStandingsPanel';
 import EventResultsPanel from './panels/EventResultsPanel';
 import DeferredModulePanel from './panels/DeferredModulePanel';
+import EventRaceControlPanel from './panels/EventRaceControlPanel';
 import EventCommandHeader from './EventCommandHeader';
 import EventWorkspaceNav from './EventWorkspaceNav';
 import EventIntelligenceRail from './EventIntelligenceRail';
@@ -72,15 +73,16 @@ export default function EventWorkspaceShell({ panels }) {
     exports:    'canViewExports',
     imports:    'canViewImports',
     standings:  'canManageStandings',
+    race_control: 'canViewRaceControl',
     media:        'canManageMedia',
     media_portal: 'canManageMedia',
     activity:     'canViewActivity',
-    settings:   'canManageSettings',
+    settings:     'canManageSettings',
   };
 
   // Build ordered list of permitted panel IDs. null → all permitted.
   const permittedPanels = useMemo(() => {
-    const allPanels = ['overview','schedule','sessions','results','entries','compliance','checkin','exports','imports','standings','media','media_portal','activity','settings'];
+    const allPanels = ['overview','schedule','race_control','sessions','results','entries','compliance','checkin','exports','imports','standings','media','media_portal','activity','settings'];
     if (!eventPermissions) return allPanels;
     return allPanels.filter((id) => !!eventPermissions[PANEL_PERM_KEY[id]]);
   }, [eventPermissions]);
@@ -193,6 +195,9 @@ export default function EventWorkspaceShell({ panels }) {
 
           {/* ── WIRED: Schedule ── */}
           {isPanelPermitted && eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
+
+          {/* ── R9BQ Sprint 2: Race Control ── */}
+          {isPanelPermitted && eventWorkspacePanel === 'race_control' && <EventRaceControlPanel />}
 
           {/* ── WIRED: Activity ── */}
           {isPanelPermitted && eventWorkspacePanel === 'activity' && <EventAuditLogPanel />}

@@ -23,7 +23,7 @@ const DQ = applyDefaultQueryOptions();
 // Valid panel IDs — centralized here for EventFile route validation
 // (Container also validates via WORKSPACE_PANELS for defense-in-depth)
 const VALID_PANELS = new Set([
-  'overview', 'schedule', 'sessions', 'results', 'entries',
+  'overview', 'schedule', 'race_control', 'sessions', 'results', 'entries',
   'compliance', 'checkin', 'exports', 'imports',
   'standings', 'media', 'activity', 'settings',
 ]);

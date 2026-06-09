@@ -20,6 +20,7 @@ import {
   FolderDown,
   FileUp,
   Camera,
+  Siren,
 } from 'lucide-react';
 import { useEventWorkspace } from './EventWorkspaceContext';
 
@@ -29,8 +30,9 @@ const MODULE_GROUPS = [
     section: 'Event Operations',
     items: [
       { id: 'overview',    label: 'Overview',    icon: LayoutDashboard, description: 'Weekend operations summary',                    permKey: 'canViewOverview' },
-      { id: 'schedule',    label: 'Schedule',    icon: Calendar,         description: 'Session timing and order',                     permKey: 'canViewSchedule' },
-      { id: 'sessions',    label: 'Sessions',    icon: Layers,           description: 'Weekend structure and session flow',           permKey: 'canManageSessions' },
+      { id: 'schedule',      label: 'Schedule',      icon: Calendar,  description: 'Session timing and order',                     permKey: 'canViewSchedule' },
+      { id: 'race_control', label: 'Race Control',  icon: Siren,     description: 'Incidents, penalties, protests, grid, tech holds', permKey: 'canViewRaceControl' },
+      { id: 'sessions',     label: 'Sessions',      icon: Layers,    description: 'Weekend structure and session flow',           permKey: 'canManageSessions' },
       { id: 'results',     label: 'Results',     icon: BarChart3,        description: 'Results input, publishing, standings triggers', permKey: 'canManageResults' },
       { id: 'entries',     label: 'Entries',     icon: LogIn,            description: 'Roster and entry management',                  permKey: 'canManageEntries' },
       { id: 'compliance',  label: 'Compliance',  icon: Shield,           description: 'Waivers, tech, eligibility',                  permKey: 'canManageCompliance' },

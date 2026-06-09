@@ -9,20 +9,21 @@ import { EventWorkspaceProvider } from './EventWorkspaceContext';
 import EventWorkspaceShell from './EventWorkspaceShell';
 
 const WORKSPACE_PANELS = [
-  { id: 'overview',    label: 'Overview' },
-  { id: 'schedule',   label: 'Schedule' },
-  { id: 'sessions',   label: 'Sessions' },
-  { id: 'results',    label: 'Results' },
-  { id: 'entries',    label: 'Entries' },
-  { id: 'compliance', label: 'Compliance' },
-  { id: 'checkin',    label: 'Check-In' },
-  { id: 'exports',    label: 'Exports' },
-  { id: 'imports',    label: 'Imports' },
-  { id: 'standings',  label: 'Standings' },
-  { id: 'media',        label: 'Media' },
-  { id: 'media_portal', label: 'Media Portal' },
-  { id: 'activity',     label: 'Activity' },
-  { id: 'settings',   label: 'Settings' },
+  { id: 'overview',      label: 'Overview' },
+  { id: 'schedule',      label: 'Schedule' },
+  { id: 'race_control',  label: 'Race Control' },
+  { id: 'sessions',      label: 'Sessions' },
+  { id: 'results',       label: 'Results' },
+  { id: 'entries',       label: 'Entries' },
+  { id: 'compliance',    label: 'Compliance' },
+  { id: 'checkin',       label: 'Check-In' },
+  { id: 'exports',       label: 'Exports' },
+  { id: 'imports',       label: 'Imports' },
+  { id: 'standings',     label: 'Standings' },
+  { id: 'media',         label: 'Media' },
+  { id: 'media_portal',  label: 'Media Portal' },
+  { id: 'activity',      label: 'Activity' },
+  { id: 'settings',      label: 'Settings' },
 ];
 
 export { WORKSPACE_PANELS };

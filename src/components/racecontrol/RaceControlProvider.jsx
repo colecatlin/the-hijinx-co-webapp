@@ -16,6 +16,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { buildInvalidateAfterOperation } from '@/components/registrationdashboard/invalidationHelper';
+import { deriveOfficialPermissions, mergeOfficialPermissions, NO_PERMISSIONS } from '@/components/registrationdashboard/racecontrol/officialPermissions';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -64,6 +65,19 @@ const ADMIN_EVENT_PERMISSIONS = Object.freeze({
   canOverrideSession: true,
   canEditEntries: true,
   canEditMedia: true,
+  // R9BQ Sprint 2: Race Control permissions for platform admin
+  canViewRaceControl: true,
+  canCreateIncident: true,
+  canCreateSessionNote: true,
+  canManageOfficials: true,
+  canApprovePenalty: true,
+  canProposePenalty: true,
+  canHoldResults: true,
+  canApproveGrid: true,
+  canGenerateLineup: true,
+  canReviewProtest: true,
+  canIssueRuling: true,
+  canPublishRuling: true,
 });
 
 // ── Safe defaults returned when hook is used outside provider ─────────────────
@@ -195,19 +209,20 @@ function deriveEventPermissions({ isAdmin, collaborations, eventId, trackId, ser
 
 // ── Module key → permission key map ──────────────────────────────────────────
 const MODULE_PERMISSION_MAP = {
-  overview:    'canViewOverview',
-  schedule:    'canViewSchedule',
-  sessions:    'canManageSessions',
-  results:     'canManageResults',
-  entries:     'canManageEntries',
-  compliance:  'canManageCompliance',
-  standings:   'canManageStandings',
-  checkin:     'canManageCheckIn',
-  exports:     'canViewExports',
-  imports:     'canViewImports',
-  media:       'canManageMedia',
-  activity:    'canViewActivity',
-  settings:    'canManageSettings',
+  overview:     'canViewOverview',
+  schedule:     'canViewSchedule',
+  race_control: 'canViewRaceControl',
+  sessions:     'canManageSessions',
+  results:      'canManageResults',
+  entries:      'canManageEntries',
+  compliance:   'canManageCompliance',
+  standings:    'canManageStandings',
+  checkin:      'canManageCheckIn',
+  exports:      'canViewExports',
+  imports:      'canViewImports',
+  media:        'canManageMedia',
+  activity:     'canViewActivity',
+  settings:     'canManageSettings',
 };
 
 const ACTION_PERMISSION_MAP = {
@@ -247,6 +262,8 @@ export function RaceControlProvider({ children }) {
   });
 
   const isLoading = authLoading || userLoading || collabLoading;
+  // Note: myOfficialRecords loading is intentionally NOT blocking — permissions
+  // are additive so partial loading simply means official perms not yet applied.
 
   // Stable invalidation helper bound to this queryClient
   const invalidateAfterOperation = useMemo(
@@ -254,17 +271,41 @@ export function RaceControlProvider({ children }) {
     [queryClient]
   );
 
+  // ── EventOfficial query — keyed by (user, eventId) from a param ─────────────
+  // Stored as a function-shaped memoized lookup so it can be called per event.
+  // We lazily load officials for the *current* event when getEventPermissions is
+  // called; since this provider is context-wide we store them on a ref map.
+  // For simplicity in Sprint 2 we query all EventOfficial records for this user
+  // once, then filter per event inside the merge step.
+  const { data: myOfficialRecords = [] } = useQuery({
+    queryKey: ['myOfficialRecords', user?.id],
+    queryFn: () => base44.entities.EventOfficial.filter({ user_id: user.id }),
+    enabled: !!user?.id && !isAdmin,
+    ...DQ,
+  });
+
   const getEventPermissions = useMemo(() => {
     return ({ eventId, trackId, seriesId } = {}) => {
-      return deriveEventPermissions({
+      // Base permissions from EntityCollaborator (existing logic unchanged)
+      const basePerms = deriveEventPermissions({
         isAdmin,
         collaborations: myCollaborations,
         eventId,
         trackId,
         seriesId,
       });
+
+      // Admin already has all base permissions — no need to merge
+      if (isAdmin) return basePerms;
+
+      // Filter EventOfficial records to this specific event
+      const eventOfficials = myOfficialRecords.filter(r => r.event_id === eventId);
+
+      // Derive and merge official permissions additively (OR logic)
+      const officialPerms = deriveOfficialPermissions(eventOfficials, user);
+      return mergeOfficialPermissions(basePerms, officialPerms);
     };
-  }, [isAdmin, myCollaborations]);
+  }, [isAdmin, myCollaborations, myOfficialRecords, user]);
 
   const canAccessEventModule = useMemo(() => {
     return (eventContext, moduleKey) => {
