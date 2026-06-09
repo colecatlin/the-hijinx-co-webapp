@@ -46,7 +46,7 @@ export default function RaceCoreSeriesEditor() {
 
   if (!isNew && isLoading) {
     return (
-      <ManagementLayout currentPage="RaceCoreSeriesEditor">
+      <ManagementLayout currentPage="RaceCoreSeriesEditor" embedded={true}>
         <div className="flex items-center justify-center py-32">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
@@ -55,7 +55,7 @@ export default function RaceCoreSeriesEditor() {
   }
 
   return (
-    <ManagementLayout currentPage="RaceCoreSeriesEditor">
+    <ManagementLayout currentPage="RaceCoreSeriesEditor" embedded={true}>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={() => navigate('/racecore/records/series')}>

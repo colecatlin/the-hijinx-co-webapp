@@ -20,6 +20,7 @@ import DriverRecordRow    from '@/components/drivers/DriverRecordRow';
 // Driver-specific tools (preserved)
 import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
+import DriverDrawer from '@/components/racecore/records/DriverDrawer';
 
 // ── Filter option sets ────────────────────────────────────────────────────────
 const RACING_STATUS_OPTIONS  = ['Active', 'Part Time', 'Inactive'];
@@ -48,6 +49,13 @@ export default function ManageDrivers() {
   const [showDuplicateFinder, setShowDuplicateFinder] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState(null); // duplicate_count number
 
+  // ── Drawer state ──────────────────────────────────────────────────────────────
+  const [drawerOpen,    setDrawerOpen]    = useState(false);
+  const [drawerDriverId, setDrawerDriverId] = useState(null);
+
+  const openDriverDrawer = (id) => { setDrawerDriverId(id); setDrawerOpen(true); };
+  const closeDriverDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerDriverId(null), 300); };
+
   // ── Bulk edit state (preserved) ───────────────────────────────────────────────
   const [bulkStatus,        setBulkStatus]        = useState('');
   const [bulkProfileStatus, setBulkProfileStatus] = useState('');
@@ -66,11 +74,11 @@ export default function ManageDrivers() {
   const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
-  // ── Deep-link: ?driverId=xxx (preserved) ─────────────────────────────────────
+  // ── Deep-link: ?driverId=xxx → open drawer ───────────────────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const driverId = params.get('driverId');
-    if (driverId) navigate('/race-core/drivers/' + driverId);
+    if (driverId) openDriverDrawer(driverId);
   }, []);
 
   // ── Background duplicate check (preserved) ───────────────────────────────────
@@ -361,7 +369,7 @@ export default function ManageDrivers() {
 
       {/* Add Driver */}
       <button
-        onClick={() => navigate('/race-core/drivers/new')}
+        onClick={() => openDriverDrawer('new')}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -514,6 +522,7 @@ export default function ManageDrivers() {
               isDeleting={deleteMutation.isPending}
               onToggleVisibility={toggleProfileStatusMutation.mutate}
               getProfileReadiness={getProfileReadiness}
+              onEdit={openDriverDrawer}
             />
           ))}
         </RecordGrid>
@@ -522,6 +531,14 @@ export default function ManageDrivers() {
           <RecordActivityRail entityName="Driver" onClose={() => setShowActivity(false)} overlayOnMobile />
         )}
       </RecordsPageShell>
+
+      {/* Driver drawer */}
+      <DriverDrawer
+        driverId={drawerDriverId}
+        open={drawerOpen}
+        onOpenChange={(v) => { if (!v) closeDriverDrawer(); else setDrawerOpen(true); }}
+        onSaveSuccess={() => queryClient.invalidateQueries({ queryKey: ['drivers'] })}
+      />
 
       {/* Duplicate finder dialog (preserved) */}
       <DriverDuplicateFinder

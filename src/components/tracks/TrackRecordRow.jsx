@@ -24,7 +24,7 @@ const TYPE_ABBREV = {
   'Other':         '—',
 };
 
-export default function TrackRecordRow({ track, isAdmin, isSelected, onSelect, onDelete, isDeleting }) {
+export default function TrackRecordRow({ track, isAdmin, isSelected, onSelect, onDelete, isDeleting, onEdit }) {
   const navigate = useNavigate();
 
   const surfaceAbbrev = SURFACE_ABBREV[track.surface_type] || track.surface_type || '—';
@@ -46,7 +46,7 @@ export default function TrackRecordRow({ track, isAdmin, isSelected, onSelect, o
         <ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
       <button
-        onClick={() => navigate('/racecore/tracks/' + track.id)}
+        onClick={() => onEdit ? onEdit(track.id) : navigate('/racecore/tracks/' + track.id)}
         title="Edit record"
         aria-label={`Edit ${track.name}`}
         className="p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded text-gray-500 hover:text-gray-200 hover:bg-gray-700/60 transition-colors"
@@ -74,7 +74,7 @@ export default function TrackRecordRow({ track, isAdmin, isSelected, onSelect, o
       isAdmin={isAdmin}
       isSelected={isSelected}
       onSelect={onSelect}
-      onClick={() => navigate('/racecore/tracks/' + track.id)}
+      onClick={() => onEdit ? onEdit(track.id) : navigate('/racecore/tracks/' + track.id)}
       actions={actions}
       label={track.name}
     >

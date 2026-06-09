@@ -106,6 +106,12 @@ function RaceControlEventPanelRedirect() {
   return <Navigate to={`/racecore/event-files/${eventId}/${panel}`} replace />;
 }
 
+// R9CH: /racecore/events/:id → redirect to Event File (Event File is the sole event editor)
+function RaceCoreEventEditorRedirect() {
+  const { id } = useParams();
+  return <Navigate to={`/racecore/event-files/${id}`} replace />;
+}
+
 // R9BI: Thin shell providing RaceControlProvider context to /racecore/event-files/* routes
 function RaceControlProviderShell() {
   return (
@@ -286,12 +292,14 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/media/assignments" element={<ManageAssignments />} />
         <Route path="/racecore/media/requests" element={<ManageRequests />} />
         <Route path="/racecore/media/revenue" element={<ManageRevenue />} />
-        {/* R9BI: Deep entity editors — canonical /racecore/:entity/:id inside RaceCoreLayout */}
+        {/* R9CH: Deep entity editors replaced by record drawers.
+            Legacy routes kept alive (embedded=true patched) and redirected to list+drawer.
+            /racecore/events/:id → Event File (Event File is the sole event editor) */}
         <Route path="/racecore/drivers/:id" element={<RaceCoreDriverEditor />} />
         <Route path="/racecore/teams/:id" element={<RaceCoreTeamEditor />} />
         <Route path="/racecore/tracks/:id" element={<RaceCoreTrackEditor />} />
         <Route path="/racecore/series/:id" element={<RaceCoreSeriesEditor />} />
-        <Route path="/racecore/events/:id" element={<RaceCoreEventEditor />} />
+        <Route path="/racecore/events/:id" element={<RaceCoreEventEditorRedirect />} />
         {/* R9BI: Event Files — canonical /racecore/event-files/* wrapped with RaceControlProvider for context */}
         <Route element={<RaceControlProviderShell />}>
           <Route path="/racecore/event-files" element={<RaceControlEvents />} />

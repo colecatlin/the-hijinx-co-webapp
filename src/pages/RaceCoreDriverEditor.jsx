@@ -51,7 +51,7 @@ export default function RaceCoreDriverEditor() {
 
   if (!isNew && isLoading) {
     return (
-      <ManagementLayout currentPage="RaceCoreDriverEditor">
+      <ManagementLayout currentPage="RaceCoreDriverEditor" embedded={true}>
         <div className="flex items-center justify-center py-32">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
@@ -62,7 +62,7 @@ export default function RaceCoreDriverEditor() {
   const driverName = driver ? `${driver.first_name} ${driver.last_name}` : 'New Driver';
 
   return (
-    <ManagementLayout currentPage="RaceCoreDriverEditor">
+    <ManagementLayout currentPage="RaceCoreDriverEditor" embedded={true}>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={() => navigate('/racecore/records/drivers')}>

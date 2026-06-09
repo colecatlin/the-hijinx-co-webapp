@@ -218,7 +218,7 @@ export default function ManageEvents() {
 
       {/* Add Event */}
       <button
-        onClick={() => navigate('/race-core/events/new')}
+        onClick={() => navigate('/racecore/events/new')}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />

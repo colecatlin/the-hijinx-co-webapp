@@ -15,6 +15,7 @@ import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail'
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import TeamRecordRow      from '@/components/teams/TeamRecordRow';
+import TeamDrawer         from '@/components/racecore/records/TeamDrawer';
 
 const STATUS_OPTIONS     = ['Active', 'Part Time', 'Historic', 'Inactive'];
 const DISCIPLINE_OPTIONS = ['Off Road', 'Snowmobile', 'Asphalt Oval', 'Road Racing', 'Rallycross', 'Drag Racing', 'Mixed'];
@@ -40,14 +41,21 @@ export default function ManageTeams() {
   const [bulkDeleteConfirm,  setBulkDeleteConfirm]  = useState(false);
   const queryClient = useQueryClient();
 
+  // ── Drawer state ──────────────────────────────────────────────────────────────
+  const [drawerOpen,   setDrawerOpen]   = useState(false);
+  const [drawerTeamId, setDrawerTeamId] = useState(null);
+
+  const openTeamDrawer  = (id) => { setDrawerTeamId(id); setDrawerOpen(true); };
+  const closeTeamDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerTeamId(null), 300); };
+
   const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
-  // Deep-link: ?teamId=xxx → route directly to Race Core canonical editor (preserved)
+  // Deep-link: ?teamId=xxx → open drawer
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const teamId = params.get('teamId');
-    if (teamId) navigate('/race-core/teams/' + teamId);
+    if (teamId) openTeamDrawer(teamId);
   }, []);
 
   // ── Data (unchanged) ──────────────────────────────────────────────────────────
@@ -141,7 +149,7 @@ export default function ManageTeams() {
         Activity
       </button>
       <button
-        onClick={() => navigate('/race-core/teams/new')}
+        onClick={() => openTeamDrawer('new')}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -228,6 +236,7 @@ export default function ManageTeams() {
               onSelect={handleSelectTeam}
               onDelete={handleDelete}
               isDeleting={deleteMutation.isPending}
+              onEdit={openTeamDrawer}
             />
           ))}
         </RecordGrid>
@@ -236,6 +245,14 @@ export default function ManageTeams() {
           <RecordActivityRail entityName="Team" onClose={() => setShowActivity(false)} overlayOnMobile />
         )}
       </RecordsPageShell>
+
+      {/* Team drawer */}
+      <TeamDrawer
+        teamId={drawerTeamId}
+        open={drawerOpen}
+        onOpenChange={(v) => { if (!v) closeTeamDrawer(); else setDrawerOpen(true); }}
+        onSaveSuccess={() => queryClient.invalidateQueries({ queryKey: ['teams'] })}
+      />
 
       {/* Single delete confirm (AlertDialog flow unchanged) */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>

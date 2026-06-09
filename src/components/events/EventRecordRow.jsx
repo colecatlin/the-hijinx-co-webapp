@@ -75,11 +75,11 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
         <ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
 
-      {/* Edit → canonical editor */}
+      {/* Edit → Event File settings panel */}
       <button
-        onClick={(e) => { e.stopPropagation(); navigate('/racecore/events/' + event.id); }}
-        title="Edit record"
-        aria-label={`Edit ${event.name}`}
+        onClick={(e) => { e.stopPropagation(); navigate('/racecore/event-files/' + event.id + '/settings'); }}
+        title="Edit event settings"
+        aria-label={`Edit ${event.name} settings`}
         className={`${btnBase} text-gray-500 hover:text-gray-200 hover:bg-gray-700/60`}
       >
         <Pencil className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
@@ -107,7 +107,7 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
       isAdmin={isAdmin}
       isSelected={isSelected}
       onSelect={onSelect}
-      onClick={() => navigate('/racecore/events/' + event.id)}
+      onClick={() => navigate('/racecore/event-files/' + event.id)}
       actions={actions}
       label={event.name}
     >

@@ -38,6 +38,7 @@ export default function DriverRecordRow({
   isDeleting,
   onToggleVisibility,
   getProfileReadiness,
+  onEdit,
 }) {
   const navigate = useNavigate();
 
@@ -97,7 +98,7 @@ export default function DriverRecordRow({
 
       {/* Edit */}
       <button
-        onClick={(e) => { e.stopPropagation(); navigate('/racecore/drivers/' + driver.id); }}
+        onClick={(e) => { e.stopPropagation(); onEdit ? onEdit(driver.id) : navigate('/racecore/drivers/' + driver.id); }}
         title="Edit driver record"
         aria-label={`Edit ${fullName}`}
         className={`${btnBase} text-gray-500 hover:text-gray-200 hover:bg-gray-700/60`}
@@ -127,7 +128,7 @@ export default function DriverRecordRow({
       isAdmin={isAdmin}
       isSelected={isSelected}
       onSelect={onSelect}
-      onClick={() => navigate('/racecore/drivers/' + driver.id)}
+      onClick={() => onEdit ? onEdit(driver.id) : navigate('/racecore/drivers/' + driver.id)}
       actions={actions}
       label={fullName}
     >

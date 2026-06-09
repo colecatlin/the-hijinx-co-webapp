@@ -32,7 +32,7 @@ export default function RaceCoreEventEditor() {
   };
 
   return (
-    <ManagementLayout currentPage="RaceCoreEventEditor">
+    <ManagementLayout currentPage="RaceCoreEventEditor" embedded={true}>
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={() => navigate('/racecore/records/events')}>

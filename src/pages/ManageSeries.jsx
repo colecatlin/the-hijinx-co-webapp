@@ -16,6 +16,7 @@ import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail'
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import SeriesRecordRow    from '@/components/series/SeriesRecordRow';
+import SeriesDrawer       from '@/components/racecore/records/SeriesDrawer';
 
 const STATUS_OPTIONS     = ['Active', 'Inactive', 'Upcoming'];
 const DISCIPLINE_OPTIONS = [
@@ -45,6 +46,13 @@ export default function ManageSeries() {
   const [bulkDeleteConfirm,  setBulkDeleteConfirm]  = useState(false);
   const queryClient = useQueryClient();
 
+  // ── Drawer state ──────────────────────────────────────────────────────────────
+  const [drawerOpen,     setDrawerOpen]     = useState(false);
+  const [drawerSeriesId, setDrawerSeriesId] = useState(null);
+
+  const openSeriesDrawer  = (id) => { setDrawerSeriesId(id); setDrawerOpen(true); };
+  const closeSeriesDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerSeriesId(null), 300); };
+
   const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
 
@@ -56,9 +64,9 @@ export default function ManageSeries() {
       .catch(() => {});
   }, [isAdmin]);
 
-  // Navigation helpers (unchanged)
-  const handleNavigateToDriver = (driver) => navigate('/race-core/drivers/' + driver.id);
-  const handleNavigateToTeam   = (team)   => navigate('/race-core/teams/'  + team.id);
+  // Navigation helpers — now open drawers on their respective list pages
+  const handleNavigateToDriver = (driver) => navigate('/racecore/records/drivers?driverId=' + driver.id);
+  const handleNavigateToTeam   = (team)   => navigate('/racecore/records/teams?teamId='     + team.id);
 
   // ── Data (unchanged) ──────────────────────────────────────────────────────────
   const { data: series = [], isLoading } = useQuery({
@@ -226,7 +234,7 @@ export default function ManageSeries() {
         Activity
       </button>
       <button
-        onClick={() => navigate('/race-core/series/new')}
+        onClick={() => openSeriesDrawer('new')}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -314,6 +322,7 @@ export default function ManageSeries() {
             onSelect={handleSelectSeriesItem}
             onDelete={handleDelete}
             isDeleting={deleteSeriesMutation.isPending}
+            onEdit={openSeriesDrawer}
           />
         ))}
       </RecordGrid>
@@ -322,6 +331,13 @@ export default function ManageSeries() {
         <RecordActivityRail entityName="Series" onClose={() => setShowActivity(false)} overlayOnMobile />
       )}
     </RecordsPageShell>
+
+    <SeriesDrawer
+      seriesId={drawerSeriesId}
+      open={drawerOpen}
+      onOpenChange={(v) => { if (!v) closeSeriesDrawer(); else setDrawerOpen(true); }}
+      onSaveSuccess={() => queryClient.invalidateQueries({ queryKey: ['series'] })}
+    />
 
     <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
       <AlertDialogContent>
