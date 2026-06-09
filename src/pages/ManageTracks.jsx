@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ManagementLayout from '@/components/management/ManagementLayout';
 import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { Plus, Trash2, AlertTriangle, X, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -28,7 +27,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',          className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageTracks({ embedded = false }) {
+export default function ManageTracks() {
   const navigate = useNavigate();
   const [searchQuery,    setSearchQuery]    = useState('');
   const [filterSurface,  setFilterSurface]  = useState('');
@@ -204,67 +203,57 @@ export default function ManageTracks({ embedded = false }) {
 
   if (userLoading) return null;
   if (!user) { base44.auth.redirectToLogin(); return null; }
-  if (!isAdmin) {
-    return (
-      <ManagementLayout currentPage="ManageTracks" embedded={embedded}>
-        <AdminAccessDenied />
-      </ManagementLayout>
-    );
-  }
+  if (!isAdmin) return <AdminAccessDenied />;
 
   return (
     <>
-    {embedded && (
-      <RaceCoreBreadcrumb crumbs={[
-        { label: 'RaceCore', href: '/racecore' },
-        { label: 'Records', href: '/racecore/records/tracks' },
-        { label: 'Tracks' },
-      ]} noBorder={embedded} />
-    )}
-    <ManagementLayout currentPage="ManageTracks" embedded={embedded}>
-      <RecordsPageShell
-        icon={MapPin}
-        title="Track Records"
-        stats={stats}
+    <RaceCoreBreadcrumb crumbs={[
+      { label: 'RaceCore', href: '/racecore' },
+      { label: 'Records', href: '/racecore/records/tracks' },
+      { label: 'Tracks' },
+    ]} noBorder />
+    <RecordsPageShell
+      icon={MapPin}
+      title="Track Records"
+      stats={stats}
+      isLoading={isLoading}
+      actions={headerActions}
+      alert={alertStrip}
+      filterRail={filterRail}
+      bulkBar={bulkBar}
+    >
+      <RecordGrid
         isLoading={isLoading}
-        actions={headerActions}
-        alert={alertStrip}
-        filterRail={filterRail}
-        bulkBar={bulkBar}
-      >
-        <RecordGrid
-          isLoading={isLoading}
-          isEmpty={filteredTracks.length === 0}
-          emptyIcon={MapPin}
-          emptyMessage={hasActiveFilters ? 'No tracks match filters' : 'No tracks found'}
-          emptyAction={hasActiveFilters && (
-            <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
-              Clear filters
-            </button>
-          )}
-          columns={GRID_COLUMNS}
-          showSelectAll={isAdmin}
-          allSelected={selectedTracks.length === filteredTracks.length && filteredTracks.length > 0}
-          onSelectAll={handleSelectAll}
-        >
-          {filteredTracks.map(track => (
-            <TrackRecordRow
-              key={track.id}
-              track={track}
-              isAdmin={isAdmin}
-              isSelected={selectedTracks.includes(track.id)}
-              onSelect={handleSelectTrack}
-              onDelete={handleDelete}
-              isDeleting={deleteMutation.isPending}
-            />
-          ))}
-        </RecordGrid>
-
-        {showActivity && (
-          <RecordActivityRail entityName="Track" onClose={() => setShowActivity(false)} overlayOnMobile />
+        isEmpty={filteredTracks.length === 0}
+        emptyIcon={MapPin}
+        emptyMessage={hasActiveFilters ? 'No tracks match filters' : 'No tracks found'}
+        emptyAction={hasActiveFilters && (
+          <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+            Clear filters
+          </button>
         )}
-      </RecordsPageShell>
-    </ManagementLayout>
+        columns={GRID_COLUMNS}
+        showSelectAll={isAdmin}
+        allSelected={selectedTracks.length === filteredTracks.length && filteredTracks.length > 0}
+        onSelectAll={handleSelectAll}
+      >
+        {filteredTracks.map(track => (
+          <TrackRecordRow
+            key={track.id}
+            track={track}
+            isAdmin={isAdmin}
+            isSelected={selectedTracks.includes(track.id)}
+            onSelect={handleSelectTrack}
+            onDelete={handleDelete}
+            isDeleting={deleteMutation.isPending}
+          />
+        ))}
+      </RecordGrid>
+
+      {showActivity && (
+        <RecordActivityRail entityName="Track" onClose={() => setShowActivity(false)} overlayOnMobile />
+      )}
+    </RecordsPageShell>
 
     <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
       <AlertDialogContent>

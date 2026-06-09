@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ManagementLayout from '@/components/management/ManagementLayout';
 import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { Plus, Trash2, AlertTriangle, X, Activity, Download, Upload } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -32,7 +31,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',                   className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageSeries({ embedded = false }) {
+export default function ManageSeries() {
   const navigate = useNavigate();
   const [searchQuery,     setSearchQuery]     = useState('');
   const [filterStatus,    setFilterStatus]    = useState('');
@@ -272,67 +271,57 @@ export default function ManageSeries({ embedded = false }) {
 
   if (userLoading) return null;
   if (!user) { base44.auth.redirectToLogin(); return null; }
-  if (!isAdmin) {
-    return (
-      <ManagementLayout currentPage="ManageSeries" embedded={embedded}>
-        <AdminAccessDenied />
-      </ManagementLayout>
-    );
-  }
+  if (!isAdmin) return <AdminAccessDenied />;
 
   return (
     <>
-    {embedded && (
-      <RaceCoreBreadcrumb crumbs={[
-        { label: 'RaceCore', href: '/racecore' },
-        { label: 'Records', href: '/racecore/records/series' },
-        { label: 'Series' },
-      ]} noBorder={embedded} />
-    )}
-    <ManagementLayout currentPage="ManageSeries" embedded={embedded}>
-      <RecordsPageShell
-        icon={Activity}
-        title="Series Records"
-        stats={stats}
+    <RaceCoreBreadcrumb crumbs={[
+      { label: 'RaceCore', href: '/racecore' },
+      { label: 'Records', href: '/racecore/records/series' },
+      { label: 'Series' },
+    ]} noBorder />
+    <RecordsPageShell
+      icon={Activity}
+      title="Series Records"
+      stats={stats}
+      isLoading={isLoading}
+      actions={headerActions}
+      alert={alertStrip}
+      filterRail={filterRail}
+      bulkBar={bulkBar}
+    >
+      <RecordGrid
         isLoading={isLoading}
-        actions={headerActions}
-        alert={alertStrip}
-        filterRail={filterRail}
-        bulkBar={bulkBar}
-      >
-        <RecordGrid
-          isLoading={isLoading}
-          isEmpty={filteredSeries.length === 0}
-          emptyIcon={Activity}
-          emptyMessage={hasActiveFilters ? 'No series match filters' : 'No series found'}
-          emptyAction={hasActiveFilters && (
-            <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
-              Clear filters
-            </button>
-          )}
-          columns={GRID_COLUMNS}
-          showSelectAll={isAdmin}
-          allSelected={selectedSeries.length === filteredSeries.length && filteredSeries.length > 0}
-          onSelectAll={handleSelectAll}
-        >
-          {filteredSeries.map(s => (
-            <SeriesRecordRow
-              key={s.id}
-              series={s}
-              isAdmin={isAdmin}
-              isSelected={selectedSeries.includes(s.id)}
-              onSelect={handleSelectSeriesItem}
-              onDelete={handleDelete}
-              isDeleting={deleteSeriesMutation.isPending}
-            />
-          ))}
-        </RecordGrid>
-
-        {showActivity && (
-          <RecordActivityRail entityName="Series" onClose={() => setShowActivity(false)} overlayOnMobile />
+        isEmpty={filteredSeries.length === 0}
+        emptyIcon={Activity}
+        emptyMessage={hasActiveFilters ? 'No series match filters' : 'No series found'}
+        emptyAction={hasActiveFilters && (
+          <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+            Clear filters
+          </button>
         )}
-      </RecordsPageShell>
-    </ManagementLayout>
+        columns={GRID_COLUMNS}
+        showSelectAll={isAdmin}
+        allSelected={selectedSeries.length === filteredSeries.length && filteredSeries.length > 0}
+        onSelectAll={handleSelectAll}
+      >
+        {filteredSeries.map(s => (
+          <SeriesRecordRow
+            key={s.id}
+            series={s}
+            isAdmin={isAdmin}
+            isSelected={selectedSeries.includes(s.id)}
+            onSelect={handleSelectSeriesItem}
+            onDelete={handleDelete}
+            isDeleting={deleteSeriesMutation.isPending}
+          />
+        ))}
+      </RecordGrid>
+
+      {showActivity && (
+        <RecordActivityRail entityName="Series" onClose={() => setShowActivity(false)} overlayOnMobile />
+      )}
+    </RecordsPageShell>
 
     <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
       <AlertDialogContent>

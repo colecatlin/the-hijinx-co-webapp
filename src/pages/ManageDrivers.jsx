@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ManagementLayout from '@/components/management/ManagementLayout';
 import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { Plus, Trash2, AlertTriangle, X, User, Upload, Download, Hash, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -35,7 +34,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',           className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageDrivers({ embedded = false }) {
+export default function ManageDrivers() {
   const navigate = useNavigate();
 
   // ── Filter / UI state ─────────────────────────────────────────────────────────
@@ -469,70 +468,60 @@ export default function ManageDrivers({ embedded = false }) {
   // ── Admin guard ──────────────────────────────────────────────────────────────
   if (userLoading) return null;
   if (!user) { base44.auth.redirectToLogin(); return null; }
-  if (!isAdmin) {
-    return (
-      <ManagementLayout currentPage="ManageDrivers" embedded={embedded}>
-        <AdminAccessDenied />
-      </ManagementLayout>
-    );
-  }
+  if (!isAdmin) return <AdminAccessDenied />;
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
-      {embedded && (
-        <RaceCoreBreadcrumb crumbs={[
-          { label: 'RaceCore', href: '/racecore' },
-          { label: 'Records', href: '/racecore/records/drivers' },
-          { label: 'Drivers' },
-        ]} noBorder={embedded} />
-      )}
-      <ManagementLayout currentPage="ManageDrivers" embedded={embedded}>
-        <RecordsPageShell
-          icon={User}
-          title="Driver Records"
-          stats={stats}
+      <RaceCoreBreadcrumb crumbs={[
+        { label: 'RaceCore', href: '/racecore' },
+        { label: 'Records', href: '/racecore/records/drivers' },
+        { label: 'Drivers' },
+      ]} noBorder />
+      <RecordsPageShell
+        icon={User}
+        title="Driver Records"
+        stats={stats}
+        isLoading={isLoading}
+        actions={headerActions}
+        alert={alertStrip}
+        filterRail={filterRail}
+        bulkBar={bulkBar}
+      >
+        <RecordGrid
           isLoading={isLoading}
-          actions={headerActions}
-          alert={alertStrip}
-          filterRail={filterRail}
-          bulkBar={bulkBar}
-        >
-          <RecordGrid
-            isLoading={isLoading}
-            isEmpty={filteredDrivers.length === 0}
-            emptyIcon={User}
-            emptyMessage={hasActiveFilters ? 'No drivers match filters' : 'No drivers found'}
-            emptyAction={hasActiveFilters && (
-              <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
-                Clear filters
-              </button>
-            )}
-            columns={GRID_COLUMNS}
-            showSelectAll={isAdmin}
-            allSelected={selectedDrivers.length === filteredDrivers.length && filteredDrivers.length > 0}
-            onSelectAll={handleSelectAll}
-          >
-            {filteredDrivers.map(driver => (
-              <DriverRecordRow
-                key={driver.id}
-                driver={driver}
-                isAdmin={isAdmin}
-                isSelected={selectedDrivers.includes(driver.id)}
-                onSelect={handleSelectDriver}
-                onDelete={handleDelete}
-                isDeleting={deleteMutation.isPending}
-                onToggleVisibility={toggleProfileStatusMutation.mutate}
-                getProfileReadiness={getProfileReadiness}
-              />
-            ))}
-          </RecordGrid>
-
-          {showActivity && (
-            <RecordActivityRail entityName="Driver" onClose={() => setShowActivity(false)} overlayOnMobile />
+          isEmpty={filteredDrivers.length === 0}
+          emptyIcon={User}
+          emptyMessage={hasActiveFilters ? 'No drivers match filters' : 'No drivers found'}
+          emptyAction={hasActiveFilters && (
+            <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+              Clear filters
+            </button>
           )}
-        </RecordsPageShell>
-      </ManagementLayout>
+          columns={GRID_COLUMNS}
+          showSelectAll={isAdmin}
+          allSelected={selectedDrivers.length === filteredDrivers.length && filteredDrivers.length > 0}
+          onSelectAll={handleSelectAll}
+        >
+          {filteredDrivers.map(driver => (
+            <DriverRecordRow
+              key={driver.id}
+              driver={driver}
+              isAdmin={isAdmin}
+              isSelected={selectedDrivers.includes(driver.id)}
+              onSelect={handleSelectDriver}
+              onDelete={handleDelete}
+              isDeleting={deleteMutation.isPending}
+              onToggleVisibility={toggleProfileStatusMutation.mutate}
+              getProfileReadiness={getProfileReadiness}
+            />
+          ))}
+        </RecordGrid>
+
+        {showActivity && (
+          <RecordActivityRail entityName="Driver" onClose={() => setShowActivity(false)} overlayOnMobile />
+        )}
+      </RecordsPageShell>
 
       {/* Duplicate finder dialog (preserved) */}
       <DriverDuplicateFinder

@@ -2,8 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
+import RaceCorePageShell from '@/components/racecore/RaceCorePageShell';
 import { ShieldOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AssignmentReviewPanel from '@/components/media/assignments/AssignmentReviewPanel';
@@ -11,7 +10,7 @@ import AssignmentReviewPanel from '@/components/media/assignments/AssignmentRevi
 const PAGE = 'management/media/assignments';
 const ALLOWED_ROLES = ['admin'];
 
-export default function ManageAssignments({ embedded = false }) {
+export default function ManageAssignments() {
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useQuery({
@@ -24,26 +23,19 @@ export default function ManageAssignments({ embedded = false }) {
 
   if (!ALLOWED_ROLES.includes(user.role)) {
     return (
-      <ManagementLayout currentPage={PAGE} embedded={embedded}>
-        <ManagementShell title="Assignments">
-          <div className="py-24 flex flex-col items-center gap-4 text-center">
-            <ShieldOff className="w-10 h-10 text-gray-300" />
-            <p className="text-gray-500 text-sm">Restricted to editorial staff.</p>
-            <Button size="sm" onClick={() => navigate(embedded ? '/racecore' : '/Management')}>Back to Management</Button>
-          </div>
-        </ManagementShell>
-      </ManagementLayout>
+      <RaceCorePageShell title="Assignments" description="Create and manage contributor assignments">
+        <div className="py-24 flex flex-col items-center gap-4 text-center">
+          <ShieldOff className="w-10 h-10 text-gray-600" />
+          <p className="text-gray-500 text-sm">Restricted to editorial staff.</p>
+          <Button size="sm" onClick={() => navigate('/racecore')}>Back to RaceCore</Button>
+        </div>
+      </RaceCorePageShell>
     );
   }
 
   return (
-    <ManagementLayout currentPage={PAGE} embedded={embedded}>
-      <ManagementShell
-        title="Assignments"
-        subtitle="Create and manage contributor assignments"
-      >
-        <AssignmentReviewPanel currentUser={user} />
-      </ManagementShell>
-    </ManagementLayout>
+    <RaceCorePageShell title="Assignments" description="Create and manage contributor assignments">
+      <AssignmentReviewPanel currentUser={user} />
+    </RaceCorePageShell>
   );
 }

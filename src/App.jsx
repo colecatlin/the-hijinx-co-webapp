@@ -272,20 +272,20 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/standings/:seriesId" element={<RaceCoreStandings />} />
         <Route path="/racecore/standings/:seriesId/:seasonYear" element={<RaceCoreStandings />} />
         {/* Records pages in embedded mode — ManagementLayout suppresses its own sidebar/header */}
-        <Route path="/racecore/records/drivers" element={<ManageDrivers embedded={true} />} />
-        <Route path="/racecore/records/teams" element={<ManageTeams embedded={true} />} />
-        <Route path="/racecore/records/tracks" element={<ManageTracks embedded={true} />} />
-        <Route path="/racecore/records/series" element={<ManageSeries embedded={true} />} />
-        <Route path="/racecore/records/events" element={<ManageEvents embedded={true} />} />
+        <Route path="/racecore/records/drivers" element={<ManageDrivers />} />
+        <Route path="/racecore/records/teams" element={<ManageTeams />} />
+        <Route path="/racecore/records/tracks" element={<ManageTracks />} />
+        <Route path="/racecore/records/series" element={<ManageSeries />} />
+        <Route path="/racecore/records/events" element={<ManageEvents />} />
         {/* R9CB: Operational records — event-first. Sessions and Results live in EventFile only. */}
         <Route path="/racecore/records/sessions" element={<Navigate to="/racecore/event-files" replace />} />
         <Route path="/racecore/records/results"  element={<Navigate to="/racecore/event-files" replace />} />
         <Route path="/racecore/records/points-rulesets" element={<Navigate to="/racecore/data/points-rulesets" replace />} />
         {/* Media operations */}
-        <Route path="/racecore/media/applications" element={<ManageMediaApplications embedded={true} />} />
-        <Route path="/racecore/media/assignments" element={<ManageAssignments embedded={true} />} />
-        <Route path="/racecore/media/requests" element={<ManageRequests embedded={true} />} />
-        <Route path="/racecore/media/revenue" element={<ManageRevenue embedded={true} />} />
+        <Route path="/racecore/media/applications" element={<ManageMediaApplications />} />
+        <Route path="/racecore/media/assignments" element={<ManageAssignments />} />
+        <Route path="/racecore/media/requests" element={<ManageRequests />} />
+        <Route path="/racecore/media/revenue" element={<ManageRevenue />} />
         {/* R9BI: Deep entity editors — canonical /racecore/:entity/:id inside RaceCoreLayout */}
         <Route path="/racecore/drivers/:id" element={<RaceCoreDriverEditor />} />
         <Route path="/racecore/teams/:id" element={<RaceCoreTeamEditor />} />

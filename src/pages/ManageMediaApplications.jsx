@@ -12,8 +12,7 @@ import {
   CheckCircle2, Clock, XCircle, AlertCircle, ChevronRight,
   User, Globe, Briefcase, Loader2, FileText
 } from 'lucide-react';
-import ManagementLayout from '@/components/management/ManagementLayout';
-import ManagementShell from '@/components/management/ManagementShell';
+import RaceCorePageShell from '@/components/racecore/RaceCorePageShell';
 import { APPLICATION_TYPES, MEDIA_ROLES } from '@/components/media/mediaPermissions';
 
 const STATUS_CONFIG = {
@@ -242,7 +241,7 @@ function ApplicationDetail({ app, onReviewed }) {
   );
 }
 
-export default function ManageMediaApplications({ embedded = false }) {
+export default function ManageMediaApplications() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState('pending');
   const [selected, setSelected] = useState(null);
@@ -263,11 +262,9 @@ export default function ManageMediaApplications({ embedded = false }) {
 
   if (user && user.role !== 'admin') {
     return (
-      <ManagementLayout currentPage="ManageMediaApplications" embedded={embedded}>
-        <ManagementShell title="Media Applications">
-          <div className="text-center py-20 text-gray-500">Admin access required.</div>
-        </ManagementShell>
-      </ManagementLayout>
+      <RaceCorePageShell title="Media Applications" description="Review and approve contributor applications">
+        <div className="text-center py-20 text-gray-500">Admin access required.</div>
+      </RaceCorePageShell>
     );
   }
 
@@ -282,67 +279,65 @@ export default function ManageMediaApplications({ embedded = false }) {
   }, {});
 
   return (
-    <ManagementLayout currentPage="ManageMediaApplications" embedded={embedded}>
-      <ManagementShell
-        title="Media Applications"
-        subtitle="Review and approve contributor applications"
-        actions={
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40 h-8 text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Applications</SelectItem>
-              <SelectItem value="pending">Pending {counts.pending ? `(${counts.pending})` : ''}</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="denied">Denied</SelectItem>
-              <SelectItem value="needs_more_info">Needs Info</SelectItem>
-            </SelectContent>
-          </Select>
-        }
-      >
-        {/* Summary bar */}
-        <div className="flex flex-wrap gap-3 mb-5">
-            <div className="px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-xs font-medium text-amber-700">Pending: {counts.pending || 0}</div>
-          <div className="px-3 py-1.5 rounded-lg bg-green-50 border border-green-200 text-xs font-medium text-green-700">Approved: {counts.approved || 0}</div>
-          <div className="px-3 py-1.5 rounded-lg bg-red-50 border border-red-200 text-xs font-medium text-red-700">Denied: {counts.denied || 0}</div>
-          <div className="px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs font-medium text-blue-700">Needs Info: {counts.needs_more_info || 0}</div>
+    <RaceCorePageShell
+      title="Media Applications"
+      description="Review and approve contributor applications"
+      actions={
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40 h-8 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Applications</SelectItem>
+            <SelectItem value="pending">Pending {counts.pending ? `(${counts.pending})` : ''}</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="denied">Denied</SelectItem>
+            <SelectItem value="needs_more_info">Needs Info</SelectItem>
+          </SelectContent>
+        </Select>
+      }
+    >
+      {/* Summary bar */}
+      <div className="flex flex-wrap gap-3 mb-5">
+        <div className="px-3 py-1.5 rounded-lg bg-amber-900/20 border border-amber-800/40 text-xs font-medium text-amber-400">Pending: {counts.pending || 0}</div>
+        <div className="px-3 py-1.5 rounded-lg bg-emerald-900/20 border border-emerald-800/40 text-xs font-medium text-emerald-400">Approved: {counts.approved || 0}</div>
+        <div className="px-3 py-1.5 rounded-lg bg-red-900/20 border border-red-800/40 text-xs font-medium text-red-400">Denied: {counts.denied || 0}</div>
+        <div className="px-3 py-1.5 rounded-lg bg-blue-900/20 border border-blue-800/40 text-xs font-medium text-blue-400">Needs Info: {counts.needs_more_info || 0}</div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        {/* Application list */}
+        <div className="lg:col-span-2 space-y-2">
+          {isLoading && (
+            <div className="text-center py-12 text-gray-400 text-sm">Loading…</div>
+          )}
+          {!isLoading && applications.length === 0 && (
+            <div className="text-center py-12 text-gray-400">
+              <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">No applications for this filter.</p>
+            </div>
+          )}
+          {applications.map(app => (
+            <ApplicationCard
+              key={app.id}
+              app={app}
+              selected={selected?.id === app.id}
+              onSelect={setSelected}
+            />
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-          {/* Application list */}
-          <div className="lg:col-span-2 space-y-2">
-            {isLoading && (
-              <div className="text-center py-12 text-gray-400 text-sm">Loading…</div>
-            )}
-            {!isLoading && applications.length === 0 && (
-              <div className="text-center py-12 text-gray-400">
-                <FileText className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No applications for this filter.</p>
-              </div>
-            )}
-            {applications.map(app => (
-              <ApplicationCard
-                key={app.id}
-                app={app}
-                selected={selected?.id === app.id}
-                onSelect={setSelected}
-              />
-            ))}
-          </div>
-
-          {/* Detail panel */}
-          <div className="lg:col-span-3">
-            {selected ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <ApplicationDetail app={selected} onReviewed={handleReviewed} />
-              </div>
-            ) : (
-              <div className="bg-gray-50 rounded-xl border border-dashed border-gray-200 flex items-center justify-center h-64">
-                <p className="text-sm text-gray-400">Select an application to review</p>
-              </div>
-            )}
-          </div>
+        {/* Detail panel */}
+        <div className="lg:col-span-3">
+          {selected ? (
+            <div className="rounded-xl border border-gray-700 bg-gray-900/60 p-5">
+              <ApplicationDetail app={selected} onReviewed={handleReviewed} />
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-700 flex items-center justify-center h-64">
+              <p className="text-sm text-gray-500">Select an application to review</p>
+            </div>
+          )}
         </div>
-      </ManagementShell>
-    </ManagementLayout>
+      </div>
+    </RaceCorePageShell>
   );
 }

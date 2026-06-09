@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ManagementLayout from '@/components/management/ManagementLayout';
 import { Plus, Trash2, AlertTriangle, X, CalendarDays, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -38,7 +37,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',           className: 'hidden xl:block w-20 text-right' },
 ];
 
-export default function ManageEvents({ embedded = false }) {
+export default function ManageEvents() {
   const navigate = useNavigate();
 
   // ── Filter / UI state ─────────────────────────────────────────────────────────
@@ -355,68 +354,58 @@ export default function ManageEvents({ embedded = false }) {
 
   if (userLoading) return null;
   if (!user) { base44.auth.redirectToLogin(); return null; }
-  if (!isAdmin) {
-    return (
-      <ManagementLayout currentPage="ManageEvents" embedded={embedded}>
-        <AdminAccessDenied />
-      </ManagementLayout>
-    );
-  }
+  if (!isAdmin) return <AdminAccessDenied />;
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <>
-      {embedded && (
-        <RaceCoreBreadcrumb crumbs={[
-          { label: 'RaceCore', href: '/racecore' },
-          { label: 'Records', href: '/racecore/records/events' },
-          { label: 'Events' },
-        ]} noBorder={embedded} />
-      )}
-      <ManagementLayout currentPage="ManageEvents" embedded={embedded}>
-        <RecordsPageShell
-          icon={CalendarDays}
-          title="Event Records"
-          stats={stats}
+      <RaceCoreBreadcrumb crumbs={[
+        { label: 'RaceCore', href: '/racecore' },
+        { label: 'Records', href: '/racecore/records/events' },
+        { label: 'Events' },
+      ]} noBorder />
+      <RecordsPageShell
+        icon={CalendarDays}
+        title="Event Records"
+        stats={stats}
+        isLoading={isLoading}
+        actions={headerActions}
+        filterRail={filterRail}
+        bulkBar={bulkBar}
+        panel={schedulerPanel}
+      >
+        <RecordGrid
           isLoading={isLoading}
-          actions={headerActions}
-          filterRail={filterRail}
-          bulkBar={bulkBar}
-          panel={schedulerPanel}
-        >
-          <RecordGrid
-            isLoading={isLoading}
-            isEmpty={filteredEvents.length === 0}
-            emptyIcon={CalendarDays}
-            emptyMessage={hasActiveFilters ? 'No events match filters' : 'No events found'}
-            emptyAction={hasActiveFilters && (
-              <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
-                Clear filters
-              </button>
-            )}
-            columns={GRID_COLUMNS}
-            showSelectAll={isAdmin}
-            allSelected={selectedEvents.length === filteredEvents.length && filteredEvents.length > 0}
-            onSelectAll={handleSelectAll}
-          >
-            {filteredEvents.map(event => (
-              <EventRecordRow
-                key={event.id}
-                event={event}
-                isAdmin={isAdmin}
-                isSelected={selectedEvents.includes(event.id)}
-                onSelect={handleSelectEvent}
-                onDelete={handleDelete}
-                isDeleting={deletingEventId === event.id}
-              />
-            ))}
-          </RecordGrid>
-
-          {showActivity && (
-            <RecordActivityRail entityName="Event" onClose={() => setShowActivity(false)} overlayOnMobile />
+          isEmpty={filteredEvents.length === 0}
+          emptyIcon={CalendarDays}
+          emptyMessage={hasActiveFilters ? 'No events match filters' : 'No events found'}
+          emptyAction={hasActiveFilters && (
+            <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+              Clear filters
+            </button>
           )}
-        </RecordsPageShell>
-      </ManagementLayout>
+          columns={GRID_COLUMNS}
+          showSelectAll={isAdmin}
+          allSelected={selectedEvents.length === filteredEvents.length && filteredEvents.length > 0}
+          onSelectAll={handleSelectAll}
+        >
+          {filteredEvents.map(event => (
+            <EventRecordRow
+              key={event.id}
+              event={event}
+              isAdmin={isAdmin}
+              isSelected={selectedEvents.includes(event.id)}
+              onSelect={handleSelectEvent}
+              onDelete={handleDelete}
+              isDeleting={deletingEventId === event.id}
+            />
+          ))}
+        </RecordGrid>
+
+        {showActivity && (
+          <RecordActivityRail entityName="Event" onClose={() => setShowActivity(false)} overlayOnMobile />
+        )}
+      </RecordsPageShell>
 
       {/* Single delete confirm (AlertDialog) */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>

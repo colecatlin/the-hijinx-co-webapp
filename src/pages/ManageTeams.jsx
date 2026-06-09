@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ManagementLayout from '@/components/management/ManagementLayout';
 import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 import { Plus, Trash2, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -28,7 +27,7 @@ const GRID_COLUMNS = [
   { label: 'Updated',          className: 'hidden lg:block w-20 text-right' },
 ];
 
-export default function ManageTeams({ embedded = false }) {
+export default function ManageTeams() {
   const navigate = useNavigate();
   const [searchQuery,    setSearchQuery]    = useState('');
   const [filterStatus,   setFilterStatus]   = useState('');
@@ -187,66 +186,56 @@ export default function ManageTeams({ embedded = false }) {
 
   if (userLoading) return null;
   if (!user) { base44.auth.redirectToLogin(); return null; }
-  if (!isAdmin) {
-    return (
-      <ManagementLayout currentPage="ManageTeams" embedded={embedded}>
-        <AdminAccessDenied />
-      </ManagementLayout>
-    );
-  }
+  if (!isAdmin) return <AdminAccessDenied />;
 
   return (
     <>
-      {embedded && (
-        <RaceCoreBreadcrumb crumbs={[
-          { label: 'RaceCore', href: '/racecore' },
-          { label: 'Records', href: '/racecore/records/teams' },
-          { label: 'Teams' },
-        ]} noBorder={embedded} />
-      )}
-      <ManagementLayout currentPage="ManageTeams" embedded={embedded}>
-        <RecordsPageShell
-          icon={Users}
-          title="Team Records"
-          stats={stats}
+      <RaceCoreBreadcrumb crumbs={[
+        { label: 'RaceCore', href: '/racecore' },
+        { label: 'Records', href: '/racecore/records/teams' },
+        { label: 'Teams' },
+      ]} noBorder />
+      <RecordsPageShell
+        icon={Users}
+        title="Team Records"
+        stats={stats}
+        isLoading={isLoading}
+        actions={headerActions}
+        filterRail={filterRail}
+        bulkBar={bulkBar}
+      >
+        <RecordGrid
           isLoading={isLoading}
-          actions={headerActions}
-          filterRail={filterRail}
-          bulkBar={bulkBar}
-        >
-          <RecordGrid
-            isLoading={isLoading}
-            isEmpty={filteredTeams.length === 0}
-            emptyIcon={Users}
-            emptyMessage={hasActiveFilters ? 'No teams match filters' : 'No teams found'}
-            emptyAction={hasActiveFilters && (
-              <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
-                Clear filters
-              </button>
-            )}
-            columns={GRID_COLUMNS}
-            showSelectAll={isAdmin}
-            allSelected={selectedTeams.length === filteredTeams.length && filteredTeams.length > 0}
-            onSelectAll={handleSelectAll}
-          >
-            {filteredTeams.map(team => (
-              <TeamRecordRow
-                key={team.id}
-                team={team}
-                isAdmin={isAdmin}
-                isSelected={selectedTeams.includes(team.id)}
-                onSelect={handleSelectTeam}
-                onDelete={handleDelete}
-                isDeleting={deleteMutation.isPending}
-              />
-            ))}
-          </RecordGrid>
-
-          {showActivity && (
-            <RecordActivityRail entityName="Team" onClose={() => setShowActivity(false)} overlayOnMobile />
+          isEmpty={filteredTeams.length === 0}
+          emptyIcon={Users}
+          emptyMessage={hasActiveFilters ? 'No teams match filters' : 'No teams found'}
+          emptyAction={hasActiveFilters && (
+            <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+              Clear filters
+            </button>
           )}
-        </RecordsPageShell>
-      </ManagementLayout>
+          columns={GRID_COLUMNS}
+          showSelectAll={isAdmin}
+          allSelected={selectedTeams.length === filteredTeams.length && filteredTeams.length > 0}
+          onSelectAll={handleSelectAll}
+        >
+          {filteredTeams.map(team => (
+            <TeamRecordRow
+              key={team.id}
+              team={team}
+              isAdmin={isAdmin}
+              isSelected={selectedTeams.includes(team.id)}
+              onSelect={handleSelectTeam}
+              onDelete={handleDelete}
+              isDeleting={deleteMutation.isPending}
+            />
+          ))}
+        </RecordGrid>
+
+        {showActivity && (
+          <RecordActivityRail entityName="Team" onClose={() => setShowActivity(false)} overlayOnMobile />
+        )}
+      </RecordsPageShell>
 
       {/* Single delete confirm (AlertDialog flow unchanged) */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
