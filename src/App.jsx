@@ -235,27 +235,33 @@ const AuthenticatedApp = () => {
       <Route path="/admin/hero-slides" element={<LayoutWrapper currentPageName="ManageHeroSlides"><ManageHeroSlides /></LayoutWrapper>} />
       <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
       
-      {/* ─── R9BI: Legacy /Manage* → canonical /racecore/* redirects ─── */}
-      <Route path="/ManageDrivers" element={<Navigate to="/racecore/records/drivers" replace />} />
-      <Route path="/ManageTeams" element={<Navigate to="/racecore/records/teams" replace />} />
-      <Route path="/ManageTracks" element={<Navigate to="/racecore/records/tracks" replace />} />
-      <Route path="/ManageSeries" element={<Navigate to="/racecore/records/series" replace />} />
-      <Route path="/ManageEvents" element={<Navigate to="/racecore/records/events" replace />} />
-      <Route path="/ManageSessions" element={<Navigate to="/racecore/records/sessions" replace />} />
-      <Route path="/ManageResults" element={<Navigate to="/racecore/records/results" replace />} />
-      <Route path="/ManagePointsConfig" element={<Navigate to="/racecore/records/points-rulesets" replace />} />
-      <Route path="/ManageStandings" element={<Navigate to="/racecore/standings" replace />} />
+      {/* ─── R9CA: All motorsports entity routes → RaceCore ownership ─── */}
+      {/* Entity Records */}
+      <Route path="/ManageDrivers"    element={<Navigate to="/racecore/records/drivers" replace />} />
+      <Route path="/ManageTeams"      element={<Navigate to="/racecore/records/teams"   replace />} />
+      <Route path="/ManageTracks"     element={<Navigate to="/racecore/records/tracks"  replace />} />
+      <Route path="/ManageSeries"     element={<Navigate to="/racecore/records/series"  replace />} />
+      <Route path="/ManageEvents"     element={<Navigate to="/racecore/records/events"  replace />} />
+      {/* Operational — event-first: sessions and results only via EventFile */}
+      <Route path="/ManageSessions"   element={<Navigate to="/racecore/event-files"    replace />} />
+      <Route path="/ManageResults"    element={<Navigate to="/racecore/event-files"    replace />} />
+      {/* Standings */}
+      <Route path="/ManageStandings"  element={<Navigate to="/racecore/standings"              replace />} />
+      {/* Data tools — RaceCore Data section */}
+      <Route path="/ManagePointsConfig"    element={<Navigate to="/racecore/data/points-rulesets" replace />} />
+      <Route path="/ManageCSVImportExport" element={<Navigate to="/racecore/data/imports"         replace />} />
+      <Route path="/ManageCalendarSync"    element={<Navigate to="/racecore/data/calendar-sync"   replace />} />
+      <Route path="/Diagnostics"           element={<Navigate to="/racecore/data/diagnostics"      replace />} />
+      {/* Media */}
       <Route path="/ManageMediaApplications" element={<Navigate to="/racecore/media/applications" replace />} />
-      <Route path="/ManageAssignments" element={<Navigate to="/racecore/media/assignments" replace />} />
-      <Route path="/ManageRequests" element={<Navigate to="/racecore/media/requests" replace />} />
-      <Route path="/ManageRevenue" element={<Navigate to="/racecore/media/revenue" replace />} />
-      {/* Note: /ManageDriverClaims, /ManageEntityClaims, /ManageAccess, /ManageCSVImportExport,
-           /ManageCalendarSync, /Diagnostics remain served by pagesConfig loop */}
+      <Route path="/ManageAssignments"        element={<Navigate to="/racecore/media/assignments"  replace />} />
+      <Route path="/ManageRequests"           element={<Navigate to="/racecore/media/requests"     replace />} />
+      <Route path="/ManageRevenue"            element={<Navigate to="/racecore/media/revenue"      replace />} />
       {/* Legacy /management/media/* → canonical RaceCore */}
       <Route path="/management/media/applications" element={<Navigate to="/racecore/media/applications" replace />} />
-      <Route path="/management/media/assignments" element={<Navigate to="/racecore/media/assignments" replace />} />
-      <Route path="/management/media/requests" element={<Navigate to="/racecore/media/requests" replace />} />
-      <Route path="/management/media/revenue" element={<Navigate to="/racecore/media/revenue" replace />} />
+      <Route path="/management/media/assignments"  element={<Navigate to="/racecore/media/assignments"  replace />} />
+      <Route path="/management/media/requests"     element={<Navigate to="/racecore/media/requests"     replace />} />
+      <Route path="/management/media/revenue"      element={<Navigate to="/racecore/media/revenue"      replace />} />
       {/* Legacy route redirect */}
       <Route path="/RegistrationDashboard" element={<Navigate to="/racecore" replace />} />
 
@@ -292,14 +298,19 @@ const AuthenticatedApp = () => {
           <Route path="/racecore/event-files/:eventId" element={<EventFile />} />
           <Route path="/racecore/event-files/:eventId/:panel" element={<EventFile />} />
         </Route>
-        {/* R9BI: Legacy /racecore/access/* and /racecore/data/* → redirect to Management */}
+        {/* R9CA: /racecore/access/* → Management (access control stays in Management) */}
         <Route path="/racecore/access/claims" element={<Navigate to="/ManageDriverClaims" replace />} />
         <Route path="/racecore/access/entity-claims" element={<Navigate to="/ManageEntityClaims" replace />} />
         <Route path="/racecore/access/management" element={<Navigate to="/ManageAccess" replace />} />
-        <Route path="/racecore/data/csv" element={<Navigate to="/ManageCSVImportExport" replace />} />
-        <Route path="/racecore/data/calendar-sync" element={<Navigate to="/ManageCalendarSync" replace />} />
-
-        <Route path="/racecore/diagnostics" element={<Navigate to="/Diagnostics" replace />} />
+        {/* R9CA: Data tools now canonical in RaceCore — serve directly */}
+        <Route path="/racecore/data/points-rulesets" element={<ManagePointsConfig embedded={true} />} />
+        <Route path="/racecore/data/imports"         element={<ManageCSVImportExport embedded={true} />} />
+        <Route path="/racecore/data/calendar-sync"   element={<ManageCalendarSync embedded={true} />} />
+        <Route path="/racecore/data/results-repair"  element={<ManageResults embedded={true} />} />
+        <Route path="/racecore/data/diagnostics"     element={<Diagnostics embedded={true} />} />
+        {/* Legacy data paths → new canonical */}
+        <Route path="/racecore/data/csv"         element={<Navigate to="/racecore/data/imports"       replace />} />
+        <Route path="/racecore/diagnostics"      element={<Navigate to="/racecore/data/diagnostics"   replace />} />
       </Route>
 
       {/* Legacy /Manage* routes remain alive via the pagesConfig loop above — unchanged */}

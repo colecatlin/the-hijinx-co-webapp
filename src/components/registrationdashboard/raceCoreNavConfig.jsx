@@ -8,71 +8,82 @@ import {
   MonitorPlay,
   BarChart3,
   Camera,
-  Clock,
   Award,
   SlidersHorizontal,
   Briefcase,
   Send,
   DollarSign,
-  Settings,
+  FileJson,
+  RefreshCw,
+  Wrench,
+  Database,
 } from 'lucide-react';
 
 /**
  * Race Core navigation config — single source of truth for RaceCoreSidebar.
- * R9BI: Removed Access & Claims and Data Integrity groups — those belong in Management.
- * Added Platform Administration link pointing to /Management.
+ * R9CA: Rebuilt to match final R9BZ IA.
+ * - OPERATIONS: Event Files
+ * - RECORDS: Drivers, Teams, Series, Tracks, Events
+ * - STANDINGS: Championship Standings
+ * - MEDIA: Applications, Assignments, Requests
+ * - DATA: Points Rulesets, Imports, Calendar Sync, Results Repair, Diagnostics
  *
- * item fields:
- *   href   — full path (all items are href-driven, no tab/modal keys)
- *   label  — display name
- *   icon   — Lucide icon component
+ * Sessions and Results removed as top-level nav — owned exclusively by EventFile workspace.
  */
 
 export const RACE_CORE_NAV_GROUPS = [
   {
-    id: 'command',
-    label: 'Command',
+    id: 'dashboard',
+    label: 'RaceCore',
     items: [
-      { href: '/racecore',                  label: 'RaceCore Dashboard', icon: LayoutDashboard },
-      { href: '/racecore/event-files',       label: 'Event Files',        icon: MonitorPlay },
+      { href: '/racecore', label: 'Dashboard', icon: LayoutDashboard },
     ],
   },
   {
-    id: 'entity-oversight',
-    label: 'Entity Oversight',
+    id: 'operations',
+    label: 'Operations',
     items: [
-      { href: '/racecore/records/drivers', label: 'Drivers',         icon: User },
-      { href: '/racecore/records/teams',   label: 'Teams',           icon: Users },
-      { href: '/racecore/records/series',  label: 'Series',          icon: Trophy },
-      { href: '/racecore/records/tracks',  label: 'Tracks',          icon: MapPin },
-      { href: '/racecore/records/events',  label: 'Events Overview', icon: Flag },
+      { href: '/racecore/event-files', label: 'Event Files', icon: MonitorPlay },
     ],
   },
   {
-    id: 'race-records',
-    label: 'Race Records',
+    id: 'records',
+    label: 'Records',
     items: [
-      { href: '/racecore/records/sessions',        label: 'Sessions',        icon: Clock },
-      { href: '/racecore/records/results',         label: 'Results',         icon: Award },
-      { href: '/racecore/records/points-rulesets', label: 'Points Rulesets', icon: SlidersHorizontal },
-      { href: '/racecore/standings',               label: 'Standings Hub',   icon: BarChart3 },
+      { href: '/racecore/records/drivers', label: 'Drivers', icon: User },
+      { href: '/racecore/records/teams',   label: 'Teams',   icon: Users },
+      { href: '/racecore/records/series',  label: 'Series',  icon: Trophy },
+      { href: '/racecore/records/tracks',  label: 'Tracks',  icon: MapPin },
+      { href: '/racecore/records/events',  label: 'Events',  icon: Flag },
     ],
   },
   {
-    id: 'media-ecosystem',
-    label: 'Media Ecosystem',
+    id: 'standings',
+    label: 'Standings',
     items: [
-      { href: '/racecore/media/applications', label: 'Applications',     icon: Camera },
-      { href: '/racecore/media/assignments',  label: 'Assignments',      icon: Briefcase },
-      { href: '/racecore/media/requests',     label: 'Requests',         icon: Send },
-      { href: '/racecore/media/revenue',      label: 'Revenue & Payouts', icon: DollarSign },
+      { href: '/racecore/standings', label: 'Championship Standings', icon: BarChart3 },
     ],
   },
   {
-    id: 'platform-admin',
-    label: 'Platform',
+    id: 'media',
+    label: 'Media',
     items: [
-      { href: '/Management', label: 'Platform Administration', icon: Settings },
+      { href: '/racecore/media/applications', label: 'Applications', icon: Camera },
+      { href: '/racecore/media/assignments',  label: 'Assignments',  icon: Briefcase },
+      { href: '/racecore/media/requests',     label: 'Requests',     icon: Send },
+      { href: '/racecore/media/revenue',      label: 'Revenue',      icon: DollarSign },
     ],
+  },
+  {
+    id: 'data',
+    label: 'Data',
+    items: [
+      { href: '/racecore/data/points-rulesets', label: 'Points Rulesets', icon: SlidersHorizontal },
+      { href: '/racecore/data/imports',         label: 'Imports / CSV',   icon: FileJson },
+      { href: '/racecore/data/calendar-sync',   label: 'Calendar Sync',   icon: RefreshCw },
+      { href: '/racecore/data/results-repair',  label: 'Results Repair',  icon: Award },
+      { href: '/racecore/data/diagnostics',     label: 'Diagnostics',     icon: Wrench },
+    ],
+    adminOnly: true,
   },
 ];
