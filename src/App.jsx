@@ -277,10 +277,10 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/records/tracks" element={<ManageTracks embedded={true} />} />
         <Route path="/racecore/records/series" element={<ManageSeries embedded={true} />} />
         <Route path="/racecore/records/events" element={<ManageEvents embedded={true} />} />
-        {/* Operational records */}
-        <Route path="/racecore/records/sessions" element={<ManageSessions embedded={true} />} />
-        <Route path="/racecore/records/results" element={<ManageResults embedded={true} />} />
-        <Route path="/racecore/records/points-rulesets" element={<ManagePointsConfig embedded={true} />} />
+        {/* R9CB: Operational records — event-first. Sessions and Results live in EventFile only. */}
+        <Route path="/racecore/records/sessions" element={<Navigate to="/racecore/event-files" replace />} />
+        <Route path="/racecore/records/results"  element={<Navigate to="/racecore/event-files" replace />} />
+        <Route path="/racecore/records/points-rulesets" element={<Navigate to="/racecore/data/points-rulesets" replace />} />
         {/* Media operations */}
         <Route path="/racecore/media/applications" element={<ManageMediaApplications embedded={true} />} />
         <Route path="/racecore/media/assignments" element={<ManageAssignments embedded={true} />} />

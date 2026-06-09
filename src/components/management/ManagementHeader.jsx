@@ -1,28 +1,22 @@
 import React from 'react';
 import ManagementSearch from './ManagementSearch';
 
+// R9CB: Removed all motorsports entity titles — RaceCore owns those.
+// Management header only covers platform administration pages.
 const PAGE_TITLES = {
-  Management: { title: 'Management Dashboard', subtitle: 'Backend system for all content and data' },
-  ManageDrivers: { title: 'Drivers', subtitle: 'Manage all driver profiles' },
-  ManageTeams: { title: 'Teams', subtitle: 'Manage racing teams and organizations' },
-  ManageTracks: { title: 'Tracks', subtitle: 'Manage racing venues and facilities' },
-  ManageSeries: { title: 'Series', subtitle: 'Manage racing series and championships' },
-  ManageEvents: { title: 'Events', subtitle: 'Manage race events and schedules' },
-  ManageSessions: { title: 'Sessions', subtitle: 'Manage race sessions and timing' },
-  ManageResults: { title: 'Results', subtitle: 'Manage race results' },
-  ManagePointsConfig: { title: 'Points Config', subtitle: 'Automated standings configuration' },
-  ManageDriverClaims: { title: 'Driver Claims', subtitle: 'Review driver-submitted results' },
-  ManageStories: { title: 'Stories', subtitle: 'Create and publish articles' },
-  ManageIssues: { title: 'Issues', subtitle: 'Manage magazine issues' },
-  ManageAnnouncements: { title: 'Announcements', subtitle: 'Manage announcement bar' },
-  ManageAdvertising: { title: 'Advertising', subtitle: 'Manage advertising inquiries' },
-  ManageAccess: { title: 'Access Management', subtitle: 'Manage user entity access' },
-  ManageFoodBeverage: { title: 'Food & Beverage', subtitle: 'Manage food and beverage offerings' },
-  ManageTech: { title: 'Tech', subtitle: 'Manage tech offerings' },
-  AnalyticsDashboard: { title: 'Analytics', subtitle: 'View insights and data trends' },
-  ManageCSVImportExport: { title: 'CSV Import / Export', subtitle: 'Bulk data operations' },
-  ManageCalendarSync: { title: 'Schedule Sync', subtitle: 'Sync ICS/webcal schedules' },
-  ManageHomepage: { title: 'Homepage Settings', subtitle: 'Manage homepage visuals' },
+  Management:           { title: 'Management',        subtitle: 'Platform administration — website, content, store, access control' },
+  ManageDriverClaims:   { title: 'Driver Claims',      subtitle: 'Review and approve driver profile claims' },
+  ManageEntityClaims:   { title: 'Entity Claims',      subtitle: 'Review and approve entity ownership claims' },
+  ManageAccess:         { title: 'Access Management',  subtitle: 'Manage user collaborator access to entities' },
+  ManageStories:        { title: 'Stories',            subtitle: 'Create and publish articles' },
+  ManageIssues:         { title: 'Issues',             subtitle: 'Manage magazine issues' },
+  ManageAnnouncements:  { title: 'Announcements',      subtitle: 'Manage announcement bar' },
+  ManageAdvertising:    { title: 'Advertising',        subtitle: 'Manage advertising inquiries' },
+  ManageFoodBeverage:   { title: 'Food & Beverage',    subtitle: 'Manage food and beverage offerings' },
+  ManageTech:           { title: 'Tech',               subtitle: 'Manage tech offerings' },
+  AnalyticsDashboard:   { title: 'Analytics',          subtitle: 'View insights and data trends' },
+  ManageHomepage:       { title: 'Homepage Settings',  subtitle: 'Manage homepage visuals' },
+  ManageMotorsportsHome:{ title: 'Motorsports Home',   subtitle: 'Control Index46 featured content' },
 };
 
 export default function ManagementHeader({ currentPage }) {
