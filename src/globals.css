@@ -28,10 +28,79 @@
 }
 
 body {
-  background-color: var(--hijinx-white);
-  color: var(--hijinx-black);
+  background-color: #050A0A;
+  color: #FAFAFA;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── GLOBAL MOTORSPORTS DARK THEME ── */
+
+/* Scrollbar dark */
+::-webkit-scrollbar-thumb {
+  background: rgba(29,161,161,0.35) !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(29,161,161,0.55) !important;
+}
+::-webkit-scrollbar-track {
+  background: rgba(5,10,10,0.8) !important;
+}
+
+/* Glass card system — all standard cards get motorsports frosted treatment */
+.bg-white,
+[class*="bg-white"] {
+  background-color: rgba(4, 8, 8, 0.72) !important;
+}
+
+/* Force text on white/light backgrounds to be readable on dark */
+.text-gray-900, .text-black, .text-foreground {
+  color: rgba(255,255,255,0.92) !important;
+}
+.text-gray-600, .text-gray-500, .text-muted-foreground {
+  color: rgba(255,255,255,0.5) !important;
+}
+.text-gray-400, .text-gray-300 {
+  color: rgba(255,255,255,0.35) !important;
+}
+
+/* Motorsports glass utility */
+.motorsports-glass {
+  background: rgba(4, 8, 8, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(29, 161, 161, 0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+/* Teal glow divider utility */
+.teal-glow-divider {
+  background: linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.3) 35%, rgba(29,161,161,0.3) 65%, transparent 100%);
+  height: 1px;
+}
+
+/* Motorsports mono tag utility */
+.index-mono-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.45em;
+  color: #1DA1A1;
+  text-transform: uppercase;
+}
+
+/* Hero heading utility */
+.index-heading-hero {
+  font-weight: 900;
+  color: #fff;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* Teal glow text */
+.glow-text-teal {
+  text-shadow: 0 0 40px rgba(29,161,161,0.4);
+  color: #1DA1A1;
 }
 
 .font-mono {

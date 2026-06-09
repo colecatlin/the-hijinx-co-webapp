@@ -153,7 +153,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <GoogleMapsInitializer>
-      <div className="flex flex-col min-h-screen" style={{
+      <div className="flex flex-col min-h-screen relative" style={{
           background: '#050A0A',
           backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png)',
           backgroundSize: 'cover',
@@ -161,7 +161,19 @@ export default function Layout({ children, currentPageName }) {
           backgroundRepeat: 'no-repeat',
           backgroundAttachment: 'fixed',
         }}>
-        <div className="sticky top-0 z-50" style={{ background: '#050A0A' }}>
+        {/* ── GLOBAL: Repeating motorsports grid texture overlay ── */}
+        <div className="fixed inset-0 z-0 pointer-events-none" style={{
+          backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`,
+          backgroundRepeat: 'repeat',
+          backgroundSize: '1024px auto',
+          opacity: 0.28,
+        }} />
+        {/* ── GLOBAL: SVG Film grain / noise overlay ── */}
+        <div className="fixed inset-0 z-0 pointer-events-none" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E")`,
+          opacity: 0.5,
+        }} />
+        <div className="sticky top-0 z-50 relative" style={{ background: '#050A0A' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
           <div className="px-3 py-2">
@@ -601,7 +613,7 @@ export default function Layout({ children, currentPageName }) {
         </AnimatePresence>
 
         {/* Page content */}
-        <main className="flex-1">
+        <main className="flex-1 relative z-[1]">
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
