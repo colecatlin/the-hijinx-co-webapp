@@ -1,4 +1,4 @@
-import { Users, Trophy, MapPin, Calendar, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, Wrench, GitMerge, Palette, Gauge, ShoppingCart, Package, Tag, Star, Settings, Image, MonitorPlay } from 'lucide-react';
+import { Users, Trophy, MapPin, Calendar, Award, User, BarChart3, FileText, Book, MessageSquare, Megaphone, Handshake, UtensilsCrossed, Cpu, LineChart, Home, RefreshCw, FileJson, LayoutDashboard, Radar, Sparkles, Activity, TrendingUp, Map, ListChecks, BookOpen, FlaskConical, PenLine, Camera, Briefcase, Send, DollarSign, Wrench, Palette, Gauge, ShoppingCart, Package, Tag, Star, Settings, Image, MonitorPlay } from 'lucide-react';
 
 /**
  * Single source of truth for management navigation.
@@ -105,7 +105,6 @@ export const MANAGEMENT_SECTIONS = [
     items: [
       { name: 'CSV Import/Export', page: 'ManageCSVImportExport', icon: FileJson, description: 'Bulk import/export all entities as CSV' },
       { name: 'Schedule Sync', page: 'ManageCalendarSync', icon: RefreshCw, description: 'Sync ICS/webcal schedules into Events' },
-      { name: 'Champ Import', page: 'management/champ-import', icon: GitMerge, description: 'Import championship data from external sources' },
       { name: 'Diagnostics', page: 'Diagnostics', icon: Wrench, description: 'Platform integrity checks, duplicate detection, and repair tools' },
     ]
   },

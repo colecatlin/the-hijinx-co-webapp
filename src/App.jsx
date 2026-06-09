@@ -30,7 +30,6 @@ import OutletStoryPage from './pages/OutletStoryPage';
 import { DriverProfileRouteWrapper } from './pages/DriverProfile';
 import { SeriesDetailRouteWrapper } from './pages/SeriesDetail';
 import ClaimsCenter from './pages/ClaimsCenter';
-import ChampImportAdmin from './pages/ChampImportAdmin';
 import RaceCoreDriverEditor from './pages/RaceCoreDriverEditor';
 import RaceCoreTeamEditor from './pages/RaceCoreTeamEditor';
 import RaceCoreTrackEditor from './pages/RaceCoreTrackEditor';
@@ -188,7 +187,7 @@ const AuthenticatedApp = () => {
       <Route path="/series/:slug" element={<LayoutWrapper currentPageName="SeriesDetail"><SeriesDetailRouteWrapper /></LayoutWrapper>} />
       <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
-      <Route path="/management/champ-import" element={<LayoutWrapper currentPageName="ChampImportAdmin"><ChampImportAdmin /></LayoutWrapper>} />
+
       {/* R9BI: Legacy /race-core/* editor routes → redirect to canonical /racecore/* */}
       <Route path="/race-core/drivers/:id" element={<RaceCoreEditorRedirect base="drivers" />} />
       <Route path="/race-core/teams/:id" element={<RaceCoreEditorRedirect base="teams" />} />
@@ -251,7 +250,7 @@ const AuthenticatedApp = () => {
       <Route path="/ManageRequests" element={<Navigate to="/racecore/media/requests" replace />} />
       <Route path="/ManageRevenue" element={<Navigate to="/racecore/media/revenue" replace />} />
       {/* Note: /ManageDriverClaims, /ManageEntityClaims, /ManageAccess, /ManageCSVImportExport,
-           /ManageCalendarSync, /management/champ-import, /Diagnostics remain served by pagesConfig loop */}
+           /ManageCalendarSync, /Diagnostics remain served by pagesConfig loop */}
       {/* Legacy /management/media/* → canonical RaceCore */}
       <Route path="/management/media/applications" element={<Navigate to="/racecore/media/applications" replace />} />
       <Route path="/management/media/assignments" element={<Navigate to="/racecore/media/assignments" replace />} />
@@ -299,7 +298,7 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/access/management" element={<Navigate to="/ManageAccess" replace />} />
         <Route path="/racecore/data/csv" element={<Navigate to="/ManageCSVImportExport" replace />} />
         <Route path="/racecore/data/calendar-sync" element={<Navigate to="/ManageCalendarSync" replace />} />
-        <Route path="/racecore/data/champ-import" element={<Navigate to="/management/champ-import" replace />} />
+
         <Route path="/racecore/diagnostics" element={<Navigate to="/Diagnostics" replace />} />
       </Route>
 

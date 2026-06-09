@@ -11,14 +11,7 @@ import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import AdminAccessDenied from '@/components/shared/AdminAccessDenied';
 
-const DEFAULT_CALENDARS = [
-  {
-    id: 'nascar-default',
-    name: 'NASCAR 2026',
-    url: 'https://ics.ecal.com/ecal-sub/69962d012067a000022ac699/NASCAR.ics',
-    seriesName: 'NASCAR Cup Series',
-  },
-];
+const DEFAULT_CALENDARS = [];
 
 export default function ManageCalendarSync({ embedded = false }) {
   const { data: currentUser, isLoading: userLoading } = useQuery({
