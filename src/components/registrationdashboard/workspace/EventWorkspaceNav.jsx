@@ -23,6 +23,7 @@ import {
   Siren,
 } from 'lucide-react';
 import { useEventWorkspace } from './EventWorkspaceContext';
+import { useModules } from '@/components/racecore/modules/ModuleProvider';
 
 // Module permission key map — R8G Part 4
 const MODULE_GROUPS = [
@@ -62,11 +63,16 @@ function isModuleVisible(permKey, eventPermissions) {
 
 export default function EventWorkspaceNav({ activePanel, onPanelChange, compact = false }) {
   const { eventPermissions } = useEventWorkspace();
+  const { governanceEnabled } = useModules();
 
   // Filter groups — hide items that are not permitted; hide empty groups.
+  // R9BX: Also hide race_control when Governance module is disabled.
   const visibleGroups = MODULE_GROUPS.map((group) => ({
     ...group,
-    items: group.items.filter((mod) => isModuleVisible(mod.permKey, eventPermissions)),
+    items: group.items.filter((mod) => {
+      if (mod.id === 'race_control' && !governanceEnabled) return false;
+      return isModuleVisible(mod.permKey, eventPermissions);
+    }),
   })).filter((group) => group.items.length > 0);
 
   return (

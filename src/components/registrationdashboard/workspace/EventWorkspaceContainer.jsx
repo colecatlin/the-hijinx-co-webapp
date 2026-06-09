@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { EventWorkspaceProvider } from './EventWorkspaceContext';
 import EventWorkspaceShell from './EventWorkspaceShell';
+import { ModuleProvider } from '@/components/racecore/modules/ModuleProvider';
 
 const WORKSPACE_PANELS = [
   { id: 'overview',      label: 'Overview' },
@@ -170,8 +171,10 @@ export default function EventWorkspaceContainer({
   };
 
   return (
-    <EventWorkspaceProvider value={contextValue}>
-      <EventWorkspaceShell panels={WORKSPACE_PANELS} />
-    </EventWorkspaceProvider>
+    <ModuleProvider series={selectedSeries}>
+      <EventWorkspaceProvider value={contextValue}>
+        <EventWorkspaceShell panels={WORKSPACE_PANELS} />
+      </EventWorkspaceProvider>
+    </ModuleProvider>
   );
 }

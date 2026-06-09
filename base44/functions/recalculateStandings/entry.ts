@@ -73,6 +73,18 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: 'Missing series_id' }, { status: 400 });
     }
 
+    // R9BX: Determine if Governance module is enabled for this series.
+    // If enabled_modules is missing, default to governance ON (backward compat).
+    let governanceEnabled = true;
+    try {
+      const seriesList = await base44.asServiceRole.entities.Series.filter({ id: series_id });
+      const seriesRecord = seriesList?.[0];
+      if (seriesRecord && Array.isArray(seriesRecord.enabled_modules)) {
+        governanceEnabled = seriesRecord.enabled_modules.includes('governance');
+      }
+      // If enabled_modules is missing/null → default true (no behavior change)
+    } catch (_) { /* non-blocking — default to governance enabled */ }
+
     // Resolve the correct PointsConfig
     const configRes = await base44.functions.invoke('resolvePointsConfig', {
       series_id,
@@ -114,19 +126,25 @@ Deno.serve(async (req) => {
     const eventMap = {};
     events.forEach(e => { eventMap[e.id] = e; });
 
-    // R9BS Sprint 4: Load sessions to identify held ones — skip standings_hold sessions
+    // R9BX: Load sessions to identify held ones.
+    // standings_hold is only respected when the Governance module is enabled.
+    // When Governance is disabled, heldSessionIds stays empty — all sessions count.
     let heldSessionIds = new Set();
-    try {
-      for (const evtId of eventIds) {
-        const evtSessions = await base44.asServiceRole.entities.Session.filter({ event_id: evtId });
-        for (const s of evtSessions) {
-          if (s.standings_hold === true) {
-            heldSessionIds.add(s.id);
-            console.log(`[recalculateStandings] Skipping held session: ${s.id} (${s.name})`);
+    if (governanceEnabled) {
+      try {
+        for (const evtId of eventIds) {
+          const evtSessions = await base44.asServiceRole.entities.Session.filter({ event_id: evtId });
+          for (const s of evtSessions) {
+            if (s.standings_hold === true) {
+              heldSessionIds.add(s.id);
+              console.log(`[recalculateStandings] Skipping held session: ${s.id} (${s.name})`);
+            }
           }
         }
-      }
-    } catch (_) { /* non-blocking — if sessions can't be loaded, proceed normally */ }
+      } catch (_) { /* non-blocking */ }
+    } else {
+      console.log('[recalculateStandings] Governance disabled — standings_hold ignored, all sessions counted');
+    }
 
     // Load all results for these events
     let allResults = [];
@@ -293,7 +311,8 @@ Deno.serve(async (req) => {
         standingsCount: standingsArray.length,
         resultsProcessed: filteredResults.length,
         dropped_rounds_count: droppedRoundsCount,
-        // R9BS Sprint 4: track skipped held sessions
+        // R9BX: track skipped held sessions (only populated when governance enabled)
+        governance_enabled: governanceEnabled,
         held_sessions_skipped: heldSessionIds.size,
         held_session_ids: [...heldSessionIds],
       }

@@ -22,6 +22,7 @@ import SeriesTracksSection from '@/components/management/SeriesManagement/Series
 import SeriesDriversSection from '@/components/management/SeriesManagement/SeriesDriversSection';
 import SeriesTeamsSection from '@/components/management/SeriesManagement/SeriesTeamsSection';
 import SeriesStandingsSyncSection from '@/components/management/SeriesManagement/SeriesStandingsSyncSection';
+import SeriesModulesSection from '@/components/management/SeriesManagement/SeriesModulesSection';
 
 export default function RaceCoreSeriesEditor() {
   const { id } = useParams();
@@ -88,6 +89,7 @@ export default function RaceCoreSeriesEditor() {
               <TabsTrigger value="drivers" className="text-xs">Drivers</TabsTrigger>
               <TabsTrigger value="tracks" className="text-xs">Tracks</TabsTrigger>
               <TabsTrigger value="standings" className="text-xs">Standings</TabsTrigger>
+              {isAdmin && <TabsTrigger value="modules" className="text-xs">⚙ Modules</TabsTrigger>}
               {isAdmin && <TabsTrigger value="override" className="text-xs">⚙ Override</TabsTrigger>}
             </>}
           </TabsList>
@@ -117,6 +119,11 @@ export default function RaceCoreSeriesEditor() {
             <TabsContent value="standings" className="mt-6">
               <SeriesStandingsSyncSection seriesId={id} />
             </TabsContent>
+            {isAdmin && (
+              <TabsContent value="modules" className="mt-6">
+                <SeriesModulesSection seriesId={id} />
+              </TabsContent>
+            )}
             {isAdmin && (
               <TabsContent value="override" className="mt-6">
                 <AdminOverridePanel

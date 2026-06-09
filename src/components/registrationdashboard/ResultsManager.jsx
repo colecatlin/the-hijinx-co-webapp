@@ -39,6 +39,7 @@ import PointsConfigStatusBadge from './results/PointsConfigStatusBadge';
 import { usePointsConfigStatus } from './results/usePointsConfigStatus';
 import { buildRoster, getRosterStats } from './rosterHelper';
 import { validateResults } from './resultsValidation';
+import { useModules } from '@/components/racecore/modules/ModuleProvider';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -69,6 +70,8 @@ export default function ResultsManager({
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
   const eventId = selectedEvent?.id;
+  // R9BX: Module awareness — safe defaults to true when ModuleProvider is absent
+  const { governanceEnabled } = useModules();
 
   // ── Selection state ──
   const [classFilter, setClassFilter] = useState('all');
@@ -466,16 +469,18 @@ export default function ResultsManager({
         errs.push(err.message);
       });
 
-      // Check tech requirements
+      // Check tech requirements — R9BX: only enforced when Governance module is enabled
       const techFailures = [];
-      classEntries.forEach((entry) => {
-        const template = techTemplates.find((t) => t.series_class_id === entry.series_class_id);
-        if (template?.required_for_publish && entry.tech_status !== 'Passed') {
-          techFailures.push(entry.id);
+      if (governanceEnabled) {
+        classEntries.forEach((entry) => {
+          const template = techTemplates.find((t) => t.series_class_id === entry.series_class_id);
+          if (template?.required_for_publish && entry.tech_status !== 'Passed') {
+            techFailures.push(entry.id);
+          }
+        });
+        if (techFailures.length > 0) {
+          errs.push(`${techFailures.length} entries have not passed required tech inspection`);
         }
-      });
-      if (techFailures.length > 0) {
-        errs.push(`${techFailures.length} entries have not passed required tech inspection`);
       }
     }
 
@@ -604,8 +609,8 @@ export default function ResultsManager({
         )}
       </div>
 
-      {/* R9BS Sprint 4 — Results Hold Banner */}
-      {selectedSession?.results_on_hold && (
+      {/* R9BX — Results Hold Banner (Governance module only) */}
+      {governanceEnabled && selectedSession?.results_on_hold && (
         <div className="bg-amber-950/40 border border-amber-700/60 rounded-lg px-4 py-3 flex items-start gap-2.5">
           <AlertOctagon className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
@@ -621,8 +626,8 @@ export default function ResultsManager({
         </div>
       )}
 
-      {/* R9BS Sprint 4 — Standings Hold Badge */}
-      {selectedSession?.standings_hold && !selectedSession?.results_on_hold && (
+      {/* R9BX — Standings Hold Badge (Governance module only) */}
+      {governanceEnabled && selectedSession?.standings_hold && !selectedSession?.results_on_hold && (
         <div className="bg-orange-950/30 border border-orange-800/40 rounded-lg px-3 py-2 flex items-center gap-2">
           <Lock className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
           <p className="text-xs text-orange-400">
@@ -823,21 +828,21 @@ export default function ResultsManager({
                       {selectedSession.status === 'Provisional' && can('results_publish_official') && (
                        <Button size="sm"
                          onClick={() => handleStatusTransition('Official')}
-                         disabled={updateSessionStatus.isPending || (selectedSession.results_on_hold && !isAdmin)}
-                         title={selectedSession.results_on_hold && !isAdmin ? 'Release hold first' : undefined}
+                         disabled={updateSessionStatus.isPending || (governanceEnabled && selectedSession.results_on_hold && !isAdmin)}
+                         title={governanceEnabled && selectedSession.results_on_hold && !isAdmin ? 'Release hold first' : undefined}
                          className="w-full bg-green-700 hover:bg-green-600 text-xs disabled:opacity-40">
                           Publish Official
-                          {selectedSession.results_on_hold && !isAdmin && ' (Held)'}
+                          {governanceEnabled && selectedSession.results_on_hold && !isAdmin && ' (Held)'}
                        </Button>
                       )}
                       {selectedSession.status === 'Official' && can('results_lock_session') && (
                        <Button size="sm"
                          onClick={() => handleStatusTransition('Locked')}
-                         disabled={updateSessionStatus.isPending || validationErrors.length > 0 || (selectedSession.results_on_hold && !isAdmin)}
-                         title={selectedSession.results_on_hold && !isAdmin ? 'Release hold first' : undefined}
+                         disabled={updateSessionStatus.isPending || validationErrors.length > 0 || (governanceEnabled && selectedSession.results_on_hold && !isAdmin)}
+                         title={governanceEnabled && selectedSession.results_on_hold && !isAdmin ? 'Release hold first' : undefined}
                          className="w-full bg-purple-800 hover:bg-purple-700 text-xs disabled:opacity-50">
                          <Lock className="w-3 h-3 mr-1" /> Lock Session
-                         {selectedSession.results_on_hold && !isAdmin && ' (Held)'}
+                         {governanceEnabled && selectedSession.results_on_hold && !isAdmin && ' (Held)'}
                        </Button>
                       )}
                       {(selectedSession.status === 'Provisional' || selectedSession.status === 'Draft') && can('results_save_draft') && (
