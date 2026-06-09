@@ -78,6 +78,8 @@ const ADMIN_EVENT_PERMISSIONS = Object.freeze({
   canReviewProtest: true,
   canIssueRuling: true,
   canPublishRuling: true,
+  // R9BS Sprint 4: Apply and reverse penalties
+  canApplyPenalty: true,
 });
 
 // ── Safe defaults returned when hook is used outside provider ─────────────────

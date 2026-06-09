@@ -1,3 +1,7 @@
+/**
+ * R9BS Sprint 4 — Patched to skip sessions with standings_hold === true.
+ * Held sessions are excluded from the results aggregation.
+ */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 // Inlined from standingsTieBreakers.js — local imports are not supported in Deno functions
@@ -110,6 +114,20 @@ Deno.serve(async (req) => {
     const eventMap = {};
     events.forEach(e => { eventMap[e.id] = e; });
 
+    // R9BS Sprint 4: Load sessions to identify held ones — skip standings_hold sessions
+    let heldSessionIds = new Set();
+    try {
+      for (const evtId of eventIds) {
+        const evtSessions = await base44.asServiceRole.entities.Session.filter({ event_id: evtId });
+        for (const s of evtSessions) {
+          if (s.standings_hold === true) {
+            heldSessionIds.add(s.id);
+            console.log(`[recalculateStandings] Skipping held session: ${s.id} (${s.name})`);
+          }
+        }
+      }
+    } catch (_) { /* non-blocking — if sessions can't be loaded, proceed normally */ }
+
     // Load all results for these events
     let allResults = [];
     for (const eventId of eventIds) {
@@ -121,10 +139,12 @@ Deno.serve(async (req) => {
     }
 
     // Filter by class if specified, and by session types
+    // R9BS Sprint 4: Also exclude results from sessions with standings_hold
     const applicableSessionTypes = pointsConfig.applies_to_session_types || ['Final'];
     const filteredResults = allResults.filter(r => {
       if (!r.position || r.position <= 0) return false;
       if (series_class_id && r.series_class_id !== series_class_id) return false;
+      if (r.session_id && heldSessionIds.has(r.session_id)) return false; // skip held sessions
       return applicableSessionTypes.includes(r.session_type);
     });
 
@@ -272,7 +292,10 @@ Deno.serve(async (req) => {
         points_config_id: pointsConfig.id,
         standingsCount: standingsArray.length,
         resultsProcessed: filteredResults.length,
-        dropped_rounds_count: droppedRoundsCount
+        dropped_rounds_count: droppedRoundsCount,
+        // R9BS Sprint 4: track skipped held sessions
+        held_sessions_skipped: heldSessionIds.size,
+        held_session_ids: [...heldSessionIds],
       }
     });
 

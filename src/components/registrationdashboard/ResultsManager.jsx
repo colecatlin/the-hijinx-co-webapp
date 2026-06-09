@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { AlertCircle, Lock, CheckCircle2, Download, Eye, History } from 'lucide-react';
+import { AlertCircle, Lock, CheckCircle2, Download, Eye, History, AlertOctagon } from 'lucide-react';
 import { toast } from 'sonner';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import {
@@ -604,6 +604,33 @@ export default function ResultsManager({
         )}
       </div>
 
+      {/* R9BS Sprint 4 — Results Hold Banner */}
+      {selectedSession?.results_on_hold && (
+        <div className="bg-amber-950/40 border border-amber-700/60 rounded-lg px-4 py-3 flex items-start gap-2.5">
+          <AlertOctagon className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-amber-300">Results On Hold</p>
+            {selectedSession.hold_reason && (
+              <p className="text-xs text-amber-400 mt-0.5">{selectedSession.hold_reason}</p>
+            )}
+            <p className="text-[10px] text-amber-600 mt-1">
+              Publishing Official or Locked is disabled until hold is released by Race Director.
+              {isAdmin ? ' Admin override available.' : ''}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* R9BS Sprint 4 — Standings Hold Badge */}
+      {selectedSession?.standings_hold && !selectedSession?.results_on_hold && (
+        <div className="bg-orange-950/30 border border-orange-800/40 rounded-lg px-3 py-2 flex items-center gap-2">
+          <Lock className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
+          <p className="text-xs text-orange-400">
+            <span className="font-semibold">Standings Hold Active</span> — Standings will not recalculate for this session until hold is released.
+          </p>
+        </div>
+      )}
+
       {/* Historical mode banner */}
       {isHistoricalMode && (
         <div className="bg-amber-950/30 border border-amber-700/50 rounded-lg px-4 py-2.5 flex items-start gap-2">
@@ -794,13 +821,23 @@ export default function ResultsManager({
                        </Button>
                       )}
                       {selectedSession.status === 'Provisional' && can('results_publish_official') && (
-                       <Button size="sm" onClick={() => handleStatusTransition('Official')} disabled={updateSessionStatus.isPending} className="w-full bg-green-700 hover:bg-green-600 text-xs">
+                       <Button size="sm"
+                         onClick={() => handleStatusTransition('Official')}
+                         disabled={updateSessionStatus.isPending || (selectedSession.results_on_hold && !isAdmin)}
+                         title={selectedSession.results_on_hold && !isAdmin ? 'Release hold first' : undefined}
+                         className="w-full bg-green-700 hover:bg-green-600 text-xs disabled:opacity-40">
                           Publish Official
+                          {selectedSession.results_on_hold && !isAdmin && ' (Held)'}
                        </Button>
                       )}
                       {selectedSession.status === 'Official' && can('results_lock_session') && (
-                       <Button size="sm" onClick={() => handleStatusTransition('Locked')} disabled={updateSessionStatus.isPending || validationErrors.length > 0} className="w-full bg-purple-800 hover:bg-purple-700 text-xs disabled:opacity-50">
+                       <Button size="sm"
+                         onClick={() => handleStatusTransition('Locked')}
+                         disabled={updateSessionStatus.isPending || validationErrors.length > 0 || (selectedSession.results_on_hold && !isAdmin)}
+                         title={selectedSession.results_on_hold && !isAdmin ? 'Release hold first' : undefined}
+                         className="w-full bg-purple-800 hover:bg-purple-700 text-xs disabled:opacity-50">
                          <Lock className="w-3 h-3 mr-1" /> Lock Session
+                         {selectedSession.results_on_hold && !isAdmin && ' (Held)'}
                        </Button>
                       )}
                       {(selectedSession.status === 'Provisional' || selectedSession.status === 'Draft') && can('results_save_draft') && (

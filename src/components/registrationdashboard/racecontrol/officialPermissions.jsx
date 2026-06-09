@@ -16,7 +16,7 @@ export const ALL_PERMISSION_KEYS = [
   'canCloseIncident',
   'canProposePenalty',
   'canApprovePenalty',
-  'canApplyPenalty',
+  'canApplyPenalty', // R9BS Sprint 4: separate from approve
   'canReviewProtest',
   'canIssueRuling',
   'canPublishRuling',
@@ -54,7 +54,7 @@ export const ROLE_PERMISSIONS = {
     canCloseIncident:       true,
     canProposePenalty:      true,
     canApprovePenalty:      true,
-    canApplyPenalty:        true,
+    canApplyPenalty:        true, // R9BS Sprint 4: Race Director can apply
     canReviewProtest:       true,
     canIssueRuling:         true,
     canPublishRuling:       true,

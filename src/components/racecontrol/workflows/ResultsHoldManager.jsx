@@ -62,7 +62,7 @@ export default function ResultsHoldManager({ eventId }) {
     }
   };
 
-  const handleRelease = async () => {
+  const handleRelease = async (andRecalculate = false) => {
     if (!selectedSessionId) return;
     setActing(true);
     try {
@@ -73,6 +73,29 @@ export default function ResultsHoldManager({ eventId }) {
         `${selectedSession?.name}: hold released`);
       await queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
       toast.success('Hold released');
+
+      // Optionally trigger standings recalculation after release
+      if (andRecalculate && selectedSession) {
+        // Need to fetch the event to get series_id and season
+        const events = await base44.entities.Event.filter({ id: eventId });
+        const event = events?.[0];
+        if (event?.series_id && event?.season) {
+          try {
+            await base44.functions.invoke('recalculateStandings', {
+              series_id: event.series_id,
+              season: event.season,
+              series_class_id: selectedSession?.series_class_id || null,
+              event_id: eventId,
+            });
+            await queryClient.invalidateQueries({ queryKey: ['standings'] });
+            toast.success('Standings recalculated');
+          } catch (err) {
+            toast.error('Hold released but standings recalculation failed: ' + err.message);
+          }
+        } else {
+          toast.warning('Hold released — no series/season to recalculate standings');
+        }
+      }
     } catch (err) {
       toast.error('Failed to release: ' + (err.message || 'Unknown error'));
     } finally {
@@ -164,7 +187,7 @@ export default function ResultsHoldManager({ eventId }) {
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {!isOnHold && (
             <Button size="sm" disabled={acting || !selectedSessionId}
               onClick={handleHold}
@@ -173,11 +196,18 @@ export default function ResultsHoldManager({ eventId }) {
             </Button>
           )}
           {isOnHold && (
-            <Button size="sm" disabled={acting || !selectedSessionId}
-              onClick={handleRelease}
-              className="bg-green-800 hover:bg-green-700 text-white text-xs h-8 gap-1">
-              <Unlock className="w-3 h-3" /> Release Hold
-            </Button>
+            <>
+              <Button size="sm" disabled={acting || !selectedSessionId}
+                onClick={() => handleRelease(false)}
+                className="bg-green-800 hover:bg-green-700 text-white text-xs h-8 gap-1">
+                <Unlock className="w-3 h-3" /> Release Hold
+              </Button>
+              <Button size="sm" disabled={acting || !selectedSessionId}
+                onClick={() => handleRelease(true)}
+                className="bg-teal-800 hover:bg-teal-700 text-white text-xs h-8 gap-1">
+                <Unlock className="w-3 h-3" /> Release + Recalculate Standings
+              </Button>
+            </>
           )}
         </div>
       </div>
