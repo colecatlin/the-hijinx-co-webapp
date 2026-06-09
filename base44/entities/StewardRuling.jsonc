@@ -1,0 +1,91 @@
+{
+  "name": "StewardRuling",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "ruling_number": {
+      "type": "string",
+      "description": "RUL-001 per event"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "Incident",
+        "Protest",
+        "Appeal",
+        "Technical Review",
+        "Conduct Review",
+        "Direct"
+      ]
+    },
+    "source_id": {
+      "type": "string",
+      "description": "ID of incident/protest/appeal"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Issued",
+        "Published",
+        "Superseded"
+      ],
+      "default": "Draft"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short public-facing summary \u2014 max 280 characters"
+    },
+    "full_ruling": {
+      "type": "string"
+    },
+    "rule_references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "drivers_affected": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "penalties_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Penalty IDs"
+    },
+    "issued_by_user_id": {
+      "type": "string"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "event_id",
+    "source_type",
+    "summary",
+    "full_ruling"
+  ]
+}

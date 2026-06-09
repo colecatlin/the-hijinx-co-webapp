@@ -1,0 +1,54 @@
+{
+  "name": "SessionNote",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "note_type": {
+      "type": "string",
+      "enum": [
+        "Caution",
+        "Red Flag",
+        "Restart",
+        "Debris",
+        "Medical",
+        "Weather",
+        "Penalty Notification",
+        "Protest Filed",
+        "General"
+      ],
+      "default": "General"
+    },
+    "lap_number": {
+      "type": "number"
+    },
+    "body": {
+      "type": "string"
+    },
+    "author_user_id": {
+      "type": "string"
+    },
+    "author_role": {
+      "type": "string",
+      "description": "Role at time of note e.g. Race Director"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_id",
+    "note_type",
+    "body",
+    "author_user_id"
+  ]
+}

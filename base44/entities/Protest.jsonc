@@ -1,0 +1,132 @@
+{
+  "name": "Protest",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "protest_number": {
+      "type": "string",
+      "description": "PRO-001 per event"
+    },
+    "protest_type": {
+      "type": "string",
+      "enum": [
+        "Race Result",
+        "Penalty Decision",
+        "Technical Infraction",
+        "Rules Interpretation",
+        "Eligibility",
+        "Conduct"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Filed",
+        "Accepted",
+        "Under Review",
+        "Hearing Scheduled",
+        "Decision Issued",
+        "Appealed",
+        "Closed",
+        "Rejected"
+      ],
+      "default": "Filed"
+    },
+    "filing_driver_id": {
+      "type": "string"
+    },
+    "filing_team_id": {
+      "type": "string"
+    },
+    "against_driver_id": {
+      "type": "string"
+    },
+    "against_entry_id": {
+      "type": "string"
+    },
+    "incident_id": {
+      "type": "string"
+    },
+    "penalty_id": {
+      "type": "string",
+      "description": "Penalty being protested"
+    },
+    "description": {
+      "type": "string"
+    },
+    "rule_reference": {
+      "type": "string"
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "protest_fee_paid": {
+      "type": "boolean",
+      "default": false
+    },
+    "protest_fee_amount": {
+      "type": "number"
+    },
+    "fee_refundable": {
+      "type": "boolean",
+      "default": true
+    },
+    "filed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "assigned_steward_user_id": {
+      "type": "string"
+    },
+    "steward_notes": {
+      "type": "string"
+    },
+    "hearing_notes": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string"
+    },
+    "decision_type": {
+      "type": "string",
+      "enum": [
+        "Upheld",
+        "Dismissed",
+        "Partially Upheld",
+        "No Action"
+      ]
+    },
+    "decision_issued_by_user_id": {
+      "type": "string"
+    },
+    "decision_issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resulted_in_penalty_id": {
+      "type": "string"
+    },
+    "resulted_in_appeal_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "protest_type",
+    "filing_driver_id",
+    "description"
+  ]
+}

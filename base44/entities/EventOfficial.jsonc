@@ -1,0 +1,54 @@
+{
+  "name": "EventOfficial",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "Race Director",
+        "Competition Director",
+        "Chief Steward",
+        "Steward",
+        "Technical Director",
+        "Technical Inspector",
+        "Registration Manager",
+        "Timing and Scoring",
+        "Announcer",
+        "Media Director",
+        "Safety Director",
+        "Gate Staff"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Invited",
+        "Confirmed",
+        "Active",
+        "Withdrawn"
+      ],
+      "default": "Invited"
+    },
+    "assigned_by_user_id": {
+      "type": "string"
+    },
+    "confirmed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "user_id",
+    "role"
+  ]
+}

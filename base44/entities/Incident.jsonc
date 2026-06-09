@@ -1,0 +1,146 @@
+{
+  "name": "Incident",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event \u2014 required"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Reference to Session \u2014 optional if pre/post session"
+    },
+    "incident_number": {
+      "type": "string",
+      "description": "Auto-assigned: INC-001 per event"
+    },
+    "incident_type": {
+      "type": "string",
+      "enum": [
+        "On-Track Contact",
+        "Mechanical Failure",
+        "Safety Violation",
+        "Conduct Violation",
+        "Technical Infraction",
+        "Medical",
+        "Property Damage",
+        "Environmental",
+        "Other"
+      ],
+      "description": "Classification of incident"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "Informational",
+        "Minor",
+        "Significant",
+        "Major",
+        "Serious"
+      ],
+      "default": "Minor"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Open",
+        "Under Review",
+        "Referred to Stewards",
+        "Closed",
+        "Appealed"
+      ],
+      "default": "Open"
+    },
+    "lap_number": {
+      "type": "number",
+      "description": "Lap number when incident occurred"
+    },
+    "location_description": {
+      "type": "string",
+      "description": "Track location e.g. Turn 3, Back Straight"
+    },
+    "description": {
+      "type": "string",
+      "description": "Full narrative description of the incident"
+    },
+    "reporter_user_id": {
+      "type": "string",
+      "description": "User who created the incident report"
+    },
+    "reporter_role": {
+      "type": "string",
+      "description": "Role of reporter e.g. Race Director, Steward"
+    },
+    "involved_driver_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "All involved driver IDs"
+    },
+    "involved_entry_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "witness_notes": {
+      "type": "string"
+    },
+    "video_evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "photo_evidence_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "assigned_to_user_id": {
+      "type": "string",
+      "description": "Official assigned to investigate"
+    },
+    "investigation_notes": {
+      "type": "string"
+    },
+    "resolution": {
+      "type": "string"
+    },
+    "resulted_in_penalty_id": {
+      "type": "string",
+      "description": "Penalty created from this incident"
+    },
+    "resulted_in_protest_id": {
+      "type": "string",
+      "description": "Protest filed from this incident"
+    },
+    "closed_by_user_id": {
+      "type": "string"
+    },
+    "closed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_medical": {
+      "type": "boolean",
+      "default": false
+    },
+    "medical_notes": {
+      "type": "string",
+      "description": "Restricted \u2014 Safety Dir / Race Dir / Chief Steward only"
+    }
+  },
+  "required": [
+    "event_id",
+    "incident_type",
+    "severity",
+    "description"
+  ]
+}

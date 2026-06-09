@@ -1,0 +1,107 @@
+{
+  "name": "GridLineup",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Session this lineup is for"
+    },
+    "source_session_id": {
+      "type": "string",
+      "description": "Qualifying or source session used to generate this grid"
+    },
+    "event_class_id": {
+      "type": "string"
+    },
+    "series_class_id": {
+      "type": "string"
+    },
+    "generation_method": {
+      "type": "string",
+      "enum": [
+        "Qualifying Order",
+        "Inverted Qualifying",
+        "Random Draw",
+        "Championship Points",
+        "Manual",
+        "Advancement from Heat",
+        "Previous Session Result"
+      ],
+      "default": "Manual"
+    },
+    "inversion_count": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Draft",
+        "Pending Approval",
+        "Approved",
+        "Published",
+        "Superseded"
+      ],
+      "default": "Draft"
+    },
+    "approved_by_user_id": {
+      "type": "string"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "rows": {
+      "type": "array",
+      "default": [],
+      "description": "Ordered array of lineup positions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number"
+          },
+          "row": {
+            "type": "number"
+          },
+          "lane": {
+            "type": "string"
+          },
+          "driver_id": {
+            "type": "string"
+          },
+          "entry_id": {
+            "type": "string"
+          },
+          "car_number": {
+            "type": "string"
+          },
+          "source_position": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          },
+          "status_reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "generation_method"
+  ]
+}

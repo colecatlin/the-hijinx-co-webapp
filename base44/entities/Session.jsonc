@@ -152,6 +152,31 @@
     "notes": {
       "type": "string",
       "description": "Internal notes (DUPLICATE_OF:{id} marker used by repair tools)"
+    },
+    "standings_hold": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, standings recalculation skips this session. Set by protest/hold workflow."
+    },
+    "results_on_hold": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, results are held pending official review."
+    },
+    "hold_reason": {
+      "type": "string",
+      "description": "Plain text reason for hold e.g. Protest filed PRO-001"
+    },
+    "hold_started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hold_released_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "hold_released_by_user_id": {
+      "type": "string"
     }
   },
   "required": [

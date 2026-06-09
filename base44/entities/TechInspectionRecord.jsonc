@@ -1,0 +1,133 @@
+{
+  "name": "TechInspectionRecord",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "entry_id": {
+      "type": "string"
+    },
+    "driver_id": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "null = pre-race; populated = post-race or impound"
+    },
+    "inspection_phase": {
+      "type": "string",
+      "enum": [
+        "Pre-Race",
+        "Post-Race",
+        "Impound",
+        "Reinspection",
+        "Protest-Ordered"
+      ],
+      "default": "Pre-Race"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "In Progress",
+        "Passed",
+        "Failed",
+        "Conditionally Passed",
+        "Recheck Required",
+        "Impounded",
+        "Released"
+      ],
+      "default": "In Progress"
+    },
+    "inspector_user_id": {
+      "type": "string"
+    },
+    "approved_by_user_id": {
+      "type": "string",
+      "description": "Technical Director sign-off"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checklist": {
+      "type": "array",
+      "default": [],
+      "description": "Structured inspection checkpoints",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "item": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "inspector_initials": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "overall_notes": {
+      "type": "string"
+    },
+    "failure_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "remediation_required": {
+      "type": "string"
+    },
+    "recheck_deadline": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resulted_in_penalty_id": {
+      "type": "string"
+    },
+    "weight_in": {
+      "type": "number",
+      "description": "Measured vehicle weight"
+    },
+    "weight_required": {
+      "type": "number",
+      "description": "Minimum required weight for class"
+    },
+    "fuel_sample_taken": {
+      "type": "boolean",
+      "default": false
+    },
+    "fuel_result": {
+      "type": "string",
+      "enum": [
+        "Legal",
+        "Illegal",
+        "Pending",
+        "N/A"
+      ],
+      "default": "N/A"
+    }
+  },
+  "required": [
+    "event_id",
+    "entry_id",
+    "inspection_phase"
+  ]
+}
