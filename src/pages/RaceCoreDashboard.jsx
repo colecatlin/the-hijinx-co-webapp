@@ -183,14 +183,14 @@ export default function RaceCoreDashboard() {
           <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-500" /> Login Required
+                <Clock className="w-5 h-5 text-teal-500" /> Login Required
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-300">You must be logged in to access RaceCore Dashboard.</p>
               <Button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white"
               >
                 Log In
               </Button>

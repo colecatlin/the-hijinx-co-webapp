@@ -38,7 +38,7 @@ export default function RecordsPageShell({
   const [moreOpen, setMoreOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-full min-h-screen" style={{ background: '#0a0a0a' }}>
+    <div className="flex flex-col h-full min-h-screen" style={{ background: '#0B0D0D' }}>
 
       {/* Alert strip (duplicate warnings, system notices) */}
       {alert && (

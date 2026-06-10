@@ -18,7 +18,7 @@ function StatusPill({ icon: IconComponent, label, value, variant = 'default', pu
   };
 
   return (
-    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap ${styles[variant]} ${pulse ? 'animate-pulse' : ''}`}>
+    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded border text-xs font-medium whitespace-nowrap ${styles[variant]} ${pulse ? 'animate-pulse' : ''}`}>
       {IconComponent && <IconComponent className="w-3.5 h-3.5 flex-shrink-0" />}
       <span className="text-[10px] uppercase tracking-wider opacity-70">{label}</span>
       <span className="font-semibold">{value}</span>
@@ -63,8 +63,8 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
 
   return (
     <div
-      className="px-5 py-2.5 flex items-center gap-2 flex-wrap border-b border-gray-800/40 overflow-x-auto scrollbar-hide"
-      style={{ background: 'rgba(10,12,14,0.6)', backdropFilter: 'blur(4px)' }}
+      className="px-5 py-1.5 flex items-center gap-2 flex-wrap overflow-x-auto scrollbar-hide border-b"
+      style={{ background: '#0B0D0D', borderColor: 'rgba(255,255,255,0.07)' }}
     >
       {/* Active session indicator */}
       {stats.activeSession && (

@@ -77,9 +77,10 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
 
   return (
     <div
-      className={`${compact ? 'w-12' : 'w-56'} flex-shrink-0 border-r border-gray-800/60 overflow-y-auto transition-all`}
+      className={`${compact ? 'w-12' : 'w-44'} flex-shrink-0 border-r overflow-y-auto transition-all`}
       style={{
-        background: 'rgba(10,12,14,0.8)',
+        background: '#0F1212',
+        borderColor: 'rgba(255,255,255,0.07)',
       }}
     >
       <div className={`${compact ? 'p-1.5' : 'p-3'} space-y-1`}>
@@ -91,7 +92,7 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
           <div key={group.section}>
             {/* Section divider + label */}
             {groupIdx > 0 && !compact && (
-              <div className="my-2 border-t border-gray-800/40 pt-2">
+              <div className="my-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                 <p className="text-[9px] uppercase tracking-widest font-bold text-gray-600 px-2 mb-1">{group.section}</p>
               </div>
             )}
@@ -108,12 +109,13 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
                       key={mod.id}
                       onClick={() => onPanelChange(mod.id)}
                       title={mod.label}
-                      className={`w-full flex items-center justify-center p-2 rounded transition-all ${
+                      className={`relative w-full flex items-center justify-center p-2 rounded transition-all ${
                         isActive
-                          ? 'bg-teal-900/60 text-teal-300 border-l-2 border-teal-400'
-                          : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/40'
+                          ? 'bg-white/[0.06] text-white'
+                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]'
                       }`}
                     >
+                      {isActive && <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-teal-500" />}
                       <Icon className="w-4 h-4 flex-shrink-0" />
                     </button>
                   );
@@ -124,12 +126,13 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
                     key={mod.id}
                     onClick={() => onPanelChange(mod.id)}
                     title={mod.description}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-all ${
+                    className={`relative w-full flex items-center gap-2.5 px-3 py-1.5 rounded text-[11px] font-mono font-semibold uppercase tracking-wider transition-all ${
                       isActive
-                        ? 'bg-teal-900/60 text-teal-300 border-l-2 border-teal-400'
-                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900/40'
+                        ? 'bg-white/[0.06] text-white'
+                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
                     }`}
                   >
+                    {isActive && <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-teal-500" />}
                     <Icon className="w-4 h-4 flex-shrink-0" />
                     <span className="line-clamp-1">{mod.label}</span>
                   </button>

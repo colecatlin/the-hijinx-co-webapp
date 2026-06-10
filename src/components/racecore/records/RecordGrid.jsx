@@ -44,8 +44,8 @@ export default function RecordGrid({
       {/* Sticky column header — hidden on mobile (rows are self-labeling cards) */}
       {columns.length > 0 && (
         <div
-          className="hidden sm:flex items-center gap-3 px-4 py-1.5 border-b border-gray-800/40 sticky top-0 z-10"
-          style={{ background: '#0e0e0e' }}
+          className="hidden sm:flex items-center gap-3 px-4 py-1.5 sticky top-0 z-10 border-b"
+          style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}
         >
           {showSelectAll && (
             <div className="shrink-0 w-4">
@@ -61,7 +61,7 @@ export default function RecordGrid({
             <div
               key={col.label}
               className={cn(
-                'text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-gray-700',
+                'text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-gray-500',
                 col.className
               )}
             >

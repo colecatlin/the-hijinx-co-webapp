@@ -50,19 +50,18 @@ export default function EventCommandHeader({
 
   return (
     <div
-      className="rounded-xl border border-gray-800/60 overflow-hidden"
+      className="overflow-hidden border-b"
       style={{
-        background: 'rgba(10,12,14,0.9)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: '#0B0D0D',
+        borderColor: 'rgba(255,255,255,0.07)',
       }}
     >
-      <div className="px-5 py-4 space-y-3">
+      <div className="px-5 py-2.5 space-y-1.5">
         {/* Top row: Event identity + status */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-lg font-black text-white truncate">{selectedEvent.name}</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-base font-bold text-white truncate">{selectedEvent.name}</h1>
               <StatusChip
                 label="Event"
                 value={eventStatus}

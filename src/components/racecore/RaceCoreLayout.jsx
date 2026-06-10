@@ -68,15 +68,15 @@ export default function RaceCoreLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#0A0A0A' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: '#0B0D0D' }}>
       {/* Desktop sidebar */}
       <div className="hidden lg:flex flex-shrink-0">
         <RaceCoreSidebar {...sidebarProps} />
       </div>
 
       {/* Mobile hamburger header strip */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center px-4 h-11 border-b border-gray-800/70"
-        style={{ background: '#0d0d0d' }}>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center px-4 h-11 border-b"
+        style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}>
         <button
           onClick={() => setDrawerOpen(true)}
           className="p-1.5 rounded text-gray-500 hover:text-gray-200 hover:bg-gray-800/40 transition-colors"
@@ -113,8 +113,8 @@ export default function RaceCoreLayout() {
               className="fixed top-0 left-0 bottom-0 z-50 lg:hidden flex flex-col"
               style={{ width: 224 }}
             >
-              <div className="flex items-center justify-between px-3 h-11 border-b border-gray-800/60"
-                style={{ background: '#0d0d0d' }}>
+              <div className="flex items-center justify-between px-3 h-11 border-b"
+                style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}>
                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RACECORE</span>
                 <button
                   onClick={() => setDrawerOpen(false)}
@@ -124,7 +124,7 @@ export default function RaceCoreLayout() {
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto" style={{ background: '#0d0d0d' }}>
+              <div className="flex-1 overflow-y-auto" style={{ background: '#0F1212' }}>
                 <RaceCoreSidebar {...sidebarProps} />
               </div>
             </motion.div>

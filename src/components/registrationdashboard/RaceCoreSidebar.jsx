@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { canTab, canAction } from '@/components/access/accessControl';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ExternalLink, Plus, Film, Mic } from 'lucide-react';
+import { ChevronDown, Plus, Film, Mic } from 'lucide-react';
 import { RACE_CORE_NAV_GROUPS } from './raceCoreNavConfig';
 
 export default function RaceCoreSidebar({
@@ -61,8 +61,8 @@ export default function RaceCoreSidebar({
 
   return (
     <div
-      className="w-44 shrink-0 border-r border-gray-800/70 min-h-full flex flex-col overflow-y-auto"
-      style={{ background: '#0d0d0d' }}
+      className="w-44 shrink-0 border-r min-h-full flex flex-col overflow-y-auto"
+      style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}
     >
       {/* Home link — HIJINX platform */}
       <button
@@ -85,7 +85,7 @@ export default function RaceCoreSidebar({
       </button>
 
       {/* Identity strip */}
-      <div className="px-3 py-2 border-b border-gray-800/60 flex items-center gap-2">
+      <div className="px-3 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RaceCore</span>
          {isAdmin && (
            <span className="text-[9px] font-mono text-amber-600 border border-amber-800/50 px-1 py-px rounded-sm tracking-widest">ADM</span>
@@ -94,7 +94,7 @@ export default function RaceCoreSidebar({
 
       {/* Quick Actions */}
       {quickActions.length > 0 && (
-        <div className="border-b border-gray-800/60 py-1">
+        <div className="py-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
@@ -104,7 +104,7 @@ export default function RaceCoreSidebar({
                 className={cn(
                   'w-full flex items-center gap-2 px-3 py-1 text-xs transition-colors text-left',
                   action.active
-                    ? 'text-purple-300 bg-purple-900/20'
+                    ? 'text-amber-300 bg-amber-900/20'
                     : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/30'
                 )}
               >
@@ -130,7 +130,7 @@ export default function RaceCoreSidebar({
               {/* Group label — collapsible */}
               <button
                onClick={() => toggle(group.id)}
-               className="w-full flex items-center justify-between px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-700 hover:text-gray-500 transition-colors"
+               className="w-full flex items-center justify-between px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-400 transition-colors"
               >
                 <span>{group.label}</span>
                 <ChevronDown className={cn('w-2.5 h-2.5 transition-transform opacity-40', !isOpen && '-rotate-90')} />
@@ -178,7 +178,7 @@ export default function RaceCoreSidebar({
                     )}
                     <Icon className="w-3 h-3 shrink-0 flex-shrink-0" />
                     <span className="truncate flex-1">{item.label}</span>
-                    {isHref && <ExternalLink className="w-2 h-2 shrink-0 opacity-20" />}
+                    
                   </button>
                 );
               })}
