@@ -97,6 +97,7 @@ export default function TrackDrawer({ trackId, open, onOpenChange, onSaveSuccess
       width="medium"
       tabs={tabs}
       actions={headerActions}
+      entityType="Track"
     />
   );
 }

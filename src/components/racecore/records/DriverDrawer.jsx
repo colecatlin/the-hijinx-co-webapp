@@ -165,6 +165,7 @@ export default function DriverDrawer({ driverId, open, onOpenChange, onSaveSucce
       width="wide"
       tabs={tabs}
       actions={headerActions}
+      entityType="Driver"
     />
   );
 }

@@ -171,6 +171,7 @@ export default function SeriesDrawer({ seriesId, open, onOpenChange, onSaveSucce
       width="full"
       tabs={tabs}
       actions={headerActions}
+      entityType="Series"
     />
   );
 }

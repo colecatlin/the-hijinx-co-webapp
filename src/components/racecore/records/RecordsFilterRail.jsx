@@ -33,10 +33,11 @@ function CompactSelect({ value, onChange, options, placeholder }) {
         aria-label={`Filter by ${placeholder}`}
         className={cn(
           'appearance-none h-9 md:h-7 pl-2.5 pr-6 text-[11px] font-mono rounded border transition-colors outline-none cursor-pointer w-full md:w-auto',
-          'border text-gray-300',
+          'text-gray-300',
           'hover:border-white/[0.18] focus:border-teal-500',
-          value && 'text-teal-300 border-teal-700/50'
+          value ? 'text-teal-300 border-teal-700/50' : 'border-white/[0.10]'
         )}
+        style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.10)' }}
       >
         <option value="">{placeholder}</option>
         {options.map(o => (
@@ -83,7 +84,7 @@ export default function RecordsFilterRail({
             onChange={e => onSearch(e.target.value)}
             aria-label={searchPlaceholder}
             className="w-full h-9 md:h-7 pl-7 pr-7 text-[11px] font-mono rounded border text-gray-300 placeholder-gray-600 outline-none hover:border-white/[0.18] focus:border-teal-500 transition-colors"
-          style={{ background: '#0F1111', borderColor: 'rgba(255,255,255,0.12)' }}
+          style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.12)' }}
           />
           {search && (
             <button
@@ -155,7 +156,7 @@ export default function RecordsFilterRail({
 
       {/* Mobile expanded filter panel */}
       {filtersOpen && (
-        <div className="md:hidden px-4 pb-3 flex flex-col gap-2 border-t border-gray-800/40 pt-2">
+        <div className="md:hidden px-4 pb-3 flex flex-col gap-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           {filters.map(f => (
             <div key={f.key} className="flex flex-col gap-0.5">
               <span className="text-[9px] font-mono uppercase tracking-widest text-gray-600">{f.placeholder}</span>

@@ -152,6 +152,7 @@ export default function TeamDrawer({ teamId, open, onOpenChange, onSaveSuccess }
       width="wide"
       tabs={tabs}
       actions={headerActions}
+      entityType="Team"
     />
   );
 }
