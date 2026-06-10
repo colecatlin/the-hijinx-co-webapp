@@ -20,6 +20,7 @@ import { getStatusAccent } from './RecordStatusBadge';
  *   onClick         — main row click handler (navigate to editor)
  *   actions         — ReactNode, revealed on hover (right side)
  *   label           — accessible label for the row (e.g. entity name) — used for aria-label
+ *   compact         — boolean: reduces row height for operational/high-density surfaces
  *   children        — identity + metadata columns (middle content)
  */
 export default function RecordRowShell({
@@ -31,6 +32,7 @@ export default function RecordRowShell({
   onClick,
   actions,
   label,
+  compact = false,
   children,
 }) {
   const accentColor = getStatusAccent(status);
@@ -49,10 +51,11 @@ export default function RecordRowShell({
       aria-selected={isSelected}
       aria-label={label ? `${label} record row` : undefined}
       className={cn(
-        'group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-2.5 border-b border-gray-800/60 transition-colors cursor-pointer',
-        'hover:bg-gray-800/40',
-        'focus:outline-none focus-visible:bg-gray-800/50 focus-visible:ring-inset focus-visible:ring-1 focus-visible:ring-teal-600/60',
-        isSelected && 'bg-gray-800/30'
+        'group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 border-b transition-colors cursor-pointer',
+        compact ? 'py-1.5 sm:py-1' : 'py-3 sm:py-2.5',
+        'hover:bg-white/[0.03]',
+        'focus:outline-none focus-visible:bg-white/[0.05] focus-visible:ring-inset focus-visible:ring-1 focus-visible:ring-teal-500/60',
+        isSelected && 'bg-white/[0.05]'
       )}
       onClick={onClick}
       onKeyDown={handleKeyDown}

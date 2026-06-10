@@ -24,6 +24,7 @@ const WIDTH_CLASSES = {
  *   tabs           — array of { value, label, content, hidden? }
  *   defaultTab     — string (default: first tab value)
  *   actions        — ReactNode (header right slot)
+ *   entityType     — string e.g. 'Driver', 'Team', 'Track', 'Series' — shown in overline
  */
 export default function RecordDrawerShell({
   open,
@@ -35,6 +36,7 @@ export default function RecordDrawerShell({
   tabs = [],
   defaultTab,
   actions,
+  entityType,
 }) {
   const visibleTabs = tabs.filter(t => !t.hidden);
   const firstTab = defaultTab || visibleTabs[0]?.value;
@@ -44,21 +46,21 @@ export default function RecordDrawerShell({
       <SheetContent
         side="right"
         className={cn(
-          'flex flex-col p-0 bg-[#080C0C] border-l border-gray-800 overflow-hidden',
+          'flex flex-col p-0 border-l overflow-hidden',
           WIDTH_CLASSES[width] || WIDTH_CLASSES.wide,
           'w-full'
         )}
         // Override SheetContent close button positioning
-        style={{ maxHeight: '100dvh' }}
+        style={{ maxHeight: '100dvh', background: '#0B0D0D', borderColor: 'rgba(255,255,255,0.07)' }}
       >
         {/* ── Header ── */}
-        <SheetHeader className="shrink-0 px-6 pt-5 pb-4 border-b border-gray-800/80">
+        <SheetHeader className="shrink-0 px-6 pt-5 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-mono text-teal-500/70 tracking-[0.35em] uppercase mb-1">
-                Record Editor
-              </p>
-              <h2 className="text-xl font-bold text-white truncate leading-tight">
+              <p className="text-[10px] font-mono text-teal-500/60 tracking-[0.35em] uppercase mb-1">
+                  {entityType ? `${entityType} Record` : 'Record'}
+                </p>
+              <h2 className="text-base font-semibold text-white truncate leading-tight">
                 {isLoading ? (
                   <span className="text-gray-600">Loading…</span>
                 ) : (
@@ -83,7 +85,7 @@ export default function RecordDrawerShell({
         ) : (
           <Tabs defaultValue={firstTab} className="flex-1 flex flex-col overflow-hidden">
             {/* Tab list */}
-            <div className="shrink-0 px-6 pt-3 pb-0 border-b border-gray-800/60 overflow-x-auto scrollbar-hide">
+            <div className="shrink-0 px-6 pt-3 pb-0 border-b overflow-x-auto scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
               <TabsList className="flex h-auto gap-0.5 bg-transparent p-0 rounded-none w-max">
                 {visibleTabs.map(tab => (
                   <TabsTrigger
@@ -91,9 +93,9 @@ export default function RecordDrawerShell({
                     value={tab.value}
                     disabled={tab.disabled}
                     className={cn(
-                      'text-[11px] font-mono px-3 py-2 rounded-t-md rounded-b-none border-b-2 border-transparent',
-                      'text-gray-500 hover:text-gray-300 data-[state=active]:text-teal-400',
-                      'data-[state=active]:border-teal-500 data-[state=active]:bg-teal-500/5',
+                      'text-[11px] font-mono px-3 py-2 rounded-none border-b-2 border-transparent',
+                      'text-gray-500 hover:text-gray-300 data-[state=active]:text-white',
+                      'data-[state=active]:border-teal-500',
                       'transition-all bg-transparent disabled:opacity-30'
                     )}
                   >

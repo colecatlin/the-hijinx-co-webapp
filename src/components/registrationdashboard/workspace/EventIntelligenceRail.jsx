@@ -74,7 +74,7 @@ export default function EventIntelligenceRail({
   }, [operationLogs]);
 
   return (
-    <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto p-3">
+    <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto p-3" style={{ background: '#0F1212' }}>
       {/* Event Readiness Score */}
       <EventReadinessScore
         selectedEvent={selectedEvent}

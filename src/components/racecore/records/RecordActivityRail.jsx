@@ -28,15 +28,15 @@ export default function RecordActivityRail({ entityName, onClose, overlayOnMobil
   const railContent = (
     <div
       className={cn(
-        'border-l border-gray-800/60 overflow-hidden flex flex-col shrink-0 h-full',
+        'border-l overflow-hidden flex flex-col shrink-0 h-full',
         overlayOnMobile
           ? 'w-full max-w-[320px] lg:w-72'
           : 'w-72'
       )}
-      style={{ background: '#0c0c0c' }}
+      style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800/60 shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b shrink-0" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">
           Activity Log
         </span>

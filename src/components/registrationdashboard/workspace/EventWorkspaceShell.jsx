@@ -144,7 +144,7 @@ export default function EventWorkspaceShell({ panels }) {
   });
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ background: 'rgba(8,10,12,0.82)' }}>
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: '#0B0D0D' }}>
       {/* ZONE 1: Persistent Command Header (top) */}
       <EventCommandHeader
         selectedEvent={selectedEvent}
@@ -165,7 +165,7 @@ export default function EventWorkspaceShell({ panels }) {
         <EventWorkspaceNav activePanel={eventWorkspacePanel} onPanelChange={setEventWorkspacePanel} compact={false} />
 
         {/* Center: Main Content Panel */}
-        <div className="flex-1 overflow-y-auto border-r border-gray-800/60 p-5">
+        <div className="flex-1 overflow-y-auto border-r p-5" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
           {/* R8G Part 4: guard — if panel not permitted, show notice (fallback useEffect fires async) */}
           {!isPanelPermitted && (
             <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
