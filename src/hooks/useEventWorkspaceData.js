@@ -71,6 +71,12 @@ export function useEventWorkspaceData(eventId, seriesId, season) {
     enabled: !!eventId, ...DQ,
   });
 
+  const { data: gridLineups = [], refetch: refetchGridLineups } = useQuery({
+    queryKey: ['grid_lineups', eventId],
+    queryFn: () => eventId ? base44.entities.GridLineup.filter({ event_id: eventId }) : Promise.resolve([]),
+    enabled: !!eventId, ...DQ,
+  });
+
   const { data: operationLogs = [] } = useQuery({
     queryKey: ['operationLogs', eventId],
     queryFn: () =>
@@ -125,6 +131,7 @@ export function useEventWorkspaceData(eventId, seriesId, season) {
     officials,
     standings,
     techInspections,
+    gridLineups,
     operationLogs,
     drivers,
     eventClasses,
@@ -136,5 +143,6 @@ export function useEventWorkspaceData(eventId, seriesId, season) {
     refetchIncidents,
     refetchOfficials,
     refetchTechInspections,
+    refetchGridLineups,
   };
 }

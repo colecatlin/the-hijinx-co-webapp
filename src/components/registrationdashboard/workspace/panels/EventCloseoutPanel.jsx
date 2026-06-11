@@ -1,6 +1,6 @@
 /**
- * R9CR — EventCloseoutPanel
- * Full event closeout workflow with real export packet + action links.
+ * R9CT — EventCloseoutPanel
+ * Full event closeout workflow with persisted export packets + governance enforcement.
  */
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,16 +8,56 @@ import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '../EventWorkspaceContext';
 import CloseoutChecklist from '../../closeout/CloseoutChecklist';
 import CloseoutProgressBar from '../../closeout/CloseoutProgressBar';
-import { Download, Flag, RefreshCw, ShieldCheck, CheckCircle2, ExternalLink } from 'lucide-react';
+import GovernanceBlockerBanner from '../../../governance/GovernanceBlockerBanner';
+import OfficialsEnforcement from '../../../governance/OfficialsEnforcement';
+import { Download, Flag, RefreshCw, ShieldCheck, CheckCircle2, ExternalLink, History } from 'lucide-react';
 import { toast } from 'sonner';
+import { useGovernanceEnforcement } from '../../../../hooks/useGovernanceEnforcement';
+import { useGovernanceReadiness } from '../../../../hooks/useGovernanceReadiness';
+import { useAuditWriter } from '../../../../hooks/useAuditWriter';
 
 export default function EventCloseoutPanel({ onNavigate }) {
-  const { selectedEvent, isAdmin, invalidateAfterOperation } = useEventWorkspace();
+  const { selectedEvent, isAdmin, invalidateAfterOperation, wsData, user } = useEventWorkspace();
   const eventId = selectedEvent?.id;
   const queryClient = useQueryClient();
+  const { writeAudit } = useAuditWriter(user);
   const [completing, setCompleting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportResult, setExportResult] = useState(null);
+
+  const officials = wsData?.officials || [];
+  const sessions = wsData?.sessions || [];
+  const results = wsData?.results || [];
+
+  // Governance readiness
+  const { score: govScore, blockers: govBlockers } = useGovernanceReadiness({
+    event: selectedEvent,
+    sessions,
+    results,
+    officials,
+    auditLogs: [],
+    exportPacketExists: false,
+    closeoutPassed: false,
+  });
+
+  // Enforcement
+  const { canPerform, blockers: enforcementBlockers } = useGovernanceEnforcement({
+    event: selectedEvent,
+    officials,
+    sessions,
+    results,
+    governanceScore: govScore,
+    isAdmin,
+  });
+
+  // Load persisted export packets for this event
+  const { data: exportPackets = [] } = useQuery({
+    queryKey: ['export_packets', eventId],
+    queryFn: () => eventId ? base44.entities.EventExportPacket.filter({ event_id: eventId }) : Promise.resolve([]),
+    enabled: !!eventId,
+    staleTime: 30_000,
+  });
+  const latestPacket = exportPackets.sort((a, b) => (b.packet_version || 0) - (a.packet_version || 0))[0];
 
   const { data: validation, isLoading, refetch } = useQuery({
     queryKey: ['closeout_validation', eventId],
@@ -47,6 +87,12 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
   const handleComplete = () => {
     if (!validation?.can_close) return;
+    // Governance enforcement check
+    const { allowed, reason } = canPerform('close_event');
+    if (!allowed && !isAdmin) {
+      toast.error(reason);
+      return;
+    }
     setCompleting(true);
     completeMutation.mutate();
   };
@@ -58,7 +104,31 @@ export default function EventCloseoutPanel({ onNavigate }) {
       const res = await base44.functions.invoke('generateEventExportPacket', { event_id: eventId });
       const data = res.data;
       setExportResult(data);
-      refetch(); // re-validate in case export check is part of checklist
+
+      // Persist to EventExportPacket entity
+      const nextVersion = (latestPacket?.packet_version || 0) + 1;
+      await base44.entities.EventExportPacket.create({
+        event_id: eventId,
+        generated_by: user?.id || 'system',
+        generated_by_name: user?.full_name || 'System',
+        generated_at: new Date().toISOString(),
+        packet_version: nextVersion,
+        files: data.files || [],
+        summary: { file_count: data.files?.length || 0 },
+      });
+      queryClient.invalidateQueries({ queryKey: ['export_packets', eventId] });
+
+      // Write audit log
+      writeAudit({
+        entity_type: 'Event',
+        entity_id: eventId,
+        entity_name: selectedEvent?.name,
+        action: 'updated',
+        event_id: eventId,
+        notes: `Export packet v${nextVersion} generated (${data.files?.length || 0} files)`,
+      });
+
+      refetch();
       toast.success(`Export packet ready — ${data.files?.length || 0} files generated`);
     } catch (e) {
       toast.error('Export failed: ' + (e.response?.data?.error || e.message));
@@ -69,11 +139,23 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
   const checklist = validation?.checklist || [];
   const passed = checklist.filter(c => c.passed).length;
-  const canClose = validation?.can_close && isAdmin;
+  // Allow admin to override governance blockers
+  const govBlocked = !isAdmin && !canPerform('close_event').allowed;
+  const canClose = validation?.can_close && isAdmin && !govBlocked;
   const isCompleted = selectedEvent?.status === 'Completed';
 
   return (
     <div className="space-y-5 max-w-xl">
+      {/* Governance blockers */}
+      {!isCompleted && enforcementBlockers.length > 0 && (
+        <GovernanceBlockerBanner blockers={enforcementBlockers} onNavigate={onNavigate} />
+      )}
+
+      {/* Officials enforcement */}
+      {!isCompleted && (
+        <OfficialsEnforcement officials={officials} onNavigate={onNavigate} />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -133,18 +215,21 @@ export default function EventCloseoutPanel({ onNavigate }) {
         </div>
       )}
 
-      {/* Export packet result */}
-      {exportResult && (
+      {/* Export packet — persisted history */}
+      {latestPacket && (
         <div className="p-3 rounded border border-teal-700/40 bg-teal-950/20 space-y-2">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
             <p className="text-[11px] font-semibold text-teal-300">
-              Export Packet Generated — {exportResult.files?.length || 0} files
+              Export Packet v{latestPacket.packet_version} — {latestPacket.files?.length || 0} files
             </p>
+            <span className="text-[9px] text-teal-600 ml-auto">Persisted ✓</span>
           </div>
-          <p className="text-[10px] text-teal-500">{new Date(exportResult.generated_at).toLocaleString()}</p>
+          <p className="text-[10px] text-teal-500">
+            Generated {new Date(latestPacket.generated_at).toLocaleString()} · {latestPacket.generated_by_name}
+          </p>
           <div className="space-y-1">
-            {(exportResult.files || []).map(f => (
+            {(latestPacket.files || []).map(f => (
               <a
                 key={f.name}
                 href={f.url}
@@ -153,9 +238,26 @@ export default function EventCloseoutPanel({ onNavigate }) {
                 className="flex items-center gap-1.5 text-[10px] text-teal-300 hover:text-teal-200 transition-colors"
               >
                 <ExternalLink className="w-2.5 h-2.5" />
-                {f.name} ({f.row_count} rows)
+                {f.name} {f.row_count ? `(${f.row_count} rows)` : ''}
               </a>
             ))}
+          </div>
+          {exportPackets.length > 1 && (
+            <p className="text-[10px] text-gray-600">
+              <History className="w-2.5 h-2.5 inline mr-1" />
+              {exportPackets.length} versions in history
+            </p>
+          )}
+        </div>
+      )}
+      {/* Fallback — in-session export result before persisted */}
+      {exportResult && !latestPacket && (
+        <div className="p-3 rounded border border-teal-700/40 bg-teal-950/20 space-y-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
+            <p className="text-[11px] font-semibold text-teal-300">
+              Export Packet Generated — {exportResult.files?.length || 0} files
+            </p>
           </div>
         </div>
       )}

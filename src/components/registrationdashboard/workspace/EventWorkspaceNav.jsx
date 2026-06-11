@@ -23,6 +23,7 @@ import {
   Siren,
   Flag,
   Users,
+  Grip,
 } from 'lucide-react';
 import { useEventWorkspace } from './EventWorkspaceContext';
 import { useModules } from '@/components/racecore/modules/ModuleProvider';
@@ -41,6 +42,7 @@ const MODULE_GROUPS = [
       { id: 'compliance',  label: 'Compliance',  icon: Shield,           description: 'Waivers, tech, eligibility',                  permKey: 'canManageCompliance' },
       { id: 'checkin',     label: 'Check-In',    icon: ClipboardCheck,   description: 'Arrival, payment, waiver, race-day check-in',  permKey: 'canManageCheckIn' },
       { id: 'officials',   label: 'Officials',   icon: Users,            description: 'Race Director, Stewards, Tech Inspectors',     permKey: 'canManageSettings' },
+      { id: 'grid',        label: 'Grid Ops',    icon: Grip,             description: 'Grid generation, approval, publishing, locking', permKey: 'canManageResults' },
       { id: 'exports',     label: 'Exports',     icon: FolderDown,       description: 'Download entries, results, standings, and event data', permKey: 'canViewExports' },
       { id: 'imports',     label: 'Imports',     icon: FileUp,           description: 'Import entries, results, and standings from CSV', permKey: 'canViewImports' },
       { id: 'standings',   label: 'Standings',   icon: Trophy,           description: 'Points systems and recalculation',            permKey: 'canManageStandings' },

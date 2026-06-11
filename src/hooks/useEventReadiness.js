@@ -15,6 +15,7 @@ export function useEventReadiness({
   standingsDirty = false,
   incidents = [],
   exportPacketGeneratedAt = null,
+  gridLineups = [],
 }) {
   return useMemo(() => {
     const checks = [];
@@ -54,8 +55,20 @@ export function useEventReadiness({
     const activeIncidents = incidents.filter(i => ['Open', 'Under Review'].includes(i.status)).length;
     checks.push({ id: 'incidents', label: 'No Active Incidents', passed: activeIncidents === 0, weight: 10, detail: activeIncidents > 0 ? `${activeIncidents} open` : undefined });
 
-    // 8. Export packet generated
+    // 8. Export packet generated — now checks persisted packet
     checks.push({ id: 'export', label: 'Export Packet Generated', passed: !!exportPacketGeneratedAt, weight: 5 });
+
+    // 9. Tech Director assigned
+    const hasTechDirector = officials.some(o => o.role === 'Technical Director' && ['Confirmed', 'Active'].includes(o.status));
+    checks.push({ id: 'tech_director', label: 'Tech Director Assigned', passed: hasTechDirector, weight: 5 });
+
+    // 10. Grid approved for feature sessions
+    const featureSessions = sessions.filter(s => ['Feature', 'Final', 'Heat', 'LCQ'].includes(s.session_type));
+    const gridsApproved = featureSessions.length === 0 || featureSessions.every(s => {
+      const grid = gridLineups.find(g => g.session_id === s.id && g.status !== 'Superseded');
+      return grid && ['Approved', 'Published', 'Locked'].includes(grid.status);
+    });
+    checks.push({ id: 'grids', label: 'Grids Approved', passed: gridsApproved, weight: 5, detail: featureSessions.length > 0 ? `${featureSessions.length} session(s)` : 'N/A' });
 
     // Compute weighted score
     const totalWeight = checks.reduce((s, c) => s + c.weight, 0);
@@ -65,5 +78,5 @@ export function useEventReadiness({
     const tier = score >= 90 ? 'green' : score >= 70 ? 'amber' : 'red';
 
     return { score, tier, checks };
-  }, [event, sessions, entries, results, officials, standings, standingsDirty, incidents, exportPacketGeneratedAt]);
+  }, [event, sessions, entries, results, officials, standings, standingsDirty, incidents, exportPacketGeneratedAt, gridLineups]);
 }

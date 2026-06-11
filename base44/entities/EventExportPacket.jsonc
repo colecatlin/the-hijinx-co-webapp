@@ -1,0 +1,67 @@
+{
+  "name": "EventExportPacket",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "Reference to Event (required)"
+    },
+    "generated_by": {
+      "type": "string",
+      "description": "User ID who generated the packet"
+    },
+    "generated_by_name": {
+      "type": "string",
+      "description": "Name of user at time of generation"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the packet was generated"
+    },
+    "packet_version": {
+      "type": "number",
+      "description": "Incremental version number \u2014 bumped on each regeneration"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "row_count": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "default": [],
+      "description": "Generated export file records"
+    },
+    "summary": {
+      "type": "object",
+      "description": "Snapshot metrics at time of generation (entry count, result count, etc.)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes about this export"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9CS: Whether this record is archived"
+    }
+  },
+  "required": [
+    "event_id",
+    "generated_by",
+    "generated_at"
+  ]
+}

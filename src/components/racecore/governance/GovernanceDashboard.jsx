@@ -2,14 +2,16 @@
  * R9CS — GovernanceDashboard
  * Platform governance overview: audit activity, archives, data health, lifecycle integrity.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Shield, Archive, Activity, AlertTriangle, CheckCircle2, Users } from 'lucide-react';
+import { Shield, Archive, Activity, AlertTriangle, CheckCircle2, Users, ShieldCheck } from 'lucide-react';
 import { format, startOfDay } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { useDataHealth } from '@/hooks/useDataHealth';
 import { Link } from 'react-router-dom';
+import AuditCoverageReport from './AuditCoverageReport';
+import EnforcementStatusPanel from './EnforcementStatusPanel';
 
 function StatCard({ icon: Icon, label, value, sub, color = 'text-teal-400', href }) {
   const inner = (
@@ -55,6 +57,13 @@ export default function GovernanceDashboard() {
   const draftSessions = sessions.filter(s => s.status === 'Draft');
 
   const recentLogs = allLogs.slice(0, 12);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const TABS = [
+    { id: 'overview',    label: 'Overview' },
+    { id: 'enforcement', label: 'Enforcement' },
+    { id: 'audit',       label: 'Audit Coverage' },
+  ];
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
@@ -63,7 +72,7 @@ export default function GovernanceDashboard() {
         <Shield className="w-5 h-5 text-teal-400" />
         <div>
           <h1 className="text-white font-bold text-lg">Governance Dashboard</h1>
-          <p className="text-gray-500 text-xs">Platform integrity, accountability and audit oversight</p>
+          <p className="text-gray-500 text-xs">Enforcement status, audit coverage, and platform integrity</p>
         </div>
         <div className="ml-auto">
           <div className={`text-right`}>
@@ -73,6 +82,27 @@ export default function GovernanceDashboard() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-white/[0.07] pb-0">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-t transition-colors ${
+              activeTab === tab.id
+                ? 'text-teal-300 border-b-2 border-teal-500 bg-white/[0.03]'
+                : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === 'enforcement' && <EnforcementStatusPanel />}
+      {activeTab === 'audit' && <AuditCoverageReport />}
+
+      {activeTab === 'overview' && <>
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatCard icon={Activity} label="Audit Entries Today" value={todayLogs.length} sub="All write operations" color="text-teal-400" href="/racecore/governance/audit" />
@@ -112,11 +142,12 @@ export default function GovernanceDashboard() {
           </div>
         )}
         {allLogs.length > 12 && (
-          <Link to="/racecore/governance/audit" className="block text-center text-[10px] text-teal-500 hover:text-teal-300 mt-2">
-            View all {allLogs.length} audit entries →
-          </Link>
+          <p className="text-center text-[10px] text-teal-500 mt-2">
+            {allLogs.length} total audit entries
+          </p>
         )}
       </div>
+      </>}
     </div>
   );
 }

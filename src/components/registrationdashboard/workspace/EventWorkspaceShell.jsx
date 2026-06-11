@@ -26,6 +26,7 @@ import EventResultsPanel from './panels/EventResultsPanel';
 import EventRaceControlPanel from './panels/EventRaceControlPanel';
 import EventCloseoutPanel from './panels/EventCloseoutPanel';
 import EventOfficialsPanel from './panels/EventOfficialsPanel';
+import EventGridPanel from './panels/EventGridPanel';
 import EventCommandHeader from './EventCommandHeader';
 import EventWorkspaceNav from './EventWorkspaceNav';
 import EventIntelligenceRail from './EventIntelligenceRail';
@@ -51,12 +52,13 @@ const PANEL_PERM_KEY = {
   settings:     'canManageSettings',
   closeout:     'canManageSettings',
   officials:    'canManageSettings',
+  grid:         'canManageResults',
 };
 
 const ALL_PANELS = [
   'overview','schedule','race_control','sessions','results','entries',
   'compliance','checkin','exports','imports','standings','media',
-  'media_portal','officials','activity','settings','closeout',
+  'media_portal','officials','grid','activity','settings','closeout',
 ];
 
 export default function EventWorkspaceShell() {
@@ -99,7 +101,7 @@ export default function EventWorkspaceShell() {
 
   const isPanelPermitted = permittedPanels.includes(eventWorkspacePanel);
 
-  const { entries, sessions, results, incidents, penalties, protests, officials, standings, operationLogs } = wsData;
+  const { entries, sessions, results, incidents, penalties, protests, officials, standings, gridLineups, operationLogs } = wsData;
 
   // ── Alert engine ─────────────────────────────────────────────────────────
   const { alerts, dismiss } = useEventAlerts({
@@ -204,6 +206,7 @@ export default function EventWorkspaceShell() {
           {isPanelPermitted && eventWorkspacePanel === 'standings'     && <EventStandingsPanel wsData={wsData} />}
           {isPanelPermitted && eventWorkspacePanel === 'results'       && <EventResultsPanel wsData={wsData} />}
           {isPanelPermitted && eventWorkspacePanel === 'officials'     && <EventOfficialsPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'grid'          && <EventGridPanel />}
           {isPanelPermitted && eventWorkspacePanel === 'closeout'      && (
             <EventCloseoutPanel wsData={wsData} onNavigate={setEventWorkspacePanel} />
           )}

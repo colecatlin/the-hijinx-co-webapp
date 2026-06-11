@@ -9,6 +9,8 @@ import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '../EventWorkspaceContext';
 import { Shield, UserPlus, Check, X, AlertCircle, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import OfficialsEnforcement from '../../../governance/OfficialsEnforcement';
+import { useAuditWriter } from '../../../../hooks/useAuditWriter';
 
 const ROLES = [
   'Race Director',
@@ -35,9 +37,10 @@ const STATUS_STYLES = {
 };
 
 export default function EventOfficialsPanel() {
-  const { selectedEvent, isAdmin, eventPermissions, wsData } = useEventWorkspace();
+  const { selectedEvent, isAdmin, eventPermissions, wsData, user } = useEventWorkspace();
   const eventId = selectedEvent?.id;
   const queryClient = useQueryClient();
+  const { writeAudit } = useAuditWriter(user);
   const officials = wsData?.officials || [];
 
   const [showForm, setShowForm] = useState(false);
@@ -53,9 +56,10 @@ export default function EventOfficialsPanel() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.functions.invoke('assignEventOfficial', data),
-    onSuccess: () => {
+    onSuccess: (res, vars) => {
       queryClient.invalidateQueries({ queryKey: ['officials', eventId] });
       toast.success('Official assigned');
+      writeAudit({ entity_type: 'EventOfficial', entity_id: eventId, action: 'created', event_id: eventId, notes: `${vars.role} assigned` });
       setShowForm(false);
       setForm({ user_id: '', role: 'Race Director', notes: '' });
     },
@@ -118,16 +122,8 @@ export default function EventOfficialsPanel() {
         )}
       </div>
 
-      {/* Missing roles alert */}
-      {missingRoles.length > 0 && (
-        <div className="flex items-start gap-2 p-3 rounded border border-amber-700/40 bg-amber-950/15">
-          <AlertCircle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-[11px] font-semibold text-amber-300">Missing Critical Roles</p>
-            <p className="text-[10px] text-amber-400 mt-0.5">{missingRoles.join(' · ')}</p>
-          </div>
-        </div>
-      )}
+      {/* Required officials enforcement panel */}
+      <OfficialsEnforcement officials={officials} />
 
       {/* Add official form */}
       {showForm && (
