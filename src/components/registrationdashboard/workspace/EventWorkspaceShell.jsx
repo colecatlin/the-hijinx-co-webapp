@@ -1,15 +1,14 @@
 /**
- * REVISION R8G Part 4 — EventWorkspaceShell
- * Added: active panel fallback when current panel is not permitted.
- * RaceCore Command Center Visual System
- * Three-zone layout: left nav rail, center content, right intelligence rail.
- * Read-only command header + module nav + operational state widgets.
+ * R9CQ — EventWorkspaceShell (expanded)
+ * Wires alert engine, expanded command header, closeout panel.
+ * Three-zone layout: left nav rail, center content, right intel rail.
  */
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { useEventWorkspace } from './EventWorkspaceContext';
+import { useEventAlerts } from './useEventAlerts';
 import OpsEventDashboard from '../ops/OpsEventDashboard';
 import EventSchedulePanel from './panels/EventSchedulePanel';
 import EventActivityPanel from './panels/EventActivityPanel';
@@ -25,20 +24,43 @@ import EventSettingsPanel from './panels/EventSettingsPanel';
 import EventSessionsPanel from './panels/EventSessionsPanel';
 import EventStandingsPanel from './panels/EventStandingsPanel';
 import EventResultsPanel from './panels/EventResultsPanel';
-import DeferredModulePanel from './panels/DeferredModulePanel';
 import EventRaceControlPanel from './panels/EventRaceControlPanel';
+import EventCloseoutPanel from './panels/EventCloseoutPanel';
+import DeferredModulePanel from './panels/DeferredModulePanel';
 import EventCommandHeader from './EventCommandHeader';
 import EventWorkspaceNav from './EventWorkspaceNav';
 import EventIntelligenceRail from './EventIntelligenceRail';
 import LiveStatusBar from './LiveStatusBar';
+import EventAlertStack from './EventAlertStack';
 
 const DQ = applyDefaultQueryOptions();
 
+// Panel permission key map
+const PANEL_PERM_KEY = {
+  overview:     'canViewOverview',
+  schedule:     'canViewSchedule',
+  sessions:     'canManageSessions',
+  results:      'canManageResults',
+  entries:      'canManageEntries',
+  compliance:   'canManageCompliance',
+  checkin:      'canManageCheckIn',
+  exports:      'canViewExports',
+  imports:      'canViewImports',
+  standings:    'canManageStandings',
+  race_control: 'canViewRaceControl',
+  media:        'canManageMedia',
+  media_portal: 'canManageMedia',
+  activity:     'canViewActivity',
+  settings:     'canManageSettings',
+  closeout:     'canManageSettings', // admin only via isAdmin check in panel
+};
 
+const ALL_PANELS = [
+  'overview','schedule','race_control','sessions','results','entries',
+  'compliance','checkin','exports','imports','standings','media',
+  'media_portal','activity','settings','closeout',
+];
 
-
-
-// ─── Main shell — Command Center Layout (3-zone) ────────────────────────────
 export default function EventWorkspaceShell({ panels }) {
   const [showIntelRail, setShowIntelRail] = useState(true);
 
@@ -52,6 +74,7 @@ export default function EventWorkspaceShell({ panels }) {
     user,
     invalidateAfterOperation,
     standingsLastCalculatedAt,
+    standingsDirty,
     onSetStandingsDirty,
     onResultsProvisional,
     onResultsOfficial,
@@ -61,76 +84,63 @@ export default function EventWorkspaceShell({ panels }) {
     eventPermissions,
   } = useEventWorkspace();
 
-  // R8G Part 4 / R8H Part 2–4: panel permission key map (mirrors EventWorkspaceNav)
-  const PANEL_PERM_KEY = {
-    overview:   'canViewOverview',
-    schedule:   'canViewSchedule',
-    sessions:   'canManageSessions',
-    results:    'canManageResults',
-    entries:    'canManageEntries',
-    compliance: 'canManageCompliance',
-    checkin:    'canManageCheckIn',
-    exports:    'canViewExports',
-    imports:    'canViewImports',
-    standings:  'canManageStandings',
-    race_control: 'canViewRaceControl',
-    media:        'canManageMedia',
-    media_portal: 'canManageMedia',
-    activity:     'canViewActivity',
-    settings:     'canManageSettings',
-  };
-
-  // Build ordered list of permitted panel IDs. null → all permitted.
+  // Permitted panels
   const permittedPanels = useMemo(() => {
-    const allPanels = ['overview','schedule','race_control','sessions','results','entries','compliance','checkin','exports','imports','standings','media','media_portal','activity','settings'];
-    if (!eventPermissions) return allPanels;
-    return allPanels.filter((id) => !!eventPermissions[PANEL_PERM_KEY[id]]);
+    if (!eventPermissions) return ALL_PANELS;
+    return ALL_PANELS.filter(id => {
+      const key = PANEL_PERM_KEY[id];
+      if (!key) return true;
+      return !!eventPermissions[key];
+    });
   }, [eventPermissions]);
 
-  // Fallback: if active panel is not in permittedPanels, switch to first permitted (or overview).
-  useEffect(() => {
-    if (!permittedPanels.includes(eventWorkspacePanel)) {
-      const fallback = permittedPanels[0] || 'overview';
-      setEventWorkspacePanel(fallback);
-    }
-  }, [permittedPanels, eventWorkspacePanel, setEventWorkspacePanel]);
-
-  // Is the current panel actually permitted?
   const isPanelPermitted = permittedPanels.includes(eventWorkspacePanel);
 
-  // Fetch operational data for intelligence rail
+  // ── Core data queries ────────────────────────────────────────────────────
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id ? base44.entities.Session.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+    queryFn: () => selectedEvent?.id ? base44.entities.Session.filter({ event_id: selectedEvent.id }) : Promise.resolve([]),
+    enabled: !!selectedEvent?.id, ...DQ,
   });
 
   const { data: results = [] } = useQuery({
     queryKey: ['results', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id ? base44.entities.Results.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+    queryFn: () => selectedEvent?.id ? base44.entities.Results.filter({ event_id: selectedEvent.id }) : Promise.resolve([]),
+    enabled: !!selectedEvent?.id, ...DQ,
   });
 
   const { data: entries = [] } = useQuery({
     queryKey: ['entries', selectedEvent?.id],
-    queryFn: () => (selectedEvent?.id ? base44.entities.Entry.filter({ event_id: selectedEvent.id }) : Promise.resolve([])),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+    queryFn: () => selectedEvent?.id ? base44.entities.Entry.filter({ event_id: selectedEvent.id }) : Promise.resolve([]),
+    enabled: !!selectedEvent?.id, ...DQ,
   });
 
   const { data: standings = [] } = useQuery({
     queryKey: ['standings', selectedEvent?.series_id, selectedEvent?.season],
     queryFn: () =>
       selectedEvent?.series_id && selectedEvent?.season
-        ? base44.entities.Standings.filter({
-            series_id: selectedEvent.series_id,
-            season_year: selectedEvent.season,
-          })
+        ? base44.entities.Standings.filter({ series_id: selectedEvent.series_id, season_year: selectedEvent.season })
         : Promise.resolve([]),
-    enabled: !!selectedEvent?.series_id && !!selectedEvent?.season,
-    ...DQ,
+    enabled: !!selectedEvent?.series_id && !!selectedEvent?.season, ...DQ,
+  });
+
+  // ── Race control queries (for header + alerts) ───────────────────────────
+  const { data: incidents = [] } = useQuery({
+    queryKey: ['incidents', selectedEvent?.id],
+    queryFn: () => selectedEvent?.id ? base44.entities.Incident.filter({ event_id: selectedEvent.id }) : Promise.resolve([]),
+    enabled: !!selectedEvent?.id, ...DQ,
+  });
+
+  const { data: penalties = [] } = useQuery({
+    queryKey: ['penalties', selectedEvent?.id],
+    queryFn: () => selectedEvent?.id ? base44.entities.Penalty.filter({ event_id: selectedEvent.id }) : Promise.resolve([]),
+    enabled: !!selectedEvent?.id, ...DQ,
+  });
+
+  const { data: protests = [] } = useQuery({
+    queryKey: ['protests', selectedEvent?.id],
+    queryFn: () => selectedEvent?.id ? base44.entities.Protest.filter({ event_id: selectedEvent.id }) : Promise.resolve([]),
+    enabled: !!selectedEvent?.id, ...DQ,
   });
 
   const { data: operationLogs = [] } = useQuery({
@@ -139,13 +149,23 @@ export default function EventWorkspaceShell({ panels }) {
       selectedEvent?.id
         ? base44.entities.OperationLog.filter({ event_id: selectedEvent.id }, '-created_date', 20)
         : Promise.resolve([]),
-    enabled: !!selectedEvent?.id,
-    ...DQ,
+    enabled: !!selectedEvent?.id, ...DQ,
+  });
+
+  // ── Alert engine ─────────────────────────────────────────────────────────
+  const { alerts, dismiss } = useEventAlerts({
+    entries,
+    sessions,
+    results,
+    incidents,
+    penalties,
+    protests,
+    standingsDirty: !!standingsDirty,
   });
 
   return (
     <div className="flex flex-col h-full overflow-hidden" style={{ background: '#0B0D0D' }}>
-      {/* ZONE 1: Persistent Command Header (top) */}
+      {/* ZONE 1: Command Header */}
       <EventCommandHeader
         selectedEvent={selectedEvent}
         selectedTrack={selectedTrack}
@@ -154,27 +174,46 @@ export default function EventWorkspaceShell({ panels }) {
         sessions={sessions}
         results={results}
         entries={entries}
+        incidents={incidents}
+        penalties={penalties}
+        protests={protests}
+        standings={standings}
+        standingsDirty={!!standingsDirty}
+        isAdmin={isAdmin}
       />
 
-      {/* ZONE 1B: Live Operations Status Bar */}
-      <LiveStatusBar sessions={sessions} results={results} entries={entries} standings={standings} />
+      {/* ZONE 1B: Live Status Bar */}
+      <LiveStatusBar
+        sessions={sessions}
+        results={results}
+        entries={entries}
+        standings={standings}
+        alerts={alerts}
+        onNavigate={setEventWorkspacePanel}
+      />
 
-      {/* ZONE 2: 3-Column Layout (nav + content + intel) */}
+      {/* ZONE 2: 3-Column Layout */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left: Module Navigation Rail */}
+        {/* Left: Nav Rail */}
         <EventWorkspaceNav activePanel={eventWorkspacePanel} onPanelChange={setEventWorkspacePanel} compact={false} />
 
-        {/* Center: Main Content Panel */}
-        <div className="flex-1 overflow-y-auto border-r p-5" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-          {/* R8G Part 4: guard — if panel not permitted, show notice (fallback useEffect fires async) */}
+        {/* Center: Panel Content */}
+        <div className="flex-1 overflow-y-auto p-5" style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
           {!isPanelPermitted && (
             <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
               <p className="text-gray-400 text-sm">Your access does not include the requested module.</p>
-              <p className="text-gray-600 text-xs">Redirecting to an available panel…</p>
             </div>
           )}
 
-          {/* ── WIRED: Overview — OpsEventDashboard ── */}
+          {/* Alert stack — shown above all panel content when alerts exist */}
+          {isPanelPermitted && alerts.length > 0 && (
+            <EventAlertStack
+              alerts={alerts}
+              onDismiss={dismiss}
+              onNavigate={setEventWorkspacePanel}
+            />
+          )}
+
           {isPanelPermitted && eventWorkspacePanel === 'overview' && (
             <OpsEventDashboard
               selectedEvent={selectedEvent}
@@ -190,53 +229,30 @@ export default function EventWorkspaceShell({ panels }) {
               onResultsProvisional={onResultsProvisional}
               onResultsOfficial={onResultsOfficial}
               onResultsLocked={onResultsLocked}
+              alerts={alerts}
+              onNavigate={setEventWorkspacePanel}
+              standingsDirty={!!standingsDirty}
             />
           )}
 
-          {/* ── WIRED: Schedule ── */}
           {isPanelPermitted && eventWorkspacePanel === 'schedule' && <EventSchedulePanel />}
-
-          {/* ── R9BQ Sprint 2: Race Control ── */}
           {isPanelPermitted && eventWorkspacePanel === 'race_control' && <EventRaceControlPanel />}
-
-          {/* ── WIRED: Activity ── */}
           {isPanelPermitted && eventWorkspacePanel === 'activity' && <EventAuditLogPanel />}
-
-          {/* ── WIRED: Settings ── */}
           {isPanelPermitted && eventWorkspacePanel === 'settings' && <EventSettingsPanel />}
-
-          {/* ── WIRED: Media (governance) ── */}
           {isPanelPermitted && eventWorkspacePanel === 'media' && <EventMediaPanel />}
-
-          {/* ── R8Z Part 2: Media Portal (full event media ops) ── */}
           {isPanelPermitted && eventWorkspacePanel === 'media_portal' && <EventMediaPortalPanel />}
-
-          {/* ── WIRED: Compliance ── */}
           {isPanelPermitted && eventWorkspacePanel === 'compliance' && <EventCompliancePanel />}
-
-          {/* ── R8H Part 2: Check-In ── */}
           {isPanelPermitted && eventWorkspacePanel === 'checkin' && <EventCheckInPanel />}
-
-          {/* ── R8H Part 3: Exports ── */}
           {isPanelPermitted && eventWorkspacePanel === 'exports' && <EventExportsPanel />}
-
-          {/* ── R8H Part 4: Imports ── */}
           {isPanelPermitted && eventWorkspacePanel === 'imports' && <EventImportsPanel />}
-
-          {/* ── WIRED: Entries ── */}
           {isPanelPermitted && eventWorkspacePanel === 'entries' && <EventEntriesPanel />}
-
-          {/* ── R7E: Sessions — migrated workspace panel ── */}
           {isPanelPermitted && eventWorkspacePanel === 'sessions' && <EventSessionsPanel />}
-
-          {/* ── R7E: Standings — migrated workspace panel ── */}
           {isPanelPermitted && eventWorkspacePanel === 'standings' && <EventStandingsPanel />}
-
-          {/* ── R7E PART 3: Results — migrated to workspace (PRIMARY SURFACE) ── */}
           {isPanelPermitted && eventWorkspacePanel === 'results' && <EventResultsPanel />}
+          {isPanelPermitted && eventWorkspacePanel === 'closeout' && <EventCloseoutPanel />}
         </div>
 
-        {/* Right: Event Intelligence Rail */}
+        {/* Right: Intelligence Rail */}
         {showIntelRail && (
           <EventIntelligenceRail
             selectedEvent={selectedEvent}

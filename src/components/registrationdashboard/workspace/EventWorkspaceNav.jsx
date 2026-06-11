@@ -21,6 +21,7 @@ import {
   FileUp,
   Camera,
   Siren,
+  Flag,
 } from 'lucide-react';
 import { useEventWorkspace } from './EventWorkspaceContext';
 import { useModules } from '@/components/racecore/modules/ModuleProvider';
@@ -50,6 +51,7 @@ const MODULE_GROUPS = [
       { id: 'media_portal', label: 'Media Portal', icon: Camera,   description: 'Full media operations — requests, waivers, deliverables, uploads, review', permKey: 'canManageMedia' },
       { id: 'activity',     label: 'Activity',     icon: Activity, description: 'Event history and audit log',            permKey: 'canViewActivity' },
       { id: 'settings',    label: 'Settings',    icon: Settings, description: 'Event configuration and permissions',    permKey: 'canManageSettings' },
+      { id: 'closeout',    label: 'Closeout',    icon: Flag,     description: 'Event closeout checklist and completion', permKey: 'canManageSettings' },
     ],
   },
 ];

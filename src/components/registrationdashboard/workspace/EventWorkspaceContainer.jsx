@@ -25,6 +25,7 @@ const WORKSPACE_PANELS = [
   { id: 'media_portal',  label: 'Media Portal' },
   { id: 'activity',      label: 'Activity' },
   { id: 'settings',      label: 'Settings' },
+  { id: 'closeout',      label: 'Closeout' },
 ];
 
 export { WORKSPACE_PANELS };

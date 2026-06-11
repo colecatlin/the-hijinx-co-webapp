@@ -1,44 +1,45 @@
 /**
- * REVISION 7D — Live Operations Status Bar
- * Persistent compact operational status strip below command header.
- * Shows session readiness, compliance state, standings status.
- * Read-only; no mutations.
+ * R9CQ — LiveStatusBar
+ * Persistent compact status strip. Pills are clickable → navigate to target panel.
+ * Also surfaces critical/warning alerts as clickable pills.
  */
 import React, { useMemo, useState, useEffect } from 'react';
 import { AlertTriangle, CheckCircle2, Clock, Zap } from 'lucide-react';
 import { calculateSessionReadiness, getNextSession, getCountdownToNext, formatCountdown } from '../ops/sessionReadinessCalculator';
 
-function StatusPill({ icon: IconComponent, label, value, variant = 'default', pulse = false }) {
+function StatusPill({ icon: IconComponent, label, value, variant = 'default', pulse = false, onClick }) {
   const styles = {
-    default: 'bg-gray-800/40 border-gray-700/60 text-gray-400',
-    success: 'bg-green-900/30 border-green-800/50 text-green-300',
-    warning: 'bg-amber-900/30 border-amber-800/50 text-amber-300',
+    default:  'bg-gray-800/40 border-gray-700/60 text-gray-400',
+    success:  'bg-green-900/30 border-green-800/50 text-green-300',
+    warning:  'bg-amber-900/30 border-amber-800/50 text-amber-300',
     critical: 'bg-red-900/30 border-red-800/50 text-red-300',
-    active: 'bg-teal-900/30 border-teal-800/50 text-teal-300',
+    active:   'bg-teal-900/30 border-teal-800/50 text-teal-300',
   };
 
   return (
-    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded border text-xs font-medium whitespace-nowrap ${styles[variant]} ${pulse ? 'animate-pulse' : ''}`}>
+    <div
+      className={`inline-flex items-center gap-1 px-2 py-1 rounded border text-xs font-medium whitespace-nowrap transition-colors ${styles[variant]} ${pulse ? 'animate-pulse' : ''} ${onClick ? 'cursor-pointer hover:opacity-80' : ''}`}
+      onClick={onClick}
+    >
       {IconComponent && <IconComponent className="w-3.5 h-3.5 flex-shrink-0" />}
-      <span className="text-[10px] uppercase tracking-wider opacity-70">{label}</span>
+      {label && <span className="text-[10px] uppercase tracking-wider opacity-70">{label}</span>}
       <span className="font-semibold">{value}</span>
     </div>
   );
 }
 
-export default function LiveStatusBar({ sessions = [], results = [], entries = [], standings = [] }) {
+export default function LiveStatusBar({ sessions = [], results = [], entries = [], standings = [], alerts = [], onNavigate }) {
   const nextSession = useMemo(() => getNextSession(sessions), [sessions]);
   const [countdown, setCountdown] = React.useState(null);
 
-  // Update countdown timer
   React.useEffect(() => {
     if (!nextSession) return;
-    const updateCountdown = () => {
+    const update = () => {
       const ms = getCountdownToNext(nextSession);
       setCountdown(formatCountdown(ms));
     };
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
+    update();
+    const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
   }, [nextSession]);
 
@@ -50,23 +51,21 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
     ).length;
     const draftResults = results.filter(r => r.status_state === 'Draft' || !r.status_state).length;
     const complianceIssues = entries.filter(e => !e.waiver_verified || e.tech_status === 'Failed').length;
-
-    return {
-      activeSession,
-      lockedSessions,
-      sessionsNeedingResults,
-      draftResults,
-      complianceIssues,
-      standingsReady: standings.length > 0,
-    };
+    return { activeSession, lockedSessions, sessionsNeedingResults, draftResults, complianceIssues };
   }, [sessions, results, entries, standings]);
+
+  // Only show top 3 non-info alerts as pills here (full stack is in EventAlertStack)
+  const alertPills = useMemo(() =>
+    alerts.filter(a => a.severity === 'CRITICAL' || a.severity === 'WARNING').slice(0, 3),
+    [alerts]
+  );
 
   return (
     <div
-      className="px-5 py-1.5 flex items-center gap-2 flex-wrap overflow-x-auto scrollbar-hide border-b"
+      className="px-5 py-1.5 flex items-center gap-1.5 flex-wrap overflow-x-auto scrollbar-hide border-b"
       style={{ background: '#0B0D0D', borderColor: 'rgba(255,255,255,0.07)' }}
     >
-      {/* Active session indicator */}
+      {/* Active session */}
       {stats.activeSession && (
         <StatusPill
           icon={Zap}
@@ -74,10 +73,11 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
           value={stats.activeSession.name}
           variant="critical"
           pulse={true}
+          onClick={() => onNavigate?.('sessions')}
         />
       )}
 
-      {/* Next session + countdown */}
+      {/* Next session */}
       {nextSession && !stats.activeSession && (
         <>
           <StatusPill
@@ -85,14 +85,10 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
             label="Next"
             value={nextSession.name}
             variant="active"
+            onClick={() => onNavigate?.('schedule')}
           />
           {countdown && (
-            <StatusPill
-              icon={Clock}
-              label="In"
-              value={countdown}
-              variant="default"
-            />
+            <StatusPill icon={Clock} label="In" value={countdown} variant="default" />
           )}
         </>
       )}
@@ -104,6 +100,7 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
           label="Locked"
           value={stats.lockedSessions}
           variant="success"
+          onClick={() => onNavigate?.('sessions')}
         />
       )}
 
@@ -114,6 +111,7 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
           label="Results"
           value={`${stats.sessionsNeedingResults} pending`}
           variant="critical"
+          onClick={() => onNavigate?.('results')}
         />
       )}
 
@@ -124,28 +122,32 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
           label="Draft"
           value={`${stats.draftResults} results`}
           variant="warning"
+          onClick={() => onNavigate?.('results')}
         />
       )}
 
-      {/* Compliance alerts */}
+      {/* Compliance */}
       {stats.complianceIssues > 0 && (
         <StatusPill
           icon={AlertTriangle}
           label="Compliance"
           value={stats.complianceIssues}
           variant="critical"
+          onClick={() => onNavigate?.('compliance')}
         />
       )}
 
-      {/* Standings ready */}
-      {stats.standingsReady && (
+      {/* Alert pills from alert engine */}
+      {alertPills.map(alert => (
         <StatusPill
-          icon={CheckCircle2}
-          label="Standings"
-          value="Ready"
-          variant="success"
+          key={alert.id}
+          icon={AlertTriangle}
+          label={alert.severity === 'CRITICAL' ? '●' : '▲'}
+          value={alert.message.split(' ').slice(0, 4).join(' ')}
+          variant={alert.severity === 'CRITICAL' ? 'critical' : 'warning'}
+          onClick={() => onNavigate?.(alert.target)}
         />
-      )}
+      ))}
     </div>
   );
 }

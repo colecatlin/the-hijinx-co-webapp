@@ -7,8 +7,6 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
-import EventCommandHeader from './EventCommandHeader';
-import LiveStatusBar from './LiveStatusBar';
 import SessionControlCenter from './SessionControlCenter';
 import OpsRightSidebar from './OpsRightSidebar';
 import OperationsSnapshot from '../workspace/OperationsSnapshot';
@@ -18,6 +16,8 @@ import { AlertCircle, ArrowLeft, Trophy } from 'lucide-react';
 import { isScoringSession } from './sessionOrdering';
 import { Button } from '@/components/ui/button';
 import { sortSessionsChronologically } from './sessionOrdering';
+import EventAlertStack from '../workspace/EventAlertStack';
+import EventQuickActions from '../workspace/EventQuickActions';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -35,6 +35,10 @@ export default function OpsEventDashboard({
   onResultsProvisional,
   onResultsOfficial,
   onResultsLocked,
+  // R9CQ: alert engine + navigation
+  alerts = [],
+  onNavigate,
+  standingsDirty = false,
 }) {
   const [selectedSessionId, setSelectedSessionId] = useState('');
   const eventId = selectedEvent?.id;
@@ -115,23 +119,18 @@ export default function OpsEventDashboard({
   }
 
   return (
-    <div className="space-y-5">
-      {/* Event Command Header */}
-      <EventCommandHeader
-        selectedEvent={selectedEvent}
-        selectedTrack={selectedTrack}
-        selectedSeries={selectedSeries}
-        sessions={sessions}
-        results={results}
-        standings={standings}
-      />
-
-      {/* Live Status Bar */}
-      <LiveStatusBar
+    <div className="space-y-4">
+      {/* R9CQ: Alert stack + Quick Actions */}
+      {alerts.length > 0 && (
+        <EventAlertStack alerts={alerts} onNavigate={onNavigate} />
+      )}
+      <EventQuickActions
         selectedEvent={selectedEvent}
         sessions={sessions}
-        results={results}
-        standings={standings}
+        isAdmin={isAdmin}
+        onNavigate={onNavigate}
+        standingsDirty={standingsDirty}
+        onStandingsRecalc={onSetStandingsDirty ? () => onSetStandingsDirty(false) : undefined}
       />
 
       {/* Operations Snapshot — enhanced overview */}

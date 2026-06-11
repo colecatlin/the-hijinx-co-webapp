@@ -25,7 +25,7 @@ const DQ = applyDefaultQueryOptions();
 const VALID_PANELS = new Set([
   'overview', 'schedule', 'race_control', 'sessions', 'results', 'entries',
   'compliance', 'checkin', 'exports', 'imports',
-  'standings', 'media', 'activity', 'settings',
+  'standings', 'media', 'activity', 'settings', 'closeout',
 ]);
 
 function toSafePanel(raw) {
@@ -256,7 +256,7 @@ export default function EventFile() {
             <p className="text-gray-300 text-sm">You must be logged in to access event operations.</p>
             <Button
               onClick={() => base44.auth.redirectToLogin(window.location.href)}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-teal-600 hover:bg-teal-700"
             >
               Log In
             </Button>
@@ -284,7 +284,7 @@ export default function EventFile() {
               </Button>
               <Button
                   onClick={() => navigate('/race-control/events')}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  className="flex-1 bg-teal-600 hover:bg-teal-700"
                 >
                   Events List
                 </Button>
