@@ -8,7 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
+// Lazy — only resolved when payment step is reached, avoiding load errors on other pages
+let stripePromise = null;
+const getStripePromise = () => {
+  if (!stripePromise) {
+    stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+  }
+  return stripePromise;
+};
 
 const STEPS = ['Cart', 'Information', 'Shipping', 'Review', 'Payment'];
 
@@ -253,7 +260,7 @@ export default function Checkout() {
 
             {/* Step 4: Payment */}
             {step === 4 && clientSecret && (
-              <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'night', variables: { colorPrimary: '#00FFDA', colorBackground: '#0a0a0a', colorText: '#F5F5F5', colorDanger: '#ef4444', fontFamily: 'Inter, system-ui, sans-serif', borderRadius: '0px' } } }}>
+              <Elements stripe={getStripePromise()} options={{ clientSecret, appearance: { theme: 'night', variables: { colorPrimary: '#00FFDA', colorBackground: '#0a0a0a', colorText: '#F5F5F5', colorDanger: '#ef4444', fontFamily: 'Inter, system-ui, sans-serif', borderRadius: '0px' } } }}>
                 <PaymentStep
                   preparedOrder={preparedOrder}
                   onBack={() => setStep(3)}
