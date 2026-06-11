@@ -51,10 +51,10 @@ export function useGovernanceReadiness({
     });
     check('grids_approved', 'Grids approved for feature sessions', gridsOk, 5);
 
-    // Lifecycle compliance: no sessions in Draft state if event is Live/Completed
+    // Lifecycle compliance: no sessions in Draft/Scheduled state if event is Completed
     const eventStatus = event?.status || 'Draft';
-    const hasStuckSessions = ['Live', 'Completed'].includes(eventStatus) &&
-      (sessions || []).some(s => s.status === 'Draft');
+    const hasStuckSessions = eventStatus === 'Completed' &&
+      (sessions || []).some(s => ['Draft', 'Scheduled', 'Live'].includes(s.status));
     check('lifecycle_compliance', 'No lifecycle violations (draft sessions in live event)', !hasStuckSessions, 10);
 
     // Export packet generated — now checks persisted EventExportPacket entity

@@ -8,10 +8,11 @@ import React, { useState, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '../EventWorkspaceContext';
-import { Grip, CheckCircle2, AlertCircle, Clock, Lock, RefreshCw, Eye } from 'lucide-react';
+import { Grip, CheckCircle2, AlertCircle, Clock, Lock, RefreshCw, Eye, Play, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import SessionReadinessIndicator from '../SessionReadinessIndicator';
 import { useAuditWriter } from '../../../../hooks/useAuditWriter';
+import EventGridGeneratorModal from './EventGridGeneratorModal';
 
 const GRID_STATUS_CONFIG = {
   Draft:            { label: 'Draft',     color: 'text-gray-400', bg: 'bg-gray-800/40',    border: 'border-gray-700', icon: Clock },
@@ -39,6 +40,7 @@ export default function EventGridPanel() {
   const queryClient = useQueryClient();
   const { writeAudit } = useAuditWriter(user);
   const [expandedSession, setExpandedSession] = useState(null);
+  const [generatorModal, setGeneratorModal] = useState(null); // session object to generate for
 
   const sessions = wsData?.sessions || [];
   const entries = wsData?.entries || [];
@@ -56,13 +58,27 @@ export default function EventGridPanel() {
   }, [gridLineups]);
 
   const generateMutation = useMutation({
-    mutationFn: (data) => base44.functions.invoke('generateGridLineup', data),
+    mutationFn: (data) => base44.functions.invoke('generateGridLineup', { event_id: eventId, ...data }),
     onSuccess: (res, vars) => {
       queryClient.invalidateQueries({ queryKey: ['grid_lineups', eventId] });
-      toast.success('Grid generated');
-      writeAudit({ entity_type: 'GridLineup', entity_id: vars.session_id, action: 'created', event_id: eventId, notes: 'Grid generated' });
+      toast.success(`Grid generated (${vars.generation_method})`);
+      writeAudit({ entity_type: 'GridLineup', entity_id: vars.session_id, action: 'created', event_id: eventId, notes: `Grid generated: ${vars.generation_method}` });
     },
     onError: (e) => toast.error('Grid generation failed: ' + (e?.response?.data?.error || e.message)),
+  });
+
+  const sessionLifecycleMutation = useMutation({
+    mutationFn: ({ sessionId, status }) => base44.entities.Session.update(sessionId, {
+      status,
+      ...(status === 'Live' ? { live_started_at: new Date().toISOString() } : {}),
+      ...(status === 'Completed' ? { completed_at: new Date().toISOString() } : {}),
+    }),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
+      toast.success(`Session ${vars.status}`);
+      writeAudit({ entity_type: 'Session', entity_id: vars.sessionId, action: 'lifecycle_change', event_id: eventId, after_data: { status: vars.status } });
+    },
+    onError: () => toast.error('Failed to update session status'),
   });
 
   const approveMutation = useMutation({
@@ -162,14 +178,29 @@ export default function EventGridPanel() {
                 {/* Quick action buttons */}
                 {isAdmin && (
                   <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                    {/* Session lifecycle: Start / End */}
+                    {session.status === 'Scheduled' && (
+                      <button
+                        disabled={sessionLifecycleMutation.isPending}
+                        onClick={() => sessionLifecycleMutation.mutate({ sessionId: session.id, status: 'Live' })}
+                        className="px-2 py-1 rounded border border-red-600/40 bg-red-900/20 text-red-300 text-[10px] font-semibold hover:bg-red-900/40 transition-colors disabled:opacity-50 flex items-center gap-1"
+                      >
+                        <Play className="w-2.5 h-2.5" /> Start
+                      </button>
+                    )}
+                    {session.status === 'Live' && (
+                      <button
+                        disabled={sessionLifecycleMutation.isPending}
+                        onClick={() => sessionLifecycleMutation.mutate({ sessionId: session.id, status: 'Completed' })}
+                        className="px-2 py-1 rounded border border-amber-600/40 bg-amber-900/20 text-amber-300 text-[10px] font-semibold hover:bg-amber-900/40 transition-colors disabled:opacity-50 flex items-center gap-1"
+                      >
+                        <Square className="w-2.5 h-2.5" /> End
+                      </button>
+                    )}
                     {!grid && (
                       <button
                         disabled={generateMutation.isPending}
-                        onClick={() => generateMutation.mutate({
-                          event_id: eventId,
-                          session_id: session.id,
-                          generation_method: 'Manual',
-                        })}
+                        onClick={() => setGeneratorModal(session)}
                         className="px-2 py-1 rounded border border-teal-600/40 bg-teal-900/20 text-teal-300 text-[10px] font-semibold hover:bg-teal-900/40 transition-colors disabled:opacity-50"
                       >
                         Generate
@@ -249,6 +280,18 @@ export default function EventGridPanel() {
           );
         })}
       </div>
+
+      {/* Grid Generator Modal — full method selection */}
+      {generatorModal && (
+        <EventGridGeneratorModal
+          open={!!generatorModal}
+          onClose={() => setGeneratorModal(null)}
+          session={generatorModal}
+          allSessions={sessions}
+          onGenerate={(params) => generateMutation.mutate(params)}
+          isPending={generateMutation.isPending}
+        />
+      )}
     </div>
   );
 }

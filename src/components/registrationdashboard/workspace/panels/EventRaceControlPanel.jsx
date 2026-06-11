@@ -15,7 +15,7 @@ import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 const DQ = applyDefaultQueryOptions();
 
 export default function EventRaceControlPanel() {
-  const { isAdmin, eventPermissions, selectedEvent } = useEventWorkspace();
+  const { isAdmin, eventPermissions, selectedEvent, wsData } = useEventWorkspace();
   const { governanceEnabled } = useModules();
   const [quickIncidentOpen, setQuickIncidentOpen] = useState(false);
 
@@ -25,6 +25,8 @@ export default function EventRaceControlPanel() {
     enabled: !!selectedEvent?.id, ...DQ,
   });
 
+  const entries = wsData?.entries || [];
+  const drivers = wsData?.drivers || [];
   const activeSession = sessions.find(s => s.status === 'Live');
 
   if (!governanceEnabled) {
@@ -79,6 +81,8 @@ export default function EventRaceControlPanel() {
         onClose={() => setQuickIncidentOpen(false)}
         eventId={selectedEvent?.id}
         activeSessionId={activeSession?.id}
+        entries={entries}
+        drivers={drivers}
       />
     </div>
   );

@@ -58,10 +58,21 @@ Deno.serve(async (req) => {
       techRecord = await base44.asServiceRole.entities.TechInspectionRecord.create(recordData);
     }
 
-    // Derive and sync Entry.tech_status
-    const derivedStatus = RECORD_TO_ENTRY_STATUS[status] || 'Not Inspected';
+    // Derive and sync Entry.tech_status AND Entry.entry_status (P0-5 fix)
+    const derivedTechStatus = RECORD_TO_ENTRY_STATUS[status] || 'Not Inspected';
+
+    // Map tech outcome → operational entry_status
+    const TECH_TO_ENTRY_STATUS = {
+      'Passed':           'Teched',
+      'Failed':           'Tech Failed',
+      'Recheck Required': 'Tech Hold',
+      'Not Inspected':    'Registered',
+    };
+    const derivedEntryStatus = TECH_TO_ENTRY_STATUS[derivedTechStatus] || 'Registered';
+
     await base44.asServiceRole.entities.Entry.update(entry_id, {
-      tech_status: derivedStatus,
+      tech_status: derivedTechStatus,
+      entry_status: derivedEntryStatus,
       tech_time: now,
       tech_inspector_user_id: inspector_user_id || user.id,
     });
@@ -69,7 +80,8 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       tech_record_id: techRecord.id,
-      entry_status_synced: derivedStatus,
+      tech_status_synced: derivedTechStatus,
+      entry_status_synced: derivedEntryStatus,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

@@ -54,13 +54,15 @@ Deno.serve(async (req) => {
     // ── Compute readiness ─────────────────────────────────────────────────────
     const officialResults = results.filter(r => ['Official', 'Locked'].includes(r.status_state));
     const draftResults = results.filter(r => !r.status_state || r.status_state === 'Draft');
-    const completedSessions = sessions.filter(s => ['Official', 'Locked'].includes(s.status));
+    const liveSessions = sessions.filter(s => s.status === 'Live');
+    const completedSessions = sessions.filter(s => ['Completed', 'Official', 'Locked'].includes(s.status));
     const confirmedOfficials = officials.filter(o => ['Confirmed', 'Active'].includes(o.status));
     const openIncidents = incidents.filter(i => ['Open', 'Under Review'].includes(i.status));
     const pendingPenalties = penalties.filter(p => p.status === 'Proposed');
     const activeProtests = protests.filter(p => ['Filed', 'Under Review', 'Hearing Scheduled'].includes(p.status));
 
     const readiness = {
+      live_sessions: liveSessions.length,
       sessions_complete: sessions.length > 0 && completedSessions.length === sessions.length,
       results_official: results.length > 0 && officialResults.length === results.length,
       officials_assigned: confirmedOfficials.length > 0,

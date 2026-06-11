@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import IncidentParticipantPicker from './IncidentParticipantPicker';
 
 const INCIDENT_TYPES = [
   'On-Track Contact',
@@ -23,11 +24,12 @@ const INCIDENT_TYPES = [
 
 const SEVERITIES = ['Informational', 'Minor', 'Significant', 'Major', 'Serious'];
 
-export default function QuickIncidentModal({ open, onClose, eventId, activeSessionId }) {
+export default function QuickIncidentModal({ open, onClose, eventId, activeSessionId, entries = [], drivers = [] }) {
   const queryClient = useQueryClient();
   const [type, setType] = useState('On-Track Contact');
   const [severity, setSeverity] = useState('Minor');
   const [description, setDescription] = useState('');
+  const [involvedDriverIds, setInvolvedDriverIds] = useState([]);
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.functions.invoke('createIncident', data),
@@ -36,6 +38,7 @@ export default function QuickIncidentModal({ open, onClose, eventId, activeSessi
       toast.success('Incident logged');
       setDescription('');
       setType('On-Track Contact');
+      setInvolvedDriverIds([]);
       onClose();
     },
     onError: () => toast.error('Failed to log incident'),
@@ -51,6 +54,7 @@ export default function QuickIncidentModal({ open, onClose, eventId, activeSessi
       description: description.trim(),
       severity,
       status: 'Open',
+      involved_driver_ids: involvedDriverIds.length > 0 ? involvedDriverIds : undefined,
     });
   };
 
@@ -106,6 +110,19 @@ export default function QuickIncidentModal({ open, onClose, eventId, activeSessi
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Involved Drivers */}
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1 block">
+              Involved Drivers
+            </label>
+            <IncidentParticipantPicker
+              entries={entries}
+              drivers={drivers}
+              selectedDriverIds={involvedDriverIds}
+              onChange={setInvolvedDriverIds}
+            />
           </div>
 
           {/* Description */}

@@ -110,6 +110,7 @@ export default function EventCommandHeader({
   const techPending = entries.filter(e => !e.tech_status || e.tech_status === 'Not Inspected').length;
   const techFailed = entries.filter(e => e.tech_status === 'Failed').length;
 
+  const liveSession = sessions.find(s => s.status === 'Live');
   const sessionsReady = sessions.filter(s => ['Official', 'Locked'].includes(s.status)).length;
   const sessionsMissingResults = sessions.filter(
     s => ['Completed', 'Official', 'Locked'].includes(s.status) && !results.some(r => r.session_id === s.id)
@@ -197,6 +198,9 @@ export default function EventCommandHeader({
 
         {/* Row 2: Operational status widgets — all clickable */}
         <div className="flex items-center gap-1.5 flex-wrap">
+          {liveSession && (
+            <StatChip label="🔴 Live" value={liveSession.name} variant="critical" pulse={true} onClick={() => onNavigate?.('sessions')} title="Session in progress" />
+          )}
           <StatChip label="Entries" value={entries.length} variant="default" onClick={() => onNavigate?.('entries')} title="Go to Entries" />
           <StatChip
             label="In"

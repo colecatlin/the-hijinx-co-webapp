@@ -44,10 +44,12 @@
         "Registered",
         "Checked In",
         "Teched",
+        "Tech Failed",
+        "Tech Hold",
         "Withdrawn"
       ],
       "default": "Registered",
-      "description": "Operational entry state"
+      "description": "Operational entry state. Tech actions auto-advance: Pass\u2192Teched, Fail\u2192Tech Failed, Recheck\u2192Tech Hold"
     },
     "payment_status": {
       "type": "string",

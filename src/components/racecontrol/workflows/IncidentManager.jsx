@@ -3,7 +3,7 @@
  * Full incident investigation workflow: view, assign, notes, status transitions.
  * Phase 1.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '@/components/registrationdashboard/workspace/EventWorkspaceContext';
@@ -13,10 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AlertTriangle, ChevronRight, UserCheck, FileText, RefreshCw } from 'lucide-react';
+import { AlertTriangle, ChevronRight, UserCheck, FileText, RefreshCw, Users } from 'lucide-react';
 import UserPickerInput from '@/components/shared/UserPickerInput';
+import IncidentParticipantPicker from '../modals/IncidentParticipantPicker';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useUserDisplayMap } from '@/hooks/useUserDisplayMap';
 
 const OPEN_STATUSES = ['Open', 'Under Review', 'Referred to Stewards', 'Appealed'];
 
@@ -74,15 +76,23 @@ function SeverityBadge({ severity }) {
 }
 
 // ── Detail drawer for a single incident ──────────────────────────────────────
-function IncidentDetailDrawer({ incident, open, onClose, eventId, onRefresh }) {
+function IncidentDetailDrawer({ incident, open, onClose, eventId, onRefresh, entries = [], drivers = [] }) {
   const { isAdmin, eventPermissions } = useEventWorkspace();
   const queryClient = useQueryClient();
+  const { getUserName } = useUserDisplayMap();
 
   const canInvestigate = isAdmin || !!eventPermissions?.canCreateIncident;
 
   const [assigneeId, setAssigneeId] = useState('');
   const [investigationNote, setInvestigationNote] = useState('');
+  const [involvedDriverIds, setInvolvedDriverIds] = useState([]);
+  const [savingParticipants, setSavingParticipants] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Sync local participant state when incident changes
+  React.useEffect(() => {
+    if (incident) setInvolvedDriverIds(incident.involved_driver_ids || []);
+  }, [incident?.id]);
 
   if (!incident) return null;
 
@@ -121,6 +131,22 @@ function IncidentDetailDrawer({ incident, open, onClose, eventId, onRefresh }) {
       toast.error('Failed to assign: ' + (err.message || 'Unknown error'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveParticipants = async () => {
+    setSavingParticipants(true);
+    try {
+      await base44.entities.Incident.update(incident.id, {
+        involved_driver_ids: involvedDriverIds,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['incidents', eventId] });
+      toast.success('Participants updated');
+      onRefresh?.();
+    } catch (err) {
+      toast.error('Failed to update participants');
+    } finally {
+      setSavingParticipants(false);
     }
   };
 
@@ -173,11 +199,30 @@ function IncidentDetailDrawer({ incident, open, onClose, eventId, onRefresh }) {
             <p className="text-sm text-gray-300 leading-relaxed">{incident.description}</p>
           </div>
 
-          {/* Current investigator */}
+          {/* Current investigator — resolved name */}
           {incident.assigned_to_user_id && (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Assigned To</p>
-              <p className="text-xs text-gray-400 font-mono">{incident.assigned_to_user_id}</p>
+              <p className="text-xs text-gray-300 font-semibold">{getUserName(incident.assigned_to_user_id)}</p>
+            </div>
+          )}
+
+          {/* Involved drivers display */}
+          {(incident.involved_driver_ids || []).length > 0 && (
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Involved Drivers</p>
+              <div className="flex flex-wrap gap-1">
+                {(incident.involved_driver_ids || []).map(dId => {
+                  const entry = entries.find(e => e.driver_id === dId);
+                  const driver = drivers.find(d => d.id === dId);
+                  const name = driver ? `${driver.first_name} ${driver.last_name}` : 'Unknown';
+                  return (
+                    <span key={dId} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-900/30 border border-red-700/30 text-[10px] text-red-200">
+                      {entry ? `#${entry.car_number} ` : ''}{name}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -193,6 +238,23 @@ function IncidentDetailDrawer({ incident, open, onClose, eventId, onRefresh }) {
 
           {canInvestigate && (
             <>
+              {/* Edit involved participants */}
+              <div className="p-3 bg-gray-900/60 border border-gray-800 rounded-lg space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 flex items-center gap-1.5">
+                  <Users className="w-3 h-3" /> Involved Drivers
+                </p>
+                <IncidentParticipantPicker
+                  entries={entries}
+                  drivers={drivers}
+                  selectedDriverIds={involvedDriverIds}
+                  onChange={setInvolvedDriverIds}
+                />
+                <Button size="sm" disabled={savingParticipants} onClick={handleSaveParticipants}
+                  className="bg-red-800 hover:bg-red-700 text-white text-xs h-8">
+                  {savingParticipants ? 'Saving…' : 'Save Participants'}
+                </Button>
+              </div>
+
               {/* Assign investigator */}
               <div className="p-3 bg-gray-900/60 border border-gray-800 rounded-lg space-y-2">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 flex items-center gap-1.5">
@@ -273,6 +335,20 @@ export default function IncidentManager({ eventId }) {
     enabled: !!eventId && canView,
   });
 
+  const { data: entries = [] } = useQuery({
+    queryKey: ['entries', eventId],
+    queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
+    enabled: !!eventId && canView,
+    staleTime: 60_000,
+  });
+
+  const { data: drivers = [] } = useQuery({
+    queryKey: ['drivers_all'],
+    queryFn: () => base44.entities.Driver.list('-created_date', 500),
+    enabled: canView,
+    staleTime: 5 * 60_000,
+  });
+
   const displayed = showAll
     ? incidents
     : incidents.filter(i => OPEN_STATUSES.includes(i.status));
@@ -324,6 +400,8 @@ export default function IncidentManager({ eventId }) {
         onClose={() => setSelectedIncident(null)}
         eventId={eventId}
         onRefresh={refetch}
+        entries={entries}
+        drivers={drivers}
       />
     </div>
   );

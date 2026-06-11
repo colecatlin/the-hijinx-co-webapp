@@ -103,17 +103,30 @@
       "type": "string",
       "enum": [
         "Draft",
-        "Provisional",
+        "Scheduled",
+        "Live",
+        "Completed",
         "Official",
-        "Locked"
+        "Locked",
+        "Archived"
       ],
       "default": "Draft",
-      "description": "Session status and lock state"
+      "description": "Session lifecycle status: Draft \u2192 Scheduled \u2192 Live \u2192 Completed \u2192 Official \u2192 Locked"
     },
     "locked": {
       "type": "boolean",
       "default": false,
       "description": "Whether session is locked from editing"
+    },
+    "live_started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this session was set to Live"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this session was completed"
     },
     "is_historical": {
       "type": "boolean",

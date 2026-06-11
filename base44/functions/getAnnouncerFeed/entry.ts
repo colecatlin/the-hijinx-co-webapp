@@ -39,9 +39,12 @@ Deno.serve(async (req) => {
 
     // ── Current / target session ───────────────────────────────────────────────
     const sortedSessions = sessions.slice().sort((a, b) => (a.run_order || 0) - (b.run_order || 0));
+    // Priority: explicit session_id > Live session > most recent Official > last session
     const currentSession = session_id
       ? sessions.find(s => s.id === session_id)
-      : sortedSessions.find(s => s.status === 'Official') || sortedSessions[sortedSessions.length - 1];
+      : sortedSessions.find(s => s.status === 'Live')
+        || sortedSessions.find(s => s.status === 'Official')
+        || sortedSessions[sortedSessions.length - 1];
 
     // ── Current grid ───────────────────────────────────────────────────────────
     const currentGrid = currentSession

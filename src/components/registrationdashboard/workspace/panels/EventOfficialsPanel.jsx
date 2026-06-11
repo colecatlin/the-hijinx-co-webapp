@@ -12,6 +12,7 @@ import UserPickerInput from '@/components/shared/UserPickerInput';
 import { toast } from 'sonner';
 import OfficialsEnforcement from '../../../governance/OfficialsEnforcement';
 import { useAuditWriter } from '../../../../hooks/useAuditWriter';
+import { useUserDisplayMap } from '../../../../hooks/useUserDisplayMap';
 
 const ROLES = [
   'Race Director',
@@ -43,6 +44,7 @@ export default function EventOfficialsPanel() {
   const queryClient = useQueryClient();
   const { writeAudit } = useAuditWriter(user);
   const officials = wsData?.officials || [];
+  const { getUserName, getUser } = useUserDisplayMap();
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ user_id: '', role: 'Race Director', notes: '' });
@@ -199,13 +201,16 @@ export default function EventOfficialsPanel() {
               className="flex items-center gap-2 px-3 py-1.5 rounded border border-white/[0.06] bg-white/[0.02]"
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[11px] font-semibold text-gray-200">{official.role}</span>
                   <span className={`text-[9px] font-bold uppercase tracking-widest border rounded px-1.5 py-0.5 ${STATUS_STYLES[official.status] || STATUS_STYLES.Invited}`}>
                     {official.status}
                   </span>
                 </div>
-                <p className="text-[10px] text-gray-600 truncate">{official.user_id}</p>
+                <p className="text-[11px] text-gray-300 font-medium truncate">{getUserName(official.user_id)}</p>
+                {getUser(official.user_id)?.email && (
+                  <p className="text-[10px] text-gray-600 truncate">{getUser(official.user_id).email}</p>
+                )}
               </div>
               {canEdit && (
                 <div className="flex items-center gap-1 flex-shrink-0">

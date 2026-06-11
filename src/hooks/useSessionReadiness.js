@@ -47,7 +47,7 @@ export function useSessionReadiness({
 
     // 3. Entries checked in (>= 70% threshold for session start)
     const sessionEntries = entries.filter(e => !e.is_archived);
-    const checkedIn = sessionEntries.filter(e => ['Checked In', 'Teched'].includes(e.entry_status)).length;
+    const checkedIn = sessionEntries.filter(e => ['Checked In', 'Teched', 'Tech Failed', 'Tech Hold'].includes(e.entry_status)).length;
     const checkInPct = sessionEntries.length > 0 ? checkedIn / sessionEntries.length : 1;
     checks.push({
       id: 'checkin',
@@ -57,8 +57,8 @@ export function useSessionReadiness({
       detail: `${checkedIn}/${sessionEntries.length} checked in`,
     });
 
-    // 4. Tech passed (>= 70%)
-    const techPassed = sessionEntries.filter(e => ['Passed', 'Conditionally Passed'].includes(e.tech_status)).length;
+    // 4. Tech passed (>= 70%) — use authoritative tech_status field
+    const techPassed = sessionEntries.filter(e => ['Passed', 'Conditionally Passed'].includes(e.tech_status) || e.entry_status === 'Teched').length;
     const techPct = sessionEntries.length > 0 ? techPassed / sessionEntries.length : 1;
     checks.push({
       id: 'tech',

@@ -46,6 +46,7 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
   const stats = useMemo(() => {
     const activeSession = sessions.find(s => s.status === 'Live');
     const lockedSessions = sessions.filter(s => s.locked || s.status === 'Locked').length;
+    // Sessions that are Completed but have no results yet
     const sessionsNeedingResults = sessions.filter(s =>
       s.status === 'Completed' && !results.some(r => r.session_id === s.id)
     ).length;

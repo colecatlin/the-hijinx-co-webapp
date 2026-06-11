@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import IncidentParticipantPicker from './IncidentParticipantPicker';
 
 const INCIDENT_TYPES = [
   'On-Track Contact', 'Mechanical Failure', 'Safety Violation', 'Conduct Violation',
@@ -18,9 +19,10 @@ const INCIDENT_TYPES = [
 ];
 const SEVERITIES = ['Informational', 'Minor', 'Significant', 'Major', 'Serious'];
 
-export default function CreateIncidentModal({ open, onClose, eventId, sessions = [] }) {
+export default function CreateIncidentModal({ open, onClose, eventId, sessions = [], entries = [], drivers = [] }) {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
+  const [involvedDriverIds, setInvolvedDriverIds] = useState([]);
   const [form, setForm] = useState({
     incident_type: '',
     severity: 'Minor',
@@ -45,9 +47,11 @@ export default function CreateIncidentModal({ open, onClose, eventId, sessions =
       location_description: form.location_description || null,
       description: form.description,
       is_medical: form.is_medical,
+      involved_driver_ids: involvedDriverIds.length > 0 ? involvedDriverIds : [],
     });
     await queryClient.invalidateQueries({ queryKey: ['incidents', eventId] });
     setSaving(false);
+    setInvolvedDriverIds([]);
     setForm({ incident_type: '', severity: 'Minor', session_id: '', lap_number: '', location_description: '', description: '', is_medical: false });
     onClose();
   };
@@ -114,6 +118,16 @@ export default function CreateIncidentModal({ open, onClose, eventId, sessions =
             <Label className="text-gray-400 text-xs">Description *</Label>
             <Textarea required value={form.description} onChange={e => set('description', e.target.value)}
               className="bg-gray-900 border-gray-700 text-white h-20" placeholder="Describe the incident…" />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-gray-400 text-xs">Involved Drivers</Label>
+            <IncidentParticipantPicker
+              entries={entries}
+              drivers={drivers}
+              selectedDriverIds={involvedDriverIds}
+              onChange={setInvolvedDriverIds}
+            />
           </div>
 
           <div className="flex items-center gap-2">
