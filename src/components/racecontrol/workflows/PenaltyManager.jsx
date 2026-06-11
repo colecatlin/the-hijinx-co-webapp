@@ -112,6 +112,12 @@ function ApplyConfirmModal({ open, onClose, penalty, eventId, onApplied }) {
         queryClient.invalidateQueries({ queryKey: ['standings'] }),
       ]);
 
+      // R9CX Phase 8: Auto-trigger public data sync after cascade
+      base44.functions.invoke('syncPublicData', {
+        event_id: eventId,
+        trigger: 'penalty_cascade_applied',
+      }).catch(() => {});
+
       const msg = `Penalty applied. ${affected_results.length} result(s) affected.${standings_recalculated ? ' Standings recalculated.' : ''}`;
       toast.success(msg);
       if (warnings.length) warnings.forEach(w => toast.warning(w));

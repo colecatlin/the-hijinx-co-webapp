@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '../EventWorkspaceContext';
 import { Shield, UserPlus, Check, X, AlertCircle, Users } from 'lucide-react';
+import UserPickerInput from '@/components/shared/UserPickerInput';
 import { toast } from 'sonner';
 import OfficialsEnforcement from '../../../governance/OfficialsEnforcement';
 import { useAuditWriter } from '../../../../hooks/useAuditWriter';
@@ -45,6 +46,10 @@ export default function EventOfficialsPanel() {
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ user_id: '', role: 'Race Director', notes: '' });
+
+  // Check for duplicate role assignments
+  const assignedRoles = officials.filter(o => o.status !== 'Withdrawn').map(o => o.role);
+  const isDuplicateRole = form.role && assignedRoles.includes(form.role) && !['Steward', 'Technical Inspector', 'Gate Staff'].includes(form.role);
 
   const canEdit = isAdmin || !!eventPermissions?.canManageSettings;
 
@@ -134,13 +139,11 @@ export default function EventOfficialsPanel() {
           <p className="text-[11px] font-bold uppercase tracking-widest text-gray-500">Assign Official</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">User ID</label>
-              <input
-                type="text"
+              <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">User</label>
+              <UserPickerInput
                 value={form.user_id}
-                onChange={e => setForm(p => ({ ...p, user_id: e.target.value }))}
-                placeholder="user ID..."
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded text-[12px] text-gray-200 px-2 py-1.5 outline-none focus:border-teal-600/50"
+                onChange={uid => setForm(p => ({ ...p, user_id: uid }))}
+                placeholder="Search by name or email…"
               />
             </div>
             <div>
@@ -163,6 +166,9 @@ export default function EventOfficialsPanel() {
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded text-[12px] text-gray-200 px-2 py-1.5 outline-none focus:border-teal-600/50"
             />
           </div>
+          {isDuplicateRole && (
+            <p className="text-[10px] text-amber-400">⚠ {form.role} is already assigned. Proceeding will create a second assignment.</p>
+          )}
           <div className="flex gap-2">
             <button
               type="button"
@@ -173,7 +179,7 @@ export default function EventOfficialsPanel() {
             </button>
             <button
               type="submit"
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || !form.user_id}
               className="px-4 py-1.5 rounded bg-teal-700/60 hover:bg-teal-600/80 border border-teal-600/40 text-[11px] font-semibold text-white transition-colors disabled:opacity-50"
             >
               {createMutation.isPending ? 'Assigning…' : 'Assign'}

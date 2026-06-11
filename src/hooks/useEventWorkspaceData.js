@@ -14,45 +14,48 @@ const DQ = applyDefaultQueryOptions();
 export function useEventWorkspaceData(eventId, seriesId, season) {
   const queryClient = useQueryClient();
 
+  // R9CX Phase 7: All queries include is_archived: false to prevent archived records
+  // from appearing in active operations.
+
   const { data: entries = [], refetch: refetchEntries } = useQuery({
     queryKey: ['entries', eventId],
-    queryFn: () => eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.Entry.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
   const { data: sessions = [], refetch: refetchSessions } = useQuery({
     queryKey: ['sessions', eventId],
-    queryFn: () => eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.Session.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
   const { data: results = [], refetch: refetchResults } = useQuery({
     queryKey: ['results', eventId],
-    queryFn: () => eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.Results.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
   const { data: incidents = [], refetch: refetchIncidents } = useQuery({
     queryKey: ['incidents', eventId],
-    queryFn: () => eventId ? base44.entities.Incident.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.Incident.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
   const { data: penalties = [], refetch: refetchPenalties } = useQuery({
     queryKey: ['penalties', eventId],
-    queryFn: () => eventId ? base44.entities.Penalty.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.Penalty.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
   const { data: protests = [], refetch: refetchProtests } = useQuery({
     queryKey: ['protests', eventId],
-    queryFn: () => eventId ? base44.entities.Protest.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.Protest.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
   const { data: officials = [], refetch: refetchOfficials } = useQuery({
     queryKey: ['officials', eventId],
-    queryFn: () => eventId ? base44.entities.EventOfficial.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.EventOfficial.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
@@ -67,13 +70,13 @@ export function useEventWorkspaceData(eventId, seriesId, season) {
 
   const { data: techInspections = [], refetch: refetchTechInspections } = useQuery({
     queryKey: ['techInspections', eventId],
-    queryFn: () => eventId ? base44.entities.TechInspectionRecord.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.TechInspectionRecord.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 
   const { data: gridLineups = [], refetch: refetchGridLineups } = useQuery({
     queryKey: ['grid_lineups', eventId],
-    queryFn: () => eventId ? base44.entities.GridLineup.filter({ event_id: eventId }) : Promise.resolve([]),
+    queryFn: () => eventId ? base44.entities.GridLineup.filter({ event_id: eventId, is_archived: false }) : Promise.resolve([]),
     enabled: !!eventId, ...DQ,
   });
 

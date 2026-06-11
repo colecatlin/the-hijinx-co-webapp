@@ -17,7 +17,8 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Download } from 'lucide-react';
+import { Plus, Download, Archive } from 'lucide-react';
+import { useDuplicateNumberValidation } from '@/hooks/useDuplicateNumberValidation';
 import { toast } from 'sonner';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
@@ -117,6 +118,7 @@ export default function EntriesManager({
   const [showSelfService, setShowSelfService] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [archiveReason, setArchiveReason] = useState('');
   const [showBulkTransponderModal, setShowBulkTransponderModal] = useState(false);
   const [bulkTransponderInput, setBulkTransponderInput] = useState('');
   const [showBulkClassModal, setShowBulkClassModal] = useState(false);
@@ -138,6 +140,9 @@ export default function EntriesManager({
 
   const driversMap = useMemo(() => Object.fromEntries(drivers.map((d) => [d.id, d])), [drivers]);
   const classesMap = useMemo(() => Object.fromEntries(seriesClasses.map((c) => [c.id, c])), [seriesClasses]);
+
+  // R9CX Phase 3: Duplicate number detection
+  const { allDuplicateGroups, hasDuplicate, getDuplicates } = useDuplicateNumberValidation(entries);
 
   const getDriverName = (id) => {
     const d = driversMap[id];
@@ -171,10 +176,15 @@ export default function EntriesManager({
     successMessage: 'Entry updated', ...sharedOpts,
   });
 
-  const { mutateAsync: deleteEntry } = useDashboardMutation({
-    operationType: 'entry_deleted', entityName: 'Entry',
-    mutationFn: (id) => base44.entities.Entry.delete(id),
-    successMessage: 'Entry deleted', ...sharedOpts,
+  // R9CX Phase 2: Archive instead of hard delete
+  const { mutateAsync: archiveEntry } = useDashboardMutation({
+    operationType: 'entry_archived', entityName: 'Entry',
+    mutationFn: ({ id, reason }) => base44.functions.invoke('archiveRecord', {
+      entity_type: 'Entry',
+      entity_id: id,
+      reason: reason || 'Removed from event',
+    }),
+    successMessage: 'Entry archived', ...sharedOpts,
   });
 
   const { mutateAsync: bulkUpdateEntries, isPending: bulkUpdating } = useDashboardMutation({
@@ -203,11 +213,14 @@ export default function EntriesManager({
     setDetailEntry(null);
   };
 
-  const handleDeleteEntry = async (id) => {
-    await deleteEntry(id);
+  const handleArchiveEntry = async (id, reason) => {
+    await archiveEntry({ id, reason });
     setDetailEntry(null);
     setEditingEntry(null);
     setShowDeleteConfirm(null);
+    setArchiveReason('');
+    refetchAll();
+    invalidateAfterOperation('entry_archived', { eventId });
   };
 
   const handleEntryCreated = async () => {
@@ -307,6 +320,20 @@ export default function EntriesManager({
 
   return (
     <div className="space-y-4">
+      {/* R9CX Phase 3: Duplicate car number warning */}
+      {allDuplicateGroups.length > 0 && (
+        <div className="bg-red-950/40 border border-red-700/60 rounded-lg px-4 py-3 space-y-1.5">
+          <p className="text-xs font-bold text-red-300">⚠ Duplicate Car Numbers Detected ({allDuplicateGroups.length} conflict{allDuplicateGroups.length !== 1 ? 's' : ''})</p>
+          {allDuplicateGroups.map(({ car_number, entries: dupes }) => (
+            <div key={car_number} className="text-[11px] text-red-400">
+              <span className="font-mono font-bold">#{car_number}</span>
+              {' — '}
+              {dupes.map(e => driversMap[e.driver_id] ? `${driversMap[e.driver_id].first_name} ${driversMap[e.driver_id].last_name}` : `Entry ${e.id.slice(0,6)}`).join(', ')}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Summary stats */}
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 grid grid-cols-2 md:grid-cols-6 gap-2">
         {[
@@ -591,6 +618,38 @@ export default function EntriesManager({
         invalidateAfterOperation={invalidateAfterOperation}
         existingEntries={entries}
       />
+
+      {/* R9CX Phase 2: Archive Entry Dialog (replaces hard delete) */}
+      <AlertDialog open={!!showDeleteConfirm} onOpenChange={(open) => { if (!open) { setShowDeleteConfirm(null); setArchiveReason(''); } }}>
+        <AlertDialogContent className="bg-[#262626] border-gray-700">
+          <AlertDialogTitle className="text-white flex items-center gap-2">
+            <Archive className="w-4 h-4 text-amber-400" /> Archive Entry
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-gray-400">
+            This entry will be archived (not permanently deleted). It can be restored from the Archive Browser. Results linked to this entry will remain.
+          </AlertDialogDescription>
+          <div className="mt-2">
+            <label className="text-xs text-gray-400 block mb-1">Archive reason (required)</label>
+            <input
+              type="text"
+              value={archiveReason}
+              onChange={e => setArchiveReason(e.target.value)}
+              placeholder="e.g. Withdrawn by driver, duplicate entry…"
+              className="w-full bg-[#1A1A1A] border border-gray-600 rounded text-xs text-gray-200 px-2 py-1.5 outline-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2 mt-2">
+            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleArchiveEntry(showDeleteConfirm, archiveReason)}
+              disabled={!archiveReason.trim()}
+              className="bg-amber-700 hover:bg-amber-600 disabled:opacity-40"
+            >
+              Archive Entry
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Self Service Drawer */}
       <DriverSelfServiceDrawer

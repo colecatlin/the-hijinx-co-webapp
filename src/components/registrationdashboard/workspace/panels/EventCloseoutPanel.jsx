@@ -28,27 +28,8 @@ export default function EventCloseoutPanel({ onNavigate }) {
   const officials = wsData?.officials || [];
   const sessions = wsData?.sessions || [];
   const results = wsData?.results || [];
-
-  // Governance readiness
-  const { score: govScore, blockers: govBlockers } = useGovernanceReadiness({
-    event: selectedEvent,
-    sessions,
-    results,
-    officials,
-    auditLogs: [],
-    exportPacketExists: false,
-    closeoutPassed: false,
-  });
-
-  // Enforcement
-  const { canPerform, blockers: enforcementBlockers } = useGovernanceEnforcement({
-    event: selectedEvent,
-    officials,
-    sessions,
-    results,
-    governanceScore: govScore,
-    isAdmin,
-  });
+  const gridLineups = wsData?.gridLineups || [];
+  const entries = wsData?.entries || [];
 
   // Load persisted export packets for this event
   const { data: exportPackets = [] } = useQuery({
@@ -65,6 +46,48 @@ export default function EventCloseoutPanel({ onNavigate }) {
     enabled: !!eventId,
     select: res => res.data,
     staleTime: 10_000,
+  });
+
+  // Load audit logs scoped to this event for governance score
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['auditLogs_event', eventId],
+    queryFn: () => eventId ? base44.entities.AuditLog.filter({ event_id: eventId }, '-timestamp', 100) : Promise.resolve([]),
+    enabled: !!eventId,
+    staleTime: 60_000,
+  });
+
+  // R9CX Phase 5: Compute real governance inputs
+  const exportPacketExists = exportPackets.length > 0;
+  const closeoutPassed = validation?.can_close === true;
+  // Simple data health score from entries/results
+  const dataHealthScore = (() => {
+    let penalty = 0;
+    entries.forEach(e => { if (!e.driver_id) penalty += 15; });
+    results.forEach(r => { if (!r.driver_id) penalty += 15; if (!r.session_id) penalty += 5; });
+    return Math.max(0, 100 - penalty);
+  })();
+
+  // Governance readiness with REAL values (R9CX Fix)
+  const { score: govScore, blockers: govBlockers } = useGovernanceReadiness({
+    event: selectedEvent,
+    sessions,
+    results,
+    officials,
+    gridLineups,
+    auditLogs,
+    exportPacketExists,
+    closeoutPassed,
+    dataHealthScore,
+  });
+
+  // Enforcement
+  const { canPerform, blockers: enforcementBlockers } = useGovernanceEnforcement({
+    event: selectedEvent,
+    officials,
+    sessions,
+    results,
+    governanceScore: govScore,
+    isAdmin,
   });
 
   const completeMutation = useMutation({
@@ -139,9 +162,11 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
   const checklist = validation?.checklist || [];
   const passed = checklist.filter(c => c.passed).length;
-  // Allow admin to override governance blockers
-  const govBlocked = !isAdmin && !canPerform('close_event').allowed;
-  const canClose = validation?.can_close && isAdmin && !govBlocked;
+  // R9CX: Allow non-admin to close event if all checks pass and governance allows
+  const govEnforcement = canPerform('close_event');
+  const govBlocked = !isAdmin && !govEnforcement.allowed;
+  // Can close if: validation passes AND (admin OR governance allows)
+  const canClose = validation?.can_close && !govBlocked;
   const isCompleted = selectedEvent?.status === 'Completed';
 
   return (

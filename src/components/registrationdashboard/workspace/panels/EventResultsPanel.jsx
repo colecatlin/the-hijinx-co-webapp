@@ -10,7 +10,8 @@ import BulkPublishActions from '@/components/registrationdashboard/results/BulkP
 import { Card, CardContent } from '@/components/ui/card';
 
 // R9CU: EventResultsPanel accepts wsData from EventWorkspaceShell (workspace authority)
-export default function EventResultsPanel({ wsData }) {
+// R9CX: Also accepts results lifecycle callbacks from EventWorkspaceShell
+export default function EventResultsPanel({ wsData, onResultsProvisional, onResultsOfficial, onResultsLocked }) {
   const {
     selectedEvent,
     selectedSessionId,
@@ -21,9 +22,6 @@ export default function EventResultsPanel({ wsData }) {
     invalidateAfterOperation,
     standingsLastCalculatedAt,
     onSetStandingsDirty,
-    onResultsProvisional,
-    onResultsOfficial,
-    onResultsLocked,
   } = useEventWorkspace();
 
   const eventId = selectedEvent?.id;

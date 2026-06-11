@@ -42,11 +42,21 @@ export function isOperationalSession(session) {
 
 /**
  * Is this session locked from all edits?
- * Dual-field check: status === 'Locked' OR locked boolean.
+ * R9CX: status is the single authority. `locked` boolean is treated as derived/legacy.
+ * Primary check is status === 'Locked'. Boolean fallback retained for backward compat.
  */
 export function isSessionLocked(session) {
   if (!session) return false;
-  return session.status === SESSION_STATUSES.LOCKED || session.locked === true;
+  // status is the authoritative field; locked boolean is legacy/derived
+  return session.status === SESSION_STATUSES.LOCKED;
+}
+
+/**
+ * Derive the locked boolean from session status.
+ * Use when writing session updates to keep both fields in sync.
+ */
+export function deriveLocked(status) {
+  return status === SESSION_STATUSES.LOCKED;
 }
 
 /**

@@ -4,8 +4,9 @@
  * Distributed to panels via EventWorkspaceContext (wsData field).
  * Panels must NOT fetch their own event-level queries.
  */
-import React, { useMemo, useState } from 'react';
-import { useEventWorkspace } from './EventWorkspaceContext';
+import React, { useMemo, useState, useCallback } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useEventWorkspace, EventWorkspaceProvider } from './EventWorkspaceContext';
 import { useEventAlerts } from './useEventAlerts';
 import { useEventWorkspaceData } from '@/hooks/useEventWorkspaceData';
 import OpsEventDashboard from '../ops/OpsEventDashboard';
@@ -74,9 +75,6 @@ export default function EventWorkspaceShell() {
     standingsLastCalculatedAt,
     standingsDirty,
     onSetStandingsDirty,
-    onResultsProvisional,
-    onResultsOfficial,
-    onResultsLocked,
     eventWorkspacePanel,
     setEventWorkspacePanel,
     eventPermissions,
@@ -88,6 +86,33 @@ export default function EventWorkspaceShell() {
     selectedEvent?.series_id,
     selectedEvent?.season,
   );
+
+  const eventId = selectedEvent?.id;
+
+  // R9CX Phase 6 — Results lifecycle callbacks: trigger targeted invalidations
+  const handleResultsProvisional = useCallback(() => {
+    if (!eventId) return;
+    wsData.refetchResults?.();
+    wsData.refetchSessions?.();
+  }, [eventId, wsData]);
+
+  const handleResultsOfficial = useCallback(() => {
+    if (!eventId) return;
+    wsData.refetchResults?.();
+    wsData.refetchSessions?.();
+    wsData.refetchAll?.();
+    // Trigger public data sync
+    base44.functions.invoke('syncPublicData', {
+      event_id: eventId,
+      trigger: 'results_official_callback',
+    }).catch(() => {});
+  }, [eventId, wsData]);
+
+  const handleResultsLocked = useCallback(() => {
+    if (!eventId) return;
+    wsData.refetchResults?.();
+    wsData.refetchSessions?.();
+  }, [eventId, wsData]);
 
   // Permitted panels
   const permittedPanels = useMemo(() => {
@@ -115,10 +140,27 @@ export default function EventWorkspaceShell() {
     standingsDirty: !!standingsDirty,
   });
 
-  // Build enriched context value so panels can access wsData
-  const contextPatch = { wsData };
+  // Build enriched context value so panels can access wsData + real lifecycle callbacks
+  // R9CX: Inject real callbacks so context consumers (OpsEventDashboard etc.) also get them
+  const contextPatch = {
+    wsData,
+    onResultsProvisional: handleResultsProvisional,
+    onResultsOfficial: handleResultsOfficial,
+    onResultsLocked: handleResultsLocked,
+  };
+
+  // Merge contextPatch into the existing context value so all child panels get wsData + real callbacks
+  const parentCtx = useEventWorkspace();
+  const enrichedCtxValue = React.useMemo(() => ({
+    ...parentCtx,
+    wsData,
+    onResultsProvisional: handleResultsProvisional,
+    onResultsOfficial: handleResultsOfficial,
+    onResultsLocked: handleResultsLocked,
+  }), [parentCtx, wsData, handleResultsProvisional, handleResultsOfficial, handleResultsLocked]);
 
   return (
+    <EventWorkspaceProvider value={enrichedCtxValue}>
     <div className="flex flex-col h-full overflow-hidden" style={{ background: '#0B0D0D' }}>
       {/* ZONE 1: Command Header */}
       <EventCommandHeader
@@ -181,9 +223,9 @@ export default function EventWorkspaceShell() {
               invalidateAfterOperation={invalidateAfterOperation}
               standingsLastCalculatedAt={standingsLastCalculatedAt}
               onSetStandingsDirty={onSetStandingsDirty}
-              onResultsProvisional={onResultsProvisional}
-              onResultsOfficial={onResultsOfficial}
-              onResultsLocked={onResultsLocked}
+              onResultsProvisional={handleResultsProvisional}
+              onResultsOfficial={handleResultsOfficial}
+              onResultsLocked={handleResultsLocked}
               alerts={alerts}
               onNavigate={setEventWorkspacePanel}
               standingsDirty={!!standingsDirty}
@@ -204,7 +246,7 @@ export default function EventWorkspaceShell() {
           {isPanelPermitted && eventWorkspacePanel === 'entries'       && <EventEntriesPanel wsData={wsData} />}
           {isPanelPermitted && eventWorkspacePanel === 'sessions'      && <EventSessionsPanel wsData={wsData} />}
           {isPanelPermitted && eventWorkspacePanel === 'standings'     && <EventStandingsPanel wsData={wsData} />}
-          {isPanelPermitted && eventWorkspacePanel === 'results'       && <EventResultsPanel wsData={wsData} />}
+          {isPanelPermitted && eventWorkspacePanel === 'results'       && <EventResultsPanel wsData={wsData} onResultsProvisional={handleResultsProvisional} onResultsOfficial={handleResultsOfficial} onResultsLocked={handleResultsLocked} />}
           {isPanelPermitted && eventWorkspacePanel === 'officials'     && <EventOfficialsPanel />}
           {isPanelPermitted && eventWorkspacePanel === 'grid'          && <EventGridPanel />}
           {isPanelPermitted && eventWorkspacePanel === 'closeout'      && (
@@ -223,5 +265,6 @@ export default function EventWorkspaceShell() {
         />
       </div>
     </div>
+    </EventWorkspaceProvider>
   );
 }

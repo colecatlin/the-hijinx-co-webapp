@@ -19,6 +19,7 @@ import {
   SESSION_STATUS_ORDER,
   isSessionLocked,
   isSessionOfficial,
+  deriveLocked,
 } from './sessionLifecycle';
 import { sortSessionsChronologically } from './ops/sessionOrdering';
 import { SESSION_STATE_CONFIG, deriveSessionOperationalState } from './ops/sessionStateIntelligence';
@@ -341,19 +342,18 @@ export default function ResultsManager({
   const updateSessionStatus = useMutation({
     mutationFn: async (newStatus) => {
       const prevStatus = selectedSession?.status || 'Draft';
-      const payload = { status: newStatus };
+      // R9CX Phase 9: status is single authority; locked is always derived from status
+      const payload = { status: newStatus, locked: deriveLocked(newStatus) };
       if (newStatus === 'Locked') {
-        payload.locked = true;
         // Lock all results in this session
         const sessionResults = await base44.entities.Results.filter({ session_id: selectedSession.id });
-        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Locked' })));
+        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Locked', published: true, is_public: true })));
       }
       if (newStatus === 'Official' && newStatus !== prevStatus) {
-        // Mark results as Official
+        // Mark results as Official — write both visibility fields for authority consistency
         const sessionResults = await base44.entities.Results.filter({ session_id: selectedSession.id });
-        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Official', published: true, published_at: new Date().toISOString() })));
+        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Official', published: true, is_public: true, published_at: new Date().toISOString() })));
       }
-      if (newStatus === 'Draft' || newStatus === 'Provisional') payload.locked = false;
       await base44.entities.Session.update(selectedSession.id, payload);
 
       // Sync results visibility based on session status

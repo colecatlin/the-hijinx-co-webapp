@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertTriangle, ChevronRight, UserCheck, FileText, RefreshCw } from 'lucide-react';
+import UserPickerInput from '@/components/shared/UserPickerInput';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -198,14 +199,15 @@ function IncidentDetailDrawer({ incident, open, onClose, eventId, onRefresh }) {
                   <UserCheck className="w-3 h-3" /> Assign Investigator
                 </p>
                 <div className="flex gap-2">
-                  <Input
-                    value={assigneeId}
-                    onChange={e => setAssigneeId(e.target.value)}
-                    placeholder="User ID…"
-                    className="bg-gray-900 border-gray-700 text-white text-xs h-8 flex-1"
-                  />
+                  <div className="flex-1">
+                    <UserPickerInput
+                      value={assigneeId}
+                      onChange={setAssigneeId}
+                      placeholder="Search by name or email…"
+                    />
+                  </div>
                   <Button size="sm" disabled={saving || !assigneeId.trim()} onClick={handleAssign}
-                    className="bg-teal-800 hover:bg-teal-700 text-white text-xs h-8">
+                    className="bg-teal-800 hover:bg-teal-700 text-white text-xs h-8 flex-shrink-0">
                     Assign
                   </Button>
                 </div>
