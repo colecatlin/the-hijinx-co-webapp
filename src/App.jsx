@@ -70,6 +70,9 @@ import RaceControlEvents from './pages/RaceControlEvents';
 import RaceControlLayout from './components/racecontrol/RaceControlLayout';
 import { RaceControlProvider } from './components/racecontrol/RaceControlProvider';
 import RaceCoreDashboard from './pages/RaceCoreDashboard';
+import RaceCoreArchive from './pages/RaceCoreArchive';
+import RaceCoreHealth from './pages/RaceCoreHealth';
+import RaceCoreGovernance from './pages/RaceCoreGovernance';
 import ManageDrivers from './pages/ManageDrivers';
 import ManageTeams from './pages/ManageTeams';
 import ManageTracks from './pages/ManageTracks';
@@ -316,6 +319,10 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/data/calendar-sync"   element={<ManageCalendarSync embedded={true} />} />
         <Route path="/racecore/data/results-repair"  element={<ResultsRepairPage />} />
         <Route path="/racecore/data/diagnostics"     element={<Diagnostics embedded={true} />} />
+        {/* R9CS: Governance routes */}
+        <Route path="/racecore/governance"           element={<RaceCoreGovernance />} />
+        <Route path="/racecore/archive"              element={<RaceCoreArchive />} />
+        <Route path="/racecore/health"               element={<RaceCoreHealth />} />
         {/* Legacy data paths → new canonical */}
         <Route path="/racecore/data/csv"         element={<Navigate to="/racecore/data/imports"       replace />} />
         <Route path="/racecore/diagnostics"      element={<Navigate to="/racecore/data/diagnostics"   replace />} />

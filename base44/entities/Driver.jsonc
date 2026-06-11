@@ -132,7 +132,7 @@
     "trending_score": {
       "type": "number",
       "default": 0,
-      "description": "Dynamic trending score \u2014 higher = more prominent on discovery pages. Will be computed from results, profile views, and activity."
+      "description": "Dynamic trending score"
     },
     "owner_user_id": {
       "type": "string",
@@ -219,6 +219,24 @@
       "items": {
         "type": "string"
       }
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9CS: Whether this record is archived"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "R9CS: When this record was archived"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "R9CS: User ID who archived this record"
+    },
+    "archive_reason": {
+      "type": "string",
+      "description": "R9CS: Reason for archiving"
     }
   },
   "required": [

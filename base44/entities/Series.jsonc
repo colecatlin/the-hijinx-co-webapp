@@ -40,11 +40,11 @@
     },
     "discipline_id": {
       "type": "string",
-      "description": "Reference to canonical Discipline entity (Step 2 relational field)"
+      "description": "Reference to canonical Discipline entity"
     },
     "format_id": {
       "type": "string",
-      "description": "Reference to canonical Format entity (Step 4 relational field \u2014 must belong to the selected Discipline)"
+      "description": "Reference to canonical Format entity"
     },
     "geographic_scope": {
       "type": "string",
@@ -179,7 +179,7 @@
       "items": {
         "type": "string"
       },
-      "description": "R9BX: Active RaceCore modules for this series. If missing, defaults to [governance, media, registration]. Empty array = Core only.",
+      "description": "R9BX: Active RaceCore modules for this series.",
       "default": [
         "governance",
         "media",
@@ -226,6 +226,24 @@
     "api_key": {
       "type": "string",
       "description": "API key for future formal API integration"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9CS: Whether this record is archived"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "R9CS: When this record was archived"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "R9CS: User ID who archived this record"
+    },
+    "archive_reason": {
+      "type": "string",
+      "description": "R9CS: Reason for archiving"
     }
   },
   "required": [

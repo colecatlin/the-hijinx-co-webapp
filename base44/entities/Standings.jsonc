@@ -116,15 +116,33 @@
     },
     "standing_identity_key": {
       "type": "string",
-      "description": "Stable deduplication key: standing:{series_id}:{season_year}:{class_id_or_none}:{driver_id}"
+      "description": "Stable deduplication key"
     },
     "normalized_standing_key": {
       "type": "string",
-      "description": "Deterministic normalized key: standing:{series_id}:{season_year}:{driver_id_or_normalized_name}"
+      "description": "Deterministic normalized key"
     },
     "notes": {
       "type": "string",
-      "description": "Internal notes (DUPLICATE_OF:{id} marker used by repair tools)"
+      "description": "Internal notes"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9CS: Whether this record is archived"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "R9CS: When this record was archived"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "R9CS: User ID who archived this record"
+    },
+    "archive_reason": {
+      "type": "string",
+      "description": "R9CS: Reason for archiving"
     }
   },
   "required": [

@@ -174,11 +174,29 @@
     },
     "entry_identity_key": {
       "type": "string",
-      "description": "Stable deduplication key: entry:{event_id}:{driver_id}:{class_id_or_none}"
+      "description": "Stable deduplication key"
     },
     "normalized_entry_key": {
       "type": "string",
-      "description": "Deterministic normalized key: entry:{event_id}:{driver_id_or_normalized_name}:{class_id_or_none}"
+      "description": "Deterministic normalized key"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9CS: Whether this record is archived"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "R9CS: When this record was archived"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "R9CS: User ID who archived this record"
+    },
+    "archive_reason": {
+      "type": "string",
+      "description": "R9CS: Reason for archiving"
     }
   },
   "required": [

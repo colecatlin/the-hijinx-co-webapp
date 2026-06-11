@@ -8,15 +8,15 @@
     },
     "event_class_id": {
       "type": "string",
-      "description": "Reference to EventClass (optional, primary grouping key for Race Core)"
+      "description": "Reference to EventClass"
     },
     "series_class_id": {
       "type": "string",
-      "description": "Reference to SeriesClass (optional, for standings and series filtering)"
+      "description": "Reference to SeriesClass"
     },
     "event_day_id": {
       "type": "string",
-      "description": "Reference to EventDay \u2014 which day of the event this session runs on"
+      "description": "Reference to EventDay"
     },
     "session_type": {
       "type": "string",
@@ -34,11 +34,11 @@
     },
     "name": {
       "type": "string",
-      "description": "Session name (e.g., Heat 1, Final)"
+      "description": "Session name"
     },
     "session_number": {
       "type": "number",
-      "description": "Session number within class group (optional)"
+      "description": "Session number within class group"
     },
     "round_number": {
       "type": "number",
@@ -46,7 +46,7 @@
     },
     "round_label": {
       "type": "string",
-      "description": "Optional display label for the round (e.g. 'Round 1 \u2014 Saturday')"
+      "description": "Optional display label for the round"
     },
     "points_enabled": {
       "type": "boolean",
@@ -61,11 +61,11 @@
         "final"
       ],
       "default": "none",
-      "description": "Type of points awarded: none, qualifying, or final (championship)"
+      "description": "Type of points awarded"
     },
     "points_rule": {
       "type": "string",
-      "description": "Points rule identifier (e.g. top_2_qualifying, standard_final)"
+      "description": "Points rule identifier"
     },
     "run_order": {
       "type": "number",
@@ -75,15 +75,15 @@
     "scheduled_time": {
       "type": "string",
       "format": "date-time",
-      "description": "Scheduled start time (optional)"
+      "description": "Scheduled start time"
     },
     "duration_minutes": {
       "type": "number",
-      "description": "Duration in minutes (optional)"
+      "description": "Duration in minutes"
     },
     "laps": {
       "type": "number",
-      "description": "Number of laps (optional)"
+      "description": "Number of laps"
     },
     "input_source": {
       "type": "string",
@@ -97,7 +97,7 @@
     },
     "advancement_rules": {
       "type": "string",
-      "description": "Rules for driver advancement (optional)"
+      "description": "Rules for driver advancement"
     },
     "status": {
       "type": "string",
@@ -113,7 +113,7 @@
     "locked": {
       "type": "boolean",
       "default": false,
-      "description": "Whether session is locked from editing (mirrors status=Locked)"
+      "description": "Whether session is locked from editing"
     },
     "is_historical": {
       "type": "boolean",
@@ -134,7 +134,7 @@
     },
     "normalized_session_key": {
       "type": "string",
-      "description": "Composite dedup key: session:{event_id}:{normalized_name}"
+      "description": "Composite dedup key"
     },
     "external_uid": {
       "type": "string",
@@ -151,12 +151,12 @@
     },
     "notes": {
       "type": "string",
-      "description": "Internal notes (DUPLICATE_OF:{id} marker used by repair tools)"
+      "description": "Internal notes"
     },
     "standings_hold": {
       "type": "boolean",
       "default": false,
-      "description": "When true, standings recalculation skips this session. Set by protest/hold workflow."
+      "description": "When true, standings recalculation skips this session."
     },
     "results_on_hold": {
       "type": "boolean",
@@ -165,7 +165,7 @@
     },
     "hold_reason": {
       "type": "string",
-      "description": "Plain text reason for hold e.g. Protest filed PRO-001"
+      "description": "Plain text reason for hold"
     },
     "hold_started_at": {
       "type": "string",
@@ -177,6 +177,24 @@
     },
     "hold_released_by_user_id": {
       "type": "string"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9CS: Whether this record is archived"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "R9CS: When this record was archived"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "R9CS: User ID who archived this record"
+    },
+    "archive_reason": {
+      "type": "string",
+      "description": "R9CS: Reason for archiving"
     }
   },
   "required": [

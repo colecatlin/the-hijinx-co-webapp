@@ -17,6 +17,10 @@ import {
   RefreshCw,
   Wrench,
   Database,
+  Archive,
+  ShieldCheck,
+  Activity,
+  HeartPulse,
 } from 'lucide-react';
 
 /**
@@ -72,6 +76,16 @@ export const RACE_CORE_NAV_GROUPS = [
       { href: '/racecore/media/assignments',  label: 'Assignments',  icon: Briefcase },
       { href: '/racecore/media/requests',     label: 'Requests',     icon: Send },
       { href: '/racecore/media/revenue',      label: 'Revenue',      icon: DollarSign },
+    ],
+  },
+  {
+    id: 'governance',
+    label: 'Governance',
+    adminOnly: true,
+    items: [
+      { href: '/racecore/governance',  label: 'Overview',    icon: ShieldCheck, adminOnly: true },
+      { href: '/racecore/archive',     label: 'Archive',     icon: Archive,     adminOnly: true },
+      { href: '/racecore/health',      label: 'Data Health', icon: HeartPulse,  adminOnly: true },
     ],
   },
   {

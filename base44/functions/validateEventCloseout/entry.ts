@@ -10,14 +10,30 @@ Deno.serve(async (req) => {
     if (!event_id) return Response.json({ error: 'event_id required' }, { status: 400 });
 
     // Fetch all relevant data
-    const [event, sessions, results, incidents, penalties, protests] = await Promise.all([
+    const [event, sessions, results, incidents, penalties, protests, officials, techRecords, standings] = await Promise.all([
       base44.entities.Event.get(event_id),
       base44.entities.Session.filter({ event_id }),
       base44.entities.Results.filter({ event_id }),
       base44.entities.Incident.filter({ event_id }).catch(() => []),
       base44.entities.Penalty.filter({ event_id }).catch(() => []),
       base44.entities.Protest.filter({ event_id }).catch(() => []),
+      base44.entities.EventOfficial.filter({ event_id }).catch(() => []),
+      base44.entities.TechInspectionRecord.filter({ event_id }).catch(() => []),
+      base44.entities.Standings.filter({ event_id }).catch(() => []),
     ]);
+
+    // Officials checks
+    const confirmedOfficials = officials.filter(o => ['Confirmed', 'Active'].includes(o.status));
+    const raceDirAssigned = confirmedOfficials.some(o => o.role === 'Race Director');
+    const stewardAssigned = confirmedOfficials.some(o => ['Chief Steward', 'Steward'].includes(o.role));
+    const techDirAssigned = confirmedOfficials.some(o => o.role === 'Technical Director');
+
+    // Tech checks
+    const failedTechRecords = techRecords.filter(t => t.status === 'Failed');
+    const recheckRequired = techRecords.filter(t => t.status === 'Recheck Required');
+
+    // Standings check
+    const hasCurrentStandings = standings.length > 0;
 
     const openIncidents = incidents.filter(i => ['Open', 'Under Review'].includes(i.status));
     const pendingPenalties = penalties.filter(p => p.status === 'Proposed');
@@ -80,7 +96,44 @@ Deno.serve(async (req) => {
         passed: eventLiveOrPublished,
         is_blocker: true,
       },
+      // Phase 10: Officials checks (blockers)
+      {
+        id: 'race_director_assigned',
+        label: 'Race Director assigned and confirmed',
+        passed: raceDirAssigned,
+        is_blocker: true,
+      },
+      {
+        id: 'steward_assigned',
+        label: 'Chief Steward or Steward assigned and confirmed',
+        passed: stewardAssigned,
+        is_blocker: true,
+      },
+      {
+        id: 'no_failed_tech',
+        label: 'No failed tech inspection records',
+        passed: failedTechRecords.length === 0,
+        is_blocker: true,
+      },
+      {
+        id: 'no_tech_recheck',
+        label: 'No tech re-checks pending',
+        passed: recheckRequired.length === 0,
+        is_blocker: false,
+      },
+      {
+        id: 'standings_current',
+        label: 'Standings calculated for this event',
+        passed: hasCurrentStandings,
+        is_blocker: false,
+      },
       // Warnings only
+      {
+        id: 'tech_director_assigned',
+        label: 'Technical Director assigned',
+        passed: techDirAssigned,
+        is_blocker: false,
+      },
       {
         id: 'no_draft_results',
         label: 'No draft or provisional results remaining',

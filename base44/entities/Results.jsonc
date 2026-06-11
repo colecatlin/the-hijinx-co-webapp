@@ -8,7 +8,7 @@
     },
     "program_id": {
       "type": "string",
-      "description": "Reference to DriverProgram \u2014 links result to a specific racing program"
+      "description": "Reference to DriverProgram"
     },
     "event_id": {
       "type": "string",
@@ -123,19 +123,37 @@
     "is_public": {
       "type": "boolean",
       "default": false,
-      "description": "Derived visibility field - set automatically when session is Official or Locked"
+      "description": "Derived visibility field"
     },
     "result_identity_key": {
       "type": "string",
-      "description": "Stable deduplication key: result:{event_id}:{session_id}:{driver_id}"
+      "description": "Stable deduplication key"
     },
     "normalized_result_key": {
       "type": "string",
-      "description": "Deterministic normalized key: result:{session_id}:{driver_id_or_normalized_name}"
+      "description": "Deterministic normalized key"
     },
     "notes": {
       "type": "string",
-      "description": "Additional result notes (DUPLICATE_OF:{id} marker used by repair tools)"
+      "description": "Additional result notes"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9CS: Whether this record is archived"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "R9CS: When this record was archived"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "R9CS: User ID who archived this record"
+    },
+    "archive_reason": {
+      "type": "string",
+      "description": "R9CS: Reason for archiving"
     }
   },
   "required": [

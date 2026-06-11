@@ -1,0 +1,67 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "description": "Type of entity that was changed (e.g. Driver, Event, Results)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the entity record"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Human-readable name/label of the entity at time of action"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "created",
+        "updated",
+        "archived",
+        "restored",
+        "deleted",
+        "status_changed",
+        "lifecycle_change",
+        "permission_change"
+      ],
+      "description": "Action that was performed"
+    },
+    "before_data": {
+      "type": "object",
+      "description": "State of record before the change"
+    },
+    "after_data": {
+      "type": "object",
+      "description": "State of record after the change"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "User ID who performed the action"
+    },
+    "performed_by_name": {
+      "type": "string",
+      "description": "Full name of user at time of action"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action occurred"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes or reason"
+    },
+    "event_id": {
+      "type": "string",
+      "description": "Optional event scope for event-contextual records"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "action",
+    "performed_by"
+  ]
+}
