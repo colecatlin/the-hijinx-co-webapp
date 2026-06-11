@@ -140,16 +140,7 @@ export default function EventWorkspaceShell() {
     standingsDirty: !!standingsDirty,
   });
 
-  // Build enriched context value so panels can access wsData + real lifecycle callbacks
-  // R9CX: Inject real callbacks so context consumers (OpsEventDashboard etc.) also get them
-  const contextPatch = {
-    wsData,
-    onResultsProvisional: handleResultsProvisional,
-    onResultsOfficial: handleResultsOfficial,
-    onResultsLocked: handleResultsLocked,
-  };
-
-  // Merge contextPatch into the existing context value so all child panels get wsData + real callbacks
+  // Enrich context with wsData + real lifecycle callbacks so all child panels share the single source of truth
   const parentCtx = useEventWorkspace();
   const enrichedCtxValue = React.useMemo(() => ({
     ...parentCtx,

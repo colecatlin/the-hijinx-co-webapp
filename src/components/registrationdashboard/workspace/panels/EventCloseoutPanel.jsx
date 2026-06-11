@@ -309,8 +309,8 @@ export default function EventCloseoutPanel({ onNavigate }) {
         </div>
       )}
 
-      {!isAdmin && (
-        <p className="text-[10px] text-gray-600">Admin access required to complete the event.</p>
+      {!isAdmin && govBlocked && (
+        <p className="text-[10px] text-gray-600">Governance requirements must be met before this event can be completed.</p>
       )}
     </div>
   );
