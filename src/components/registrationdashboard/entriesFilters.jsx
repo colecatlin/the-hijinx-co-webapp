@@ -45,10 +45,12 @@ export function applyFilters(entries, filters, driversMap) {
 
     // Status
     if (filters.status !== 'all') {
-      if (filters.status === 'registered' && entry.entry_status !== 'Registered') return false;
-      if (filters.status === 'checkedin' && entry.entry_status !== 'Checked In') return false;
-      if (filters.status === 'teched' && entry.tech_status !== 'Passed' && entry.tech_status !== 'Teched') return false;
-      if (filters.status === 'withdrawn' && entry.entry_status !== 'Withdrawn') return false;
+      if (filters.status === 'registered'  && entry.entry_status !== 'Registered')  return false;
+      if (filters.status === 'checkedin'   && entry.entry_status !== 'Checked In')  return false;
+      if (filters.status === 'teched'      && entry.entry_status !== 'Teched')       return false;
+      if (filters.status === 'techfailed'  && entry.entry_status !== 'Tech Failed') return false;
+      if (filters.status === 'techhold'    && entry.entry_status !== 'Tech Hold')   return false;
+      if (filters.status === 'withdrawn'   && entry.entry_status !== 'Withdrawn')   return false;
     }
 
     // Payment

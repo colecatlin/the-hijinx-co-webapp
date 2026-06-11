@@ -42,10 +42,12 @@ import { buildEntryPayload, getEntryFieldValue } from './entryFieldSupport';
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 function entryStatusBadge(status) {
   switch (status) {
-    case 'Checked In': return 'bg-green-500/20 text-green-400';
-    case 'Teched': return 'bg-purple-500/20 text-purple-400';
-    case 'Withdrawn': return 'bg-gray-500/20 text-gray-400';
-    default: return 'bg-blue-500/20 text-blue-400';
+    case 'Checked In':  return 'bg-green-500/20 text-green-400';
+    case 'Teched':      return 'bg-purple-500/20 text-purple-400';
+    case 'Tech Failed': return 'bg-red-500/20 text-red-400';
+    case 'Tech Hold':   return 'bg-amber-500/20 text-amber-400';
+    case 'Withdrawn':   return 'bg-gray-500/20 text-gray-400';
+    default:            return 'bg-blue-500/20 text-blue-400';
   }
 }
 function paymentBadge(status) {
@@ -401,6 +403,8 @@ export default function EntriesManager({
                 <SelectItem value="registered">Registered</SelectItem>
                 <SelectItem value="checkedin">Checked In</SelectItem>
                 <SelectItem value="teched">Teched</SelectItem>
+                <SelectItem value="techfailed">Tech Failed</SelectItem>
+                <SelectItem value="techhold">Tech Hold</SelectItem>
                 <SelectItem value="withdrawn">Withdrawn</SelectItem>
               </SelectContent>
             </Select>

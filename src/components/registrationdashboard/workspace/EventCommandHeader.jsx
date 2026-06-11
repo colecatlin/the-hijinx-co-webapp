@@ -108,7 +108,8 @@ export default function EventCommandHeader({
   const missingWaiver = entries.filter(e => !e.waiver_verified).length;
   const missingTransponder = entries.filter(e => !e.transponder_id).length;
   const techPending = entries.filter(e => !e.tech_status || e.tech_status === 'Not Inspected').length;
-  const techFailed = entries.filter(e => e.tech_status === 'Failed').length;
+  const techFailed = entries.filter(e => e.tech_status === 'Failed' || e.entry_status === 'Tech Failed').length;
+  const techHold = entries.filter(e => e.entry_status === 'Tech Hold').length;
 
   const liveSession = sessions.find(s => s.status === 'Live');
   const sessionsReady = sessions.filter(s => ['Official', 'Locked'].includes(s.status)).length;
@@ -220,6 +221,9 @@ export default function EventCommandHeader({
           )}
           {techFailed > 0 && (
             <StatChip label="Tech Fail" value={techFailed} variant="critical" onClick={() => onNavigate?.('compliance')} title="Tech failures → Compliance" />
+          )}
+          {techHold > 0 && (
+            <StatChip label="Tech Hold" value={techHold} variant="warning" onClick={() => onNavigate?.('compliance')} title="Tech holds → Compliance" />
           )}
           {techPending > 0 && (
             <StatChip label="Tech Pend" value={techPending} variant="default" onClick={() => onNavigate?.('compliance')} title="Pending tech → Compliance" />
