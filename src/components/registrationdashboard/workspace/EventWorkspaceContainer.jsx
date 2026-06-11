@@ -23,6 +23,7 @@ const WORKSPACE_PANELS = [
   { id: 'standings',     label: 'Standings' },
   { id: 'media',         label: 'Media' },
   { id: 'media_portal',  label: 'Media Portal' },
+  { id: 'officials',     label: 'Officials' },
   { id: 'activity',      label: 'Activity' },
   { id: 'settings',      label: 'Settings' },
   { id: 'closeout',      label: 'Closeout' },
@@ -145,6 +146,8 @@ export default function EventWorkspaceContainer({
     onLegacyTabChange,
     // R8G Part 3: event-scoped permissions from RaceControlProvider (null in embedded mode)
     eventPermissions,
+    // R9CR: wsData injected by EventWorkspaceShell after mount via context patch (officials panel reads this)
+    wsData: null, // populated by EventWorkspaceShell override
     // R8G Part 5C: canAction resolution order:
     //   1. isAdmin → true always
     //   2. eventPermissions present → use ACTION_TO_PERMISSION map (EventFile / route mode)

@@ -21,9 +21,12 @@ const INCIDENT_TYPES = [
   'Other',
 ];
 
+const SEVERITIES = ['Informational', 'Minor', 'Significant', 'Major', 'Serious'];
+
 export default function QuickIncidentModal({ open, onClose, eventId, activeSessionId }) {
   const queryClient = useQueryClient();
   const [type, setType] = useState('On-Track Contact');
+  const [severity, setSeverity] = useState('Minor');
   const [description, setDescription] = useState('');
 
   const createMutation = useMutation({
@@ -46,7 +49,7 @@ export default function QuickIncidentModal({ open, onClose, eventId, activeSessi
       session_id: activeSessionId || undefined,
       incident_type: type,
       description: description.trim(),
-      severity: 'Minor',
+      severity,
       status: 'Open',
     });
   };
@@ -78,6 +81,31 @@ export default function QuickIncidentModal({ open, onClose, eventId, activeSessi
                 <option key={t} value={t} className="bg-[#141818]">{t}</option>
               ))}
             </select>
+          </div>
+
+          {/* Severity */}
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1 block">
+              Severity
+            </label>
+            <div className="flex gap-1 flex-wrap">
+              {SEVERITIES.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSeverity(s)}
+                  className={`px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+                    severity === s
+                      ? s === 'Major' || s === 'Serious'
+                        ? 'bg-red-800/60 border-red-600/50 text-red-100'
+                        : 'bg-teal-800/50 border-teal-600/40 text-teal-200'
+                      : 'bg-white/[0.03] border-white/[0.07] text-gray-500 hover:text-gray-300'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Description */}

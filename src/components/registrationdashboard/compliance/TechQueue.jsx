@@ -1,18 +1,17 @@
 /**
- * R9CQ — TechQueue
- * Full tech inspection queue for the Compliance panel.
- * Inline pass/fail/recheck — no drawer required.
+ * R9CR — TechQueue
+ * Tech inspection queue. TechInspectionRecord is now the AUTHORITY.
+ * Pass/Fail/Recheck writes a TechInspectionRecord via syncEntryTechStatus.
+ * Entry.tech_status is derived from TechInspectionRecord.
+ * Reads entries/drivers/classes from wsData (no local fetches).
  */
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import TechQueueRow from './TechQueueRow';
 import CheckInSearchBar from '../checkin/CheckInSearchBar';
 import { toast } from 'sonner';
 import { Shield } from 'lucide-react';
-
-const DQ = applyDefaultQueryOptions();
 
 const FILTER_OPTIONS = [
   { value: 'all', label: 'All' },
@@ -22,51 +21,57 @@ const FILTER_OPTIONS = [
   { value: 'Passed', label: 'Passed' },
 ];
 
-export default function TechQueue({ selectedEvent }) {
+export default function TechQueue({ selectedEvent, wsData }) {
   const eventId = selectedEvent?.id;
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
-  const { data: entries = [] } = useQuery({
-    queryKey: ['entries', eventId],
-    queryFn: () => (eventId ? base44.entities.Entry.filter({ event_id: eventId }) : Promise.resolve([])),
-    enabled: !!eventId,
-    ...DQ,
-  });
-
-  const { data: drivers = [] } = useQuery({
-    queryKey: ['tech_drivers'],
-    queryFn: () => base44.entities.Driver.list('-created_date', 500),
-    staleTime: 60_000,
-    ...DQ,
-  });
-
-  const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['tech_seriesClasses'],
-    queryFn: () => base44.entities.SeriesClass.list('-created_date', 200),
-    staleTime: 60_000,
-    ...DQ,
-  });
+  // Consume from workspace context — no local fetches
+  const entries = wsData?.entries || [];
+  const drivers = wsData?.drivers || [];
+  const eventClasses = wsData?.eventClasses || [];
+  const seriesClasses = wsData?.seriesClasses || [];
 
   const driverMap = useMemo(() => Object.fromEntries(drivers.map(d => [d.id, d])), [drivers]);
-  const classMap = useMemo(() => Object.fromEntries(seriesClasses.map(c => [c.id, c])), [seriesClasses]);
+  const classMap = useMemo(() => {
+    const m = {};
+    seriesClasses.forEach(c => { m[c.id] = c.class_name || c.name || c.id; });
+    eventClasses.forEach(c => { m[c.id] = c.class_name || c.name || c.id; });
+    return m;
+  }, [eventClasses, seriesClasses]);
 
-  const updateMutation = useMutation({
-    mutationFn: ({ entryId, data }) => base44.entities.Entry.update(entryId, data),
-    onSuccess: () => {
+  // R9CR: Write to TechInspectionRecord (authority) → sync Entry.tech_status
+  const techMutation = useMutation({
+    mutationFn: (payload) => base44.functions.invoke('syncEntryTechStatus', payload),
+    onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
-      toast.success('Tech status updated');
+      queryClient.invalidateQueries({ queryKey: ['techInspections', eventId] });
+      toast.success(`Tech: ${vars.status}`);
     },
-    onError: () => toast.error('Failed to update tech status'),
+    onError: (e) => toast.error('Failed to update tech status: ' + (e.response?.data?.error || e.message)),
   });
 
-  const handlePass = (entry) =>
-    updateMutation.mutate({ entryId: entry.id, data: { tech_status: 'Passed', tech_time: new Date().toISOString() } });
-  const handleFail = (entry) =>
-    updateMutation.mutate({ entryId: entry.id, data: { tech_status: 'Failed', tech_time: new Date().toISOString() } });
-  const handleRecheck = (entry) =>
-    updateMutation.mutate({ entryId: entry.id, data: { tech_status: 'Recheck Required' } });
+  const handlePass = (entry) => techMutation.mutate({
+    entry_id: entry.id,
+    event_id: eventId,
+    status: 'Passed',
+    inspection_phase: 'Pre-Race',
+  });
+
+  const handleFail = (entry) => techMutation.mutate({
+    entry_id: entry.id,
+    event_id: eventId,
+    status: 'Failed',
+    inspection_phase: 'Pre-Race',
+  });
+
+  const handleRecheck = (entry) => techMutation.mutate({
+    entry_id: entry.id,
+    event_id: eventId,
+    status: 'Recheck Required',
+    inspection_phase: 'Pre-Race',
+  });
 
   const filtered = useMemo(() => {
     let result = [...entries];
@@ -83,14 +88,12 @@ export default function TechQueue({ selectedEvent }) {
         return name.includes(q) || num.includes(q) || transponder.includes(q);
       });
     }
-    // Sort: Failed first, then Recheck, then Not Inspected, then Passed
     const order = { 'Failed': 0, 'Recheck Required': 1, 'Not Inspected': 2, 'Passed': 3 };
     return result.sort((a, b) =>
       (order[a.tech_status || 'Not Inspected'] ?? 2) - (order[b.tech_status || 'Not Inspected'] ?? 2)
     );
   }, [entries, driverMap, filter, search]);
 
-  // Stats
   const pending = entries.filter(e => !e.tech_status || e.tech_status === 'Not Inspected').length;
   const passed = entries.filter(e => e.tech_status === 'Passed').length;
   const failed = entries.filter(e => e.tech_status === 'Failed').length;
@@ -111,6 +114,7 @@ export default function TechQueue({ selectedEvent }) {
             <span className="text-[10px] uppercase tracking-wider text-gray-600">{s.label}</span>
           </div>
         ))}
+        <span className="text-[10px] text-gray-700 ml-2">⦁ Via TechInspectionRecord</span>
       </div>
 
       {/* Search + filter */}
@@ -118,7 +122,7 @@ export default function TechQueue({ selectedEvent }) {
         <div className="flex-1">
           <CheckInSearchBar value={search} onChange={setSearch} placeholder="Search driver, #number…" />
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {FILTER_OPTIONS.map(opt => (
             <button
               key={opt.value}
@@ -148,11 +152,11 @@ export default function TechQueue({ selectedEvent }) {
               key={entry.id}
               entry={entry}
               driver={driverMap[entry.driver_id]}
-              className={classMap[entry.event_class_id || entry.series_class_id]?.class_name}
+              className={classMap[entry.event_class_id || entry.series_class_id]}
               onPass={handlePass}
               onFail={handleFail}
               onRecheck={handleRecheck}
-              isPending={updateMutation.isPending}
+              isPending={techMutation.isPending}
             />
           ))}
         </div>

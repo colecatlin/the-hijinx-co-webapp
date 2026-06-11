@@ -1,6 +1,6 @@
 /**
- * R9CQ — EventCloseoutPanel
- * Full event closeout workflow. Validates blockers, shows checklist, triggers completion.
+ * R9CR — EventCloseoutPanel
+ * Full event closeout workflow with real export packet + action links.
  */
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,15 +8,16 @@ import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '../EventWorkspaceContext';
 import CloseoutChecklist from '../../closeout/CloseoutChecklist';
 import CloseoutProgressBar from '../../closeout/CloseoutProgressBar';
-import { Download, Flag, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Download, Flag, RefreshCw, ShieldCheck, CheckCircle2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function EventCloseoutPanel() {
+export default function EventCloseoutPanel({ onNavigate }) {
   const { selectedEvent, isAdmin, invalidateAfterOperation } = useEventWorkspace();
   const eventId = selectedEvent?.id;
   const queryClient = useQueryClient();
   const [completing, setCompleting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportResult, setExportResult] = useState(null);
 
   const { data: validation, isLoading, refetch } = useQuery({
     queryKey: ['closeout_validation', eventId],
@@ -52,10 +53,18 @@ export default function EventCloseoutPanel() {
 
   const handleExportPacket = async () => {
     setExporting(true);
-    toast.info('Generating export packet…');
-    await new Promise(r => setTimeout(r, 1000));
-    toast.success('Export packet generated — check Exports panel');
-    setExporting(false);
+    toast.info('Generating export packet — building CSVs…');
+    try {
+      const res = await base44.functions.invoke('generateEventExportPacket', { event_id: eventId });
+      const data = res.data;
+      setExportResult(data);
+      refetch(); // re-validate in case export check is part of checklist
+      toast.success(`Export packet ready — ${data.files?.length || 0} files generated`);
+    } catch (e) {
+      toast.error('Export failed: ' + (e.response?.data?.error || e.message));
+    } finally {
+      setExporting(false);
+    }
   };
 
   const checklist = validation?.checklist || [];
@@ -100,7 +109,6 @@ export default function EventCloseoutPanel() {
         <CloseoutProgressBar passed={passed} total={checklist.length} />
       )}
 
-      {/* Loading */}
       {isLoading && (
         <div className="flex items-center gap-2 py-4">
           <RefreshCw className="w-4 h-4 text-gray-500 animate-spin" />
@@ -108,9 +116,9 @@ export default function EventCloseoutPanel() {
         </div>
       )}
 
-      {/* Checklist */}
+      {/* Checklist with action links */}
       {checklist.length > 0 && (
-        <CloseoutChecklist items={checklist} />
+        <CloseoutChecklist items={checklist} onNavigate={onNavigate} />
       )}
 
       {/* Blocker summary */}
@@ -125,6 +133,33 @@ export default function EventCloseoutPanel() {
         </div>
       )}
 
+      {/* Export packet result */}
+      {exportResult && (
+        <div className="p-3 rounded border border-teal-700/40 bg-teal-950/20 space-y-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
+            <p className="text-[11px] font-semibold text-teal-300">
+              Export Packet Generated — {exportResult.files?.length || 0} files
+            </p>
+          </div>
+          <p className="text-[10px] text-teal-500">{new Date(exportResult.generated_at).toLocaleString()}</p>
+          <div className="space-y-1">
+            {(exportResult.files || []).map(f => (
+              <a
+                key={f.name}
+                href={f.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-[10px] text-teal-300 hover:text-teal-200 transition-colors"
+              >
+                <ExternalLink className="w-2.5 h-2.5" />
+                {f.name} ({f.row_count} rows)
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Action buttons */}
       {!isCompleted && (
         <div className="flex flex-wrap gap-2 pt-2 border-t border-white/[0.06]">
@@ -134,7 +169,7 @@ export default function EventCloseoutPanel() {
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded border border-white/[0.08] text-[11px] font-semibold uppercase tracking-wider text-gray-300 bg-white/[0.04] hover:bg-white/[0.08] transition-colors disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5" />
-            {exporting ? 'Generating…' : 'Generate Export Packet'}
+            {exporting ? 'Generating…' : exportResult ? 'Re-generate Export Packet' : 'Generate Export Packet'}
           </button>
           <button
             onClick={handleComplete}

@@ -20,7 +20,7 @@ const SEVERITY_STYLES = {
   warning: 'bg-yellow-900/30 text-yellow-300 border-yellow-800/50',
 };
 
-export default function EventCompliancePanel() {
+export default function EventCompliancePanel({ wsData }) {
   const {
     selectedEvent,
     user,
@@ -63,7 +63,7 @@ export default function EventCompliancePanel() {
 
       {/* Tech Queue tab — inline pass/fail, no drawer */}
       {activeTab === 'tech_queue' && (
-        <TechQueue selectedEvent={selectedEvent} />
+        <TechQueue selectedEvent={selectedEvent} wsData={wsData} />
       )}
 
       {/* Compliance tab — waivers and flags */}

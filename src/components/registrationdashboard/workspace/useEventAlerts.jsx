@@ -14,16 +14,28 @@ export function useEventAlerts({
   incidents = [],
   penalties = [],
   protests = [],
+  officials = [],
   standingsDirty = false,
   mediaApplications = [],
 }) {
-  const [dismissed, setDismissed] = useState(new Set());
+  // R9CR: Persist dismissed WARNING/INFO alerts in sessionStorage. CRITICAL cannot be dismissed.
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('rc_dismissed_alerts');
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
 
   const dismiss = useCallback((id) => {
-    setDismissed(prev => new Set([...prev, id]));
+    setDismissed(prev => {
+      const next = new Set([...prev, id]);
+      try { sessionStorage.setItem('rc_dismissed_alerts', JSON.stringify([...next])); } catch {}
+      return next;
+    });
   }, []);
 
   const alerts = useMemo(() => {
+    const now = Date.now();
     const raw = [];
 
     // ── CRITICAL ──────────────────────────────────────────────────────────────
@@ -140,6 +152,19 @@ export function useEventAlerts({
       });
     }
 
+    // ── CRITICAL: Missing Race Director ───────────────────────────────────────
+    const hasRaceDirector = officials.some(o => o.role === 'Race Director' && o.status !== 'Withdrawn');
+    if (!hasRaceDirector && officials.length >= 0) {
+      raw.push({
+        id: 'missing_race_director',
+        severity: 'CRITICAL',
+        message: 'No Race Director assigned to this event',
+        target: 'officials',
+        dismissible: false,
+        timestamp: now,
+      });
+    }
+
     // ── INFO ──────────────────────────────────────────────────────────────────
     const pendingMedia = mediaApplications.filter(a =>
       ['Pending', 'Submitted', 'Applied'].includes(a.status)
@@ -154,11 +179,14 @@ export function useEventAlerts({
       });
     }
 
-    // Sort by severity, filter dismissed
+    // Add timestamps to all alerts
+    raw.forEach(a => { if (!a.timestamp) a.timestamp = now; });
+
+    // Sort by severity, filter dismissed (CRITICAL never filtered)
     return raw
-      .filter(a => !dismissed.has(a.id))
+      .filter(a => a.severity === 'CRITICAL' ? !a.dismissible || !dismissed.has(a.id) : !dismissed.has(a.id))
       .sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
-  }, [entries, sessions, results, incidents, penalties, protests, standingsDirty, mediaApplications, dismissed]);
+  }, [entries, sessions, results, incidents, penalties, protests, officials, standingsDirty, mediaApplications, dismissed]);
 
   return { alerts, dismiss };
 }
