@@ -12,6 +12,7 @@ import { useDataHealth } from '@/hooks/useDataHealth';
 import { Link } from 'react-router-dom';
 import AuditCoverageReport from './AuditCoverageReport';
 import EnforcementStatusPanel from './EnforcementStatusPanel';
+import DataAuthorityDashboard from './DataAuthorityDashboard';
 
 function StatCard({ icon: Icon, label, value, sub, color = 'text-teal-400', href }) {
   const inner = (
@@ -60,9 +61,10 @@ export default function GovernanceDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
 
   const TABS = [
-    { id: 'overview',    label: 'Overview' },
-    { id: 'enforcement', label: 'Enforcement' },
-    { id: 'audit',       label: 'Audit Coverage' },
+    { id: 'overview',       label: 'Overview' },
+    { id: 'enforcement',    label: 'Enforcement' },
+    { id: 'audit',          label: 'Audit Coverage' },
+    { id: 'data_authority', label: 'Data Authority' },
   ];
 
   return (
@@ -99,8 +101,9 @@ export default function GovernanceDashboard() {
         ))}
       </div>
 
-      {activeTab === 'enforcement' && <EnforcementStatusPanel />}
-      {activeTab === 'audit' && <AuditCoverageReport />}
+      {activeTab === 'enforcement'    && <EnforcementStatusPanel />}
+      {activeTab === 'audit'          && <AuditCoverageReport />}
+      {activeTab === 'data_authority' && <DataAuthorityDashboard />}
 
       {activeTab === 'overview' && <>
       {/* Stats grid */}

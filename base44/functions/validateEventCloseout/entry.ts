@@ -9,8 +9,8 @@ Deno.serve(async (req) => {
     const { event_id } = await req.json();
     if (!event_id) return Response.json({ error: 'event_id required' }, { status: 400 });
 
-    // Fetch all relevant data
-    const [event, sessions, results, incidents, penalties, protests, officials, techRecords, standings] = await Promise.all([
+    // Fetch all relevant data (R9CU: added exportPackets for distribution check)
+    const [event, sessions, results, incidents, penalties, protests, officials, techRecords, standings, exportPackets] = await Promise.all([
       base44.entities.Event.get(event_id),
       base44.entities.Session.filter({ event_id }),
       base44.entities.Results.filter({ event_id }),
@@ -20,6 +20,7 @@ Deno.serve(async (req) => {
       base44.entities.EventOfficial.filter({ event_id }).catch(() => []),
       base44.entities.TechInspectionRecord.filter({ event_id }).catch(() => []),
       base44.entities.Standings.filter({ event_id }).catch(() => []),
+      base44.entities.EventExportPacket.filter({ event_id }).catch(() => []),
     ]);
 
     // Officials checks
@@ -34,6 +35,12 @@ Deno.serve(async (req) => {
 
     // Standings check
     const hasCurrentStandings = standings.length > 0;
+
+    // R9CU Phase 9: Data distribution checks
+    const allResultsPublished = results.length > 0 && results.every(r => r.published === true || ['Official', 'Locked'].includes(r.status_state));
+    const hasExportPacket = exportPackets.length > 0;
+    // Visibility sync check: any official result not marked published
+    const unpublishedOfficialResults = results.filter(r => ['Official', 'Locked'].includes(r.status_state) && !r.published);
 
     const openIncidents = incidents.filter(i => ['Open', 'Under Review'].includes(i.status));
     const pendingPenalties = penalties.filter(p => p.status === 'Proposed');
@@ -144,6 +151,25 @@ Deno.serve(async (req) => {
         id: 'event_published',
         label: 'Event has been published publicly',
         passed: !!event?.published_flag,
+        is_blocker: false,
+      },
+      // R9CU Phase 9: Data distribution checks
+      {
+        id: 'results_synced',
+        label: 'All official results publicly synchronized',
+        passed: allResultsPublished && unpublishedOfficialResults.length === 0,
+        is_blocker: false,
+      },
+      {
+        id: 'export_packet_exists',
+        label: 'Export packet generated',
+        passed: hasExportPacket,
+        is_blocker: false,
+      },
+      {
+        id: 'standings_distributed',
+        label: 'Standings calculated and distributed',
+        passed: hasCurrentStandings,
         is_blocker: false,
       },
     ];

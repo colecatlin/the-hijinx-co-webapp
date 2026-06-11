@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const DATA_MAP = {
   entity_categories: {
@@ -73,6 +73,34 @@ const DATA_MAP = {
     operational_ingestion: "Operational data (like race results) is ingested, its references to source entities (like drivers and events) are resolved, and then the operational records are created.",
     access_lifecycle: "Users gain access via an invitation or an access code. Accepting creates an EntityCollaborator record, which updates their dashboard context and grants permissions.",
     diagnostics: "System verification functions run against the OperationLog and other system data to produce health reports, ensuring data integrity and system stability."
+  },
+  // R9CU: Data Authority & Distribution Layer
+  authority_chain: {
+    workspace_authority: {
+      description: "useEventWorkspaceData is the single source of truth for all event-level data within the workspace.",
+      entities: ['Entry', 'Session', 'Results', 'Incident', 'Penalty', 'Protest', 'EventOfficial', 'TechInspectionRecord', 'Standings', 'GridLineup', 'Driver', 'EventClass', 'SeriesClass'],
+      consumer: "EventWorkspaceShell → all panels via wsData prop",
+      violations_remaining: 3
+    },
+    public_sync_pipeline: {
+      description: "syncPublicData propagates official results to all public consumers automatically.",
+      trigger: "Session status → Official",
+      targets: ['Results.published', 'Results.is_public', 'Standings (via syncSeriesStandings)', 'ActivityFeed', 'Event.public_status'],
+      function: "syncPublicData"
+    },
+    dependency_chain: [
+      { source: "Session", trigger: "status=Official", downstream: "Results.published=true" },
+      { source: "Results (Official)", trigger: "scoring session type", downstream: "Standings recalculated" },
+      { source: "Standings", trigger: "recalculated", downstream: "DriverProfile, SeriesDetail, RaceCoreStandings" },
+      { source: "Event", trigger: "all sessions Official", downstream: "Event.public_status=completed" },
+      { source: "EventExportPacket", trigger: "closeout", downstream: "Audit record, export files" },
+    ]
+  },
+  governance_functions: {
+    validateEventCloseout: "Full closeout validation including data distribution checks (R9CU Phase 9)",
+    getEventOperationalSnapshot: "Single-call complete event state — used by Command Center, Announcer, Export",
+    getAnnouncerFeed: "Live announcer data: current session, grid, driver bios, standings, storylines",
+    syncPublicData: "Central synchronization pipeline — results → standings → feeds → profiles",
   }
 };
 

@@ -3,18 +3,14 @@
  * Adds session status strip + bulk publish actions above ResultsManager.
  */
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import { useEventWorkspace } from '../EventWorkspaceContext';
 import SessionResultsStatusStrip from '@/components/registrationdashboard/results/SessionResultsStatusStrip';
 import BulkPublishActions from '@/components/registrationdashboard/results/BulkPublishActions';
 import { Card, CardContent } from '@/components/ui/card';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 
-const DQ = applyDefaultQueryOptions();
-
-export default function EventResultsPanel() {
+// R9CU: EventResultsPanel accepts wsData from EventWorkspaceShell (workspace authority)
+export default function EventResultsPanel({ wsData }) {
   const {
     selectedEvent,
     selectedSessionId,
@@ -32,17 +28,9 @@ export default function EventResultsPanel() {
 
   const eventId = selectedEvent?.id;
 
-  const { data: sessions = [] } = useQuery({
-    queryKey: ['sessions', eventId],
-    queryFn: () => eventId ? base44.entities.Session.filter({ event_id: eventId }) : Promise.resolve([]),
-    enabled: !!eventId, ...DQ,
-  });
-
-  const { data: results = [] } = useQuery({
-    queryKey: ['results', eventId],
-    queryFn: () => eventId ? base44.entities.Results.filter({ event_id: eventId }) : Promise.resolve([]),
-    enabled: !!eventId, ...DQ,
-  });
+  // R9CU: Use workspace authority data when available; fall back to local queries only outside workspace
+  const sessions = wsData?.sessions || [];
+  const results = wsData?.results || [];
 
   if (!selectedEvent) {
     return (
@@ -74,7 +62,7 @@ export default function EventResultsPanel() {
         />
       )}
 
-      {/* Results manager */}
+      {/* Results manager — R9CU: wsData passed for workspace authority */}
       <ResultsManager
         selectedEvent={selectedEvent}
         initialSessionId={selectedSessionId}
@@ -87,6 +75,7 @@ export default function EventResultsPanel() {
         onResultsProvisional={onResultsProvisional}
         onResultsOfficial={onResultsOfficial}
         onResultsLocked={onResultsLocked}
+        wsData={wsData}
       />
     </div>
   );

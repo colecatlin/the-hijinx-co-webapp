@@ -66,6 +66,8 @@ export default function ResultsManager({
   onResultsProvisional,
   onResultsOfficial,
   onResultsLocked,
+  // R9CU: workspace authority props — passed from EventResultsPanel via wsData
+  wsData,
 }) {
   const queryClient = useQueryClient();
   const invalidateAfterOperation = invalidateAfterOperationProp ?? buildInvalidateAfterOperation(queryClient);
@@ -99,38 +101,48 @@ export default function ResultsManager({
     }
   }, [initialSessionId]);
 
-  // ── Queries ──
-  const { data: sessions = [], isLoading: sessionsLoading, isError: sessionsError, refetch: refetchSessions } = useQuery({
+  // ── R9CU: Workspace Authority — consume wsData when available ──────────────
+  // Sessions, Results, Entries, Drivers, EventClasses, SeriesClasses all come
+  // from useEventWorkspaceData (single source of truth). Internal queries are
+  // only used as fallbacks when ResultsManager is mounted outside a workspace.
+  const wsSessions = wsData?.sessions;
+  const wsResults = wsData?.results;
+  const wsEntries = wsData?.entries;
+  const wsDrivers = wsData?.drivers;
+  const wsEventClasses = wsData?.eventClasses;
+  const wsSeriesClasses = wsData?.seriesClasses;
+
+  const { data: _sessions = [], isLoading: sessionsLoading, isError: sessionsError, refetch: refetchSessions } = useQuery({
     queryKey: ['sessions', eventId],
     queryFn: () => {
       if (!eventId) return [];
-      // Part 3: use shared sortSessionsChronologically for consistent ordering
       return base44.entities.Session.filter({ event_id: eventId }).then(all =>
         sortSessionsChronologically(all)
       );
     },
-    enabled: !!eventId,
+    enabled: !!eventId && !wsSessions,
     ...DQ,
   });
+  const sessions = wsSessions ? sortSessionsChronologically(wsSessions) : _sessions;
 
   const selectedSession = useMemo(() => sessions.find((s) => s.id === sessionId) || null, [sessions, sessionId]);
 
-  const { data: allResults = [], isLoading: resultsLoading, refetch: refetchResults } = useQuery({
+  const { data: _allResults = [], isLoading: resultsLoading } = useQuery({
     queryKey: ['results', eventId, sessionId],
     queryFn: () =>
       sessionId
         ? base44.entities.Results.filter({ event_id: eventId, session_id: sessionId })
         : base44.entities.Results.filter({ event_id: eventId }),
-    enabled: !!eventId,
+    enabled: !!eventId && !wsResults,
     ...DQ,
   });
+  const allResults = wsResults || _allResults;
 
   // Fallback: if session_id missing on some rows, also match by class/type
   const sessionResults = useMemo(() => {
     if (!selectedSession) return [];
     const direct = allResults.filter((r) => r.session_id === selectedSession.id);
     if (direct.length) return direct;
-    // Fallback match
     return allResults.filter((r) =>
       r.session_type === selectedSession.session_type &&
       (r.series_class_id === selectedSession.series_class_id ||
@@ -138,34 +150,37 @@ export default function ResultsManager({
     );
   }, [allResults, selectedSession]);
 
-  const { data: drivers = [] } = useQuery({
+  const { data: _drivers = [] } = useQuery({
     queryKey: ['drivers'],
     queryFn: () => base44.entities.Driver.list('first_name', 500),
+    enabled: !wsDrivers,
     ...DQ,
   });
+  const drivers = wsDrivers || _drivers;
 
-  // DriverProgram no longer used; Entry is the roster
-  // Kept for backwards compat if other components need it, but Results use Entry only
+  const { data: _eventClasses = [] } = useQuery({
+    queryKey: ['eventClasses', eventId],
+    queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order') : Promise.resolve([])),
+    enabled: !!eventId && !wsEventClasses,
+    ...DQ,
+  });
+  const eventClasses = wsEventClasses || _eventClasses;
 
-  const { data: eventClasses = [] } = useQuery({
-     queryKey: ['eventClasses', eventId],
-     queryFn: () => (eventId ? base44.entities.EventClass.filter({ event_id: eventId }, 'class_order') : Promise.resolve([])),
-     enabled: !!eventId,
-     ...DQ,
-   });
+  const { data: _seriesClasses = [] } = useQuery({
+    queryKey: ['seriesClasses'],
+    queryFn: () => base44.entities.SeriesClass.list(),
+    enabled: !wsSeriesClasses,
+    ...DQ,
+  });
+  const seriesClasses = wsSeriesClasses || _seriesClasses;
 
-   const { data: seriesClasses = [] } = useQuery({
-     queryKey: ['seriesClasses'],
-     queryFn: () => base44.entities.SeriesClass.list(),
-     ...DQ,
-   });
-
-  const { data: allEntries = [] } = useQuery({
+  const { data: _allEntries = [] } = useQuery({
     queryKey: ['entries', eventId],
     queryFn: () => base44.entities.Entry.filter({ event_id: eventId }),
-    enabled: !!eventId,
+    enabled: !!eventId && !wsEntries,
     ...DQ,
   });
+  const allEntries = wsEntries || _allEntries;
 
   const { data: techTemplates = [] } = useQuery({
     queryKey: ['techTemplates'],
@@ -368,6 +383,15 @@ export default function ResultsManager({
       }
       // Standings trigger: Final AND Feature both score toward standings (5F consistency fix)
       const isScoringSessionType = selectedSession?.session_type === 'Final' || selectedSession?.session_type === 'Feature';
+      // R9CU Phase 4: Trigger public data sync on Official
+      if (newStatus === 'Official') {
+        base44.functions.invoke('syncPublicData', {
+          event_id: eventId,
+          session_id: selectedSession.id,
+          trigger: 'session_official',
+        }).catch(() => {});
+      }
+
       if (newStatus === 'Official' && isScoringSessionType) {
         // Recompute standings (handles idempotent revert+apply for scoring sessions)
         const sessionResults = await base44.entities.Results.filter({
