@@ -248,20 +248,44 @@ Deno.serve(async (req) => {
             skipped++;
           }
 
+        } else if (entityName === 'Results') {
+          // P0-1: Results MUST route through upsertOperationalResult — never direct create.
+          // This ensures normalized_result_key is built, session metadata is merged,
+          // and repeated imports update rather than duplicate.
+          const cleanRow = Object.fromEntries(
+            Object.entries(row).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+          );
+          if (!cleanRow.driver_id || !cleanRow.event_id || !cleanRow.session_id) {
+            errors.push({ row: rowNum, error: 'Results row missing required driver_id, event_id, or session_id' });
+            skipped++;
+            continue;
+          }
+          const upsertRes = await base44.functions.invoke('upsertOperationalResult', {
+            payload: cleanRow,
+            source_path: 'smart_csv_import',
+          });
+          if (!upsertRes?.data?.record) {
+            const err = upsertRes?.data?.error || 'upsertOperationalResult failed';
+            errors.push({ row: rowNum, error: err });
+            skipped++;
+            continue;
+          }
+          if (upsertRes.data.action === 'created') {
+            created++;
+          } else {
+            updated++;
+          }
         } else {
-          // ── Operational entity: direct create ─────────────────────────────
+          // ── Other operational entities: direct create ──────────────────────
           const model = sr.entities[entityName];
           if (!model) {
             errors.push({ row: rowNum, error: `Unknown entity type: ${entityName}` });
             skipped++;
             continue;
           }
-
-          // Strip empty values before creating
           const cleanRow = Object.fromEntries(
             Object.entries(row).filter(([, v]) => v !== '' && v !== null && v !== undefined)
           );
-
           await model.create(cleanRow);
           created++;
         }

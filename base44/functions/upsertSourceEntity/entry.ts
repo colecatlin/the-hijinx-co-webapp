@@ -278,16 +278,23 @@ async function runEntitySpecificMatching(model, entity_type, payload, normalized
       const r = await model.filter({ event_id: payload.event_id, normalized_name: normalized });
       if (r?.length) return { record: r[0], matchMethod: 'event_id_normalized_name' };
     }
-    // 5. event_id + session_type + round_number (positional context)
-    if (payload.event_id && payload.session_type && payload.round_number !== undefined && payload.round_number !== null) {
+    // 5. event_id + session_type + round_number + series_class_id (fully qualified positional match)
+    // P0-2: All three of round_number AND series_class_id must be present — prevents Heat 1 Pro 4
+    //       from colliding with Heat 1 Pro 2 in a multi-class event.
+    if (payload.event_id && payload.session_type && payload.round_number != null && payload.series_class_id) {
+      const r = await model.filter({ event_id: payload.event_id, session_type: payload.session_type, round_number: payload.round_number, series_class_id: payload.series_class_id });
+      if (r?.length === 1) return { record: r[0], matchMethod: 'event_id_type_round_class' };
+    }
+    // 5b. event_id + session_type + round_number only (no class scoping — safe for single-class events)
+    if (payload.event_id && payload.session_type && payload.round_number != null) {
       const r = await model.filter({ event_id: payload.event_id, session_type: payload.session_type, round_number: payload.round_number });
-      if (r?.length) return { record: r[0], matchMethod: 'event_id_type_round' };
+      // P0-2: Only match if exactly ONE record found — multiple means multi-class collision risk
+      if (r?.length === 1) return { record: r[0], matchMethod: 'event_id_type_round' };
     }
-    // 6. event_id + session_type (fallback when round_number absent)
-    if (payload.event_id && payload.session_type) {
-      const r = await model.filter({ event_id: payload.event_id, session_type: payload.session_type });
-      if (r?.length) return { record: r[0], matchMethod: 'event_id_type' };
-    }
+    // Step 6 (event_id + session_type alone) is REMOVED — too broad for multi-class events.
+    // Without a name, round_number, or class qualifier, we cannot safely identify which session
+    // in a multi-Heat, multi-class event we're targeting. Return null and let the caller create
+    // a new record with a fully qualified key rather than guess.
     return { record: null, matchMethod: null };
   }
 
