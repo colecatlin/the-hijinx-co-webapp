@@ -105,6 +105,16 @@ Deno.serve(async (req) => {
           }
           report.standing_refs_updated++;
         }
+
+        // Repair Results.series_class_id (P0-4 fix from R9DH)
+        const resultRefs = await base44.asServiceRole.entities.Results.filter({ series_class_id: dup.id }).catch(() => []);
+        for (const r of resultRefs) {
+          if (!dry_run) {
+            await base44.asServiceRole.entities.Results.update(r.id, { series_class_id: survivor.id }).catch(err => report.warnings.push(`result_ref:${r.id}:${err.message}`));
+          }
+          if (!report.result_refs_updated) report.result_refs_updated = 0;
+          report.result_refs_updated++;
+        }
       }
     }
 

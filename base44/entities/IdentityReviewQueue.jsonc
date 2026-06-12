@@ -1,0 +1,115 @@
+{
+  "name": "IdentityReviewQueue",
+  "type": "object",
+  "description": "Pending identity resolution decisions requiring human review before auto-attach or merge.",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_review",
+        "approved",
+        "rejected",
+        "escalated",
+        "auto_resolved"
+      ],
+      "default": "pending"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "normal",
+        "low"
+      ],
+      "default": "normal",
+      "description": "critical=DOB/license conflict; high=multi-candidate; normal=score 80-94"
+    },
+    "candidate_a_identity_id": {
+      "type": "string",
+      "description": "Existing PersonIdentity that the incoming evidence may belong to"
+    },
+    "candidate_a_name": {
+      "type": "string"
+    },
+    "candidate_a_confidence": {
+      "type": "number"
+    },
+    "candidate_b_identity_id": {
+      "type": "string",
+      "description": "Second candidate if multiple identities match"
+    },
+    "candidate_b_name": {
+      "type": "string"
+    },
+    "evidence_id": {
+      "type": "string",
+      "description": "The IdentityEvidence record that triggered this queue item"
+    },
+    "confidence_score": {
+      "type": "number"
+    },
+    "confidence_signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "conflict_type": {
+      "type": "string",
+      "enum": [
+        "dob_conflict",
+        "license_conflict",
+        "name_ambiguous",
+        "multi_candidate",
+        "none"
+      ]
+    },
+    "reviewed_by": {
+      "type": "string"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "review_notes": {
+      "type": "string"
+    },
+    "resolution": {
+      "type": "string",
+      "enum": [
+        "attach_to_candidate_a",
+        "attach_to_candidate_b",
+        "create_new_identity",
+        "merge_candidates",
+        "defer",
+        "rejected_evidence"
+      ]
+    },
+    "escalated_to": {
+      "type": "string"
+    },
+    "escalation_reason": {
+      "type": "string"
+    },
+    "import_run_id": {
+      "type": "string"
+    },
+    "series_context": {
+      "type": "string"
+    },
+    "season_context": {
+      "type": "string"
+    },
+    "auto_resolved": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "evidence_id",
+    "confidence_score"
+  ]
+}

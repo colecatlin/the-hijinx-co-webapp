@@ -89,6 +89,7 @@ import ManageCSVImportExport from './pages/ManageCSVImportExport';
 import ManageCalendarSync from './pages/ManageCalendarSync';
 import Diagnostics from './pages/Diagnostics';
 import ResultsRepairPage from './pages/ResultsRepairPage';
+import IdentityReviewPage from './pages/IdentityReviewPage';
 import { Navigate, useParams } from 'react-router-dom';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
@@ -318,6 +319,7 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/data/imports"         element={<ManageCSVImportExport embedded={true} />} />
         <Route path="/racecore/data/calendar-sync"   element={<ManageCalendarSync embedded={true} />} />
         <Route path="/racecore/data/results-repair"  element={<ResultsRepairPage />} />
+        <Route path="/racecore/identity-review"      element={<IdentityReviewPage />} />
         <Route path="/racecore/data/diagnostics"     element={<Diagnostics embedded={true} />} />
         {/* R9CS: Governance routes */}
         <Route path="/racecore/governance"           element={<RaceCoreGovernance />} />

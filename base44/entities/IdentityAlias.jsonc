@@ -1,0 +1,69 @@
+{
+  "name": "IdentityAlias",
+  "type": "object",
+  "description": "A known name variant, abbreviation, or historical name for a PersonIdentity.",
+  "properties": {
+    "identity_id": {
+      "type": "string",
+      "description": "Reference to PersonIdentity"
+    },
+    "alias_name": {
+      "type": "string",
+      "description": "The raw name string as it appeared in the source"
+    },
+    "alias_normalized": {
+      "type": "string",
+      "description": "System-computed normalized form for matching"
+    },
+    "alias_type": {
+      "type": "string",
+      "enum": [
+        "nickname",
+        "abbreviation",
+        "informal",
+        "surname_first",
+        "legal",
+        "maiden_name",
+        "married_name",
+        "source_variant",
+        "manual"
+      ],
+      "description": "Classification of this alias"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "0-100. How strongly this alias should influence resolution matching."
+    },
+    "source": {
+      "type": "string",
+      "description": "Where this alias was discovered"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "import",
+        "manual_admin",
+        "driver_self_report",
+        "official_roster",
+        "inferred"
+      ]
+    },
+    "is_primary": {
+      "type": "boolean",
+      "default": false,
+      "description": "True for the canonical display alias only"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "identity_id",
+    "alias_name",
+    "alias_type"
+  ]
+}

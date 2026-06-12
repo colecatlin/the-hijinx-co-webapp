@@ -1,0 +1,120 @@
+{
+  "name": "IdentityEvidence",
+  "type": "object",
+  "description": "A single piece of external data used to establish or reinforce a PersonIdentity. Never hard-deleted.",
+  "properties": {
+    "identity_id": {
+      "type": "string",
+      "description": "Reference to PersonIdentity (required after resolution)"
+    },
+    "review_queue_id": {
+      "type": "string",
+      "description": "Reference to IdentityReviewQueue item if unresolved"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unresolved",
+        "attached",
+        "superseded",
+        "rejected"
+      ],
+      "default": "unresolved"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "csv_import",
+        "pdf_import",
+        "timing_sheet",
+        "series_roster",
+        "website_scrape",
+        "manual_entry",
+        "api_feed",
+        "historical_archive",
+        "driver_self_report",
+        "official_verification"
+      ]
+    },
+    "source_name": {
+      "type": "string",
+      "description": "e.g. '2019 TORC Round 3 Results'"
+    },
+    "source_file_url": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string",
+      "description": "Row ID or unique ref in source"
+    },
+    "import_run_id": {
+      "type": "string",
+      "description": "ImportSourceRun.id that produced this"
+    },
+    "raw_driver_name": {
+      "type": "string",
+      "description": "Exactly as received from source"
+    },
+    "raw_car_number": {
+      "type": "string"
+    },
+    "raw_team_name": {
+      "type": "string"
+    },
+    "raw_series_name": {
+      "type": "string"
+    },
+    "raw_class_name": {
+      "type": "string"
+    },
+    "raw_season": {
+      "type": "string"
+    },
+    "raw_dob": {
+      "type": "string"
+    },
+    "raw_license_number": {
+      "type": "string"
+    },
+    "raw_external_uid": {
+      "type": "string"
+    },
+    "raw_nationality": {
+      "type": "string"
+    },
+    "confidence_signals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Which signals fired: external_uid, dob_match, license_match, etc."
+    },
+    "confidence_weight": {
+      "type": "number",
+      "description": "0-100 weight this evidence contributes to identity confidence"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "verified_by": {
+      "type": "string"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "superseded_by_evidence_id": {
+      "type": "string",
+      "description": "If this record is superseded by a higher-confidence piece of evidence"
+    },
+    "rejection_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "source_name",
+    "raw_driver_name"
+  ]
+}

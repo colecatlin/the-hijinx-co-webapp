@@ -240,7 +240,26 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── 6. Write OperationLog ─────────────────────────────────────────────
+    // ── 6. Write AuditLog per merge ──────────────────────────────────────────
+    if (!dry_run && report.duplicates_marked_inactive.length > 0) {
+      const now = new Date().toISOString();
+      for (const dup of report.duplicates_marked_inactive) {
+        await base44.asServiceRole.entities.AuditLog.create({
+          entity_type: 'Track',
+          entity_id: dup.id,
+          entity_name: dup.name,
+          action: 'merged',
+          before_data: { status: 'Active' },
+          after_data: { status: 'Inactive', canonical_key: `track:DUPLICATE_OF:${dup.survivor_id}`, survivor_id: dup.survivor_id, survivor_name: dup.survivor_name },
+          performed_by: user.id,
+          performed_by_name: user.full_name,
+          timestamp: now,
+          notes: `Merged into survivor ${dup.survivor_id} (${dup.survivor_name}) via repairDuplicateTrackRecords`,
+        }).catch(() => {});
+      }
+    }
+
+    // ── 7. Write OperationLog ─────────────────────────────────────────────
     if (!dry_run && report.duplicates_marked_inactive.length > 0) {
       await base44.asServiceRole.entities.OperationLog.create({
         operation_type: 'source_duplicate_repaired',

@@ -1,0 +1,112 @@
+{
+  "name": "PersonIdentity",
+  "type": "object",
+  "description": "Root identity anchor for a human competitor across all series, seasons, and data sources.",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "merged",
+        "retired",
+        "deceased",
+        "pending_review"
+      ],
+      "default": "active",
+      "description": "Lifecycle status of this identity record"
+    },
+    "confidence_level": {
+      "type": "string",
+      "enum": [
+        "verified",
+        "high",
+        "medium",
+        "low",
+        "unverified"
+      ],
+      "default": "unverified",
+      "description": "Governed by confidence engine \u2014 not editable directly"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "Numeric score 0-100 computed by the confidence engine"
+    },
+    "canonical_name": {
+      "type": "string",
+      "description": "Display name used on all public-facing records"
+    },
+    "legal_name": {
+      "type": "string",
+      "description": "Full legal name. Governed \u2014 requires admin + reason to change."
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Primary identity disambiguator. Change requires admin elevation."
+    },
+    "nationality": {
+      "type": "string"
+    },
+    "hometown_city": {
+      "type": "string"
+    },
+    "hometown_state": {
+      "type": "string"
+    },
+    "hometown_country": {
+      "type": "string"
+    },
+    "canonical_driver_id": {
+      "type": "string",
+      "description": "The active Driver profile ID representing this identity publicly"
+    },
+    "merged_driver_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "All Driver record IDs previously merged into this identity"
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "Primary external identifier. Once set, immutable without admin override."
+    },
+    "license_number": {
+      "type": "string",
+      "description": "Racing license number \u2014 high-confidence disambiguator"
+    },
+    "numeric_id": {
+      "type": "string",
+      "description": "8-digit RaceCore access code"
+    },
+    "verified_by": {
+      "type": "string",
+      "description": "User ID who verified this identity"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "verification_source": {
+      "type": "string"
+    },
+    "merge_ledger_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "All IdentityMergeLedger IDs affecting this record"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "data_source": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "canonical_name"
+  ]
+}

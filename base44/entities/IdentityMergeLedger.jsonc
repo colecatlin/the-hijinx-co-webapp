@@ -1,0 +1,110 @@
+{
+  "name": "IdentityMergeLedger",
+  "type": "object",
+  "description": "Immutable log of every identity merge operation. Supports full reversal audit.",
+  "properties": {
+    "merge_id": {
+      "type": "string",
+      "description": "Unique merge operation ID (auto-generated UUID)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "applied",
+        "reversed",
+        "partial_reversal"
+      ],
+      "default": "applied"
+    },
+    "survivor_identity_id": {
+      "type": "string",
+      "description": "The PersonIdentity that absorbs the other"
+    },
+    "survivor_name": {
+      "type": "string"
+    },
+    "merged_identity_id": {
+      "type": "string",
+      "description": "The PersonIdentity that was absorbed (now status=merged)"
+    },
+    "merged_name": {
+      "type": "string"
+    },
+    "before_survivor_state": {
+      "type": "object",
+      "description": "Full snapshot of survivor PersonIdentity before merge"
+    },
+    "before_merged_state": {
+      "type": "object",
+      "description": "Full snapshot of merged PersonIdentity before merge"
+    },
+    "after_survivor_state": {
+      "type": "object",
+      "description": "Full snapshot of survivor PersonIdentity after merge"
+    },
+    "references_repaired": {
+      "type": "object",
+      "description": "Count of every entity type updated: {Driver: 1, Results: 142, Entry: 8}"
+    },
+    "aliases_transferred": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "IdentityAlias IDs moved from merged to survivor"
+    },
+    "evidence_transferred": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "IdentityEvidence IDs re-pointed from merged to survivor"
+    },
+    "driver_records_absorbed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Driver IDs marked inactive and added to survivor.merged_driver_ids"
+    },
+    "performed_by": {
+      "type": "string"
+    },
+    "performed_by_name": {
+      "type": "string"
+    },
+    "performed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "review_queue_id": {
+      "type": "string",
+      "description": "Queue item that authorized this merge"
+    },
+    "reversed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reversed_by": {
+      "type": "string"
+    },
+    "reversal_reason": {
+      "type": "string"
+    },
+    "reversal_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "merge_id",
+    "survivor_identity_id",
+    "merged_identity_id",
+    "reason"
+  ]
+}

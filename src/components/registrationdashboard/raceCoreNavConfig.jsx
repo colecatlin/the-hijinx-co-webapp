@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Activity,
   HeartPulse,
+  Fingerprint,
 } from 'lucide-react';
 
 /**
@@ -83,9 +84,10 @@ export const RACE_CORE_NAV_GROUPS = [
     label: 'Governance',
     adminOnly: true,
     items: [
-      { href: '/racecore/governance',  label: 'Overview',    icon: ShieldCheck, adminOnly: true },
-      { href: '/racecore/archive',     label: 'Archive',     icon: Archive,     adminOnly: true },
-      { href: '/racecore/health',      label: 'Data Health', icon: HeartPulse,  adminOnly: true },
+      { href: '/racecore/governance',        label: 'Overview',         icon: ShieldCheck,  adminOnly: true },
+      { href: '/racecore/archive',           label: 'Archive',          icon: Archive,      adminOnly: true },
+      { href: '/racecore/health',            label: 'Data Health',      icon: HeartPulse,   adminOnly: true },
+      { href: '/racecore/identity-review',   label: 'Identity Review',  icon: Fingerprint,  adminOnly: true },
     ],
   },
   {
