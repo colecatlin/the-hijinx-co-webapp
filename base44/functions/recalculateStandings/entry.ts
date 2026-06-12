@@ -275,14 +275,16 @@ Deno.serve(async (req) => {
     standingsArray = sortStandingsWithTieBreakers(standingsArray, pointsConfig.tie_breaker_order);
 
     // Write standings records if entity exists
+    // existingStandings hoisted for AuditLog before_data capture
+    let existingStandings = [];
     try {
-      const existingStandings = await base44.asServiceRole.entities.Standings.filter({
+      existingStandings = await base44.asServiceRole.entities.Standings.filter({
         series_id,
         season_year: season
       });
 
       // Delete old standings for this series/season/class
-      for (const standing of existingStandings) {
+      for (const standing of existingStandings || []) {
         if (!series_class_id || standing.series_class_id === series_class_id) {
           await base44.asServiceRole.entities.Standings.delete(standing.id);
         }
@@ -318,9 +320,13 @@ Deno.serve(async (req) => {
       }
     });
 
-    // R9DC Phase 5: AuditLog for governance
+    // P1-2: Complete AuditLog attribution — before_data captures prior standings snapshot
     try {
       const base44SR = base44.asServiceRole;
+      // Capture before state: count of prior standings for this series/season/class
+      const priorCount = existingStandings
+        ? existingStandings.filter(s => !series_class_id || s.series_class_id === series_class_id).length
+        : 0;
       await base44SR.entities.AuditLog.create({
         entity_type: 'Standings',
         entity_id: series_id,
@@ -329,6 +335,10 @@ Deno.serve(async (req) => {
         performed_by: user.id,
         performed_by_name: user.full_name || user.email || user.id,
         timestamp: new Date().toISOString(),
+        before_data: {
+          series_id, season, series_class_id,
+          prior_standings_count: priorCount,
+        },
         after_data: {
           series_id, season, series_class_id,
           standings_count: standingsArray.length,
@@ -336,7 +346,7 @@ Deno.serve(async (req) => {
           dropped_rounds: droppedRoundsCount,
         },
         event_id: event_id || null,
-        notes: `recalculateStandings — ${standingsArray.length} standings written`,
+        notes: `recalculateStandings — ${standingsArray.length} standings written, ${priorCount} prior deleted`,
       });
     } catch (_) {}
 

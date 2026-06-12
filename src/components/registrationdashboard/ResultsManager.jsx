@@ -326,12 +326,14 @@ export default function ResultsManager({
       if (selectedSession) {
         await base44.entities.Session.update(selectedSession.id, { input_source: 'CSV' });
       }
-      // Write AuditLog for governance (R9DC Phase 5)
+      // P1-2: AuditLog with before_data (prior row count) and after_data
+      const priorCount = allResults.filter(r => r.session_id === sessionId).length;
       base44.functions.invoke('createAuditLog', {
         entity_type: 'Results',
         entity_id: sessionId,
         entity_name: `CSV import — ${selectedSession?.name || sessionId}`,
         action: 'created',
+        before_data: { session_id: sessionId, prior_result_count: priorCount },
         after_data: { imported_count: rows.length, drivers_created: meta?.driversCreated || 0 },
         event_id: eventId,
       }).catch(() => {});
@@ -355,14 +357,14 @@ export default function ResultsManager({
       });
       if (res?.data?.error) throw new Error(res.data.error);
 
-      // 2. AuditLog for governance (Phase 5)
+      // P1-2: AuditLog with full attribution — performed_by inferred from auth by createAuditLog
       base44.functions.invoke('createAuditLog', {
         entity_type: 'Session',
         entity_id: selectedSession.id,
         entity_name: selectedSession.name,
         action: 'status_changed',
-        before_data: { status: prevStatus },
-        after_data: { status: newStatus },
+        before_data: { status: prevStatus, session_type: selectedSession.session_type, event_id: eventId },
+        after_data: { status: newStatus, session_type: selectedSession.session_type, event_id: eventId },
         event_id: eventId,
       }).catch(() => {});
 

@@ -18,15 +18,28 @@ export default function BulkPublishActions({ sessions = [], results = [], eventI
   const draftResults = results.filter(r => !r.status_state || r.status_state === 'Draft');
   const provisionalResults = results.filter(r => r.status_state === 'Provisional');
 
-  // Staging step: set rows to Provisional (pre-publication, no session status change)
+  // P1-1: Stage to Provisional via updateSessionStatus → syncResultsVisibilityFromSession.
+  // No direct status_state writes — routes through the state machine.
   const bulkMarkProvisional = async () => {
     if (draftResults.length === 0) { toast.info('No draft results to update'); return; }
+    const sessionIds = [...new Set(draftResults.map(r => r.session_id).filter(Boolean))];
     setLoading('Provisional');
-    await Promise.all(
-      draftResults.map(r => base44.entities.Results.update(r.id, { status_state: 'Provisional' }))
-    );
-    queryClient.invalidateQueries({ queryKey: ['results', eventId] });
-    toast.success(`${draftResults.length} result${draftResults.length > 1 ? 's' : ''} staged as Provisional`);
+    try {
+      for (const sid of sessionIds) {
+        await base44.functions.invoke('updateSessionStatus', {
+          session_id: sid,
+          new_status: 'Provisional',
+        });
+        // syncResultsVisibilityFromSession is auto-called by updateSessionStatus backend
+        // but call explicitly to ensure status_state is propagated immediately
+        await base44.functions.invoke('syncResultsVisibilityFromSession', { session_id: sid });
+      }
+      queryClient.invalidateQueries({ queryKey: ['results', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
+      toast.success(`${draftResults.length} result${draftResults.length > 1 ? 's' : ''} staged as Provisional`);
+    } catch (e) {
+      toast.error('Staging failed: ' + e.message);
+    }
     setLoading(null);
   };
 

@@ -98,8 +98,9 @@ Deno.serve(async (req) => {
       }).catch(() => {});
     }
 
-    // R9DC Phase 5: AuditLog for Result Official / Lock publication events
-    if (shouldBePublic && results.length > 0) {
+    // P1-2: Complete AuditLog attribution — before_data, after_data, performed_by, performed_by_name
+    if (results.length > 0) {
+      const prevStatusState = STATUS_STATE_MAP[session.status === 'Official' ? 'Provisional' : 'Official'] || 'Draft';
       base44.asServiceRole.entities.AuditLog.create({
         entity_type: 'Session',
         entity_id: session_id,
@@ -108,6 +109,7 @@ Deno.serve(async (req) => {
         performed_by: user.id,
         performed_by_name: user.full_name || user.email || user.id,
         timestamp: new Date().toISOString(),
+        before_data: { status_state: prevStatusState, is_public: !shouldBePublic, results_count: results.length },
         after_data: { status_state, is_public: shouldBePublic, results_count: results.length },
         event_id: session.event_id || null,
         notes: `Results visibility sync — session ${session.name} → ${status_state}`,

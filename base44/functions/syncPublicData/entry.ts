@@ -65,12 +65,29 @@ Deno.serve(async (req) => {
       s.points_enabled || ['Final', 'Feature'].includes(s.session_type)
     );
 
+    // P0-2: recalculateStandings is the sole standings engine.
+    // syncSeriesStandings is an external URL scraper — not used here.
     if (scoringSessions.length > 0 && event.series_id && event.season) {
-      // Trigger standings recalculation via existing function
-      await base44.asServiceRole.functions.invoke('syncSeriesStandings', {
-        series_id: event.series_id,
-        season_year: event.season,
-      }).catch(e => syncLog.errors.push({ step: 'sync_standings', error: e.message }));
+      // Recalculate per class (or unscoped if no class set)
+      const classIds = [...new Set(scoringSessions.map(s => s.series_class_id).filter(Boolean))];
+      if (classIds.length > 0) {
+        for (const classId of classIds) {
+          await base44.asServiceRole.functions.invoke('recalculateStandings', {
+            series_id: event.series_id,
+            season: event.season,
+            series_class_id: classId,
+            event_id,
+          }).catch(e => syncLog.errors.push({ step: 'sync_standings', class_id: classId, error: e.message }));
+        }
+      } else {
+        // No class scoping — recalculate for the whole series
+        await base44.asServiceRole.functions.invoke('recalculateStandings', {
+          series_id: event.series_id,
+          season: event.season,
+          series_class_id: null,
+          event_id,
+        }).catch(e => syncLog.errors.push({ step: 'sync_standings', error: e.message }));
+      }
       standingsSynced = scoringSessions.length;
     }
     syncLog.steps.push({ step: 'sync_standings', status: 'ok', scoring_sessions: standingsSynced });

@@ -205,7 +205,7 @@ Deno.serve(async (req) => {
       metadata: { entity_type: 'results', source_path, normalized_result_key: normalizedKey, matched_by: matchMethod },
     }).catch(() => {});
 
-    // R9DC Phase 5: AuditLog for governance — result create/edit
+    // P1-2: Complete AuditLog attribution — before_data, after_data, performed_by, performed_by_name
     base44.asServiceRole.entities.AuditLog.create({
       entity_type: 'Results',
       entity_id: record.id,
@@ -214,6 +214,13 @@ Deno.serve(async (req) => {
       performed_by: user.id,
       performed_by_name: user.full_name || user.email || user.id,
       timestamp: new Date().toISOString(),
+      before_data: existing ? {
+        position: existing.position,
+        status: existing.status,
+        points: existing.points,
+        status_state: existing.status_state,
+        session_id: existing.session_id,
+      } : null,
       after_data: {
         position: record.position,
         status: record.status,

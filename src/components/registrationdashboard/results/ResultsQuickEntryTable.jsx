@@ -37,8 +37,10 @@ const QuickEntryRow = ({
 
   const queryClient = useQueryClient();
 
+  // P0-1: Route through upsertOperationalResult — sole Results authority
   const saveRowMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
+      if (!data.driver_id || !data.event_id || !data.session_id) return null;
       const payload = {
         driver_id: data.driver_id,
         event_id: data.event_id,
@@ -51,9 +53,11 @@ const QuickEntryRow = ({
         series_id: data.series_id,
         status_state: data.status_state || 'Draft',
       };
-      return data.id
-        ? base44.entities.Results.update(data.id, payload)
-        : base44.entities.Results.create(payload);
+      const res = await base44.functions.invoke('upsertOperationalResult', {
+        payload,
+        source_path: 'QuickEntryTable.historical',
+      });
+      return res?.data?.record || res?.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results'] });
@@ -251,11 +255,17 @@ export default function ResultsQuickEntryTable({
   const [sessionResults, setSessionResults] = useState(results);
   const queryClient = useQueryClient();
 
-  // Merge pasted rows into table
+  // P0-1: Paste rows route through upsertOperationalResult — dedup + session metadata merge
   const handlePasteRows = async (pastedRows, skippedCount) => {
-    const created = await Promise.all(
-      pastedRows.map((row) => base44.entities.Results.create(row))
+    const ops = await Promise.all(
+      pastedRows.map((row) =>
+        base44.functions.invoke('upsertOperationalResult', {
+          payload: row,
+          source_path: 'QuickEntryTable.paste_historical',
+        }).then(r => r?.data?.record || r?.data).catch(() => null)
+      )
     );
+    const created = ops.filter(Boolean);
     setSessionResults([...sessionResults, ...created]);
     queryClient.invalidateQueries({ queryKey: ['results'] });
     toast.success(`Pasted ${created.length} rows${skippedCount ? `, ${skippedCount} skipped` : ''}`);
@@ -268,14 +278,16 @@ export default function ResultsQuickEntryTable({
     // Will be used to restore focus after render
   };
 
-  const handleAddRow = async () => {
-    // R8Z Part 1D: include session competition metadata at creation time.
-    // driver_id is intentionally empty — this is a draft scaffold.
-    // Draft scaffolds must NOT count for standings until driver_id is assigned.
-    const newRow = {
+  // P0-1: Add Row routes through upsertOperationalResult.
+  // driver_id is a placeholder — upsertOperationalResult requires driver_id, so we skip
+  // the backend call for scaffolds without a driver and add a local-only placeholder row
+  // that will be persisted only once driver_id is selected (via saveRowMutation).
+  const handleAddRow = () => {
+    const scaffold = {
+      // local-only placeholder — no id yet, will be created on first field save
+      id: null,
       event_id: selectedEvent?.id,
       session_id: session?.id,
-      // Normalize Feature → Final (Feature is not a valid Results.session_type)
       session_type: session?.session_type === 'Feature' ? 'Final' : session?.session_type,
       series_class_id: session?.series_class_id,
       series_id: selectedEvent?.series_id,
@@ -290,10 +302,8 @@ export default function ResultsQuickEntryTable({
       laps_completed: null,
       status_state: 'Draft',
     };
-    // Create empty result
-    const created = await base44.entities.Results.create(newRow);
-    setSessionResults([...sessionResults, created]);
-    toast.info('Row added');
+    setSessionResults(prev => [...prev, scaffold]);
+    toast.info('Row added — select a driver to save');
   };
 
   return (
