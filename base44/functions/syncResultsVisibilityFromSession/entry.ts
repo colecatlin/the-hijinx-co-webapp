@@ -98,6 +98,22 @@ Deno.serve(async (req) => {
       }).catch(() => {});
     }
 
+    // R9DC Phase 5: AuditLog for Result Official / Lock publication events
+    if (shouldBePublic && results.length > 0) {
+      base44.asServiceRole.entities.AuditLog.create({
+        entity_type: 'Session',
+        entity_id: session_id,
+        entity_name: `Session publication — ${session.name}`,
+        action: status_state === 'Locked' ? 'lifecycle_change' : 'status_changed',
+        performed_by: user.id,
+        performed_by_name: user.full_name || user.email || user.id,
+        timestamp: new Date().toISOString(),
+        after_data: { status_state, is_public: shouldBePublic, results_count: results.length },
+        event_id: session.event_id || null,
+        notes: `Results visibility sync — session ${session.name} → ${status_state}`,
+      }).catch(() => {});
+    }
+
     return Response.json({
       session_id,
       shouldBePublic,

@@ -156,9 +156,9 @@ Deno.serve(async (req) => {
       allResults = allResults.concat(results);
     }
 
-    // Filter by class if specified, and by session types
-    // R9BS Sprint 4: Also exclude results from sessions with standings_hold
-    const applicableSessionTypes = pointsConfig.applies_to_session_types || ['Final'];
+    // R9DC Phase 3: Default includes Feature (mapped to Final in Results) so Feature sessions score.
+    // Callers can override via pointsConfig.applies_to_session_types.
+    const applicableSessionTypes = pointsConfig.applies_to_session_types || ['Final', 'Feature'];
     const filteredResults = allResults.filter(r => {
       if (!r.position || r.position <= 0) return false;
       if (series_class_id && r.series_class_id !== series_class_id) return false;
@@ -317,6 +317,28 @@ Deno.serve(async (req) => {
         held_session_ids: [...heldSessionIds],
       }
     });
+
+    // R9DC Phase 5: AuditLog for governance
+    try {
+      const base44SR = base44.asServiceRole;
+      await base44SR.entities.AuditLog.create({
+        entity_type: 'Standings',
+        entity_id: series_id,
+        entity_name: `Standings recalculation — ${series_id} ${season}`,
+        action: 'updated',
+        performed_by: user.id,
+        performed_by_name: user.full_name || user.email || user.id,
+        timestamp: new Date().toISOString(),
+        after_data: {
+          series_id, season, series_class_id,
+          standings_count: standingsArray.length,
+          results_processed: filteredResults.length,
+          dropped_rounds: droppedRoundsCount,
+        },
+        event_id: event_id || null,
+        notes: `recalculateStandings — ${standingsArray.length} standings written`,
+      });
+    } catch (_) {}
 
     return Response.json({
       ok: true,

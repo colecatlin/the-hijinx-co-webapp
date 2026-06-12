@@ -58,6 +58,21 @@ Deno.serve(async (req) => {
       metadata: { released_by: user.id, release_note: release_note || '', previous_hold_reason: session.hold_reason },
     }).catch(() => {});
 
+    // R9DC Phase 3: Auto-trigger recalculateStandings after hold release (P1 fix from R9DA).
+    // Load event to get series_id + season, then fire recalculation.
+    try {
+      const events = await base44.asServiceRole.entities.Event.filter({ id: session.event_id });
+      const event = events?.[0];
+      if (event?.series_id && event?.season) {
+        base44.asServiceRole.functions.invoke('recalculateStandings', {
+          series_id: event.series_id,
+          season: event.season,
+          series_class_id: session.series_class_id || null,
+          event_id: session.event_id,
+        }).catch(() => {});
+      }
+    } catch (_) {}
+
     return Response.json({ session: updated });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

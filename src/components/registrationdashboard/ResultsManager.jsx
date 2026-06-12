@@ -25,7 +25,7 @@ import { sortSessionsChronologically } from './ops/sessionOrdering';
 import { SESSION_STATE_CONFIG, deriveSessionOperationalState } from './ops/sessionStateIntelligence';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import useDashboardMutation from './useDashboardMutation';
-import { calculateStandingsForSession, recomputeStandingsForFinalSession } from './standings/calculateStandings';
+// R9DC: calculateStandings client-side engines removed — recalculateStandings backend is sole standings authority
 import ResultsManualTable from './ResultsManualTable';
 import ResultsCsvImportDialog from './results/ResultsCsvImportDialog';
 import ResultsApiSyncPanel from './ResultsApiSyncPanel';
@@ -267,13 +267,14 @@ export default function ResultsManager({
     selectedEvent: selectedEvent ?? null,
   };
 
+  // R9DC Phase 2: upsertOperationalResult is the sole Results writer.
+  // All manual entry rows route through it for idempotency + session metadata merge + AuditLog.
   const { mutateAsync: upsertResult, isPending: savingResults } = useDashboardMutation({
     operationType: 'results_updated',
     entityName: 'Results',
     mutationFn: async (rows) => {
        const rowErrors = {};
-       const ops = rows.map((row) => {
-         // Resolve team_id and series_class_id from Entry if available
+       const ops = rows.map(async (row) => {
          const entryData = entryByDriver[row.driver_id];
          const resolvedTeamId = row.team_id || entryData?.team_id || undefined;
          const resolvedClassId = row.series_class_id || entryData?.series_class_id || selectedSession?.series_class_id || undefined;
@@ -295,8 +296,12 @@ export default function ResultsManager({
            points: row.points !== '' ? parseFloat(row.points) : null,
            notes: row.notes || undefined,
          };
-         if (row.id) return base44.entities.Results.update(row.id, payload).catch(e => { rowErrors[row._entryId || row.id] = [e.message]; return null; });
-         return base44.entities.Results.create(payload).catch(e => { rowErrors[row._entryId || row.id] = [e.message]; return null; });
+         // R9DC: route through upsertOperationalResult for dedup + metadata merge
+         const res = await base44.functions.invoke('upsertOperationalResult', {
+           payload,
+           source_path: 'ResultsManager.manual',
+         }).catch(e => { rowErrors[row._entryId || row.driver_id] = [e.message]; return null; });
+         return res;
        });
        await Promise.all(ops);
        if (Object.keys(rowErrors).length) throw Object.assign(new Error('Some rows failed to save'), { rowErrors });
@@ -305,117 +310,105 @@ export default function ResultsManager({
     ...sharedOpts,
   });
 
+  // R9DC Phase 2: CSV import also routes through upsertOperationalResult for idempotency.
   const { mutateAsync: importResults, isPending: importing } = useDashboardMutation({
     operationType: 'results_imported_csv',
     entityName: 'Results',
     mutationFn: async ({ rows, meta }) => {
-      const ops = rows.map((row) => base44.entities.Results.create(row));
-      const created = await Promise.all(ops);
+      const ops = rows.map((row) =>
+        base44.functions.invoke('upsertOperationalResult', {
+          payload: row,
+          source_path: 'ResultsManager.csv_import',
+        })
+      );
+      const results = await Promise.all(ops);
+      // Update session input_source — direct field patch, not a lifecycle transition
       if (selectedSession) {
         await base44.entities.Session.update(selectedSession.id, { input_source: 'CSV' });
       }
-      // Write OperationLog batch record
-      try {
-        await base44.entities.OperationLog.create({
-          operation_type: 'results_imported_csv',
-          status: created.length ? 'success' : 'failed',
-          entity_name: 'Results',
-          event_id: eventId,
-          message: `CSV import: ${created.length} rows imported, ${meta?.driversCreated || 0} new drivers`,
-          metadata: {
-            event_id: eventId,
-            session_id: sessionId,
-            series_class_id: selectedSession?.series_class_id,
-            imported_count: created.length,
-            drivers_created: meta?.driversCreated || 0,
-          },
-        });
-      } catch (_) {
-        // Logging failure is non-critical
-      }
-      return created;
+      // Write AuditLog for governance (R9DC Phase 5)
+      base44.functions.invoke('createAuditLog', {
+        entity_type: 'Results',
+        entity_id: sessionId,
+        entity_name: `CSV import — ${selectedSession?.name || sessionId}`,
+        action: 'created',
+        after_data: { imported_count: rows.length, drivers_created: meta?.driversCreated || 0 },
+        event_id: eventId,
+      }).catch(() => {});
+      return results;
     },
     successMessage: 'Results imported',
     ...sharedOpts,
   });
 
+  // R9DC Phase 1+3+4: updateSessionStatus backend is sole Session.status authority.
+  // Phase 3: recalculateStandings backend is sole standings authority.
+  // Phase 4: syncPublicData is sole publication authority — no pre-writes to Results here.
   const updateSessionStatus = useMutation({
     mutationFn: async (newStatus) => {
       const prevStatus = selectedSession?.status || 'Draft';
-      // R9CX Phase 9: status is single authority; locked is always derived from status
-      const payload = { status: newStatus, locked: deriveLocked(newStatus) };
-      if (newStatus === 'Locked') {
-        // Lock all results in this session
-        const sessionResults = await base44.entities.Results.filter({ session_id: selectedSession.id });
-        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Locked', published: true, is_public: true })));
-      }
-      if (newStatus === 'Official' && newStatus !== prevStatus) {
-        // Mark results as Official — write both visibility fields for authority consistency
-        const sessionResults = await base44.entities.Results.filter({ session_id: selectedSession.id });
-        await Promise.all(sessionResults.map((r) => base44.entities.Results.update(r.id, { status_state: 'Official', published: true, is_public: true, published_at: new Date().toISOString() })));
-      }
-      await base44.entities.Session.update(selectedSession.id, payload);
 
-      // Sync results visibility based on session status
-      if (newStatus === 'Official' || newStatus === 'Locked' || newStatus === 'Provisional' || newStatus === 'Draft') {
-        await base44.functions.invoke('syncResultsVisibilityFromSession', { session_id: selectedSession.id }).catch(() => {});
-      }
+      // 1. Route Session.status through the backend state machine (Phase 1)
+      const res = await base44.functions.invoke('updateSessionStatus', {
+        session_id: selectedSession.id,
+        new_status: newStatus,
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
 
-      // Log operation
-      const opTypeMap = {
-        Provisional: 'session_marked_provisional',
-        Official: 'session_published_official',
-        Locked: 'session_locked',
-        Draft: 'results_saved_draft',
-      };
-      base44.entities.OperationLog.create({
-        operation_type: opTypeMap[newStatus] || 'session_status_changed',
-        status: 'success',
-        entity_name: 'Session',
+      // 2. AuditLog for governance (Phase 5)
+      base44.functions.invoke('createAuditLog', {
+        entity_type: 'Session',
         entity_id: selectedSession.id,
+        entity_name: selectedSession.name,
+        action: 'status_changed',
+        before_data: { status: prevStatus },
+        after_data: { status: newStatus },
         event_id: eventId,
-        message: `Session status: ${prevStatus} → ${newStatus}`,
-        metadata: { before: prevStatus, after: newStatus, session_id: selectedSession.id },
       }).catch(() => {});
 
       if (newStatus === 'Official' || newStatus === 'Provisional') {
         if (onSetStandingsDirty) onSetStandingsDirty();
       }
-      // Standings trigger: Final AND Feature both score toward standings (5F consistency fix)
+
       const isScoringSessionType = selectedSession?.session_type === 'Final' || selectedSession?.session_type === 'Feature';
-      // R9CU Phase 4: Trigger public data sync on Official
+
+      // 3. Phase 4: syncPublicData is sole publication pipeline on Official.
+      //    It handles results visibility + standings trigger + activity feed + event status.
       if (newStatus === 'Official') {
         base44.functions.invoke('syncPublicData', {
           event_id: eventId,
           session_id: selectedSession.id,
           trigger: 'session_official',
-        }).catch(() => {});
+        }).then(() => {
+          // 4. Phase 3: After syncPublicData, trigger recalculateStandings for Final/Feature.
+          //    recalculateStandings is the sole standings engine.
+          if (isScoringSessionType && selectedEvent?.series_id && selectedEvent?.season) {
+            base44.functions.invoke('recalculateStandings', {
+              series_id: selectedEvent.series_id,
+              season: selectedEvent.season,
+              series_class_id: selectedSession?.series_class_id || null,
+              event_id: eventId,
+            }).then(() => {
+              invalidateAfterOperation('standings_updated', {
+                eventId,
+                seriesId: selectedEvent?.series_id,
+                seasonYear: selectedEvent?.season,
+              });
+              toast.success('Standings recalculated');
+              // AuditLog for standings recalculation (Phase 5)
+              base44.functions.invoke('createAuditLog', {
+                entity_type: 'Standings',
+                entity_id: eventId,
+                entity_name: `Standings — ${selectedSession.name}`,
+                action: 'updated',
+                after_data: { trigger: 'session_official', series_id: selectedEvent.series_id, season: selectedEvent.season },
+                event_id: eventId,
+              }).catch(() => {});
+            }).catch((e) => toast.error('Standings recalculation failed: ' + e.message));
+          }
+        }).catch((e) => toast.error('Publication sync failed: ' + e.message));
       }
 
-      if (newStatus === 'Official' && isScoringSessionType) {
-        // Recompute standings (handles idempotent revert+apply for scoring sessions)
-        const sessionResults = await base44.entities.Results.filter({
-          event_id: eventId,
-          session_id: selectedSession.id,
-        }).catch(() => []);
-        recomputeStandingsForFinalSession({
-          session: selectedSession,
-          event: selectedEvent,
-          resultsList: sessionResults,
-          base44,
-          onComplete: ({ driversUpdated, reverted }) => {
-            invalidateAfterOperation('standings_updated', {
-              eventId,
-              seriesId: selectedEvent?.series_id,
-              seasonYear: selectedEvent?.season,
-            });
-            const msg = reverted
-              ? `Standings recomputed for ${driversUpdated} drivers (reverted prior, reapplied)`
-              : `Standings applied for ${driversUpdated} drivers`;
-            toast.success(msg);
-          },
-        });
-      }
       if (newStatus === 'Provisional' && onResultsProvisional) onResultsProvisional();
       if (newStatus === 'Official' && onResultsOfficial) onResultsOfficial();
       if (newStatus === 'Locked' && onResultsLocked) onResultsLocked();
@@ -433,7 +426,7 @@ export default function ResultsManager({
       setPendingStatus(null);
       toast.success(`Session marked ${newStatus}`);
     },
-    onError: () => toast.error('Failed to update session status'),
+    onError: (e) => toast.error('Failed to update session status: ' + (e?.message || '')),
   });
 
   // ── PointsConfig visibility (read-only, no logic change) ──
@@ -541,9 +534,12 @@ export default function ResultsManager({
       });
     } catch (_) {}
     
-    // If Official and rows were edited, revert to Provisional
+    // R9DC Phase 1: revert via state machine, not direct entity update
     if (isOfficial && !isLocked) {
-      await base44.entities.Session.update(selectedSession.id, { status: 'Provisional' });
+      await base44.functions.invoke('updateSessionStatus', {
+        session_id: selectedSession.id,
+        new_status: 'Provisional',
+      }).catch(() => {});
       queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
       toast.info('Session reverted to Provisional after edits');
     }

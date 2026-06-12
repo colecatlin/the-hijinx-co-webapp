@@ -473,6 +473,23 @@ Deno.serve(async (req) => {
       warnings.push('No series or season on event — standings not recalculated.');
     }
 
+    // R9DC Phase 5: AuditLog for governance — penalty application
+    try {
+      await base44.asServiceRole.entities.AuditLog.create({
+        entity_type: 'Penalty',
+        entity_id: penalty_id,
+        entity_name: `${penalty.penalty_number} (${penalty.penalty_type})`,
+        action: 'status_changed',
+        performed_by: user.id,
+        performed_by_name: user.full_name || user.email || user.id,
+        timestamp: new Date().toISOString(),
+        before_data: { status: penalty.status },
+        after_data: { status: 'Applied', results_affected: affectedResults.length, standings_recalculated: standingsRecalculated },
+        event_id: penalty.event_id || null,
+        notes: `Penalty applied: ${penalty.penalty_type} — ${penalty.reason}`,
+      });
+    } catch (_) {}
+
     return Response.json({
       success: true,
       penalty: appliedPenalty,

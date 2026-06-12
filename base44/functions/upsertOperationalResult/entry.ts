@@ -205,6 +205,26 @@ Deno.serve(async (req) => {
       metadata: { entity_type: 'results', source_path, normalized_result_key: normalizedKey, matched_by: matchMethod },
     }).catch(() => {});
 
+    // R9DC Phase 5: AuditLog for governance — result create/edit
+    base44.asServiceRole.entities.AuditLog.create({
+      entity_type: 'Results',
+      entity_id: record.id,
+      entity_name: `Result — session:${record.session_id} driver:${record.driver_id}`,
+      action: action === 'created' ? 'created' : 'updated',
+      performed_by: user.id,
+      performed_by_name: user.full_name || user.email || user.id,
+      timestamp: new Date().toISOString(),
+      after_data: {
+        position: record.position,
+        status: record.status,
+        points: record.points,
+        status_state: record.status_state,
+        session_id: record.session_id,
+      },
+      event_id: record.event_id || null,
+      notes: `source_path: ${source_path}`,
+    }).catch(() => {});
+
     return Response.json({ action, record, normalized_key: normalizedKey, match_method: matchMethod });
 
   } catch (error) {

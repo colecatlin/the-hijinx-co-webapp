@@ -67,18 +67,30 @@ export default function EventGridPanel() {
     onError: (e) => toast.error('Grid generation failed: ' + (e?.response?.data?.error || e.message)),
   });
 
+  // R9DC Phase 1: Route operational lifecycle (Live/Completed) through updateSessionStatus
+  // to keep Session.status as single-authority. The backend function handles Live/Completed
+  // in addition to Draft/Provisional/Official/Locked.
   const sessionLifecycleMutation = useMutation({
-    mutationFn: ({ sessionId, status }) => base44.entities.Session.update(sessionId, {
-      status,
-      ...(status === 'Live' ? { live_started_at: new Date().toISOString() } : {}),
-      ...(status === 'Completed' ? { completed_at: new Date().toISOString() } : {}),
-    }),
+    mutationFn: async ({ sessionId, status }) => {
+      // Write timestamps alongside status via a direct supplemental update,
+      // since updateSessionStatus does not set live_started_at / completed_at
+      const res = await base44.functions.invoke('updateSessionStatus', { session_id: sessionId, new_status: status });
+      if (res?.data?.error) throw new Error(res.data.error);
+      // Patch timestamps after state machine accepts the transition
+      const timestamps = {};
+      if (status === 'Live') timestamps.live_started_at = new Date().toISOString();
+      if (status === 'Completed') timestamps.completed_at = new Date().toISOString();
+      if (Object.keys(timestamps).length) {
+        await base44.entities.Session.update(sessionId, timestamps);
+      }
+      return res?.data;
+    },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ['sessions', eventId] });
       toast.success(`Session ${vars.status}`);
       writeAudit({ entity_type: 'Session', entity_id: vars.sessionId, action: 'lifecycle_change', event_id: eventId, after_data: { status: vars.status } });
     },
-    onError: () => toast.error('Failed to update session status'),
+    onError: (e) => toast.error('Failed to update session status: ' + (e?.message || '')),
   });
 
   const approveMutation = useMutation({

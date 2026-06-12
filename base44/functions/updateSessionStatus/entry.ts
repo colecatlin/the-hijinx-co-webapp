@@ -23,23 +23,29 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-// Ordered lifecycle — index represents rank
-const STATUS_ORDER = ['Draft', 'Provisional', 'Official', 'Locked'];
+// R9DC Phase 1: Unified lifecycle — results lifecycle + operational lifecycle in one state machine.
+// Results lifecycle:   Draft → Provisional → Official → Locked
+// Operational lifecycle: Draft/Scheduled → Live → Completed (used by Race Control)
+const STATUS_ORDER = ['Draft', 'Provisional', 'Official', 'Locked', 'Scheduled', 'Live', 'Completed'];
 
-// Explicit allowed transitions map
+// Explicit allowed transitions map (R9DC: added operational states)
 const ALLOWED_TRANSITIONS = {
-  'Draft':       ['Provisional'],
-  'Provisional': ['Official', 'Draft'],           // rollback to Draft allowed
-  'Official':    ['Locked', 'Provisional'],       // rollback to Provisional allowed
-  'Locked':      ['Official'],                    // admin-only emergency unlock
+  'Draft':       ['Provisional', 'Scheduled', 'Live'],
+  'Scheduled':   ['Live', 'Draft'],
+  'Live':        ['Completed', 'Scheduled'],
+  'Completed':   ['Official', 'Draft'],
+  'Provisional': ['Official', 'Draft'],
+  'Official':    ['Locked', 'Provisional'],
+  'Locked':      ['Official'],
 };
 
 // Transitions that require admin role
 const ADMIN_ONLY_TRANSITIONS = new Set([
-  'Official→Locked',   // normal locking is admin-gated elsewhere; enforce here too
-  'Locked→Official',   // emergency unlock
-  'Official→Provisional', // provisional rollback
-  'Provisional→Draft',    // draft rollback
+  'Official→Locked',
+  'Locked→Official',
+  'Official→Provisional',
+  'Provisional→Draft',
+  'Completed→Draft',
 ]);
 
 Deno.serve(async (req) => {
@@ -57,6 +63,7 @@ Deno.serve(async (req) => {
     if (!STATUS_ORDER.includes(new_status)) {
       return Response.json({
         error: `Invalid status. Allowed: ${STATUS_ORDER.join(', ')}`,
+        allowed: STATUS_ORDER,
       }, { status: 400 });
     }
 
