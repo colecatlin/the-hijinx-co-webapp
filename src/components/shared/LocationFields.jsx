@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, CheckCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { US_STATES } from '@/constants/usStates';
 
 let googleScriptLoaded = false;
 let googleScriptLoading = false;
@@ -138,11 +140,24 @@ export default function LocationFields({
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{stateLabel}</label>
-            <Input
-              value={stateValue || ''}
-              onChange={(e) => { onStateChange(e.target.value); setConfirmed(false); }}
-              className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}
-            />
+            {(!countryValue || countryValue === 'United States') ? (
+              <Select value={stateValue || ''} onValueChange={(v) => { onStateChange(v); setConfirmed(false); }}>
+                <SelectTrigger className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}>
+                  <SelectValue placeholder="State" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {US_STATES.map(s => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                value={stateValue || ''}
+                onChange={(e) => { onStateChange(e.target.value); setConfirmed(false); }}
+                className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}
+              />
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{countryLabel}</label>

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { US_STATES } from '@/constants/usStates';
 
 const TRACK_TYPES = ['Oval', 'Road Course', 'Street Circuit', 'Short Track', 'Speedway', 'Off-Road', 'Dirt Track', 'Other'];
 
@@ -143,12 +144,16 @@ export default function EventInlineCreateModal({ type, open, onClose, onCreated 
                   </div>
                   <div className="space-y-1">
                     <Label className="text-gray-300 text-xs">State</Label>
-                    <Input
-                      value={trackData.location_state}
-                      onChange={e => setTrackData(p => ({ ...p, location_state: e.target.value }))}
-                      placeholder="State / Region"
-                      className="bg-[#262626] border-gray-700 text-white"
-                    />
+                    <Select value={trackData.location_state} onValueChange={v => setTrackData(p => ({ ...p, location_state: v }))}>
+                      <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+                        <SelectValue placeholder="State" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#262626] border-gray-700 max-h-60">
+                        {US_STATES.map(s => (
+                          <SelectItem key={s.value} value={s.value} className="text-white">{s.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="space-y-1">
