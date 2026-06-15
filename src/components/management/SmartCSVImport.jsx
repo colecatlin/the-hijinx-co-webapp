@@ -354,48 +354,36 @@ export default function SmartCSVImport({ onImportComplete }) {
 
   if (step === 'done') {
     const success = result?.success !== false && !result?.error;
-    const s = result?.summary || {};
-    const isResults = result?.entityName === 'Results';
+    const diag = result?.diagnostics || {};
+    const diagStatus = diag.integrity_status || 'unknown';
+    const diagStatusColor = diagStatus === 'pass' ? 'text-green-700 bg-green-50 border-green-200'
+      : diagStatus === 'warn' ? 'text-amber-700 bg-amber-50 border-amber-200'
+      : diagStatus === 'fail' ? 'text-red-700 bg-red-50 border-red-200'
+      : 'text-gray-600 bg-gray-50 border-gray-200';
 
     return (
-      <div className="space-y-5">
-        <div className="text-center py-4">
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="text-center py-3">
           {success ? (
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+            <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2" />
           ) : (
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+            <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-2" />
           )}
-          <p className="font-semibold text-lg">{success ? 'Import Complete!' : 'Import Failed'}</p>
-          {result?.entityName && <p className="text-sm text-gray-500 mt-1">Imported as: <strong>{result.entityName}</strong></p>}
+          <p className="font-semibold text-lg">{success ? 'Import Complete' : 'Import Failed'}</p>
+          {result?.entityName && <p className="text-sm text-gray-500 mt-0.5">Entity: <strong>{result.entityName}</strong></p>}
           {result?.error && <p className="text-sm text-red-600 mt-1">{result.error}</p>}
         </div>
 
-        {success && isResults && (
-          <div className="grid grid-cols-3 gap-3 text-center">
+        {/* Core counts */}
+        {success && (
+          <div className="grid grid-cols-3 gap-2 text-center">
             {[
-              { label: 'Results', val: s.results },
-              { label: 'Drivers', val: s.drivers },
-              { label: 'Events', val: s.events },
-              { label: 'Tracks', val: s.tracks },
-              { label: 'Series', val: s.series },
-              { label: 'Classes', val: s.classes },
+              { label: 'Created', val: result?.created ?? 0, color: 'bg-green-50' },
+              { label: 'Updated', val: result?.updated ?? 0, color: 'bg-blue-50' },
+              { label: 'Skipped', val: result?.failed ?? 0, color: 'bg-gray-50' },
             ].map(item => (
-              <div key={item.label} className="bg-gray-50 rounded-lg p-3">
-                <p className="text-2xl font-bold">{item.val ?? 0}</p>
-                <p className="text-xs text-gray-500">{item.label} created</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {success && !isResults && (
-          <div className="grid grid-cols-3 gap-3 text-center">
-            {[
-              { label: 'Created', val: result?.created ?? 0 },
-              { label: 'Updated', val: result?.updated ?? 0 },
-              { label: 'Skipped', val: result?.failed ?? 0 },
-            ].map(item => (
-              <div key={item.label} className="bg-gray-50 rounded-lg p-3">
+              <div key={item.label} className={`${item.color} rounded-lg p-3`}>
                 <p className="text-2xl font-bold">{item.val}</p>
                 <p className="text-xs text-gray-500">{item.label}</p>
               </div>
@@ -403,26 +391,70 @@ export default function SmartCSVImport({ onImportComplete }) {
           </div>
         )}
 
-        {success && result?.skipped_duplicates > 0 && (
-          <p className="text-sm text-amber-600 text-center">
-            {result.skipped_duplicates} duplicate(s) detected and skipped
-          </p>
+        {/* Extended counts */}
+        {success && (result?.skipped_duplicates > 0 || result?.identity_reviews > 0) && (
+          <div className="grid grid-cols-2 gap-2 text-center">
+            {result?.skipped_duplicates > 0 && (
+              <div className="bg-amber-50 rounded-lg p-3">
+                <p className="text-xl font-bold text-amber-700">{result.skipped_duplicates}</p>
+                <p className="text-xs text-amber-600">Duplicate Warnings</p>
+              </div>
+            )}
+            {result?.identity_reviews > 0 && (
+              <div className="bg-purple-50 rounded-lg p-3">
+                <p className="text-xl font-bold text-purple-700">{result.identity_reviews}</p>
+                <p className="text-xs text-purple-600">Identity Reviews Required</p>
+              </div>
+            )}
+          </div>
         )}
-        {success && result?.isSourceEntity && (
-          <p className="text-xs text-blue-600 text-center">
-            Source entity import — routed through safe sync pipeline
-          </p>
-        )}
+
+        {/* Post-import diagnostics */}
+        <div className={`border rounded-lg p-3 text-sm ${diagStatusColor}`}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-semibold uppercase tracking-wide text-xs">Post-Import Diagnostics</span>
+            <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded ${
+              diagStatus === 'pass' ? 'bg-green-200 text-green-800'
+              : diagStatus === 'warn' ? 'bg-amber-200 text-amber-800'
+              : diagStatus === 'fail' ? 'bg-red-200 text-red-800'
+              : 'bg-gray-200 text-gray-700'
+            }`}>{diagStatus}</span>
+          </div>
+          <p className="text-xs opacity-80">{diag.summary || 'No diagnostic summary available'}</p>
+          {(diag.orphan_counts > 0 || diag.duplicate_warnings > 0 || diag.integrity_issues > 0) && (
+            <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+              <div>
+                <p className="font-bold text-base">{diag.orphan_counts ?? 0}</p>
+                <p className="text-xs opacity-70">Orphans</p>
+              </div>
+              <div>
+                <p className="font-bold text-base">{diag.duplicate_warnings ?? 0}</p>
+                <p className="text-xs opacity-70">Dup Groups</p>
+              </div>
+              <div>
+                <p className="font-bold text-base">{diag.integrity_issues ?? 0}</p>
+                <p className="text-xs opacity-70">Integrity Issues</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Errors */}
         {result?.errors?.length > 0 && (
           <details className="text-xs text-gray-500">
-            <summary className="cursor-pointer hover:text-gray-700">View errors ({result.errors.length})</summary>
-            <ul className="mt-2 space-y-0.5 max-h-40 overflow-y-auto pl-2">
-              {result.errors.slice(0, 20).map((e, i) => <li key={i}>Row {e.row}: {e.error}</li>)}
+            <summary className="cursor-pointer hover:text-gray-700 font-medium">
+              View row errors ({result.errors.length})
+            </summary>
+            <ul className="mt-2 space-y-0.5 max-h-40 overflow-y-auto pl-2 border-l border-red-200">
+              {result.errors.slice(0, 30).map((e, i) => (
+                <li key={i} className="text-red-600">Row {e.row}: {e.error}</li>
+              ))}
+              {result.errors.length > 30 && <li className="text-gray-400">+{result.errors.length - 30} more…</li>}
             </ul>
           </details>
         )}
 
-        <div className="flex gap-2 justify-center pt-2">
+        <div className="flex gap-2 justify-center pt-2 border-t">
           <Button variant="outline" onClick={reset}>Import Another File</Button>
         </div>
       </div>
