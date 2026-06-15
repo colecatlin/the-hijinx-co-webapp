@@ -32,7 +32,8 @@ export default function EventInlineCreateModal({ type, open, onClose, onCreated 
       queryClient.invalidateQueries({ queryKey: ['tracks-active'] });
       queryClient.invalidateQueries({ queryKey: ['tracks'] });
       toast.success(`Track "${newTrack.name}" created`);
-      setCreatedEntity(newTrack);
+      onCreated(newTrack);
+      onClose();
     },
     onError: (err) => toast.error('Failed to create track: ' + err.message),
   });
@@ -48,7 +49,8 @@ export default function EventInlineCreateModal({ type, open, onClose, onCreated 
       queryClient.invalidateQueries({ queryKey: ['series-active'] });
       queryClient.invalidateQueries({ queryKey: ['series'] });
       toast.success(`Series "${newSeries.name}" created`);
-      setCreatedEntity(newSeries);
+      onCreated(newSeries);
+      onClose();
     },
     onError: (err) => toast.error('Failed to create series: ' + err.message),
   });
