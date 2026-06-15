@@ -13,7 +13,7 @@ import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import {
   Flag, Calendar, MapPin, ChevronRight, Search, Filter,
   Loader2, AlertTriangle, FolderOpen, ArrowRight, Radio,
-  CheckCircle2, Clock, XCircle, Layers,
+  CheckCircle2, Clock, XCircle, Layers, Plus,
 } from 'lucide-react';
 import { QueryKeys } from '@/components/utils/queryKeys';
 
@@ -306,9 +306,19 @@ export default function RaceControlEvents() {
               <h1 className="text-xl font-black text-white tracking-tight">Event Files</h1>
               <p className="text-xs text-gray-600 mt-0.5">Operational event control board</p>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-black text-white font-mono">{events.length}</p>
-              <p className="text-[10px] text-gray-600 font-mono">TOTAL EVENTS</p>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-2xl font-black text-white font-mono">{events.length}</p>
+                <p className="text-[10px] text-gray-600 font-mono">TOTAL EVENTS</p>
+              </div>
+              <button
+                onClick={() => navigate('/racecore?tab=eventBuilder')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors"
+                style={{ background: 'rgba(29,161,161,0.15)', color: '#1DA1A1', border: '1px solid rgba(29,161,161,0.3)' }}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                New Event
+              </button>
             </div>
           </div>
         </div>
@@ -344,20 +354,30 @@ export default function RaceControlEvents() {
 
         {/* Empty */}
         {!isLoading && !eventsError && filteredEvents.length === 0 && (
-          <div className="py-16 text-center space-y-2">
-            <FolderOpen className="w-7 h-7 text-gray-800 mx-auto" />
-            <p className="text-xs text-gray-600 font-mono">
-              {events.length === 0 ? 'NO EVENT FILES FOUND' : 'NO EVENTS MATCH YOUR FILTERS'}
-            </p>
-            {events.length > 0 && (
-              <button
-                onClick={() => setFilters({ search: '', status: '', season: '', series: '', track: '' })}
-                className="text-xs text-gray-600 hover:text-gray-400 underline mt-1"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
+        <div className="py-16 text-center space-y-3">
+          <FolderOpen className="w-7 h-7 text-gray-800 mx-auto" />
+          <p className="text-xs text-gray-600 font-mono">
+            {events.length === 0 ? 'NO EVENT FILES FOUND' : 'NO EVENTS MATCH YOUR FILTERS'}
+          </p>
+          {events.length === 0 && (
+            <button
+              onClick={() => navigate('/racecore?tab=eventBuilder')}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors mt-2"
+              style={{ background: 'rgba(29,161,161,0.15)', color: '#1DA1A1', border: '1px solid rgba(29,161,161,0.3)' }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Create First Event
+            </button>
+          )}
+          {events.length > 0 && (
+            <button
+              onClick={() => setFilters({ search: '', status: '', season: '', series: '', track: '' })}
+              className="text-xs text-gray-600 hover:text-gray-400 underline mt-1"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
         )}
 
         {/* Live events — always first */}
