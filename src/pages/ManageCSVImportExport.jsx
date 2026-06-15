@@ -190,37 +190,6 @@ export default function ManageCSVImportExport({ embedded = false }) {
         </CardContent>
       </Card>
 
-      {lastImport && lastImport.status !== 'rolled_back' && (
-        <Card className="mt-6 border-amber-200 bg-amber-50">
-          <CardHeader>
-            <CardTitle>Last Import</CardTitle>
-            <CardDescription>
-              {new Date(lastImport.created_date).toLocaleString()} {lastImport.summary && `— ${lastImport.summary.drivers || 0} drivers, ${lastImport.summary.events || 0} events, ${lastImport.summary.results || 0} results`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={handleUndo}
-              disabled={undoLoading}
-              variant="destructive"
-              className="gap-2"
-            >
-              {undoLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Rolling back...
-                </>
-              ) : (
-                <>
-                  <RotateCcw className="w-4 h-4" />
-                  Undo Import
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       <Tabs defaultValue="export" className="mt-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="export">Export</TabsTrigger>
@@ -389,6 +358,29 @@ export default function ManageCSVImportExport({ embedded = false }) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {lastImport && lastImport.status !== 'rolled_back' && (
+        <div className="mt-4 flex items-center justify-between rounded-lg px-4 py-3" style={{ background: 'rgba(29,161,161,0.06)', border: '1px solid rgba(29,161,161,0.15)' }}>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(29,161,161,0.8)' }}>Last Import</p>
+            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+              {new Date(lastImport.created_date).toLocaleString()}
+              {lastImport.entity_name ? ` — ${lastImport.entity_name}` : ''}
+            </p>
+          </div>
+          <Button
+            onClick={handleUndo}
+            disabled={undoLoading}
+            variant="outline"
+            size="sm"
+            className="gap-2 text-xs"
+            style={{ borderColor: 'rgba(239,68,68,0.3)', color: 'rgba(239,68,68,0.8)' }}
+          >
+            {undoLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}
+            {undoLoading ? 'Rolling back…' : 'Undo'}
+          </Button>
+        </div>
+      )}
 
       {status && (
         <Alert className={`mt-6 ${status.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
