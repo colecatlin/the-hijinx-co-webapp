@@ -4,18 +4,22 @@
  * Auth gate is kept page-level (RaceCoreDashboard owns its own auth logic).
  */
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import RaceCoreSidebar from '@/components/registrationdashboard/RaceCoreSidebar';
+import RaceCoreQuickCreate from '@/components/registrationdashboard/RaceCoreQuickCreate';
 import { getPermissionsForRole } from '@/components/access/accessControl';
 
 export default function RaceCoreLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
+  const [announcerMode, setAnnouncerMode] = useState(false);
 
   // Close drawer on route change
   useEffect(() => {
@@ -46,6 +50,13 @@ export default function RaceCoreLayout() {
     }
   }, [authLoading, isAuthenticated]);
 
+  // Navigate to announcer pack when announcer mode toggled on
+  useEffect(() => {
+    if (announcerMode) {
+      navigate('/racecore?tab=announcer_pack');
+    }
+  }, [announcerMode]);
+
   if (authLoading || isAuthenticated === false) {
     return (
       <div className="flex h-screen items-center justify-center" style={{ background: '#0A0A0A' }}>
@@ -54,17 +65,16 @@ export default function RaceCoreLayout() {
     );
   }
 
-  // RaceCoreSidebar in layout mode: href-based navigation only
   const sidebarProps = {
     dashboardPermissions,
     isAdmin,
     user,
     selectedEvent: null,
-    onQuickCreate: () => {},
-    onCreateEvent: () => {},
-    onMediaPortal: () => {},
-    announcerMode: false,
-    onAnnouncerModeToggle: () => {},
+    onQuickCreate: () => setQuickCreateOpen(true),
+    onCreateEvent: () => navigate('/racecore?tab=eventBuilder'),
+    onMediaPortal: () => navigate('/racecore/media/applications'),
+    announcerMode,
+    onAnnouncerModeToggle: (val) => setAnnouncerMode(val),
   };
 
   return (
@@ -140,6 +150,18 @@ export default function RaceCoreLayout() {
           <Outlet />
         </div>
       </div>
+
+      {/* Quick Create modal — available from any /racecore page */}
+      {isAdmin && (
+        <RaceCoreQuickCreate
+          open={quickCreateOpen}
+          onClose={() => setQuickCreateOpen(false)}
+          initialEntityType="Driver"
+          onCreated={(type) => {
+            queryClient.invalidateQueries({ queryKey: [type.toLowerCase() + 's'] });
+          }}
+        />
+      )}
     </div>
   );
 }
