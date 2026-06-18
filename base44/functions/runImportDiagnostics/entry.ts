@@ -36,32 +36,36 @@ Deno.serve(async (req) => {
 
     const checks_run = [];
     const issues = [];
+    const warnings = [];
+    const blocking_issues = []; // issues that cause import_status = 'blocked'
     let duplicate_warnings = 0;
     let orphan_counts = 0;
     let integrity_issues = 0;
+    let review_queue_items = 0;
 
     // ── 1. Orphaned records ─────────────────────────────────────────────────
     checks_run.push('findOrphanedRecords');
     const orphans = await safeInvoke(base44, 'findOrphanedRecords', {});
-    if (orphans?.orphaned_count > 0) {
-      orphan_counts = orphans.orphaned_count;
+    if (orphans?.total_orphaned > 0) {
+      orphan_counts = orphans.total_orphaned;
+      blocking_issues.push(`${orphan_counts} orphaned records found`);
       issues.push(`${orphan_counts} orphaned records found`);
     }
 
     // ── 2. Event integrity ──────────────────────────────────────────────────
     checks_run.push('verifyEventIntegrity');
     const eventIntegrity = await safeInvoke(base44, 'verifyEventIntegrity', { sample_size: 50 });
-    if (eventIntegrity?.issues?.length > 0) {
-      integrity_issues += eventIntegrity.issues.length;
-      issues.push(`${eventIntegrity.issues.length} event integrity issue(s)`);
+    if (eventIntegrity?.failures?.length > 0) {
+      integrity_issues += eventIntegrity.failures.length;
+      issues.push(`${eventIntegrity.failures.length} event integrity issue(s)`);
     }
 
     // ── 3. Results & standings integrity ───────────────────────────────────
     checks_run.push('verifyResultsAndStandingsIntegrity');
     const resultsIntegrity = await safeInvoke(base44, 'verifyResultsAndStandingsIntegrity', { sample_size: 100 });
-    if (resultsIntegrity?.issues?.length > 0) {
-      integrity_issues += resultsIntegrity.issues.length;
-      issues.push(`${resultsIntegrity.issues.length} results/standings integrity issue(s)`);
+    if (resultsIntegrity?.failures?.length > 0) {
+      integrity_issues += resultsIntegrity.failures.length;
+      issues.push(`${resultsIntegrity.failures.length} results/standings integrity issue(s)`);
     }
 
     // ── 4. Entry & class integrity ──────────────────────────────────────────
@@ -81,7 +85,6 @@ Deno.serve(async (req) => {
     ];
 
     for (const [fn, label] of dupChecks) {
-      // Skip if entity_types scoping doesn't include this type
       if (entity_types && !entity_types.includes(label.slice(0,-1))) continue;
       checks_run.push(fn);
       const dupRes = await safeInvoke(base44, fn, {});
@@ -92,22 +95,92 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── Determine overall status ────────────────────────────────────────────
+    // ── 6. R9EA: Round assignment completeness ──────────────────────────────
+    checks_run.push('verifyRoundAssignmentCompleteness');
+    const roundCheck = await safeInvoke(base44, 'verifyRoundAssignmentCompleteness', { sample_size: 100 });
+    if (roundCheck?.issues?.length > 0) {
+      integrity_issues += roundCheck.issues.length;
+      for (const iss of roundCheck.issues) blocking_issues.push(iss.message);
+      issues.push(`${roundCheck.issues.length} missing round assignment(s) on Final/points-enabled sessions`);
+    }
+    if (roundCheck?.warnings?.length > 0) {
+      for (const w of roundCheck.warnings) warnings.push(w.message);
+    }
+
+    // ── 7. R9EA: Class + series alignment ──────────────────────────────────
+    checks_run.push('verifyClassSeriesAlignment');
+    const classCheck = await safeInvoke(base44, 'verifyClassSeriesAlignment', { sample_size: 100 });
+    if (classCheck?.issues?.length > 0) {
+      integrity_issues += classCheck.issues.length;
+      for (const iss of classCheck.issues) blocking_issues.push(iss.message);
+      issues.push(`${classCheck.issues.length} class/series alignment issue(s)`);
+    }
+    if (classCheck?.warnings?.length > 0) {
+      for (const w of classCheck.warnings) warnings.push(w.message);
+    }
+
+    // ── 8. R9EA: Identity ↔ Driver linkage ────────────────────────────────
+    checks_run.push('verifyIdentityDriverLinkage');
+    const identityCheck = await safeInvoke(base44, 'verifyIdentityDriverLinkage', { sample_size: 100 });
+    if (identityCheck?.issues?.length > 0) {
+      integrity_issues += identityCheck.issues.length;
+      for (const iss of identityCheck.issues) blocking_issues.push(iss.message);
+      issues.push(`${identityCheck.issues.length} identity↔driver linkage issue(s)`);
+    }
+    if (identityCheck?.warnings?.length > 0) {
+      for (const w of identityCheck.warnings) warnings.push(w.message);
+    }
+    // Count review queue items as warnings
+    const reviewQueueItems = await base44.asServiceRole.entities.IdentityReviewQueue.filter({ status: 'pending' }).catch(() => []);
+    if (reviewQueueItems.length > 0) {
+      review_queue_items = reviewQueueItems.length;
+      warnings.push(`${review_queue_items} identity review queue item(s) pending`);
+    }
+
+    // ── 9. R9EA: Historical safety check ──────────────────────────────────
+    checks_run.push('verifyHistoricalSafety');
+    const histCheck = await safeInvoke(base44, 'verifyHistoricalSafety', { sample_size: 100 });
+    if (histCheck?.issues?.length > 0) {
+      integrity_issues += histCheck.issues.length;
+      for (const iss of histCheck.issues) blocking_issues.push(iss.message);
+      issues.push(`${histCheck.issues.length} historical safety issue(s)`);
+    }
+    if (histCheck?.warnings?.length > 0) {
+      for (const w of histCheck.warnings) warnings.push(w.message);
+    }
+
+    // ── Phase 9: Import success gating ─────────────────────────────────────
+    // success       — all checks clean
+    // success_with_warnings — review items, optional field gaps, preserved historical
+    // blocked       — orphans, class mismatch, identity link failures, historical safety failures
+    // failed        — only set by caller when file parse/backend exception occurs
+    let import_status = 'success';
+    if (blocking_issues.length > 0) {
+      import_status = 'blocked';
+    } else if (warnings.length > 0 || review_queue_items > 0 || duplicate_warnings > 0) {
+      import_status = 'success_with_warnings';
+    }
+
+    // Legacy field — derive from import_status
     let integrity_status = 'pass';
-    if (integrity_issues > 0 || orphan_counts > 0) integrity_status = 'warn';
-    if (integrity_issues > 5 || orphan_counts > 20) integrity_status = 'fail';
+    if (import_status === 'blocked') integrity_status = 'fail';
+    else if (import_status === 'success_with_warnings') integrity_status = 'warn';
 
     const summary = issues.length === 0
       ? 'All post-import diagnostics passed.'
       : issues.join('; ');
 
     return Response.json({
+      import_status,
       integrity_status,
       checks_run,
       orphan_counts,
       duplicate_warnings,
       integrity_issues,
+      review_queue_items,
       issues,
+      warnings,
+      blocking_issues,
       summary,
     });
 

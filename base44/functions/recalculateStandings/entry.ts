@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { series_id, season, series_class_id, event_id } = await req.json();
+    const { series_id, season, series_class_id, event_id, overwrite_historical = false } = await req.json();
 
     if (!series_id) {
       return Response.json({ ok: false, error: 'Missing series_id' }, { status: 400 });
@@ -283,11 +283,27 @@ Deno.serve(async (req) => {
         season_year: season
       });
 
-      // Delete old standings for this series/season/class
+      // R9EA Phase 6: Protect historical/manual standings from computed overwrite.
+      // Only delete standings that were computed by RaceCore or have no source.
+      // Historical/manual standings survive unless overwrite_historical=true is explicitly passed.
+      const PROTECTED_SOURCES = new Set(['historical_import', 'manual', 'partial']);
+      const PROTECTED_STATUSES = new Set(['historical_verified', 'manual', 'partial', 'under_review']);
+      let historicalPreserved = 0;
+
       for (const standing of existingStandings || []) {
         if (!series_class_id || standing.series_class_id === series_class_id) {
+          const isHistorical = PROTECTED_SOURCES.has(standing.calculation_source) || PROTECTED_STATUSES.has(standing.record_status);
+          if (isHistorical && !overwrite_historical) {
+            historicalPreserved++;
+            console.log(`[recalculateStandings] Preserving historical standing ${standing.id} (source=${standing.calculation_source}, status=${standing.record_status})`);
+            continue;
+          }
           await base44.asServiceRole.entities.Standings.delete(standing.id);
         }
+      }
+      if (historicalPreserved > 0) {
+        console.log(`[recalculateStandings] Preserved ${historicalPreserved} historical/manual standings — pass overwrite_historical=true to replace them`);
+
       }
 
       // Create new standings
@@ -356,6 +372,7 @@ Deno.serve(async (req) => {
       standingsCount: standingsArray.length,
       resultsProcessed: filteredResults.length,
       droppedRoundsCount,
+      overwrite_historical,
       standings: standingsArray
     });
   } catch (error) {

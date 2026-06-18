@@ -185,6 +185,26 @@ Deno.serve(async (req) => {
       }
     }
 
+    // R9EA Phase 7: Preserve and enforce historical result fields.
+    // If source_path indicates a historical import, set safety defaults unless already set by caller.
+    const isHistoricalImport = source_path?.includes('historical') || source_path?.includes('csv_import') ||
+      enrichedPayload.is_historical === true || enrichedPayload.source_type === 'historical_archive';
+
+    if (isHistoricalImport) {
+      if (enrichedPayload.is_historical === undefined) enrichedPayload.is_historical = true;
+      if (!enrichedPayload.record_status) enrichedPayload.record_status = 'under_review';
+      if (!enrichedPayload.source_type) enrichedPayload.source_type = 'historical_archive';
+      // Ensure historical results don't publish automatically
+      if (enrichedPayload.published === undefined) enrichedPayload.published = false;
+      if (enrichedPayload.is_public === undefined) enrichedPayload.is_public = false;
+    }
+
+    // If record_status is superseded, block standings contribution (force published=false)
+    if (enrichedPayload.record_status === 'superseded') {
+      enrichedPayload.published = false;
+      enrichedPayload.is_public = false;
+    }
+
     const { id: _id, ...cleanPayload } = enrichedPayload;
     const dataWithKey = { ...cleanPayload, normalized_result_key: normalizedKey };
     let record, action;

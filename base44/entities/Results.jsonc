@@ -154,6 +154,90 @@
     "archive_reason": {
       "type": "string",
       "description": "R9CS: Reason for archiving"
+    },
+    "is_historical": {
+      "type": "boolean",
+      "default": false,
+      "description": "R9EA: True for results created from historical import rather than live operations"
+    },
+    "record_status": {
+      "type": "string",
+      "enum": [
+        "official",
+        "verified",
+        "historical_verified",
+        "manual",
+        "partial",
+        "estimated",
+        "under_review",
+        "superseded"
+      ],
+      "default": "official",
+      "description": "R9EA: Authority level of this result record"
+    },
+    "source_authority_level": {
+      "type": "string",
+      "enum": [
+        "official",
+        "semi_official",
+        "third_party",
+        "reconstructed",
+        "estimated"
+      ],
+      "description": "R9EA: Source authority classification"
+    },
+    "source_name": {
+      "type": "string",
+      "description": "R9EA: Human-readable source name (e.g. 'TORC 2019 Results Archive')"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "live_ops",
+        "csv_import",
+        "pdf_import",
+        "timing_sheet",
+        "series_roster",
+        "website_scrape",
+        "manual_entry",
+        "api_feed",
+        "historical_archive",
+        "driver_self_report",
+        "official_verification"
+      ],
+      "description": "R9EA: Source type classification"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "R9EA: 0-100 confidence in this result record"
+    },
+    "result_completeness": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "partial",
+        "position_only",
+        "points_only",
+        "unknown"
+      ],
+      "default": "complete",
+      "description": "R9EA: How complete this result record is"
+    },
+    "supersedes_result_id": {
+      "type": "string",
+      "description": "R9EA: ID of an earlier lower-confidence result this record supersedes"
+    },
+    "superseded_by_result_id": {
+      "type": "string",
+      "description": "R9EA: ID of a higher-confidence result that supersedes this one"
+    },
+    "revision_notes": {
+      "type": "string",
+      "description": "R9EA: Notes on revisions or corrections to this result"
+    },
+    "import_run_id": {
+      "type": "string",
+      "description": "R9EA: ImportSourceRun.id that created this result"
     }
   },
   "required": [

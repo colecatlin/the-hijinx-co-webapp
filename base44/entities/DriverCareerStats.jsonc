@@ -1,0 +1,147 @@
+{
+  "name": "DriverCareerStats",
+  "type": "object",
+  "description": "Aggregated career statistics for a driver or identity across all series, seasons, and classes. Computed from Results \u2014 never entered manually as the authoritative record.",
+  "properties": {
+    "identity_id": {
+      "type": "string",
+      "description": "Reference to PersonIdentity (preferred \u2014 covers all merged driver IDs)"
+    },
+    "driver_id": {
+      "type": "string",
+      "description": "Reference to Driver (used when identity_id is not yet resolved)"
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series (null = career totals across all series)"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass (null = all classes)"
+    },
+    "season_year": {
+      "type": "string",
+      "description": "Season year (null = all-time career totals)"
+    },
+    "scope_type": {
+      "type": "string",
+      "enum": [
+        "career_total",
+        "by_series",
+        "by_class",
+        "by_season",
+        "by_series_season",
+        "by_class_season"
+      ],
+      "default": "career_total",
+      "description": "Scope of this stats record"
+    },
+    "career_starts": {
+      "type": "number",
+      "default": 0
+    },
+    "career_wins": {
+      "type": "number",
+      "default": 0
+    },
+    "career_podiums": {
+      "type": "number",
+      "default": 0
+    },
+    "career_top5": {
+      "type": "number",
+      "default": 0
+    },
+    "career_top10": {
+      "type": "number",
+      "default": 0
+    },
+    "career_dnf": {
+      "type": "number",
+      "default": 0
+    },
+    "career_dns": {
+      "type": "number",
+      "default": 0
+    },
+    "career_dsq": {
+      "type": "number",
+      "default": 0
+    },
+    "career_points_total": {
+      "type": "number",
+      "default": 0
+    },
+    "championships": {
+      "type": "number",
+      "default": 0
+    },
+    "seasons_count": {
+      "type": "number",
+      "default": 0
+    },
+    "series_count": {
+      "type": "number",
+      "default": 0
+    },
+    "first_start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "most_recent_start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "first_win_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "most_recent_win_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "by_series": {
+      "type": "array",
+      "default": [],
+      "description": "Per-series breakdown: [{ series_id, series_name, starts, wins, podiums, points_total, seasons }]"
+    },
+    "by_class": {
+      "type": "array",
+      "default": [],
+      "description": "Per-class breakdown"
+    },
+    "by_manufacturer": {
+      "type": "array",
+      "default": [],
+      "description": "Per-manufacturer breakdown"
+    },
+    "last_calculated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "calculation_source": {
+      "type": "string",
+      "default": "RaceCore",
+      "description": "How this was computed: RaceCore, historical_import, manual"
+    },
+    "record_status": {
+      "type": "string",
+      "enum": [
+        "official",
+        "verified",
+        "historical_verified",
+        "manual",
+        "partial",
+        "under_review"
+      ],
+      "default": "under_review"
+    },
+    "stats_identity_key": {
+      "type": "string",
+      "description": "Dedup key: career_stats:{identity_id or driver_id}:{scope_type}:{series_id}:{series_class_id}:{season_year}"
+    }
+  },
+  "required": [
+    "scope_type"
+  ]
+}

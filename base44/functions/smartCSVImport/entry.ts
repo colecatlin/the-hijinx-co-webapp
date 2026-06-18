@@ -275,6 +275,8 @@ async function upsertSession(sr, row, rowNum, errors) {
     }).catch(() => []);
   }
 
+  // R9EA Phase 1: All import-created sessions default to historical safety flags.
+  // These must be explicitly released by an admin after verification.
   const data = {
     event_id: row.event_id,
     event_class_id: row.event_class_id || null,
@@ -287,13 +289,17 @@ async function upsertSession(sr, row, rowNum, errors) {
     points_type: row.points_type || 'none',
     run_order: row.run_order ? parseInt(row.run_order) : 0,
     laps: row.laps ? parseInt(row.laps) : null,
-    status: row.status || 'Draft',
+    // R9EA: HISTORICAL SAFETY DEFAULTS — do not change without reading R9EA Phase 1 spec
+    status: 'Draft',
     is_historical: true,
+    standings_hold: true,
+    results_on_hold: true,
+    input_source: 'CSV',
     normalized_name: normName,
     canonical_key: sessionKey,
     normalized_session_key: sessionKey,
     external_uid: row.external_uid || null,
-    data_source: 'smart_csv_import',
+    data_source: row.data_source || 'smart_csv_import',
   };
   if (existing?.length) {
     await sr.entities.Session.update(existing[0].id, data);
@@ -411,8 +417,9 @@ Deno.serve(async (req) => {
 
           const rawPayload = mapper(row);
 
-          // R9DL Phase 2: Driver imports MUST go through resolvePersonIdentity
-          // to create PersonIdentity / IdentityAlias / IdentityEvidence
+          // R9EA Phase 2: Driver imports MUST go through resolvePersonIdentity
+          // After Driver is created/matched, link canonical_driver_id on the PersonIdentity.
+          let resolvedIdentityId = null;
           if (entityName === 'Driver') {
             const fullName = `${rawPayload.first_name} ${rawPayload.last_name}`.trim();
             if (fullName) {
@@ -434,7 +441,11 @@ Deno.serve(async (req) => {
               }
               if (identityRes?.data?.action === 'REVIEW') {
                 identity_reviews++;
+                resolvedIdentityId = identityRes.data.identity_id || null;
                 // Don't skip — continue to create/update the Driver record, but note review needed
+              }
+              if (identityRes?.data?.action === 'ATTACHED' || identityRes?.data?.action === 'NEW_IDENTITY') {
+                resolvedIdentityId = identityRes.data.identity_id || null;
               }
             }
           }
@@ -468,6 +479,34 @@ Deno.serve(async (req) => {
           if (syncRes.data.source_action === 'created') { created++; }
           else if (syncRes.data.source_action === 'updated') { updated++; }
           else { duplicate_detected++; skipped++; }
+
+          // R9EA Phase 2: Link PersonIdentity.canonical_driver_id after Driver create/update
+          if (entityName === 'Driver' && resolvedIdentityId) {
+            const driverRecord = syncRes.data.entity_record || syncRes.data.source_record;
+            const driverEntityId = driverRecord?.id;
+            if (driverEntityId) {
+              try {
+                const identityList = await sr.entities.PersonIdentity.filter({ id: resolvedIdentityId }).catch(() => []);
+                const identity = identityList?.[0];
+                if (identity && !identity.canonical_driver_id) {
+                  const beforeCanonical = identity.canonical_driver_id;
+                  await sr.entities.PersonIdentity.update(resolvedIdentityId, { canonical_driver_id: driverEntityId });
+                  await sr.entities.AuditLog.create({
+                    entity_type: 'PersonIdentity',
+                    entity_id: resolvedIdentityId,
+                    entity_name: identity.canonical_name,
+                    action: 'updated',
+                    before_data: { canonical_driver_id: beforeCanonical },
+                    after_data: { canonical_driver_id: driverEntityId },
+                    performed_by: user.id,
+                    performed_by_name: user.full_name || user.email,
+                    timestamp: new Date().toISOString(),
+                    notes: `canonical_driver_id linked via smart_csv_import — driver ${driverEntityId}`,
+                  }).catch(() => {});
+                }
+              } catch (_) { /* non-blocking */ }
+            }
+          }
 
         } else if (entityName === 'Results') {
           // Results MUST route through upsertOperationalResult — never direct create

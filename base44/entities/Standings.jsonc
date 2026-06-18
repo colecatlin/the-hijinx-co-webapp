@@ -100,7 +100,7 @@
     "calculation_source": {
       "type": "string",
       "default": "RaceCore",
-      "description": "Source of calculation (RaceCore, Management, etc.)"
+      "description": "Source of calculation: RaceCore | computed | historical_import | manual | partial"
     },
     "points_config_id": {
       "type": "string",
@@ -125,6 +125,18 @@
     "notes": {
       "type": "string",
       "description": "Internal notes"
+    },
+    "record_status": {
+      "type": "string",
+      "enum": [
+        "official",
+        "verified",
+        "historical_verified",
+        "manual",
+        "partial",
+        "under_review"
+      ],
+      "description": "R9EA: Authority level \u2014 historical_import, manual, partial records are protected from computed overwrite"
     },
     "is_archived": {
       "type": "boolean",
