@@ -355,6 +355,9 @@ async function upsertStanding(sr, row, rowNum, errors) {
     starts: row.starts ? parseInt(row.starts) : 0,
     standing_identity_key: key,
     normalized_standing_key: key,
+    // R9EA Phase 6: Historical standings imported via CSV are protected from computed overwrite
+    calculation_source: row.calculation_source || 'historical_import',
+    record_status: row.record_status || 'under_review',
   };
   if (existing?.length) {
     await sr.entities.Standings.update(existing[0].id, data);
@@ -587,15 +590,28 @@ Deno.serve(async (req) => {
       },
     }).catch(() => {});
 
-    // ── R9DL Phase 9: Post-import diagnostics ─────────────────────────────────
+    // ── R9EA Phase 9: Post-import diagnostics + success gating ───────────────
     let diagnostics = null;
+    // Determine pre-diagnostic import_status based on row-level failures
+    let import_status = 'success';
+    if (errors.length > 0 && errors.length === rows.length) {
+      import_status = 'failed';
+    } else if (skipped > 0 && errors.some(e => e.error?.includes('required'))) {
+      import_status = 'failed';
+    }
+
     try {
       const diagRes = await base44.functions.invoke('runImportDiagnostics', {
         entity_types: [entityName],
       });
       diagnostics = diagRes?.data || null;
+      // Upgrade import_status from diagnostics if not already failed
+      if (import_status !== 'failed' && diagnostics?.import_status) {
+        import_status = diagnostics.import_status;
+      }
     } catch {
-      diagnostics = { integrity_status: 'unknown', summary: 'Diagnostics could not run' };
+      diagnostics = { integrity_status: 'unknown', import_status: 'success_with_warnings', summary: 'Diagnostics could not run' };
+      if (import_status === 'success') import_status = 'success_with_warnings';
     }
 
     return Response.json({
@@ -607,9 +623,10 @@ Deno.serve(async (req) => {
       skipped_duplicates: duplicate_detected,
       skipped_invalid: Math.max(0, skipped - duplicate_detected),
       identity_reviews,
+      import_status,
       errors,
       diagnostics,
-      rollback_available: false, // Undo is handled via OperationLog in the UI
+      rollback_available: false,
       summary: {
         imported_count: created,
         updated_count: updated,
@@ -618,6 +635,7 @@ Deno.serve(async (req) => {
         identity_reviews,
         error_count: errors.length,
         total_rows: rows.length,
+        import_status,
         integrity_status: diagnostics?.integrity_status || 'unknown',
       },
     });
