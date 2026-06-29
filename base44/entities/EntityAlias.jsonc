@@ -1,0 +1,109 @@
+{
+  "name": "EntityAlias",
+  "type": "object",
+  "description": "Universal alias record for any canonical entity in RaceCore. Append-only \u2014 never delete, only deactivate. Every alias belongs to exactly one canonical entity.",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "Driver",
+        "PersonIdentity",
+        "Team",
+        "Track",
+        "Series",
+        "SeriesClass",
+        "Manufacturer",
+        "Vehicle",
+        "Event"
+      ],
+      "description": "The type of entity this alias belongs to"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "The ID of the canonical entity record this alias resolves to"
+    },
+    "alias_name": {
+      "type": "string",
+      "description": "The raw alias string exactly as it appeared in the source"
+    },
+    "alias_normalized": {
+      "type": "string",
+      "description": "System-computed normalized form used for matching \u2014 always lowercase, punctuation-stripped"
+    },
+    "alias_type": {
+      "type": "string",
+      "enum": [
+        "canonical",
+        "nickname",
+        "abbreviation",
+        "surname_first",
+        "legal_name",
+        "historical_name",
+        "sponsor_name",
+        "short_name",
+        "marketing_name",
+        "import_variant",
+        "legacy",
+        "manual"
+      ],
+      "description": "Classification of this alias"
+    },
+    "confidence": {
+      "type": "number",
+      "description": "0-100. How strongly this alias should influence resolution matching."
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "False = deactivated alias (never deleted, only deactivated)"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where this alias was discovered (e.g. 'TORC 2019 Results Archive')"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "import",
+        "manual_admin",
+        "official_roster",
+        "driver_self_report",
+        "inferred",
+        "historical_archive"
+      ],
+      "description": "Classification of the source that produced this alias"
+    },
+    "imported_from": {
+      "type": "string",
+      "description": "File name or URL the alias was imported from"
+    },
+    "import_run_id": {
+      "type": "string",
+      "description": "ImportSourceRun.id or import batch identifier"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "User ID who created this alias"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "User ID who approved this alias (manual aliases)"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes about this alias"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "alias_name",
+    "alias_normalized",
+    "alias_type",
+    "active"
+  ]
+}
