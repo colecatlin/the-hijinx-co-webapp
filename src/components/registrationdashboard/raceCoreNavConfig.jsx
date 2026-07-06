@@ -88,6 +88,7 @@ export const RACE_CORE_NAV_GROUPS = [
       { href: '/racecore/archive',           label: 'Archive',          icon: Archive,      adminOnly: true },
       { href: '/racecore/health',            label: 'Data Health',      icon: HeartPulse,   adminOnly: true },
       { href: '/racecore/identity-review',   label: 'Identity Review',  icon: Fingerprint,  adminOnly: true },
+      { href: '/racecore/data/quality',      label: 'Data Quality',     icon: Activity,     adminOnly: true },
     ],
   },
   {
