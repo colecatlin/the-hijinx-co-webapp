@@ -6,48 +6,36 @@ import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import PageShell from '@/components/shared/PageShell';
+import { getOutletStoryUrl } from '@/lib/storyUrl';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, MapPin, Tag, User, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Tag, User, Calendar, ArrowRight } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import AdvertisementCard from '@/components/outlet/AdvertisementCard';
 
-/**
- * OutletStoryPage
- *
- * Canonical route: /story/:slug
- * Legacy fallback:  /OutletStoryPage?id=...  (transitional — redirects to slug route)
- *
- * Resolution order:
- *  1. useParams().slug  → fetch by slug (canonical)
- *  2. ?id= query param  → fetch by id, then redirect to /story/:slug if slug exists
- */
+const OUTLET_CYAN = '#00F5D4';
+const LOGO_URL = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/c948034eb_TheOutletO2x.png';
+
 export default function OutletStoryPage() {
   const { slug: slugParam } = useParams();
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const idParam = urlParams.get('id');
 
-  // ── Primary: slug-based lookup ──────────────────────────────────────────
   const { data: storyBySlug, isLoading: loadingBySlug } = useQuery({
     queryKey: ['storyBySlug', slugParam],
     queryFn: () => base44.entities.OutletStory.filter({ slug: slugParam }).then(r => r[0] || null),
     enabled: !!slugParam,
   });
 
-  // ── Legacy: id-based lookup (transitional fallback) ─────────────────────
   const { data: storyById, isLoading: loadingById } = useQuery({
     queryKey: ['storyById', idParam],
     queryFn: () => base44.entities.OutletStory.filter({ id: idParam }).then(r => r[0] || null),
     enabled: !slugParam && !!idParam,
   });
 
-  // ── If we loaded by id and the story has a slug, redirect to canonical URL ─
   useEffect(() => {
-    if (storyById?.slug) {
-      navigate(`/story/${storyById.slug}`, { replace: true });
-    }
+    if (storyById?.slug) navigate(`/story/${storyById.slug}`, { replace: true });
   }, [storyById?.slug, navigate]);
 
   const story = storyBySlug || storyById || null;
@@ -65,6 +53,12 @@ export default function OutletStoryPage() {
     enabled: !!story?.event_id,
   });
 
+  const { data: relatedStories = [] } = useQuery({
+    queryKey: ['relatedStories', story?.primary_category],
+    queryFn: () => base44.entities.OutletStory.filter({ status: 'published', primary_category: story.primary_category }, '-published_date', 5),
+    enabled: !!story?.primary_category,
+  });
+
   const { data: ads = [] } = useQuery({
     queryKey: ['advertisements'],
     queryFn: () => base44.entities.Advertisement.filter({ status: 'published' }),
@@ -74,154 +68,233 @@ export default function OutletStoryPage() {
     if (story) Analytics.outletStoryView(story.id, story.title, story.category);
   }, [story?.id]);
 
+  // ── Loading ──────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <PageShell>
-        <div className="max-w-3xl mx-auto px-6 py-20">
-          <Skeleton className="h-6 w-20 mb-6" />
-          <Skeleton className="h-10 w-3/4 mb-4" />
-          <Skeleton className="h-4 w-1/2 mb-8" />
-          <Skeleton className="h-80 w-full mb-8" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-3/4" />
+      <div style={{ background: '#080808', minHeight: '100vh' }}>
+        <div className="max-w-3xl mx-auto px-6 py-16">
+          <Skeleton className="h-4 w-24 mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <Skeleton className="h-3 w-20 mb-4" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <Skeleton className="h-12 w-full mb-3" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <Skeleton className="h-12 w-2/3 mb-8" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          <Skeleton className="h-72 w-full mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-4 w-full mb-3" style={{ background: 'rgba(255,255,255,0.04)' }} />)}
         </div>
-      </PageShell>
+      </div>
     );
   }
 
+  // ── Not found ─────────────────────────────────────────────────────────────
   if (!story) {
     return (
-      <PageShell>
-        <div className="max-w-3xl mx-auto px-6 py-20 text-center">
-          <p className="text-gray-400">Story not found.</p>
-          <Link to={createPageUrl('OutletHome')} className="text-sm underline mt-4 inline-block">
-            Back to The Outlet
+      <div style={{ background: '#080808', minHeight: '100vh' }}>
+        <div className="max-w-3xl mx-auto px-6 py-24 text-center">
+          <img src={LOGO_URL} alt="The Outlet" className="w-12 h-12 mx-auto mb-6 opacity-30" />
+          <p className="text-white/40 text-sm mb-4">Story not found.</p>
+          <Link to={createPageUrl('OutletHome')} className="text-xs font-mono uppercase tracking-widest transition-colors" style={{ color: OUTLET_CYAN }}>
+            ← Back to The Outlet
           </Link>
         </div>
-      </PageShell>
+      </div>
     );
   }
 
   const storyDesc = story.subtitle || (story.body || '').replace(/<[^>]*>/g, '').substring(0, 160);
   const storyImg  = story.cover_image || SITE_FALLBACK_IMAGE;
+  const related   = relatedStories.filter(s => s.id !== story.id).slice(0, 3);
 
   return (
-    <PageShell style={{ backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/44b72608e_TheOutletv1.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
-      <SeoMeta
-        title={story.title}
-        description={storyDesc}
-        image={storyImg}
-        type="article"
-      />
-      <div className={ads?.length > 0 ? "max-w-7xl mx-auto px-6 py-12 md:py-20 flex gap-8" : ""}>
-        {ads?.length > 0 && (
-          <aside className="hidden lg:block space-y-8 flex-shrink-0 w-[12%]">
-            {ads.filter((_, i) => i % 2 === 0).map((ad) => (
-              <AdvertisementCard key={ad.id} ad={ad} />
-            ))}
-          </aside>
-        )}
-        <article className={ads?.length > 0 ? "flex-1 max-w-3xl" : "max-w-3xl mx-auto px-6 py-12 md:py-20"}>
-          <Link
-            to={createPageUrl('OutletHome')}
-            className="inline-flex items-center gap-1 text-xs font-mono text-white/50 hover:text-white mb-8 transition-colors"
-          >
-            <ArrowLeft className="w-3 h-3" /> Back to The Outlet
+    <div style={{ background: '#080808', minHeight: '100vh' }}>
+      <SeoMeta title={story.title} description={storyDesc} image={storyImg} type="article" />
+
+      {/* ── MASTHEAD ── */}
+      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center gap-4">
+          <Link to={createPageUrl('OutletHome')} className="flex items-center gap-3 group">
+            <img src={LOGO_URL} alt="The Outlet" className="w-8 h-8 group-hover:opacity-80 transition-opacity" />
+            <div>
+              <div className="font-black text-white text-lg tracking-tight uppercase leading-none">The Outlet</div>
+              <div className="font-mono text-[8px] tracking-[0.4em] uppercase" style={{ color: OUTLET_CYAN }}>Short Course Off-Road Media</div>
+            </div>
           </Link>
+        </div>
+      </div>
 
-          {story.cover_image && (
-            <div className="mb-8">
-              <img src={story.cover_image} alt={story.title} className="w-full" />
-              {(story.location_city || story.location_state || story.location_country) && (
-                <div className="mt-3">
-                  <span className="flex items-center gap-1 text-xs font-bold text-white/60">
-                    <MapPin className="w-3 h-3" />
-                    {[story.location_city, story.location_state, story.location_country].filter(Boolean).join(', ')}
-                  </span>
-                </div>
-              )}
+      <div className="max-w-7xl mx-auto px-6">
+        <div className={ads?.length > 0 ? "flex gap-8 py-10 md:py-14" : "py-10 md:py-14"}>
+          {/* Left ad rail */}
+          {ads?.length > 0 && (
+            <aside className="hidden xl:block w-28 flex-shrink-0 space-y-6 pt-2">
+              {ads.filter((_, i) => i % 2 === 0).map(ad => <AdvertisementCard key={ad.id} ad={ad} />)}
+            </aside>
+          )}
+
+          {/* ── ARTICLE ── */}
+          <article className="flex-1 max-w-3xl mx-auto">
+            {/* Back link */}
+            <Link
+              to={createPageUrl('OutletHome')}
+              className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.3em] mb-10 transition-colors"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+              onMouseEnter={e => e.currentTarget.style.color = OUTLET_CYAN}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+            >
+              <ArrowLeft className="w-3 h-3" /> The Outlet
+            </Link>
+
+            {/* Category label */}
+            <div className="flex items-center gap-2 mb-5">
+              <div className="w-4 h-0.5" style={{ background: OUTLET_CYAN }} />
+              <span className="font-mono text-[10px] tracking-[0.4em] uppercase" style={{ color: OUTLET_CYAN }}>
+                {story.primary_category}
+                {story.sub_category && ` · ${story.sub_category}`}
+              </span>
             </div>
-          )}
 
-          <span className="font-mono text-[10px] tracking-[0.2em] text-white/50 uppercase block">
-            {story.category}
-          </span>
+            {/* Headline */}
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.02] text-white mb-5">
+              {story.title}
+            </h1>
 
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-2 leading-[1.05] text-white">
-            {story.title}
-          </h1>
+            {/* Subtitle */}
+            {story.subtitle && (
+              <p className="text-lg md:text-xl leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {story.subtitle}
+              </p>
+            )}
 
-          {story.subtitle && (
-            <p className="text-lg text-white/65 mt-4">{story.subtitle}</p>
-          )}
-
-          {/* Context links — driver / event */}
-          {(linkedDriver || linkedEvent) && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {linkedDriver && (
-                <Link
-                  to={`/drivers/${linkedDriver.canonical_slug || linkedDriver.slug || linkedDriver.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-xs font-medium text-white/75 transition-colors"
-                >
-                  <User className="w-3 h-3" />
-                  Featuring {linkedDriver.first_name} {linkedDriver.last_name}
-                </Link>
-              )}
-              {linkedEvent && (
-                <Link
-                  to={`${createPageUrl('EventProfile')}?id=${linkedEvent.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-xs font-medium text-white/75 transition-colors"
-                >
-                  <Calendar className="w-3 h-3" />
-                  From {linkedEvent.name}
-                </Link>
-              )}
-            </div>
-          )}
-
-          <div className="mt-6 pb-8 border-b border-white/15">
-            <div className="flex flex-col gap-2 mb-4">
-              {story.published_date && (
-                <span className="text-xs text-white/45">{format(new Date(story.published_date), 'MMMM d, yyyy · h:mm a')}</span>
-              )}
+            {/* Meta bar */}
+            <div className="flex flex-wrap items-center gap-4 py-5 mb-8" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               {story.author && (
-                <span className="text-xs text-white/45">Published by {story.author}</span>
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-white/60">
+                  <User className="w-3 h-3" style={{ color: OUTLET_CYAN }} />
+                  {story.author}
+                </span>
+              )}
+              {story.published_date && (
+                <span className="flex items-center gap-1.5 text-xs text-white/35 font-mono">
+                  <Calendar className="w-3 h-3" />
+                  {format(new Date(story.published_date), 'MMMM d, yyyy')}
+                </span>
               )}
               {story.photo_credit && (
-                <span className="text-xs text-white/45">Photo by {story.photo_credit}</span>
+                <span className="text-xs text-white/30">Photo: {story.photo_credit}</span>
               )}
-            </div>
-            <SocialShareButtons
-              url={window.location.href}
-              title={story.title}
-              description={story.subtitle || story.body?.substring(0, 150)}
-              type="inline"
-            />
-          </div>
-
-          <div className="editorial-body mt-10" style={{ color: 'rgba(255,255,255,0.75)' }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }} />
-
-          {story.tags?.length > 0 && (
-            <div className="flex items-center gap-2 mt-12 pt-8 border-t border-white/15">
-              <Tag className="w-3 h-3 text-white/40" />
-              {story.tags.map((tag) => (
-                <span key={tag} className="px-3 py-1 text-[10px] font-mono tracking-wider bg-white/10 text-white/55 uppercase">
-                  {tag}
+              {(story.location_city || story.location_state) && (
+                <span className="flex items-center gap-1 text-xs text-white/30">
+                  <MapPin className="w-3 h-3" />
+                  {[story.location_city, story.location_state].filter(Boolean).join(', ')}
                 </span>
+              )}
+              <div className="ml-auto">
+                <SocialShareButtons url={window.location.href} title={story.title} description={story.subtitle || ''} type="inline" />
+              </div>
+            </div>
+
+            {/* Context links */}
+            {(linkedDriver || linkedEvent) && (
+              <div className="flex flex-wrap gap-2 mb-8">
+                {linkedDriver && (
+                  <Link
+                    to={`/drivers/${linkedDriver.canonical_slug || linkedDriver.slug || linkedDriver.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:text-white transition-colors"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
+                  >
+                    <User className="w-3 h-3" style={{ color: OUTLET_CYAN }} />
+                    Featuring {linkedDriver.first_name} {linkedDriver.last_name}
+                  </Link>
+                )}
+                {linkedEvent && (
+                  <Link
+                    to={`${createPageUrl('EventProfile')}?id=${linkedEvent.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:text-white transition-colors"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
+                  >
+                    <Calendar className="w-3 h-3" style={{ color: OUTLET_CYAN }} />
+                    From {linkedEvent.name}
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Cover image */}
+            {story.cover_image && (
+              <div className="mb-10 -mx-0 overflow-hidden relative">
+                <img src={story.cover_image} alt={story.title} className="w-full object-cover" style={{ maxHeight: '520px' }} />
+                <div className="absolute top-0 left-0 w-0.5 h-full" style={{ background: OUTLET_CYAN }} />
+              </div>
+            )}
+
+            {/* Body */}
+            <div
+              className="editorial-body mt-4"
+              style={{ color: 'rgba(255,255,255,0.78)' }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }}
+            />
+
+            {/* Tags */}
+            {story.tags?.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mt-14 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <Tag className="w-3 h-3 text-white/30" />
+                {story.tags.map(tag => (
+                  <span key={tag} className="px-3 py-1 text-[9px] font-mono tracking-[0.3em] uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Share footer */}
+            <div className="mt-12 pt-8 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <Link
+                to={createPageUrl('OutletHome')}
+                className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider transition-colors"
+                style={{ color: OUTLET_CYAN }}
+              >
+                <ArrowLeft className="w-3 h-3" /> All Stories
+              </Link>
+              <SocialShareButtons url={window.location.href} title={story.title} description={story.subtitle || ''} type="inline" />
+            </div>
+          </article>
+
+          {/* Right ad rail */}
+          {ads?.length > 0 && (
+            <aside className="hidden xl:block w-28 flex-shrink-0 space-y-6 pt-2">
+              {ads.filter((_, i) => i % 2 === 1).map(ad => <AdvertisementCard key={ad.id} ad={ad} />)}
+            </aside>
+          )}
+        </div>
+
+        {/* ── RELATED STORIES ── */}
+        {related.length > 0 && (
+          <div className="pb-16" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center gap-4 py-8 mb-6">
+              <div className="w-6 h-0.5" style={{ background: OUTLET_CYAN }} />
+              <span className="font-mono text-[10px] tracking-[0.45em] uppercase" style={{ color: OUTLET_CYAN }}>More in {story.primary_category}</span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
+              <Link to={createPageUrl('OutletHome')} className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-white/30 hover:text-white transition-colors">
+                All Stories <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0.5">
+              {related.map(s => (
+                <Link key={s.id} to={getOutletStoryUrl(s)} className="group block" style={{ background: '#0a0a0a' }}>
+                  {s.cover_image && (
+                    <div className="aspect-[3/2] overflow-hidden">
+                      <img src={s.cover_image} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <span className="font-mono text-[9px] tracking-[0.35em] uppercase block mb-2" style={{ color: OUTLET_CYAN }}>{s.primary_category}</span>
+                    <h4 className="text-sm font-bold text-white/85 group-hover:text-white transition-colors leading-snug">{s.title}</h4>
+                    {s.published_date && <span className="text-[10px] text-white/25 font-mono mt-2 block">{format(new Date(s.published_date), 'MMM d, yyyy')}</span>}
+                  </div>
+                </Link>
               ))}
             </div>
-          )}
-        </article>
-
-        {ads?.length > 0 && (
-          <aside className="hidden lg:block space-y-8 flex-shrink-0 w-[12%]">
-            {ads.filter((_, i) => i % 2 === 1).map((ad) => (
-              <AdvertisementCard key={ad.id} ad={ad} />
-            ))}
-          </aside>
+          </div>
         )}
       </div>
-    </PageShell>
+    </div>
   );
 }
