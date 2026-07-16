@@ -65,6 +65,7 @@ import ManageDiscounts from './pages/admin/ManageDiscounts';
 import ManageReviews from './pages/admin/ManageReviews';
 import ManageHeroSlides from './pages/admin/ManageHeroSlides';
 import ManageStorefrontSettings from './pages/admin/ManageStorefrontSettings';
+import ContentFileManager from './pages/ContentFileManager';
 import EventFile from './pages/EventFile';
 import RaceControlEvents from './pages/RaceControlEvents';
 import RaceControlLayout from './components/racecontrol/RaceControlLayout';
@@ -245,6 +246,7 @@ const AuthenticatedApp = () => {
       <Route path="/admin/reviews" element={<LayoutWrapper currentPageName="ManageReviews"><ManageReviews /></LayoutWrapper>} />
       <Route path="/admin/hero-slides" element={<LayoutWrapper currentPageName="ManageHeroSlides"><ManageHeroSlides /></LayoutWrapper>} />
       <Route path="/admin/storefront-settings" element={<LayoutWrapper currentPageName="ManageStorefrontSettings"><ManageStorefrontSettings /></LayoutWrapper>} />
+      <Route path="/admin/content-files" element={<LayoutWrapper currentPageName="ContentFileManager"><ContentFileManager /></LayoutWrapper>} />
       
       {/* ─── R9CA: All motorsports entity routes → RaceCore ownership ─── */}
       {/* Entity Records */}

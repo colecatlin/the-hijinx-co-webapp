@@ -1,0 +1,114 @@
+{
+  "name": "ManagedFile",
+  "type": "object",
+  "description": "A content file managed by the platform \u2014 stored in Google Drive, cataloged in a Google Sheets registry, and mirrored as an entity record for fast querying.",
+  "properties": {
+    "file_name": {
+      "type": "string",
+      "description": "Display name of the file"
+    },
+    "file_type": {
+      "type": "string",
+      "enum": [
+        "document",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "data",
+        "spreadsheet",
+        "other"
+      ],
+      "default": "document",
+      "description": "Classification of the file"
+    },
+    "category": {
+      "type": "string",
+      "description": "Organizational category (e.g. 'race-results', 'press-kit', 'media-asset')"
+    },
+    "drive_file_id": {
+      "type": "string",
+      "description": "Google Drive file ID"
+    },
+    "drive_web_url": {
+      "type": "string",
+      "description": "Google Drive web view link"
+    },
+    "drive_download_url": {
+      "type": "string",
+      "description": "Google Drive direct download link"
+    },
+    "linked_entity_type": {
+      "type": "string",
+      "description": "Optional: type of linked app entity (Driver, Event, Series, etc.)"
+    },
+    "linked_entity_id": {
+      "type": "string",
+      "description": "Optional: ID of linked app entity"
+    },
+    "linked_entity_label": {
+      "type": "string",
+      "description": "Human-readable label of linked entity"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "orphaned",
+        "error"
+      ],
+      "default": "active"
+    },
+    "file_size": {
+      "type": "number",
+      "description": "File size in bytes"
+    },
+    "mime_type": {
+      "type": "string",
+      "description": "MIME type"
+    },
+    "uploaded_by_id": {
+      "type": "string",
+      "description": "User ID who uploaded"
+    },
+    "uploaded_by_name": {
+      "type": "string",
+      "description": "Display name of uploader"
+    },
+    "uploaded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "drive_upload",
+        "sheet_import",
+        "migration"
+      ],
+      "default": "drive_upload"
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "synced",
+        "stale",
+        "conflict"
+      ],
+      "default": "pending"
+    },
+    "sheet_row_number": {
+      "type": "number",
+      "description": "Row number in the Google Sheet registry"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "file_name",
+    "drive_file_id"
+  ]
+}

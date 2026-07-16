@@ -1,0 +1,30 @@
+{
+  "name": "ContentFileConfig",
+  "type": "object",
+  "description": "Singleton configuration for the Google Drive + Sheets content file management system. Holds the registry spreadsheet ID and optional storage folder.",
+  "properties": {
+    "registry_spreadsheet_id": {
+      "type": "string",
+      "description": "Google Sheets spreadsheet ID for the file registry"
+    },
+    "registry_spreadsheet_url": {
+      "type": "string",
+      "description": "Human-editable URL of the registry spreadsheet"
+    },
+    "registry_folder_id": {
+      "type": "string",
+      "description": "Optional Google Drive folder ID where content files are stored"
+    },
+    "initialized_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "initialized_by": {
+      "type": "string",
+      "description": "User ID who initialized the registry"
+    }
+  },
+  "required": [
+    "registry_spreadsheet_id"
+  ]
+}
