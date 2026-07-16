@@ -154,7 +154,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen relative" style={{
-          background: '#050A0A',
+          background: '#0F1414',
           backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'top center',
@@ -171,7 +171,7 @@ export default function Layout({ children, currentPageName }) {
         {/* ── GLOBAL: SVG Film grain / noise overlay ── */}
         <div className="fixed inset-0 z-0 pointer-events-none" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E")`,
-          opacity: 0.5,
+          opacity: 0.2,
         }} />
         <div className="sticky top-0 z-50 relative" style={{ background: '#050A0A' }}>
           <AnnouncementBar />
