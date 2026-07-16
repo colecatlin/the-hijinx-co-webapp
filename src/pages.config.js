@@ -204,7 +204,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "ManagePointsConfig",
+    mainPage: "Home",
     Pages: PAGES,
     Layout: __Layout,
 };
