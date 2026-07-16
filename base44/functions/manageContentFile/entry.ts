@@ -13,6 +13,16 @@ function b64ToBytes(b64) {
   return bytes;
 }
 
+async function getSheetsAuth(base44) {
+  const conn = await base44.asServiceRole.connectors.getConnection('googlesheets');
+  return { Authorization: `Bearer ${conn.accessToken}`, 'Content-Type': 'application/json' };
+}
+
+async function getDriveAuth(base44) {
+  const conn = await base44.asServiceRole.connectors.getConnection('googledrive');
+  return { Authorization: `Bearer ${conn.accessToken}` };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -23,13 +33,9 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const action = body.action;
 
-    const driveConn = await base44.asServiceRole.connectors.getConnection('googledrive');
-    const sheetsConn = await base44.asServiceRole.connectors.getConnection('googlesheets');
-    const driveAuth = { Authorization: `Bearer ${driveConn.accessToken}` };
-    const sheetsAuth = { Authorization: `Bearer ${sheetsConn.accessToken}`, 'Content-Type': 'application/json' };
-
     // INIT: create the registry spreadsheet + header row + config record
     if (action === 'init') {
+      const sheetsAuth = await getSheetsAuth(base44);
       const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
         method: 'POST',
         headers: sheetsAuth,
@@ -84,12 +90,15 @@ Deno.serve(async (req) => {
       if (!body.file_base64 || !body.file_name) {
         return Response.json({ error: 'file_base64 and file_name are required' }, { status: 400 });
       }
+      const driveAuth = await getDriveAuth(base44);
+      const sheetsAuth = await getSheetsAuth(base44);
       const mime = body.mime_type || 'application/octet-stream';
       const bytes = b64ToBytes(body.file_base64);
+      const driveToken = driveAuth.Authorization.replace('Bearer ', '');
 
       const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=media&fields=id', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${driveConn.accessToken}`, 'Content-Type': mime },
+        headers: { Authorization: `Bearer ${driveToken}`, 'Content-Type': mime },
         body: bytes
       });
       if (!uploadRes.ok) {
@@ -156,7 +165,7 @@ Deno.serve(async (req) => {
       return Response.json({ status: 'registered', managedFile: managed, driveFile, rowNumber, spreadsheetUrl });
     }
 
-    // LIST: return ManagedFile entity records + registry link
+    // LIST: return ManagedFile entity records + registry link (no token fetch needed)
     if (action === 'list') {
       const records = await base44.asServiceRole.entities.ManagedFile.list('-uploaded_at', 500);
       return Response.json({ status: 'ok', records, spreadsheetUrl, spreadsheetId });
@@ -164,6 +173,7 @@ Deno.serve(async (req) => {
 
     // SYNC: import Sheet rows that have no matching ManagedFile record (handles admin edits made directly in the sheet)
     if (action === 'sync') {
+      const sheetsAuth = await getSheetsAuth(base44);
       const records = await base44.asServiceRole.entities.ManagedFile.list('-uploaded_at', 1000);
       const existingIds = new Set(records.map(r => r.id));
       const readRes = await fetch(
