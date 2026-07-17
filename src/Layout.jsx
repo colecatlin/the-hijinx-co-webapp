@@ -9,7 +9,6 @@ import AnnouncementBar from '@/components/shared/AnnouncementBar';
 import GoogleMapsInitializer from '@/components/shared/GoogleMapsInitializer';
 import ErrorBoundary from '@/components/system/errorBoundary';
 import UserMenu from '@/components/layout/UserMenu';
-import ThemeToggle from '@/components/shared/ThemeToggle';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
@@ -156,7 +155,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen relative" style={{
-          background: 'var(--app-bg)',
+          background: '#050A0A',
           backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'top center',
@@ -175,10 +174,7 @@ export default function Layout({ children, currentPageName }) {
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E")`,
           opacity: 0.5,
         }} />
-        <div className="fixed top-2 right-3 z-[100] rounded-full p-1 flex items-center" style={{ background: 'var(--surface-solid)', border: '1px solid var(--border-subtle)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}>
-          <ThemeToggle />
-        </div>
-        <div className="sticky top-0 z-50 relative" style={{ background: 'var(--app-bg)' }}>
+        <div className="sticky top-0 z-50 relative" style={{ background: '#050A0A' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
           <div className="px-3 py-2">
@@ -188,15 +184,15 @@ export default function Layout({ children, currentPageName }) {
               className="transition-all duration-300 rounded-[20px]"
               style={{
                 background: isHeaderHovered
-                   ? 'var(--surface-hover)'
-                   : scrolled
-                     ? 'var(--surface-scrolled)'
-                     : 'var(--surface)',
-                 backdropFilter: 'blur(24px)',
-                 WebkitBackdropFilter: 'blur(24px)',
-                 border: isHeaderHovered
-                   ? '1.5px solid var(--surface-border)'
-                   : '1.5px solid var(--border-subtle)',
+                  ? 'rgba(8, 12, 14, 0.82)'
+                  : scrolled
+                    ? 'rgba(5, 10, 10, 0.55)'
+                    : 'rgba(5, 10, 10, 0.25)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: isHeaderHovered
+                  ? '1.5px solid rgba(29,161,161,0.25)'
+                  : '1.5px solid rgba(255,255,255,0.18)',
                 boxShadow: isHeaderHovered
                   ? '0 0 48px rgba(29,161,161,0.15), 0 16px 64px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)'
                   : '0 0 32px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
@@ -238,8 +234,8 @@ export default function Layout({ children, currentPageName }) {
                               : isActive(item.page)
                                 ? '#1DA1A1'
                                 : isHeaderHovered
-                                  ? 'var(--text-secondary)'
-                                  : 'var(--text-primary)',
+                                  ? 'rgba(255,255,255,0.55)'
+                                  : 'rgba(255,255,255,0.78)',
                             textShadow: (hoveredItem === item.name || isActive(item.page)) ? '0 0 12px rgba(29,161,161,0.4)' : 'none',
                           }}
                         >
@@ -260,9 +256,9 @@ export default function Layout({ children, currentPageName }) {
                   <button
                     onClick={() => { setSearchOpen(!searchOpen); setHoveredItem(null); }}
                     className="p-2 rounded-lg transition-colors hidden lg:flex items-center justify-center"
-                    style={{ color: searchOpen ? '#1DA1A1' : isHeaderHovered ? 'var(--text-muted)' : 'var(--text-secondary)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
-                    onMouseLeave={e => e.currentTarget.style.color = searchOpen ? '#1DA1A1' : isHeaderHovered ? 'var(--text-muted)' : 'var(--text-secondary)'}
+                    style={{ color: searchOpen ? '#1DA1A1' : isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
+                    onMouseLeave={e => e.currentTarget.style.color = searchOpen ? '#1DA1A1' : isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)'}
                   >
                     <Search className="w-4 h-4" />
                   </button>
@@ -290,21 +286,21 @@ export default function Layout({ children, currentPageName }) {
                       onClick={() => base44.auth.redirectToLogin()}
                       className="px-3 py-1.5 text-[10px] font-bold tracking-[0.15em] uppercase rounded-lg transition-all hidden lg:block"
                       style={{
-                        background: 'var(--hover-bg)',
-                        color: 'var(--text-primary)',
-                        border: '1px solid var(--line-strong)',
+                        background: 'rgba(255,255,255,0.1)',
+                        color: 'rgba(255,255,255,0.85)',
+                        border: '1px solid rgba(255,255,255,0.15)',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'var(--hover-bg)'; }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
                     >
                       Login
                     </button>
                   )}
-                  <CartIcon style={{ color: 'var(--text-secondary)' }} />
+                  <CartIcon style={{ color: 'rgba(255,255,255,0.65)' }} />
                   <button
                     onClick={() => setMobileOpen(!mobileOpen)}
                     className="p-2 rounded-lg transition-colors lg:hidden"
-                    style={{ color: 'var(--text-secondary)' }}
+                    style={{ color: 'rgba(255,255,255,0.75)' }}
                   >
                     {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
                   </button>
@@ -322,10 +318,10 @@ export default function Layout({ children, currentPageName }) {
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="max-w-7xl mx-auto px-6 pb-4 pt-3" style={{ borderTop: '1px solid var(--line)' }}>
+                    <div className="max-w-7xl mx-auto px-6 pb-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                       {/* Search input */}
                       <div className="flex items-center gap-3 mb-3">
-                        <Search className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--text-faint)' }} />
+                        <Search className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
                         <input
                           ref={searchInputRef}
                           type="text"
@@ -333,21 +329,21 @@ export default function Layout({ children, currentPageName }) {
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
                           className="flex-1 bg-transparent outline-none text-sm font-medium"
-                          style={{ color: 'var(--text-primary)', caretColor: '#1DA1A1' }}
+                          style={{ color: 'rgba(255,255,255,0.85)', caretColor: '#1DA1A1' }}
                         />
                         {searchQuery && (
-                          <button onClick={() => setSearchQuery('')} style={{ color: 'var(--text-faint)' }}>
+                          <button onClick={() => setSearchQuery('')} style={{ color: 'rgba(255,255,255,0.3)' }}>
                             <X className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
                       {/* Results */}
                       {searchLoading && (
-                        <p className="font-mono text-[10px] tracking-widest" style={{ color: 'var(--text-faint)' }}>SEARCHING...</p>
+                        <p className="font-mono text-[10px] tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>SEARCHING...</p>
                       )}
                       {!searchLoading && searchQuery.length >= 2 &&
                         Object.values(searchResults).every(arr => arr.length === 0) && (
-                        <p className="text-xs" style={{ color: 'var(--text-faint)' }}>No results for "{searchQuery}"</p>
+                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No results for "{searchQuery}"</p>
                       )}
                       {Object.values(searchResults).some(arr => arr.length > 0) && (
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
@@ -359,9 +355,9 @@ export default function Layout({ children, currentPageName }) {
                                   <Link key={story.id} to={story.slug ? `/story/${story.slug}` : `/OutletStoryPage?id=${story.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'var(--text-secondary)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {story.title}
                                   </Link>
                                 ))}
@@ -376,9 +372,9 @@ export default function Layout({ children, currentPageName }) {
                                   <Link key={driver.id} to={driver.slug ? `/drivers/${driver.slug}` : `/DriverProfile?id=${driver.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'var(--text-secondary)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {driver.first_name} {driver.last_name}
                                   </Link>
                                 ))}
@@ -393,9 +389,9 @@ export default function Layout({ children, currentPageName }) {
                                   <Link key={event.id} to={`/EventProfile?id=${event.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'var(--text-secondary)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {event.name}
                                   </Link>
                                 ))}
@@ -410,9 +406,9 @@ export default function Layout({ children, currentPageName }) {
                                   <Link key={track.id} to={track.slug ? `/TrackProfile?slug=${track.slug}` : `/TrackProfile?id=${track.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'var(--text-secondary)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {track.name}
                                   </Link>
                                 ))}
@@ -427,9 +423,9 @@ export default function Layout({ children, currentPageName }) {
                                   <Link key={s.id} to={s.slug ? `/series/${s.slug}` : `/SeriesDetail?id=${s.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'var(--text-secondary)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {s.name}
                                   </Link>
                                 ))}
@@ -444,9 +440,9 @@ export default function Layout({ children, currentPageName }) {
                                   <Link key={team.id} to={`/TeamProfile?id=${team.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'var(--text-secondary)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--hover-bg)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {team.name}
                                   </Link>
                                 ))}
@@ -473,7 +469,7 @@ export default function Layout({ children, currentPageName }) {
                   >
                     <div
                       className="max-w-7xl mx-auto px-6 pb-4 pt-1 hidden lg:flex flex-wrap gap-x-1 gap-y-0.5"
-                      style={{ borderTop: '1px solid var(--line)' }}
+                      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
                     >
                       {activeSubItems.map((sub) =>
                         sub.disabled ? (
@@ -489,9 +485,9 @@ export default function Layout({ children, currentPageName }) {
                             key={sub.name}
                             to={sub.href || createPageUrl(sub.page)}
                             className="px-3 py-1.5 text-xs font-semibold tracking-wide uppercase rounded-lg transition-all"
-                            style={{ color: 'var(--text-primary)' }}
+                            style={{ color: 'rgba(255,255,255,0.9)' }}
                             onMouseEnter={e => { e.currentTarget.style.color = '#1DA1A1'; e.currentTarget.style.background = 'rgba(29,161,161,0.08)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'transparent'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'transparent'; }}
                           >
                             {sub.name}
                           </Link>
@@ -526,22 +522,22 @@ export default function Layout({ children, currentPageName }) {
                 transition={{ type: 'tween', duration: 0.3 }}
                 className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm z-[56] overflow-y-auto lg:hidden"
                 style={{
-                  background: 'var(--surface-solid)',
+                  background: 'rgba(5, 8, 10, 0.97)',
                   backdropFilter: 'blur(24px)',
                   WebkitBackdropFilter: 'blur(24px)',
                   borderLeft: '1px solid rgba(255,255,255,0.08)',
                   boxShadow: '-16px 0 48px rgba(0,0,0,0.6)',
                 }}
               >
-                <div className="sticky top-0 px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid var(--line)', background: 'var(--surface-solid)' }}>
+                <div className="sticky top-0 px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(5,8,10,0.9)' }}>
                   <button
                     onClick={() => setMobileOpen(false)}
                     className="p-2 rounded-lg transition-colors"
-                    style={{ color: 'var(--text-secondary)' }}
+                    style={{ color: 'rgba(255,255,255,0.6)' }}
                   >
                     <X className="w-5 h-5" />
                   </button>
-                  <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ color: 'var(--text-muted)' }}>Menu</span>
+                  <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ color: 'rgba(255,255,255,0.5)' }}>Menu</span>
                 </div>
                 <nav className="px-6 py-6">
                   {isAuthenticated && (
@@ -549,14 +545,14 @@ export default function Layout({ children, currentPageName }) {
                       <Link
                         to={createPageUrl('MyDashboard')}
                         className="block py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'var(--text-primary)', border: '1px solid var(--hover-bg)', background: 'var(--hover-bg)' }}
+                        style={{ color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
                       >
                         Dashboard
                       </Link>
                       <Link
                         to={createPageUrl('Profile')}
                         className="block py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'var(--text-primary)', border: '1px solid var(--hover-bg)', background: 'var(--hover-bg)' }}
+                        style={{ color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
                       >
                         Profile
                       </Link>
@@ -581,11 +577,11 @@ export default function Layout({ children, currentPageName }) {
                     </div>
                   )}
                   {navItems.map((item) => (
-                    <div key={item.name} className="mb-1" style={{ borderBottom: '1px solid var(--hover-bg)' }}>
+                    <div key={item.name} className="mb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <Link
                         to={item.href || createPageUrl(item.page)}
                         className="block py-3 text-base font-bold tracking-[0.1em] uppercase transition-colors"
-                        style={{ color: isActive(item.page) ? '#1DA1A1' : 'var(--text-secondary)' }}
+                        style={{ color: isActive(item.page) ? '#1DA1A1' : 'rgba(255,255,255,0.75)' }}
                       >
                         {item.name}
                       </Link>
@@ -593,7 +589,7 @@ export default function Layout({ children, currentPageName }) {
                         <div className="pl-4 mb-2">
                           {item.sub.map((sub) => (
                             sub.disabled ? (
-                              <div key={sub.name} className="pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em]" style={{ color: 'var(--text-faint)' }}>
+                              <div key={sub.name} className="pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
                                 {sub.name.replace(/^— | —$/g, '')}
                               </div>
                             ) : (
@@ -601,7 +597,7 @@ export default function Layout({ children, currentPageName }) {
                                 key={sub.name}
                                 to={sub.href || createPageUrl(sub.page)}
                                 className="block py-2 text-sm transition-colors"
-                                style={{ color: 'var(--text-muted)' }}
+                                style={{ color: 'rgba(255,255,255,0.5)' }}
                               >
                                 {sub.name}
                               </Link>

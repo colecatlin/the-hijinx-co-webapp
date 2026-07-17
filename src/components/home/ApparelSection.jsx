@@ -66,7 +66,7 @@ export default function ApparelSection({ products = [] }) {
               href={heroHref}
               isExternal={heroIsExternal}
               className="group relative flex flex-col justify-end min-h-[500px] overflow-hidden block"
-              style={{ border: '1px solid var(--line)' }}
+              style={{ border: '1px solid rgba(255,255,255,0.06)' }}
             >
               <img
                 src={featuredProduct?.cover_image_url || APPAREL_BG}
@@ -74,7 +74,7 @@ export default function ApparelSection({ products = [] }) {
                 className="absolute inset-0 w-full h-full object-cover opacity-65 group-hover:opacity-85 group-hover:scale-[1.03] transition-all duration-700"
                 style={{ filter: 'contrast(1.12) saturate(0.85)' }}
               />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--scrim-strong) 0%, var(--scrim-soft) 40%, transparent 100%)' }} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
               <div className="absolute top-0 left-0 right-0 h-[2px]"
                 style={{ background: 'linear-gradient(90deg, #E5FF0099 0%, transparent 60%)' }} />
               <div className="absolute top-0 left-0 bottom-0 w-[2px]"
@@ -123,7 +123,7 @@ export default function ApparelSection({ products = [] }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex flex-col justify-between h-full min-h-[180px] p-6 md:p-8 transition-all duration-200 relative overflow-hidden block"
-                    style={{ background: 'var(--hover-bg)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
                   >
                     <div className="absolute top-0 left-0 right-0 h-[1px]"
                       style={{ background: `linear-gradient(90deg, ${accent}44 0%, transparent 60%)` }} />
@@ -147,7 +147,7 @@ export default function ApparelSection({ products = [] }) {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 py-4 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#E5FF00] transition-colors uppercase"
-              style={{ border: '1px solid var(--line)' }}
+              style={{ border: '1px solid rgba(255,255,255,0.05)' }}
             >
               <ShoppingBag className="w-3 h-3" />
               Shop All Apparel

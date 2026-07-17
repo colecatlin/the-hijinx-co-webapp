@@ -148,8 +148,8 @@ function HeroTile({ className, style, overlayAlpha = 0.5 }) {
           ) : (
             <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${slide.bg})` }} />
           )}
-          <div className="absolute inset-0" style={{ background: `var(--scrim-medium)` }} />
-          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at center, transparent 35%, var(--scrim-soft) 100%)` }} />
+          <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayAlpha})` }} />
+          <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,${Math.min(overlayAlpha * 0.75, 0.7)}) 100%)` }} />
           {/* Scanning light bar */}
           <motion.div
             className="absolute inset-x-0 pointer-events-none"
@@ -284,8 +284,8 @@ function ImageTile({ block, span, accentIdx }) {
       )}
 
       <div className="absolute inset-0 pointer-events-none opacity-60" style={GRAIN_STYLE} />
-      {hasImage && !useGlass && <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--scrim-strong), var(--scrim-faint) 30%, transparent)' }} />}
-      {hasImage && useGlass && <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--scrim-soft), transparent 45%)' }} />}
+      {hasImage && !useGlass && <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />}
+      {hasImage && useGlass && <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />}
 
       {/* Accent line top (glass style) */}
       {useGlass && (
@@ -294,15 +294,15 @@ function ImageTile({ block, span, accentIdx }) {
 
       <div className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: accent, boxShadow: `0 0 16px ${accent}CC` }} />
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 100%, ${accent}22 0%, transparent 65%)` }} />
-      <span className="absolute top-4 left-4 text-[8px] font-bold tracking-[0.45em] uppercase" style={{ color: useGlass ? accent : 'var(--on-image-faint)' }}>
+      <span className="absolute top-4 left-4 text-[8px] font-bold tracking-[0.45em] uppercase" style={{ color: useGlass ? accent : 'rgba(255,255,255,0.45)' }}>
         {block.label || block.title}
       </span>
       <div className="absolute bottom-0 left-0 right-0 p-4">
-        <h3 className="leading-tight mb-1" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 2.2vw, 1.35rem)', fontWeight: 700, color: 'var(--on-image)', fontStyle: useGlass ? 'italic' : 'normal' }}>
+        <h3 className="leading-tight mb-1" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1rem, 2.2vw, 1.35rem)', fontWeight: 700, color: 'rgba(255,255,255,0.92)', fontStyle: useGlass ? 'italic' : 'normal' }}>
           {block.title}
         </h3>
         {block.description && useGlass && (
-          <p className="text-xs leading-relaxed mb-2" style={{ color: 'var(--on-image-muted)' }}>{block.description}</p>
+          <p className="text-xs leading-relaxed mb-2" style={{ color: 'rgba(255,255,255,0.55)' }}>{block.description}</p>
         )}
         {hasCta && (
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-widest uppercase transition-colors duration-300" style={{ color: accent }}>

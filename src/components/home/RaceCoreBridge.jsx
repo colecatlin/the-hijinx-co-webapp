@@ -22,17 +22,17 @@ export default function RaceCoreBridge() {
       {/* Darkening overlays — left heavier for text legibility, right lighter for card */}
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(to right, var(--scrim-strong) 0%, var(--scrim-medium) 45%, var(--scrim-medium) 100%)' }}
+        style={{ background: 'linear-gradient(to right, rgba(1,4,4,0.88) 0%, rgba(1,4,4,0.72) 45%, rgba(1,4,4,0.55) 100%)' }}
       />
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(to bottom, var(--scrim-soft) 0%, var(--scrim-faint) 40%, var(--scrim-soft) 100%)' }}
+        style={{ background: 'linear-gradient(to bottom, rgba(1,4,4,0.4) 0%, rgba(1,4,4,0.1) 40%, rgba(1,4,4,0.5) 100%)' }}
       />
 
       {/* Top fade — absorbs from RaceCoreSection */}
-      <div className="absolute top-0 left-0 right-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(to bottom, var(--app-bg) 0%, transparent 100%)' }} />
+      <div className="absolute top-0 left-0 right-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(to bottom, #050A0A 0%, transparent 100%)' }} />
       {/* Bottom fade — bleeds into SocialsSection */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(to top, var(--app-bg) 0%, transparent 100%)' }} />
+      <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none" style={{ background: 'linear-gradient(to top, #050A0A 0%, transparent 100%)' }} />
       {/* Teal accent thread */}
       <div
         className="absolute top-20 left-0 right-0 h-[1px]"
@@ -92,11 +92,11 @@ export default function RaceCoreBridge() {
             <div
               className="w-full max-w-[340px] p-8 relative"
               style={{
-                background: 'var(--surface-solid)',
-                border: '1px solid var(--line-strong)',
+                background: 'rgba(1,4,4,0.6)',
+                border: '1px solid rgba(255,255,255,0.14)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
-                boxShadow: '0 0 80px rgba(0,0,0,0.6), inset 0 1px 0 var(--line)',
+                boxShadow: '0 0 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07)',
               }}
             >
               {/* Teal top accent */}
@@ -126,7 +126,7 @@ export default function RaceCoreBridge() {
                 <button
                   onClick={() => navigate(createPageUrl('MotorsportsHome'))}
                   className="w-full py-3.5 px-6 text-xs font-bold tracking-widest uppercase text-center transition-all duration-200 text-white/40 hover:text-white/70"
-                  style={{ border: '1px solid var(--line-strong)' }}
+                  style={{ border: '1px solid rgba(255,255,255,0.1)' }}
                 >
                   Explore Race Core
                 </button>
@@ -134,7 +134,7 @@ export default function RaceCoreBridge() {
 
               <div
                 className="mt-7 pt-5 text-[10px] text-white/20 leading-relaxed"
-                style={{ borderTop: '1px solid var(--line)' }}
+                style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
               >
                 Free to join. Built for competitors at every level.
               </div>

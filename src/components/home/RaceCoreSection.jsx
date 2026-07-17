@@ -93,7 +93,7 @@ export default function RaceCoreSection() {
   ];
 
   return (
-    <section className="relative" style={{ minHeight: '600px', background: 'var(--app-bg)' }}>
+    <section className="relative" style={{ minHeight: '600px', background: '#050A0A' }}>
 
       {/* Texture overlay */}
       <div
@@ -114,14 +114,14 @@ export default function RaceCoreSection() {
           className="w-full h-full object-cover object-top"
           style={{ filter: 'saturate(1.15) contrast(1.08)' }}
         />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, var(--scrim-strong) 0%, var(--scrim-medium) 38%, var(--scrim-faint) 65%, var(--scrim-soft) 100%)' }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, var(--scrim-soft) 0%, var(--scrim-faint) 35%, var(--scrim-soft) 80%, var(--scrim-strong) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.92) 0%, rgba(4,8,8,0.68) 38%, rgba(4,8,8,0.18) 65%, rgba(4,8,8,0.40) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.45) 0%, rgba(4,8,8,0.05) 35%, rgba(4,8,8,0.40) 80%, rgba(4,8,8,0.85) 100%)' }} />
         <div className="absolute top-0 left-0 w-[500px] h-[2px] opacity-50" style={{ background: 'linear-gradient(to right, #1DA1A1, transparent)' }} />
         <div className="absolute top-0 left-0 w-[2px] h-40 opacity-40" style={{ background: 'linear-gradient(to bottom, #1DA1A1, transparent)' }} />
         <div className="absolute bottom-0 right-0 w-[300px] h-[1px] opacity-25" style={{ background: 'linear-gradient(to left, #1DA1A1, transparent)' }} />
         <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={grainStyle} />
         {/* Bottom fade — blends into RaceCoreBridge */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 0%, var(--scrim-medium) 100%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 0%, rgba(5,10,10,0.7) 100%)' }} />
       </div>
 
       {/* Content */}
@@ -163,7 +163,7 @@ export default function RaceCoreSection() {
               <button
                 onClick={() => navigate(createPageUrl('MotorsportsHome'))}
                 className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110"
-                style={{ background: '#1DA1A1', color: 'var(--app-bg)' }}
+                style={{ background: '#1DA1A1', color: '#050A0A' }}
               >
                 Explore INDEX46
                 <ArrowRight className="w-4 h-4" />
@@ -171,7 +171,7 @@ export default function RaceCoreSection() {
               <button
                 onClick={() => navigate(createPageUrl('DriverDirectory'))}
                 className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:bg-white/10"
-                style={{ border: '1px solid var(--line-strong)', color: 'var(--on-image-muted)' }}
+                style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }}
               >
                 Driver Directory
               </button>

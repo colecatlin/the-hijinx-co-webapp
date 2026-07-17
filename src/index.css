@@ -4,69 +4,7 @@
 
 @layer base {
   :root {
-    /* ── Light Theme (white) ── */
-    --background: 180 20% 97%;
-    --foreground: 200 20% 8%;
-    --card: 0 0% 100%;
-    --card-foreground: 200 20% 8%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 200 20% 8%;
-    --primary: 180 69% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 180 10% 92%;
-    --secondary-foreground: 200 20% 12%;
-    --muted: 180 10% 94%;
-    --muted-foreground: 200 10% 38%;
-    --accent: 180 20% 90%;
-    --accent-foreground: 200 20% 10%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 180 10% 88%;
-    --input: 180 10% 90%;
-    --ring: 180 69% 40%;
-    --chart-1: 180 69% 40%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 40%;
-    --chart-4: 43 74% 50%;
-    --chart-5: 27 87% 55%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 200 20% 10%;
-    --sidebar-primary: 180 69% 40%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 10% 92%;
-    --sidebar-accent-foreground: 200 20% 12%;
-    --sidebar-border: 180 10% 88%;
-    --sidebar-ring: 180 69% 40%;
-
-    /* App surface + text tokens */
-    --app-bg: #FAFAFA;
-    --app-text: #0A0A0A;
-    --surface: rgba(255,255,255,0.55);
-    --surface-scrolled: rgba(255,255,255,0.72);
-    --surface-hover: rgba(250,250,250,0.88);
-    --surface-solid: rgba(255,255,255,0.92);
-    --surface-border: rgba(29,161,161,0.3);
-    --border-subtle: rgba(0,0,0,0.08);
-    --text-primary: rgba(10,10,10,0.92);
-    --text-secondary: rgba(10,10,10,0.62);
-    --text-muted: rgba(10,10,10,0.42);
-    --text-faint: rgba(10,10,10,0.28);
-    --accent-color: #1DA1A1;
-    --hover-bg: rgba(0,0,0,0.05);
-    --line: rgba(0,0,0,0.08);
-    --line-strong: rgba(0,0,0,0.14);
-    --scrim-strong: rgba(255,255,255,0.88);
-    --scrim-medium: rgba(255,255,255,0.62);
-    --scrim-soft: rgba(255,255,255,0.40);
-    --scrim-faint: rgba(255,255,255,0.18);
-    --on-image: rgba(10,10,10,0.92);
-    --on-image-muted: rgba(10,10,10,0.58);
-    --on-image-faint: rgba(10,10,10,0.38);
-  }
-
-  .dark {
-    /* ── Motorsports Dark Theme (black) ── */
+    /* ── Motorsports Dark Theme ── */
     --background: 180 38% 3%;
     --foreground: 0 0% 96%;
     --card: 180 30% 5%;
@@ -91,6 +29,7 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
     --sidebar-background: 180 38% 4%;
     --sidebar-foreground: 0 0% 90%;
     --sidebar-primary: 180 69% 40%;
@@ -99,32 +38,45 @@
     --sidebar-accent-foreground: 0 0% 90%;
     --sidebar-border: 180 20% 14%;
     --sidebar-ring: 180 69% 40%;
+  }
 
-    --app-bg: #050A0A;
-    --app-text: #FAFAFA;
-    --surface: rgba(5,10,10,0.25);
-    --surface-scrolled: rgba(5,10,10,0.55);
-    --surface-hover: rgba(8,12,14,0.82);
-    --surface-solid: rgba(4,8,8,0.72);
-    --surface-border: rgba(29,161,161,0.25);
-    --border-subtle: rgba(255,255,255,0.18);
-    --text-primary: rgba(255,255,255,0.92);
-    --text-secondary: rgba(255,255,255,0.62);
-    --text-muted: rgba(255,255,255,0.45);
-    --text-faint: rgba(255,255,255,0.3);
-    --accent-color: #1DA1A1;
-    --hover-bg: rgba(255,255,255,0.05);
-    --line: rgba(255,255,255,0.08);
-    --line-strong: rgba(255,255,255,0.18);
-    --scrim-strong: rgba(0,0,0,0.92);
-    --scrim-medium: rgba(0,0,0,0.68);
-    --scrim-soft: rgba(0,0,0,0.40);
-    --scrim-faint: rgba(0,0,0,0.12);
-    --on-image: rgba(255,255,255,0.92);
-    --on-image-muted: rgba(255,255,255,0.58);
-    --on-image-faint: rgba(255,255,255,0.38);
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
+
 
 @layer base {
   * {

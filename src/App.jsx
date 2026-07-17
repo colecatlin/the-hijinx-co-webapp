@@ -54,7 +54,6 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import { CartProvider } from '@/lib/cartStore.jsx';
-import { ThemeProvider } from '@/lib/ThemeContext';
 import CartDrawer from '@/components/cart/CartDrawer';
 import StorefrontProductDetail from './pages/StorefrontProductDetail';
 import StorefrontAdmin from './pages/admin/StorefrontAdmin';
@@ -354,7 +353,6 @@ function App() {
 
   return (
     <AuthProvider>
-      <ThemeProvider defaultTheme="dark">
       <QueryClientProvider client={queryClientInstance}>
         <CartProvider>
           <Router>
@@ -364,7 +362,6 @@ function App() {
           <Toaster />
         </CartProvider>
       </QueryClientProvider>
-      </ThemeProvider>
     </AuthProvider>
   )
 }
