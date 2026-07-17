@@ -68,10 +68,10 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           >
             <Link
               to={featuredStory ? getOutletStoryUrl(featuredStory) : createPageUrl('OutletHome')}
-              className="group block p-5 md:p-6 rounded-xl"
+              className="group flex flex-col p-5 md:p-6 rounded-xl h-full"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
             >
-              <div className="relative overflow-hidden mb-5 rounded-xl" style={{ height: 360 }}>
+              <div className="relative overflow-hidden mb-5 rounded-xl" style={{ height: 300 }}>
                 <img
                   src={featuredStory?.cover_image || PLACEHOLDER_BG}
                   alt={featuredStory?.title || 'The Outlet'}
@@ -115,20 +115,22 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
               </h3>
 
               {featuredStory?.subtitle && (
-                <p className="text-white/70 text-sm leading-relaxed mb-5 max-w-lg line-clamp-2">
+                <p className="text-white/70 text-sm leading-relaxed mb-6 max-w-lg line-clamp-2">
                   {featuredStory.subtitle}
                 </p>
               )}
 
-              <span className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/80 uppercase font-bold border-b border-white/40 pb-0.5 group-hover:text-white group-hover:border-white transition-all">
-                Read Story <ArrowRight className="w-3 h-3" />
-              </span>
+              <div className="mt-auto pt-6">
+                <span className="inline-flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/80 uppercase font-bold border-b border-white/40 pb-0.5 group-hover:text-white group-hover:border-white transition-all">
+                  Read Story <ArrowRight className="w-3 h-3" />
+                </span>
+              </div>
             </Link>
           </motion.div>
 
           {/* ── SUPPORTING STORIES ── */}
-          <div className="lg:col-span-5 lg:pl-8 pt-8 lg:pt-0 border-t lg:border-t-0 mt-8 lg:mt-0" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-            <div className="p-5 md:p-6 rounded-xl h-full" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
+          <div className="lg:col-span-5 lg:pl-8 pt-8 lg:pt-0 border-t lg:border-t-0 mt-8 lg:mt-0 flex flex-col" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            <div className="p-5 md:p-6 rounded-xl flex-1 flex flex-col" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
             <div className="flex items-center gap-3 mb-6">
               <div className="flex-1 h-[1px]" style={{ background: 'rgba(255,255,255,0.08)' }} />
               <span className="font-mono text-[8px] tracking-[0.5em] text-white/60 uppercase">More Stories</span>
