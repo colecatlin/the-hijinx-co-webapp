@@ -24,6 +24,7 @@ export default function EventInlineCreateModal({ type, open, onClose, onCreated 
 
   const trackMutation = useMutation({
     mutationFn: (data) => base44.entities.Track.create({
+      location_country: 'United States',
       ...data,
       operational_status: 'Active',
       visibility_status: 'live',
