@@ -76,9 +76,9 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                   src={featuredStory?.cover_image || PLACEHOLDER_BG}
                   alt={featuredStory?.title || 'The Outlet'}
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700"
-                  style={{ filter: 'contrast(1.15) saturate(0.65) brightness(0.80)' }}
+                  style={{ filter: 'contrast(1.08) saturate(0.90) brightness(0.92)' }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                 {featuredStory?.primary_category && (
                   <div className="absolute top-4 left-4">
                     <span
