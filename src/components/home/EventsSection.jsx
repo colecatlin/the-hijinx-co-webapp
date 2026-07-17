@@ -54,14 +54,14 @@ export default function EventsSection() {
           <div className="hidden md:flex flex-col items-end gap-2">
             <Link
               to={createPageUrl('EventDirectory')}
-              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/30 hover:text-white transition-colors uppercase"
+              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/70 hover:text-[#1DA1A1] transition-colors uppercase"
             >
               All Events <ArrowRight className="w-3 h-3" />
             </Link>
             <Link
               to={`${createPageUrl('EventDirectory')}?tab=map`}
-              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/40 hover:text-white transition-colors uppercase font-bold border-b pb-0.5"
-              style={{ borderColor: 'rgba(255,255,255,0.15)' }}
+              className="flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/80 hover:text-[#1DA1A1] transition-colors uppercase font-bold border-b pb-0.5"
+              style={{ borderColor: 'rgba(29,161,161,0.4)' }}
             >
               Events Near Me <ArrowRight className="w-3 h-3" />
             </Link>
@@ -106,10 +106,10 @@ export default function EventsSection() {
                       <img
                         src={event.event_cover_image_url}
                         alt={event.name}
-                        className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-[1.04] transition-all duration-700"
-                        style={{ filter: 'contrast(1.1) saturate(0.6)' }}
+                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700"
+                        style={{ filter: 'contrast(1.08) saturate(0.95) brightness(0.95)' }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
                         {event.event_date && (
                           <div className="px-2 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
