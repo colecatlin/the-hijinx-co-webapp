@@ -123,7 +123,7 @@ export default function ApparelSection({ products = [] }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group flex flex-col justify-between h-full min-h-[180px] p-6 md:p-8 transition-all duration-200 relative overflow-hidden block"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                    style={{ background: 'rgba(255,255,255,0.09)', border: '1px solid rgba(255,255,255,0.14)' }}
                   >
                     <div className="absolute top-0 left-0 right-0 h-[1px]"
                       style={{ background: `linear-gradient(90deg, ${accent}44 0%, transparent 60%)` }} />
@@ -146,8 +146,8 @@ export default function ApparelSection({ products = [] }) {
               href={shopifyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 py-4 font-mono text-[9px] tracking-[0.3em] text-white/30 hover:text-[#E5FF00] transition-colors uppercase"
-              style={{ border: '1px solid rgba(255,255,255,0.05)' }}
+              className="flex items-center justify-center gap-2 py-4 font-mono text-[9px] tracking-[0.3em] text-white/70 hover:text-[#E5FF00] transition-colors uppercase"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
             >
               <ShoppingBag className="w-3 h-3" />
               Shop All Apparel
