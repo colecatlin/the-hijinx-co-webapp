@@ -151,7 +151,7 @@ export default function OutletHome() {
             <img src={LOGO_URL} alt="The Outlet" className="w-9 h-9" />
             <div>
               <div className="font-black text-white text-xl tracking-tight uppercase leading-none">The Outlet</div>
-              <div className="font-mono text-[9px] tracking-[0.4em] uppercase mt-0.5" style={{ color: OUTLET_CYAN }}>Short Course Off-Road Media</div>
+              <div className="font-mono text-[9px] tracking-[0.4em] uppercase mt-0.5" style={{ color: OUTLET_CYAN }}>Motorsports Editorials, Culture, and News</div>
             </div>
           </div>
           <Link
