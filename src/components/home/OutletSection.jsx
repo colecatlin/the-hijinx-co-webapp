@@ -191,7 +191,8 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
             <Link
               to={createPageUrl('OutletHome')}
-              className="mt-6 flex items-center gap-2 font-mono text-[9px] tracking-[0.4em] text-white/60 hover:text-white transition-colors uppercase font-bold"
+              className="mt-6 flex items-center justify-center gap-2 py-4 font-mono text-[9px] tracking-[0.4em] text-white/70 hover:text-[#33FFCC] transition-colors uppercase font-bold"
+              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
             >
               Explore The Outlet <ArrowRight className="w-3 h-3" />
             </Link>
