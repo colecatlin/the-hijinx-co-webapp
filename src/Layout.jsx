@@ -36,7 +36,7 @@ const navItems = [
     { name: 'Media Portal', page: 'MediaPortal' },
   ]},
   { name: 'Apparel', page: 'ApparelHome' },
-  { name: 'Marketplace', href: '/store' },
+  { name: 'Marketplace', page: 'MarketplaceHome' },
 ];
 
 export default function Layout({ children, currentPageName }) {

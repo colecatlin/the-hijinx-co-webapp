@@ -49,6 +49,7 @@ import StandingsHome from './pages/StandingsHome';
 import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
 import UserPublicProfile from './pages/UserPublicProfile';
 import StorefrontHome from './pages/StorefrontHome';
+import MarketplaceHome from './pages/MarketplaceHome';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
@@ -232,6 +233,7 @@ const AuthenticatedApp = () => {
 
       {/* Storefront routes */}
       <Route path="/store" element={<LayoutWrapper currentPageName="StorefrontHome"><StorefrontHome /></LayoutWrapper>} />
+      <Route path="/MarketplaceHome" element={<LayoutWrapper currentPageName="MarketplaceHome"><MarketplaceHome /></LayoutWrapper>} />
       <Route path="/product/:slug" element={<LayoutWrapper currentPageName="StorefrontProductDetail"><StorefrontProductDetail /></LayoutWrapper>} />
       <Route path="/collection/:slug" element={<LayoutWrapper currentPageName="StorefrontHome"><StorefrontHome /></LayoutWrapper>} />
 
