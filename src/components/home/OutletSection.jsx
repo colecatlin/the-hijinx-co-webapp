@@ -34,19 +34,18 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
       <div className="relative max-w-7xl mx-auto px-6">
 
         {/* ── MASTHEAD ── */}
-        <div className="border-b border-white/10 pt-16 pb-4 mb-10 relative flex items-end justify-between">
-          <span className="font-mono text-[9px] tracking-[0.5em] text-white/60 uppercase font-bold self-end pb-0.5">
-            Editorial — Vol. 01
-          </span>
-
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex flex-col items-center gap-1">
+        <div className="pt-16 pb-5 mb-2 relative flex items-center justify-between">
+          <Link to={createPageUrl('OutletHome')} className="flex items-center gap-4 group">
             <img
               src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/cb38872af_Asset42x.png"
               alt="The Outlet"
-              className="h-12 md:h-16 object-contain"
+              className="w-10 h-10 object-contain"
             />
-            <p className="font-mono text-[9px] tracking-[0.3em] text-white/60 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
-          </div>
+            <div className="flex flex-col leading-none">
+              <span className="font-black text-white text-xl tracking-tight uppercase group-hover:opacity-70 transition-opacity">The Outlet</span>
+              <span className="font-mono text-[9px] tracking-[0.35em] uppercase mt-1.5" style={{ color: '#33FFCC' }}>Motorsports Editorials, Culture, and News</span>
+            </div>
+          </Link>
 
           <Link
             to={createPageUrl('OutletHome')}
@@ -55,6 +54,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
             All Stories <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
+        <div className="h-px mb-10" style={{ background: 'rgba(26,26,26,1)' }} />
 
         {/* ── MAIN EDITORIAL GRID ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
@@ -198,6 +198,14 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           </div>
 
         </div>
+
+        {/* ── EDITORIAL VOLUME MARK ── */}
+        <div className="flex justify-center pt-12">
+          <span className="font-mono text-[9px] tracking-[0.5em] text-white/60 uppercase font-bold">
+            Editorial — Vol. 01
+          </span>
+        </div>
+
       </div>
     </section>
   );
