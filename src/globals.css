@@ -21,56 +21,53 @@
   --hijinx-gray-900: #171717;
   --hijinx-teal: #1DA1A1;
   --hijinx-accent: #E5FF00;
-  }
+}
 
 * {
   font-family: var(--font-sans);
 }
 
 body {
-  background-color: #050A0A;
-  color: #FAFAFA;
+  background-color: var(--app-bg, #FAFAFA);
+  color: var(--app-text, #0A0A0A);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── GLOBAL MOTORSPORTS DARK THEME ── */
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+::-webkit-scrollbar-thumb { background: rgba(29,161,161,0.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(29,161,161,0.6); }
 
-/* Scrollbar dark */
-::-webkit-scrollbar-thumb {
-  background: rgba(29,161,161,0.35) !important;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(29,161,161,0.55) !important;
-}
-::-webkit-scrollbar-track {
-  background: rgba(5,10,10,0.8) !important;
-}
+.dark ::-webkit-scrollbar-track { background: rgba(5,10,10,0.8) !important; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(29,161,161,0.35) !important; }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(29,161,161,0.55) !important; }
 
-/* Glass card system — all standard cards get motorsports frosted treatment */
-.bg-white,
-[class*="bg-white"] {
+/* ── GLASS CARD SYSTEM (dark mode forces dark glass; light mode keeps cards white) ── */
+.dark .bg-white,
+.dark [class*="bg-white"] {
   background-color: rgba(4, 8, 8, 0.72) !important;
 }
 
-/* Force text on white/light backgrounds to be readable on dark */
-.text-gray-900, .text-black, .text-foreground {
+/* ── TEXT COLOR OVERRIDES (dark mode) ── */
+.dark .text-gray-900, .dark .text-black, .dark .text-foreground {
   color: rgba(255,255,255,0.92) !important;
 }
-.text-gray-600, .text-gray-500, .text-muted-foreground {
+.dark .text-gray-600, .dark .text-gray-500, .dark .text-muted-foreground {
   color: rgba(255,255,255,0.5) !important;
 }
-.text-gray-400, .text-gray-300 {
+.dark .text-gray-400, .dark .text-gray-300 {
   color: rgba(255,255,255,0.35) !important;
 }
 
-/* Motorsports glass utility */
+/* Motorsports glass utility (theme-aware) */
 .motorsports-glass {
-  background: rgba(4, 8, 8, 0.65);
+  background: var(--surface-solid);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(29, 161, 161, 0.15);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
 }
 
 /* Teal glow divider utility */
@@ -79,7 +76,7 @@ body {
   height: 1px;
 }
 
-/* Motorsports mono tag utility */
+/* Motorsports mono tag utility (accent stays constant across themes) */
 .index-mono-tag {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -91,13 +88,13 @@ body {
 /* Hero heading utility */
 .index-heading-hero {
   font-weight: 900;
-  color: #fff;
+  color: var(--text-primary);
   line-height: 0.92;
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
-/* Teal glow text */
+/* Teal glow text (accent) */
 .glow-text-teal {
   text-shadow: 0 0 40px rgba(29,161,161,0.4);
   color: #1DA1A1;
@@ -111,28 +108,19 @@ body {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--hijinx-gray-300);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--hijinx-gray-400);
-}
-
-/* Editorial typography */
+/* ── EDITORIAL TYPOGRAPHY ── */
 .editorial-body,
 .editorial-body *,
 .editorial-body .ql-editor,
 .editorial-body .ql-editor * {
-  color: rgba(255,255,255,0.72) !important;
   background-color: transparent !important;
+}
+
+.dark .editorial-body,
+.dark .editorial-body *,
+.dark .editorial-body .ql-editor,
+.dark .editorial-body .ql-editor * {
+  color: rgba(255,255,255,0.72) !important;
 }
 
 .editorial-body p {
@@ -140,24 +128,25 @@ body {
   font-size: 1.125rem;
   line-height: 1.5;
   margin-bottom: 1.5rem;
-  color: rgba(255,255,255,0.72) !important;
 }
+
+.dark .editorial-body p { color: rgba(255,255,255,0.72) !important; }
 
 .editorial-body h2 {
   font-size: 1.5rem;
   font-weight: 700;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
-  color: rgba(255,255,255,0.92) !important;
 }
+.dark .editorial-body h2 { color: rgba(255,255,255,0.92) !important; }
 
 .editorial-body blockquote {
   border-left: 3px solid rgba(255,255,255,0.3);
   padding-left: 1.5rem;
   margin: 2rem 0;
   font-style: italic;
-  color: rgba(255,255,255,0.5);
 }
+.dark .editorial-body blockquote { color: rgba(255,255,255,0.5); }
 
 .editorial-body img {
   width: 100%;
@@ -169,18 +158,23 @@ body {
 .editorial-body h4,
 .editorial-body h5,
 .editorial-body h6 {
-  color: rgba(255,255,255,0.92);
   font-weight: 700;
   margin-top: 2rem;
   margin-bottom: 0.75rem;
 }
+.dark .editorial-body h1,
+.dark .editorial-body h3,
+.dark .editorial-body h4,
+.dark .editorial-body h5,
+.dark .editorial-body h6 { color: rgba(255,255,255,0.92); }
 
 .editorial-body ul,
 .editorial-body ol {
-  color: rgba(255,255,255,0.72);
   padding-left: 1.5rem;
   margin-bottom: 1.5rem;
 }
+.dark .editorial-body ul,
+.dark .editorial-body ol { color: rgba(255,255,255,0.72); }
 
 .editorial-body li {
   margin-bottom: 0.4rem;
@@ -190,24 +184,14 @@ body {
 }
 
 .editorial-body a {
-  color: rgba(255,255,255,0.85);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.dark .editorial-body a { color: rgba(255,255,255,0.85); }
+.dark .editorial-body a:hover { color: #1DA1A1; }
 
-.editorial-body a:hover {
-  color: #1DA1A1;
-}
-
-.editorial-body strong,
-.editorial-body b {
-  color: rgba(255,255,255,0.92);
-}
-
-.editorial-body em,
-.editorial-body i {
-  color: rgba(255,255,255,0.72);
-}
+.dark .editorial-body strong,
+.dark .editorial-body b { color: rgba(255,255,255,0.92); }
 
 /* Accent highlight */
 .accent-highlight {
@@ -217,7 +201,7 @@ body {
 
 /* Grid pattern background */
 .grid-bg {
-  background-image: 
+  background-image:
     linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
