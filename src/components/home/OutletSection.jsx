@@ -71,7 +71,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
               className="group flex flex-col p-5 md:p-6 rounded-xl h-full"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
             >
-              <div className="relative overflow-hidden mb-5 rounded-xl" style={{ height: 300 }}>
+              <div className="relative overflow-hidden mb-5 rounded-xl flex-1 min-h-[420px]">
                 <img
                   src={featuredStory?.cover_image || PLACEHOLDER_BG}
                   alt={featuredStory?.title || 'The Outlet'}
