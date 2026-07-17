@@ -41,10 +41,9 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
           <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex flex-col items-center gap-1">
             <img
-              src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/5eb1c60a1_Asset82x.png"
+              src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/cb38872af_Asset42x.png"
               alt="The Outlet"
               className="h-12 md:h-16 object-contain"
-              style={{ filter: 'brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.6)) drop-shadow(0 0 20px rgba(255,255,255,0.25))' }}
             />
             <p className="font-mono text-[9px] tracking-[0.3em] text-white/60 uppercase text-center">Motorsports journalism, culture &amp; coverage</p>
           </div>
