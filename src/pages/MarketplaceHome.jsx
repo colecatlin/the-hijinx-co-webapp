@@ -44,15 +44,14 @@ export default function MarketplaceHome() {
           >
             A curated home for motorsports commerce — apparel, parts, memorabilia, and paddock gear from the teams, series, and builders that drive the sport.
           </motion.p>
-          <Link
-            to="/store"
-            className="inline-flex items-center gap-2.5 px-8 py-4 text-xs font-bold tracking-[0.2em] uppercase transition-all duration-300"
-            style={{ background: '#1DA1A1', color: '#050A0A' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#1DA1A1'; }}
+          <button
+            type="button"
+            disabled
+            className="inline-flex items-center gap-2.5 px-8 py-4 text-xs font-bold tracking-[0.2em] uppercase cursor-not-allowed"
+            style={{ background: 'rgba(29,161,161,0.15)', color: 'rgba(29,161,161,0.7)', border: '1px solid rgba(29,161,161,0.3)' }}
           >
-            Browse The Store <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+            Coming Soon
+          </button>
         </div>
 
         <div className="h-px mb-16" style={{ background: 'rgba(26,26,26,1)' }} />
