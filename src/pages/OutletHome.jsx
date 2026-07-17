@@ -17,7 +17,6 @@ const CATEGORY_MAP = {
   Culture:     ['Grassroots', 'Legacy', 'Fan Experience', 'Opinion', 'Letters'],
   Tech:        ['Engineering', 'Data', 'Setup', 'Safety', 'Rules'],
   Media:       ['Photo Essays', 'Film Room', 'Behind The Lens', 'Broadcast', 'Creator Spotlight'],
-  Marketplace: ['Classifieds', 'Rent A Ride', 'Auctions', 'Gear', 'Builds'],
 };
 
 const PRIMARY_CATEGORIES = Object.keys(CATEGORY_MAP);
