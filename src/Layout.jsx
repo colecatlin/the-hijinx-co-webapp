@@ -175,6 +175,9 @@ export default function Layout({ children, currentPageName }) {
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E")`,
           opacity: 0.5,
         }} />
+        <div className="fixed top-2 right-3 z-[100] rounded-full p-1 flex items-center" style={{ background: 'var(--surface-solid)', border: '1px solid var(--border-subtle)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}>
+          <ThemeToggle />
+        </div>
         <div className="sticky top-0 z-50 relative" style={{ background: 'var(--app-bg)' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
@@ -297,7 +300,6 @@ export default function Layout({ children, currentPageName }) {
                       Login
                     </button>
                   )}
-                  <ThemeToggle />
                   <CartIcon style={{ color: 'var(--text-secondary)' }} />
                   <button
                     onClick={() => setMobileOpen(!mobileOpen)}
