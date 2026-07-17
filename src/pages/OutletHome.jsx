@@ -236,7 +236,7 @@ export default function OutletHome() {
                 {activePrimary !== 'All' ? `${activePrimary} coverage is on the way.` : 'Editorial coverage is coming.'}
               </h2>
               <p className="text-white/45 text-base max-w-xl mb-8">
-                Short course off-road racing coverage — stories, stats, standings, and culture from across the sport.
+                Motorsports coverage — stories, stats, standings, and culture from across the sport.
               </p>
               <Link
                 to={createPageUrl('OutletSubmit')}
