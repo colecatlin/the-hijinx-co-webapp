@@ -131,7 +131,7 @@ export default function SocialsSection() {
               transition={{ delay: i * 0.06, duration: 0.5 }}
               className="group relative flex items-center gap-4 p-5 overflow-hidden hover:border-white/20 transition-all duration-300"
               style={{
-                background: 'rgba(255,255,255,0.03)',
+                background: 'var(--hover-bg)',
                 border: '1px solid rgba(255,255,255,0.07)',
               }}
             >
@@ -167,7 +167,7 @@ export default function SocialsSection() {
 
         {/* Hashtag glimpse */}
         <div className="mt-10 p-6 flex flex-col gap-4"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: 'var(--hover-bg)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
           {/* Header row */}
           <div className="flex items-center justify-between gap-4">

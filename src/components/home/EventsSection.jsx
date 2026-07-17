@@ -61,7 +61,7 @@ export default function EventsSection() {
             <Link
               to={`${createPageUrl('EventDirectory')}?tab=map`}
               className="flex items-center gap-2 font-mono text-[9px] tracking-[0.35em] text-white/40 hover:text-white transition-colors uppercase font-bold border-b pb-0.5"
-              style={{ borderColor: 'rgba(255,255,255,0.15)' }}
+              style={{ borderColor: 'var(--line-strong)' }}
             >
               Events Near Me <ArrowRight className="w-3 h-3" />
             </Link>
@@ -79,9 +79,9 @@ export default function EventsSection() {
         {displayEvents.length === 0 ? (
           <div
             className="flex flex-col items-center justify-center py-16 text-center rounded-xl"
-            style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}
+            style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'var(--hover-bg)' }}
           >
-            <Calendar className="w-7 h-7 mb-3" style={{ color: 'rgba(255,255,255,0.15)' }} />
+            <Calendar className="w-7 h-7 mb-3" style={{ color: 'var(--line-strong)' }} />
             <p className="font-mono text-[10px] tracking-[0.3em] text-white/20 uppercase">Events calendar coming soon</p>
           </div>
         ) : (
@@ -96,9 +96,9 @@ export default function EventsSection() {
                 <Link
                   to={createPageUrl('EventProfile') + `?id=${event.id}`}
                   className="group flex flex-col h-full relative overflow-hidden rounded-xl block transition-all duration-300"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.16)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                  style={{ background: 'var(--hover-bg)', border: '1px solid rgba(255,255,255,0.08)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--line-strong)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                 >
                   {/* Image or date strip */}
                   {event.event_cover_image_url ? (
@@ -109,7 +109,7 @@ export default function EventsSection() {
                         className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-[1.04] transition-all duration-700"
                         style={{ filter: 'contrast(1.1) saturate(0.6)' }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--scrim-strong), transparent 70%)' }} />
                       <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
                         {event.event_date && (
                           <div className="px-2 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -130,7 +130,7 @@ export default function EventsSection() {
                   ) : (
                     <div
                       className="flex items-center justify-between px-4"
-                      style={{ height: 52, background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                      style={{ height: 52, background: 'var(--hover-bg)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
                     >
                       {event.event_date && (
                         <span className="font-mono text-sm font-black text-white/50 tracking-wide">
@@ -158,14 +158,14 @@ export default function EventsSection() {
 
                     <div className="mt-auto flex items-start justify-between gap-2">
                       {(event.location_note || event.season) && (
-                        <div className="flex items-start gap-1.5 min-w-0" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        <div className="flex items-start gap-1.5 min-w-0" style={{ color: 'var(--text-faint)' }}>
                           <MapPin className="w-3 h-3 flex-shrink-0 mt-px" />
                           <span className="font-mono text-[8px] tracking-wide leading-relaxed">
                             {event.location_note || event.season}
                           </span>
                         </div>
                       )}
-                      <ArrowRight className="w-3 h-3 flex-shrink-0 mt-px transition-all group-hover:translate-x-0.5" style={{ color: 'rgba(255,255,255,0.20)' }} />
+                      <ArrowRight className="w-3 h-3 flex-shrink-0 mt-px transition-all group-hover:translate-x-0.5" style={{ color: 'var(--text-faint)' }} />
                     </div>
                   </div>
 

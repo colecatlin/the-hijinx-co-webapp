@@ -56,6 +56,13 @@
     --hover-bg: rgba(0,0,0,0.05);
     --line: rgba(0,0,0,0.08);
     --line-strong: rgba(0,0,0,0.14);
+    --scrim-strong: rgba(255,255,255,0.88);
+    --scrim-medium: rgba(255,255,255,0.62);
+    --scrim-soft: rgba(255,255,255,0.40);
+    --scrim-faint: rgba(255,255,255,0.18);
+    --on-image: rgba(10,10,10,0.92);
+    --on-image-muted: rgba(10,10,10,0.58);
+    --on-image-faint: rgba(10,10,10,0.38);
   }
 
   .dark {
@@ -109,6 +116,13 @@
     --hover-bg: rgba(255,255,255,0.05);
     --line: rgba(255,255,255,0.08);
     --line-strong: rgba(255,255,255,0.18);
+    --scrim-strong: rgba(0,0,0,0.92);
+    --scrim-medium: rgba(0,0,0,0.68);
+    --scrim-soft: rgba(0,0,0,0.40);
+    --scrim-faint: rgba(0,0,0,0.12);
+    --on-image: rgba(255,255,255,0.92);
+    --on-image-muted: rgba(255,255,255,0.58);
+    --on-image-faint: rgba(255,255,255,0.38);
   }
 }
 

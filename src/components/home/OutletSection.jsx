@@ -139,7 +139,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                   initial={{ x: 16 }} whileInView={{ x: 0 }}
                   viewport={{ once: true, amount: 0 }} transition={{ delay: i * 0.1, duration: 0.5 }}
                   className={`border-b ${i === 0 ? 'border-t' : ''}`}
-                  style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+                  style={{ borderColor: 'var(--line)' }}
                 >
                   {story ? (
                     <Link to={getOutletStoryUrl(story)} className="group flex gap-4 py-4 items-start">
@@ -179,9 +179,9 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                     <div className="py-4 flex gap-4 items-start">
                       <span className="font-mono text-[9px] text-white/10 w-5">0{i + 1}</span>
                       <div className="flex-1 space-y-2">
-                        <div className="h-2 rounded w-1/4" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                        <div className="h-4 rounded w-3/4" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                        <div className="h-4 rounded w-1/2" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                        <div className="h-2 rounded w-1/4" style={{ background: 'var(--line)' }} />
+                        <div className="h-4 rounded w-3/4" style={{ background: 'var(--line)' }} />
+                        <div className="h-4 rounded w-1/2" style={{ background: 'var(--line)' }} />
                       </div>
                     </div>
                   )}
