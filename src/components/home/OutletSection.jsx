@@ -68,7 +68,8 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
           >
             <Link
               to={featuredStory ? getOutletStoryUrl(featuredStory) : createPageUrl('OutletHome')}
-              className="group block"
+              className="group block p-5 md:p-6 rounded-xl"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
             >
               <div className="relative overflow-hidden mb-5 rounded-xl" style={{ height: 360 }}>
                 <img
@@ -77,7 +78,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-all duration-700"
                   style={{ filter: 'contrast(1.15) saturate(0.65) brightness(0.80)' }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
                 {featuredStory?.primary_category && (
                   <div className="absolute top-4 left-4">
                     <span
@@ -127,6 +128,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
           {/* ── SUPPORTING STORIES ── */}
           <div className="lg:col-span-5 lg:pl-8 pt-8 lg:pt-0 border-t lg:border-t-0 mt-8 lg:mt-0" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            <div className="p-5 md:p-6 rounded-xl h-full" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
             <div className="flex items-center gap-3 mb-6">
               <div className="flex-1 h-[1px]" style={{ background: 'rgba(255,255,255,0.08)' }} />
               <span className="font-mono text-[8px] tracking-[0.5em] text-white/60 uppercase">More Stories</span>
@@ -196,6 +198,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
             >
               Explore The Outlet <ArrowRight className="w-3 h-3" />
             </Link>
+            </div>
           </div>
 
         </div>
