@@ -93,8 +93,8 @@ export default function Management() {
           <div className="mb-8 flex items-start gap-3 p-4 rounded-lg border border-teal-800/40 bg-teal-950/20">
             <MonitorPlay className="w-5 h-5 text-teal-400 mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-teal-300">Motorsports Operations → RaceCore</p>
-              <p className="text-xs text-teal-600 mt-0.5 leading-snug">
+              <p className="text-sm font-semibold text-black">Motorsports Operations → RaceCore</p>
+              <p className="text-xs text-black/70 mt-0.5 leading-snug">
                 Drivers, Teams, Series, Tracks, Events, Results, Standings, Media, and Data tools all live in RaceCore.
               </p>
             </div>
