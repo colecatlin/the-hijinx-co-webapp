@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight, PenLine } from 'lucide-react';
 
 const OUTLET_CYAN = '#00F5D4';
-const LOGO_URL = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/c948034eb_TheOutletO2x.png';
+const LOGO_URL = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/5eb1c60a1_Asset82x.png';
 
 const CATEGORY_MAP = {
   Racing:      ['Race Reports', 'Results', 'Standings', 'Championship Watch', 'Track Profiles'],
