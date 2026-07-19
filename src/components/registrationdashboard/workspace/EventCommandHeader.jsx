@@ -76,7 +76,7 @@ export default function EventCommandHeader({
 
   const lifecycleMutation = useMutation({
     mutationFn: ({ status }) =>
-      base44.functions.invoke('setEventLifecycleStatus', { event_id: selectedEvent.id, status }),
+      base44.functions.invoke('setEventLifecycleStatus', { event_id: selectedEvent.id, new_status: status }),
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['event', selectedEvent.id] });
       toast.success(`Event set to ${status}`);
