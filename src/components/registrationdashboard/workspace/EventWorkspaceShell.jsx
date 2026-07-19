@@ -169,6 +169,7 @@ export default function EventWorkspaceShell() {
         standingsDirty={!!standingsDirty}
         isAdmin={isAdmin}
         onNavigate={setEventWorkspacePanel}
+        alerts={alerts}
       />
 
       {/* ZONE 1B: Live Status Bar */}

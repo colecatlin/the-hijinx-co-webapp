@@ -152,15 +152,15 @@ export function useEventAlerts({
       });
     }
 
-    // ── CRITICAL: Missing Race Director ───────────────────────────────────────
+    // ── WARNING: Missing Race Director (non-blocking — system open at start) ─
     const hasRaceDirector = officials.some(o => o.role === 'Race Director' && o.status !== 'Withdrawn');
-    if (!hasRaceDirector && officials.length >= 0) {
+    if (!hasRaceDirector) {
       raw.push({
         id: 'missing_race_director',
-        severity: 'CRITICAL',
+        severity: 'WARNING',
         message: 'No Race Director assigned to this event',
         target: 'officials',
-        dismissible: false,
+        dismissible: true,
         timestamp: now,
       });
     }

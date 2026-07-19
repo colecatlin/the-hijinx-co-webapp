@@ -68,6 +68,7 @@ export default function EventCommandHeader({
   mediaApplications = [],
   isAdmin = false,
   onNavigate,
+  alerts = [],
 }) {
   const queryClient = useQueryClient();
   const [lifecycleLoading, setLifecycleLoading] = useState(false);
@@ -81,13 +82,24 @@ export default function EventCommandHeader({
       toast.success(`Event set to ${status}`);
       setLifecycleLoading(false);
     },
-    onError: () => {
-      toast.error('Failed to update event status');
+    onError: (error) => {
+      const msg = error?.message || error?.error || 'Failed to update event status';
+      toast.error(msg);
       setLifecycleLoading(false);
     },
   });
 
   const handleLifecycle = (status, label) => {
+    // Pre-flight: block SET LIVE if genuine CRITICAL alerts exist
+    if (status === 'Live') {
+      const criticalAlerts = alerts.filter(a => a.severity === 'CRITICAL');
+      if (criticalAlerts.length > 0) {
+        const reasons = criticalAlerts.map(a => a.message).join('; ');
+        toast.error(`Cannot set live: ${reasons}`);
+        onNavigate?.(criticalAlerts[0].target || 'overview');
+        return;
+      }
+    }
     setConfirmAction({ status, label });
   };
 
