@@ -20,7 +20,7 @@ const paperGrain = {
 export default function EventsSection() {
   const { data: events = [] } = useQuery({
     queryKey: ['homepageEvents'],
-    queryFn: () => base44.entities.Event.filter({ public_status: 'published' }, 'event_date', 8),
+    queryFn: () => base44.entities.Event.filter({ public_status: { $in: ['published', 'live', 'completed'] } }, 'event_date', 8),
     staleTime: 5 * 60 * 1000,
   });
 
