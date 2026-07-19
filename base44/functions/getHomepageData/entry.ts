@@ -54,13 +54,13 @@ Deno.serve(async (req) => {
       safe(db.Team.list('-created_date', 50)),
       safe(db.Track.list('-created_date', 50)),
       safe(db.Series.list('-popularity_rank', 50)),
-      safe(db.Event.filter({ status: 'Published' }, 'event_date', TARGET)),
+      safe(db.Event.filter({ status: { $in: ['Published', 'Live', 'Completed'] } }, 'event_date', TARGET)),
       safe(db.Results.filter({ is_official: true }, '-created_date', 6)),
       safe(db.ActivityFeed.filter({ visibility: 'public' }, '-created_at', 12)),
       safe(db.MediaAsset.list('-created_date', MEDIA_TARGET)),
       safe(db.Product.list('-created_date', TARGET)),
       // For hero stat counts
-      safe(db.Event.filter({ status: 'Published' }, 'event_date', 200)),
+      safe(db.Event.filter({ status: { $in: ['Published', 'Live', 'Completed'] } }, 'event_date', 200)),
     ]);
 
     // ── Normalized field filters (legacy OR fallbacks removed 2026-04-01) ──────
@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
       }
     }
     if (!spotlightEvent) {
-      const upcoming = (autoEvents || []).find(e => e.event_date >= today && e.status === 'Published');
+      const upcoming = (autoEvents || []).find(e => e.event_date >= today && ['Published', 'Live', 'Completed'].includes(e.status));
       const fallbackEvent = upcoming || (autoEvents || [])[0];
       if (fallbackEvent) {
         spotlightEvent = {
