@@ -7,9 +7,15 @@ import { base44 } from '@/api/base44Client';
 import { ArrowRight, MapPin, Calendar } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 
-function formatEventDate(dateStr) {
+function formatEventDate(dateStr, endStr) {
   if (!dateStr) return null;
-  try { return format(parseISO(dateStr), 'MMM d'); } catch { return null; }
+  try {
+    const start = format(parseISO(dateStr), 'MMM d');
+    if (!endStr) return start;
+    const end = parseISO(endStr);
+    if (isNaN(end.getTime()) || endStr === dateStr) return start;
+    return `${start} – ${format(end, 'MMM d')}`;
+  } catch { return null; }
 }
 
 const paperGrain = {
@@ -114,7 +120,7 @@ export default function EventsSection() {
                         {event.event_date && (
                           <div className="px-2 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}>
                             <span className="font-mono text-[9px] font-black text-white tracking-wider">
-                              {formatEventDate(event.event_date)}
+                              {formatEventDate(event.event_date, event.end_date)}
                             </span>
                           </div>
                         )}
@@ -134,7 +140,7 @@ export default function EventsSection() {
                     >
                       {event.event_date && (
                         <span className="font-mono text-sm font-black text-white/50 tracking-wide">
-                          {formatEventDate(event.event_date)}
+                          {formatEventDate(event.event_date, event.end_date)}
                         </span>
                       )}
                       {event.series_id && seriesMap[event.series_id]?.discipline && (
