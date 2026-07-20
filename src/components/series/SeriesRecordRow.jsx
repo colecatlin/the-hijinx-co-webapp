@@ -93,7 +93,7 @@ export default function SeriesRecordRow({ series, isAdmin, isSelected, onSelect,
       </div>
 
       {/* Season */}
-      <div className="hidden md:block w-14 shrink-0 text-center">
+      <div className="hidden md:block w-16 shrink-0 text-center">
         <span className="text-[10px] font-mono text-gray-500">{seasonYear}</span>
       </div>
 

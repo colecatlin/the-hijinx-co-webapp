@@ -27,8 +27,8 @@ const SCOPE_OPTIONS = ['Local', 'Regional', 'National', 'International', 'Global
 
 const GRID_COLUMNS = [
   { label: 'Series / Sanctioning Body', className: 'flex-1' },
-  { label: 'Discipline',                className: 'hidden sm:block w-12 text-center' },
-  { label: 'Season',                    className: 'hidden md:block w-14 text-center' },
+  { label: 'Disc.',                     className: 'hidden sm:block w-12 text-center' },
+  { label: 'Season',                    className: 'hidden md:block w-16 text-center' },
   { label: 'Updated',                   className: 'hidden lg:block w-20 text-right' },
 ];
 
