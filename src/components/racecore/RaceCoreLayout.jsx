@@ -20,6 +20,21 @@ export default function RaceCoreLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [announcerMode, setAnnouncerMode] = useState(false);
+  const [navCollapsed, setNavCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('racecore:nav-collapsed-main') === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('racecore:nav-collapsed-main', navCollapsed ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+  }, [navCollapsed]);
 
   // Close drawer on route change
   useEffect(() => {
@@ -75,6 +90,8 @@ export default function RaceCoreLayout() {
     onMediaPortal: () => navigate('/racecore/media/applications'),
     announcerMode,
     onAnnouncerModeToggle: (val) => setAnnouncerMode(val),
+    navCollapsed,
+    onToggleNavCollapsed: () => setNavCollapsed(v => !v),
   };
 
   return (
