@@ -6,7 +6,7 @@
  * - Monospace group labels
  * - Muted inactive / strong active states
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { canTab, canAction } from '@/components/access/accessControl';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,23 @@ export default function RaceCoreSidebar({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState({});
+  const COLLAPSE_STORAGE_KEY = 'racecore:nav-collapsed';
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      const saved = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify(collapsed));
+    } catch {
+      /* ignore */
+    }
+  }, [collapsed]);
 
   const isOwnerOrEditor = isAdmin || ['entity_owner', 'entity_editor'].includes(user?.role);
   const toggle = (id) => setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
@@ -85,12 +101,30 @@ export default function RaceCoreSidebar({
       </button>
 
       {/* Identity strip */}
-      <div className="px-3 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RaceCore</span>
-         {isAdmin && (
-           <span className="text-[9px] font-mono text-amber-600 border border-amber-800/50 px-1 py-px rounded-sm tracking-widest">ADM</span>
-         )}
-       </div>
+      <div className="px-3 py-2 flex items-center justify-between gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RaceCore</span>
+          {isAdmin && (
+            <span className="text-[9px] font-mono text-amber-600 border border-amber-800/50 px-1 py-px rounded-sm tracking-widest">ADM</span>
+          )}
+        </div>
+        <button
+          onClick={() => {
+            const allCollapsed = RACE_CORE_NAV_GROUPS.every(g => collapsed[g.id] === true);
+            if (allCollapsed) {
+              setCollapsed({});
+            } else {
+              const next = {};
+              RACE_CORE_NAV_GROUPS.forEach(g => { next[g.id] = true; });
+              setCollapsed(next);
+            }
+          }}
+          title="Collapse all / Expand all"
+          className="text-[9px] font-mono uppercase tracking-widest text-gray-700 hover:text-teal-400 transition-colors"
+        >
+          All
+        </button>
+      </div>
 
       {/* Quick Actions */}
       {quickActions.length > 0 && (
@@ -130,7 +164,7 @@ export default function RaceCoreSidebar({
               {/* Group label — collapsible */}
               <button
                onClick={() => toggle(group.id)}
-               className="w-full flex items-center justify-between px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-400 transition-colors"
+               className="w-full flex items-center justify-between px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-300 hover:bg-gray-800/30 rounded-sm transition-colors"
               >
                 <span>{group.label}</span>
                 <ChevronDown className={cn('w-2.5 h-2.5 transition-transform opacity-40', !isOpen && '-rotate-90')} />
