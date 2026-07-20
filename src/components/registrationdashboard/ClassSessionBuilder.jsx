@@ -21,7 +21,7 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
-  Plus, Edit2, Copy, Trash2, Lock, LockOpen, ChevronUp, ChevronDown, Settings, Zap,
+  Plus, Edit2, Copy, Trash2, Lock, LockOpen, ChevronUp, ChevronDown, Settings, Zap, Layers,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import useDashboardMutation from './useDashboardMutation';
@@ -215,6 +215,37 @@ export default function ClassSessionBuilder({
     }
     await deleteEventClass(id);
     setDeleteClassConfirm(null);
+  };
+
+  // ── Import series classes ─────────────────────────────────────────────────
+  // When the event has a series attached, bulk-create EventClass records for
+  // each SeriesClass not already linked, so they become available as session
+  // options without having to be re-entered manually.
+  const importSeriesClasses = async () => {
+    const linkedIds = new Set(eventClasses.map((ec) => ec.series_class_id).filter(Boolean));
+    const baseOrder = eventClasses.length
+      ? Math.max(...eventClasses.map((ec) => ec.class_order || 0))
+      : 0;
+    const toCreate = seriesClasses
+      .filter((sc) => !linkedIds.has(sc.id))
+      .map((sc, i) => ({
+        event_id: eventId,
+        class_name: sc.class_name,
+        series_class_id: sc.id,
+        class_status: 'Open',
+        class_order: sc.sort_order != null ? sc.sort_order : baseOrder + i + 1,
+      }));
+    if (toCreate.length === 0) {
+      toast.info('All series classes already added to this event');
+      return;
+    }
+    try {
+      await base44.entities.EventClass.bulkCreate(toCreate);
+      await invalidateAfterOperation('event_class_created', { eventId });
+      toast.success(`Imported ${toCreate.length} class${toCreate.length === 1 ? '' : 'es'} from series`);
+    } catch (err) {
+      toast.error('Failed to import series classes');
+    }
   };
 
   // ── Session handlers ──────────────────────────────────────────────────────
@@ -462,9 +493,23 @@ export default function ClassSessionBuilder({
           <h2 className="text-base font-bold text-white">Classes &amp; Sessions</h2>
           <p className="text-xs text-gray-500 mt-0.5">Define classes, then build sessions under each class.</p>
         </div>
-        <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shrink-0">
-          <Plus className="w-4 h-4 mr-1" /> Add Class
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          {seriesId && seriesClasses.length > 0 && (
+            <Button
+              onClick={importSeriesClasses}
+              disabled={creatingClass}
+              variant="outline"
+              size="sm"
+              className="border-teal-700 text-teal-300 hover:bg-teal-900/30"
+              title="Create event classes from this series' class definitions"
+            >
+              <Layers className="w-4 h-4 mr-1" /> Import Series Classes
+            </Button>
+          )}
+          <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Plus className="w-4 h-4 mr-1" /> Add Class
+          </Button>
+        </div>
       </div>
 
       {/* Empty state */}
