@@ -4,7 +4,7 @@
  * If eventPermissions is null (embedded/RegistrationDashboard mode), show all modules.
  * If eventPermissions exists, filter by the corresponding boolean key.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Calendar,
@@ -24,6 +24,8 @@ import {
   Flag,
   Users,
   Grip,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { useEventWorkspace } from './EventWorkspaceContext';
 import { useModules } from '@/components/racecore/modules/ModuleProvider';
@@ -67,9 +69,25 @@ function isModuleVisible(permKey, eventPermissions) {
   return !!eventPermissions[permKey];
 }
 
+const COLLAPSE_KEY = 'racecore.eventNav.collapsed';
+
 export default function EventWorkspaceNav({ activePanel, onPanelChange, compact = false }) {
   const { eventPermissions } = useEventWorkspace();
   const { governanceEnabled } = useModules();
+
+  // R9CS: User-toggleable collapse — persisted so workspace stays wide on return.
+  const [userCollapsed, setUserCollapsed] = useState(() => {
+    try { return localStorage.getItem(COLLAPSE_KEY) === '1'; } catch { return false; }
+  });
+  const isCompact = userCollapsed || compact;
+
+  const toggleCollapsed = () => {
+    setUserCollapsed(prev => {
+      const next = !prev;
+      try { localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
 
   // Filter groups — hide items that are not permitted; hide empty groups.
   // R9BX: Also hide race_control when Governance module is disabled.
@@ -83,33 +101,43 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
 
   return (
     <div
-      className={`${compact ? 'w-12' : 'w-44'} flex-shrink-0 border-r overflow-y-auto transition-all`}
+      className={`${isCompact ? 'w-12' : 'w-44'} flex-shrink-0 border-r overflow-y-auto transition-all`}
       style={{
         background: '#0F1212',
         borderColor: 'rgba(255,255,255,0.07)',
       }}
     >
-      <div className={`${compact ? 'p-1.5' : 'p-3'} space-y-1`}>
-        {!compact && (
-          <p className="text-[9px] uppercase tracking-widest font-bold text-gray-600 px-2 mb-3">Event Operations</p>
-        )}
+      <div className={`${isCompact ? 'p-1.5' : 'p-3'} space-y-1`}>
+        {/* Collapse toggle — reclaims workspace width */}
+        <button
+          onClick={toggleCollapsed}
+          title={isCompact ? 'Expand event menu' : 'Collapse event menu'}
+          className={`w-full flex items-center ${isCompact ? 'justify-center p-2' : 'justify-between px-2 py-1'} mb-1 rounded text-gray-500 hover:text-gray-200 hover:bg-white/[0.04] transition-colors`}
+        >
+          {!isCompact && (
+            <span className="text-[9px] uppercase tracking-widest font-bold text-gray-600">Event Operations</span>
+          )}
+          {isCompact
+            ? <PanelLeftOpen className="w-3.5 h-3.5 flex-shrink-0" />
+            : <PanelLeftClose className="w-3.5 h-3.5 flex-shrink-0" />}
+        </button>
 
         {visibleGroups.map((group, groupIdx) => (
           <div key={group.section}>
             {/* Section divider + label */}
-            {groupIdx > 0 && !compact && (
+            {groupIdx > 0 && !isCompact && (
               <div className="my-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                 <p className="text-[9px] uppercase tracking-widest font-bold text-gray-600 px-2 mb-1">{group.section}</p>
               </div>
             )}
 
             {/* Items */}
-            <div className={compact ? 'space-y-0.5' : 'space-y-0.5'}>
+            <div className={isCompact ? 'space-y-0.5' : 'space-y-0.5'}>
               {group.items.map((mod) => {
                 const Icon = mod.icon;
                 const isActive = activePanel === mod.id;
 
-                if (compact) {
+                if (isCompact) {
                   return (
                     <button
                       key={mod.id}
