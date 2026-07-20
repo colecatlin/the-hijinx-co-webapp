@@ -51,9 +51,11 @@ function entryStatusBadge(status) {
   }
 }
 function paymentBadge(status) {
-  return status === 'Paid' ? 'bg-green-500/20 text-green-400'
-    : status === 'Refunded' ? 'bg-yellow-500/20 text-yellow-400'
-    : 'bg-red-500/20 text-red-400';
+  if (status === 'Paid') return 'bg-green-500/20 text-green-400';
+  if (status === 'Refunded') return 'bg-yellow-500/20 text-yellow-400';
+  if (status === 'Comped') return 'bg-purple-500/20 text-purple-400';
+  if (status === 'Pending Registration') return 'bg-amber-500/20 text-amber-400';
+  return 'bg-red-500/20 text-red-400';
 }
 function techBadge(status) {
   if (status === 'Passed') return 'bg-green-500/20 text-green-400';

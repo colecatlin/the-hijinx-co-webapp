@@ -57,10 +57,11 @@
         "Unpaid",
         "Paid",
         "Refunded",
-        "Comped"
+        "Comped",
+        "Pending Registration"
       ],
       "default": "Unpaid",
-      "description": "Payment state for entry fees"
+      "description": "Payment state for entry fees. 'Pending Registration' = driver self-declared entry before official registration opens."
     },
     "tech_status": {
       "type": "string",

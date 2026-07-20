@@ -19,6 +19,7 @@ import { createPageUrl } from '@/components/utils';
 import ResultsPanel from '@/components/results/ResultsPanel';
 import { isEventPublic } from '@/components/system/publishHelpers';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
+import EventSelfRegister from '@/components/events/EventSelfRegister';
 
 function safeDateFormat(dateStr, fmt = 'MMMM d, yyyy') {
   if (!dateStr) return 'TBA';
@@ -75,7 +76,10 @@ export default function EventProfile() {
 
   const { data: eventEntries = [] } = useQuery({
     queryKey: ['eventEntries', event?.id],
-    queryFn: () => base44.entities.Entry.filter({ event_id: event.id }, '-created_date', 50),
+    queryFn: async () => {
+      const all = await base44.entities.Entry.filter({ event_id: event.id }, '-created_date', 200);
+      return all.filter((e) => !e.is_archived && e.entry_status !== 'Withdrawn');
+    },
     enabled: !!event?.id,
   });
 
@@ -173,6 +177,7 @@ export default function EventProfile() {
               </div>
             </div>
             <div className="pb-2 flex-shrink-0 flex items-center gap-2">
+              <EventSelfRegister event={event} classes={classes} seriesId={event?.series_id} />
               <SocialShareButtons url={window.location.href} title={`${event.name} - Event`} description="" />
               <Link to={`${createPageUrl('EventResults')}?id=${event?.id}`}>
                 <button className="px-3 py-1.5 text-xs font-medium bg-white/10 text-white border border-white/20 rounded-lg hover:bg-white/20 transition-colors">View Results</button>
