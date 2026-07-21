@@ -8,6 +8,8 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PlatformDataMap from './pages/PlatformDataMap';
 import EditorialHub from './pages/EditorialHub';
+import OrganizationPage from './pages/OrganizationPage';
+import OrganizationCreate from './pages/OrganizationCreate';
 import StoryRadar from './pages/StoryRadar';
 import EditorialRecommendations from './pages/EditorialRecommendations';
 import EditorialSignals from './pages/EditorialSignals';
@@ -228,6 +230,11 @@ const AuthenticatedApp = () => {
       } />
       {/* Public user profile route */}
       <Route path="/u/:username" element={<LayoutWrapper currentPageName="UserPublicProfile"><UserPublicProfile /></LayoutWrapper>} />
+
+      {/* Organization Platform — one reusable shell for every org type */}
+      <Route path="/organization/create" element={<LayoutWrapper currentPageName="OrganizationCreate"><OrganizationCreate /></LayoutWrapper>} />
+      <Route path="/organization/:entityType/:entityId" element={<LayoutWrapper currentPageName="OrganizationPage"><OrganizationPage /></LayoutWrapper>} />
+      <Route path="/organization/:entityType/:entityId/:section" element={<LayoutWrapper currentPageName="OrganizationPage"><OrganizationPage /></LayoutWrapper>} />
 
       {/* Cart & Checkout */}
       <Route path="/cart" element={<LayoutWrapper currentPageName="Cart"><Cart /></LayoutWrapper>} />

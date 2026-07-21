@@ -18,9 +18,13 @@
         "Team",
         "Track",
         "Series",
-        "Event"
+        "Event",
+        "Sponsor",
+        "Vendor",
+        "Manufacturer",
+        "MediaOutlet"
       ],
-      "description": "Type of entity being managed"
+      "description": "Type of organization being managed. Extensible \u2014 the Organization Platform registry maps each value to its base44 entity."
     },
     "entity_id": {
       "type": "string",

@@ -1,0 +1,110 @@
+{
+  "name": "OrganizationSettings",
+  "type": "object",
+  "description": "Standardized platform overlay for every organization \u2014 one record per (entity_type, entity_id). Carries branding, contact, social, visibility, verification, and invitation settings so the Organization Platform framework never reaches into entity-specific schemas. Teams, Tracks, Series, MediaOutlets, and generic Organizations all read/write here.",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "description": "Organization type (must exist in the Organization Platform registry)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID of the canonical organization record"
+    },
+    "settings_key": {
+      "type": "string",
+      "description": "Deduplication key: `${entity_type}:${entity_id}`"
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "pending_review",
+        "verified",
+        "official"
+      ],
+      "default": "unverified",
+      "description": "Reusable org-level verification, independent of users."
+    },
+    "verified_by": {
+      "type": "string",
+      "description": "User ID who set the verification status"
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "public"
+    },
+    "tagline": {
+      "type": "string"
+    },
+    "primary_color": {
+      "type": "string"
+    },
+    "secondary_color": {
+      "type": "string"
+    },
+    "banner_url": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "social_instagram": {
+      "type": "string"
+    },
+    "social_x": {
+      "type": "string"
+    },
+    "social_facebook": {
+      "type": "string"
+    },
+    "social_youtube": {
+      "type": "string"
+    },
+    "social_linkedin": {
+      "type": "string"
+    },
+    "social_tiktok": {
+      "type": "string"
+    },
+    "allow_invitations": {
+      "type": "boolean",
+      "default": true
+    },
+    "approval_required": {
+      "type": "boolean",
+      "default": true,
+      "description": "When false, join requests auto-approve (Phase 6 will enforce)."
+    },
+    "access_code": {
+      "type": "string",
+      "description": "Optional access code required for join requests to this org."
+    },
+    "default_permission_template_id": {
+      "type": "string",
+      "description": "Role key whose permission template is applied on approval by default."
+    },
+    "updated_by_user_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "settings_key"
+  ]
+}

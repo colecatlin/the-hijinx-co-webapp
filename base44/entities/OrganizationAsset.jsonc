@@ -1,0 +1,84 @@
+{
+  "name": "OrganizationAsset",
+  "type": "object",
+  "description": "Extensible asset record scoped to an organization (entity_type + entity_id). The asset_type enum is intentionally broad so vehicles aren't special-cased \u2014 every asset flows through the same generic framework. New asset types are added to the enum; no component changes required.",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "description": "Organization type (registry key)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Organization record ID"
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "vehicle",
+        "equipment",
+        "facility",
+        "building",
+        "inventory",
+        "document",
+        "media",
+        "sponsor",
+        "license",
+        "other"
+      ],
+      "description": "Extensible asset classification."
+    },
+    "name": {
+      "type": "string",
+      "description": "Asset name/label"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "maintenance",
+        "retired"
+      ],
+      "default": "active"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string",
+      "description": "Free-text location/whereabouts"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Type-specific attributes as a free-form object (serial numbers, capacity, license number, etc.). The framework never parses this."
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this asset is visible on the public org profile."
+    },
+    "owner_user_id": {
+      "type": "string"
+    },
+    "value": {
+      "type": "number",
+      "description": "Optional monetary value"
+    },
+    "acquired_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "asset_type",
+    "name"
+  ]
+}

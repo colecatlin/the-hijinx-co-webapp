@@ -1,0 +1,124 @@
+{
+  "name": "Organization",
+  "type": "object",
+  "description": "Generic organization record for org types without a dedicated racing entity (Sponsor, Vendor, Manufacturer, OEM, broadcast partners, venues, sanctioning bodies, etc.). The Organization Platform registry routes each `type` to this entity. Teams, Tracks, Series, and MediaOutlets keep their own entities; everything else lives here so the framework stays configuration-driven.",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "Sponsor",
+        "Vendor",
+        "Manufacturer",
+        "OEM",
+        "BroadcastPartner",
+        "Venue",
+        "SanctioningBody",
+        "MarketingAgency",
+        "SafetyCrew",
+        "HospitalityPartner",
+        "RetailPartner",
+        "TechnologyProvider",
+        "League",
+        "Club",
+        "Association",
+        "Other"
+      ],
+      "description": "Organization type discriminator. Drives registry behavior."
+    },
+    "name": {
+      "type": "string",
+      "description": "Organization name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Public description"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short headline/identity statement"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Primary website URL"
+    },
+    "location_city": {
+      "type": "string"
+    },
+    "location_state": {
+      "type": "string"
+    },
+    "location_country": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Logo image URL"
+    },
+    "banner_url": {
+      "type": "string",
+      "description": "Banner image URL"
+    },
+    "primary_color": {
+      "type": "string",
+      "description": "Primary brand color (hex)"
+    },
+    "secondary_color": {
+      "type": "string",
+      "description": "Secondary brand color (hex)"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "visibility_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "live"
+      ],
+      "default": "draft",
+      "description": "Controls public profile visibility within the platform."
+    },
+    "operational_status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Inactive",
+        "Upcoming"
+      ],
+      "default": "Active"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "User ID of the organization owner"
+    },
+    "numeric_id": {
+      "type": "string",
+      "description": "8-digit numeric access code"
+    },
+    "created_by_user_id": {
+      "type": "string"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "data_source": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "type"
+  ]
+}
