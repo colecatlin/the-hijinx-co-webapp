@@ -46,7 +46,7 @@ function computeProfileCompletion(user) {
 
 function RacingProfileCard({ entity, isPrimary, index }) {
   const label = ENTITY_TYPE_LABELS[entity.entity_type] || entity.entity_type;
-  const isOwner = entity.role === 'owner';
+  const isOwner = entity.permission_level === 'admin' || entity.role === 'owner';
 
   return (
     <motion.div

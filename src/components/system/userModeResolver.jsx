@@ -7,7 +7,7 @@ export function getUserMode({ user, collaborators = [], mediaProfile = null }) {
   if (!user) return 'fan';
   if (user.role === 'admin') return 'admin';
 
-  const hasOwner = collaborators.some(c => c.role === 'owner');
+  const hasOwner = collaborators.some(c => c.permission_level === 'admin' || c.role === 'owner');
   const hasAny = collaborators.length > 0;
   const isApprovedMedia = mediaProfile?.status === 'approved';
 
@@ -20,12 +20,9 @@ export function getUserMode({ user, collaborators = [], mediaProfile = null }) {
   if (hasAny) return 'entity_editor';
   if (isApprovedMedia || hasContributorAccess) return 'media_user';
 
-  // Identity-based fallback — uses primary_profile_type for UX, no permissions change
   const profileType = user.primary_profile_type;
   if (profileType && profileType !== 'fan') return profileType;
 
-  // Legacy fallback
-  if (user.role_interest_category === 'Media / Creator') return 'media_user';
   return 'fan';
 }
 

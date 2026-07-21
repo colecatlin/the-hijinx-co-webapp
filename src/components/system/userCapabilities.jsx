@@ -8,8 +8,8 @@ export function getUserCapabilities({ user, collaborators = [], mediaProfile = n
   if (!user) return getEmptyCapabilities();
 
   const isAdmin = user.role === 'admin';
-  const ownedEntities = collaborators.filter(c => c.role === 'owner');
-  const editedEntities = collaborators.filter(c => c.role !== 'owner');
+  const ownedEntities = collaborators.filter(c => c.permission_level === 'admin' || c.role === 'owner');
+  const editedEntities = collaborators.filter(c => !(c.permission_level === 'admin' || c.role === 'owner'));
   const hasCollaborations = collaborators.length > 0;
 
   const isApprovedMedia =
@@ -19,7 +19,7 @@ export function getUserCapabilities({ user, collaborators = [], mediaProfile = n
 
   const profileTypes = user.profile_types || [];
   const isMediaProfile = profileTypes.includes('media') || profileTypes.includes('photographer') || profileTypes.includes('creator');
-  const isMediaUser = isApprovedMedia || isMediaProfile || user.role_interest_category === 'Media / Creator';
+  const isMediaUser = isApprovedMedia || isMediaProfile;
 
   const hasPendingClaims = claimRequests.some(c => c.status === 'pending');
   const hasApprovedClaims = claimRequests.some(c => c.status === 'approved');

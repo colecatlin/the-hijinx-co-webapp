@@ -190,7 +190,6 @@ export default function Profile() {
         profile_visibility: user.profile_visibility || 'limited',
         primary_profile_type: primaryProfileType,
         profile_types: profileTypes,
-        role_interest_category: user.role_interest_category || '',
         social_links: migrated,
         favorite_drivers: user.favorite_drivers || [],
         favorite_teams: user.favorite_teams || [],
@@ -224,7 +223,6 @@ export default function Profile() {
         profile_visibility: data.profile_visibility,
         primary_profile_type: data.primary_profile_type,
         profile_types: data.profile_types,
-        role_interest_category: data.role_interest_category || undefined,
         social_links: data.social_links || [],
         favorite_drivers: data.favorite_drivers || [],
         favorite_teams: data.favorite_teams || [],
@@ -254,7 +252,7 @@ export default function Profile() {
   const handleLogout = () => base44.auth.logout(createPageUrl('Home'));
 
   const mode = getUserMode({ user, collaborators: resolvedEntities, mediaProfile: null });
-  const isMediaUser = mode === 'media_user' || user?.role_interest_category === 'Media / Creator'
+  const isMediaUser = mode === 'media_user'
     || (formData?.profile_types || []).some(t => ['media', 'photographer', 'creator'].includes(t));
   const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
   const primaryStale = isPrimaryEntityStale(user, resolvedEntities);
@@ -626,7 +624,7 @@ export default function Profile() {
                     <div className="space-y-2">
                       {resolvedEntities.map(entity => {
                         const isThisPrimary = entity.entity_id === primaryEntity?.entity_id;
-                        const isOwner = entity.role === 'owner';
+                        const isOwner = entity.permission_level === 'admin' || entity.role === 'owner';
                         const label = ENTITY_TYPE_LABELS[entity.entity_type] || entity.entity_type;
                         return (
                           <div key={entity.collaboration_id}
@@ -677,7 +675,7 @@ export default function Profile() {
                       })}
                     </div>
 
-                    {resolvedEntities.some(e => e.role === 'owner') && (
+                    {resolvedEntities.some(e => e.permission_level === 'admin' || e.role === 'owner') && (
                       <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                         <p className="text-sm font-bold text-white mb-1">Manage Collaborators</p>
                         <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Invite others to help manage your profiles.</p>
