@@ -1,21 +1,27 @@
 /**
  * entityAccess.js
- * Single source of truth for entity ownership and permission checks.
+ * Canonical entity ownership & permission checks. Resolves through identityAccess:
+ * approved status, permission_level, granted_permissions. Legacy owner/editor are
+ * transparently mapped to admin/staff for transitional (backfilled) records.
  *
  * TWO usage patterns:
- *   1. Async (when you don't yet have collaborations loaded) — canManageEntity(), isEntityOwner(), getEntityRole()
- *   2. Sync  (when collaborations are already loaded)        — canManageEntitySync(), isEntityOwnerSync(), getUserOwnedEntities()
+ *   1. Async (no collaborations loaded yet) — canManageEntity(), isEntityOwner(), getEntityRole()
+ *   2. Sync  (collaborations already loaded) — canManageEntitySync(), isEntityOwnerSync(), getHighestRoleSync()
  *
- * Admin users always have full access — check user.role === 'admin' first in the calling component.
+ * Admin users always have full access — caller may check user.role === 'admin' first.
  */
 
 import { base44 } from '@/api/base44Client';
+import {
+  canManageEntityCanonical,
+  isActiveCollaborator,
+  isRelationshipAdmin,
+  isRelationshipStaffOrAbove,
+  getActiveCollaborators,
+} from '@/lib/identityAccess';
 
 // ─── ASYNC HELPERS ─────────────────────────────────────────────────────────────
 
-/**
- * Get all collaborations for the current user.
- */
 export async function getMyCollaborations() {
   try {
     const isAuth = await base44.auth.isAuthenticated();
@@ -28,85 +34,60 @@ export async function getMyCollaborations() {
   }
 }
 
-/**
- * Check if the current user can manage a specific entity (owner or editor).
- * Admins should be handled by the caller — this only checks EntityCollaborator.
- */
 export async function canManageEntity(entityType, entityId) {
   try {
     const isAuth = await base44.auth.isAuthenticated();
     if (!isAuth) return false;
     const user = await base44.auth.me();
     if (!user) return false;
-    const collabs = await base44.entities.EntityCollaborator.filter({
-      user_id: user.id,
-      entity_type: entityType,
-      entity_id: entityId,
-    });
-    return collabs.length > 0 && collabs.some(c => ['owner', 'editor'].includes(c.role));
+    const collaborators = await base44.entities.EntityCollaborator.filter({ user_id: user.id });
+    return canManageEntityCanonical(user, collaborators, entityType, entityId);
   } catch {
     return false;
   }
 }
 
-/**
- * Check if a specific user (by userId) is the owner of a specific entity.
- */
 export async function isEntityOwner(userId, entityType, entityId) {
   if (!userId || !entityType || !entityId) return false;
   try {
-    const collabs = await base44.entities.EntityCollaborator.filter({
-      user_id: userId,
-      entity_type: entityType,
-      entity_id: entityId,
-    });
-    return collabs.some(c => c.role === 'owner');
+    const collaborators = await base44.entities.EntityCollaborator.filter({ user_id: userId });
+    return getActiveCollaborators(collaborators).some(
+      (c) => c.entity_type === entityType && c.entity_id === entityId && isRelationshipAdmin(c),
+    );
   } catch {
     return false;
   }
 }
 
-/**
- * Get the current user's role for a specific entity. Returns 'owner', 'editor', or null.
- */
 export async function getEntityRole(entityType, entityId) {
   try {
     const isAuth = await base44.auth.isAuthenticated();
     if (!isAuth) return null;
     const user = await base44.auth.me();
     if (!user) return null;
-    const collabs = await base44.entities.EntityCollaborator.filter({
-      user_id: user.id,
-      entity_type: entityType,
-      entity_id: entityId,
-    });
-    if (collabs.length === 0) return null;
-    // Prefer highest role if multiple records exist
-    return collabs.some(c => c.role === 'owner') ? 'owner' : (collabs[0].role || null);
+    const collaborators = await base44.entities.EntityCollaborator.filter({ user_id: user.id });
+    const related = getActiveCollaborators(collaborators).filter(
+      (c) => c.entity_type === entityType && c.entity_id === entityId,
+    );
+    if (related.length === 0) return null;
+    if (related.some(isRelationshipAdmin)) return 'owner';
+    if (related.some(isRelationshipStaffOrAbove)) return 'editor';
+    return null;
   } catch {
     return null;
   }
 }
 
-/**
- * Get all entities owned by a specific user (async, by userId).
- * Returns array of EntityCollaborator records with role === 'owner'.
- */
 export async function getUserOwnedEntities(userId) {
   if (!userId) return [];
   try {
     const all = await base44.entities.EntityCollaborator.filter({ user_id: userId });
-    return (all || []).filter(c => c.role === 'owner');
+    return (all || []).filter((c) => isRelationshipAdmin(c) && isActiveCollaborator(c));
   } catch {
     return [];
   }
 }
 
-/**
- * Check if a specific user has any access (owner or editor) to a specific entity.
- * Sync variant — pass pre-loaded collaborations array.
- * Also available as async: use canManageEntity() instead.
- */
 export async function hasEntityAccess({ userId, entityType, entityId }) {
   if (!userId || !entityType || !entityId) return false;
   try {
@@ -115,15 +96,12 @@ export async function hasEntityAccess({ userId, entityType, entityId }) {
       entity_type: entityType,
       entity_id: entityId,
     });
-    return collabs && collabs.length > 0;
+    return (collabs || []).some(isActiveCollaborator);
   } catch {
     return false;
   }
 }
 
-/**
- * Throw if current user cannot manage the entity.
- */
 export async function requireEntityAccess(entityType, entityId) {
   const hasAccess = await canManageEntity(entityType, entityId);
   if (!hasAccess) throw new Error(`You do not have access to manage this ${entityType}`);
@@ -131,59 +109,55 @@ export async function requireEntityAccess(entityType, entityId) {
 
 // ─── SYNC HELPERS (use when collaborations are already fetched) ─────────────────
 
-const ROLE_RANK = { owner: 2, editor: 1 };
-
-/**
- * Check if a user can manage an entity using an already-loaded collaborations array.
- */
 export function canManageEntitySync(userId, entityType, entityId, collaborations = []) {
   return collaborations.some(
-    c => c.user_id === userId && c.entity_type === entityType && c.entity_id === entityId
-      && ['owner', 'editor'].includes(c.role)
+    (c) =>
+      c.user_id === userId &&
+      c.entity_type === entityType &&
+      c.entity_id === entityId &&
+      isActiveCollaborator(c) &&
+      isRelationshipStaffOrAbove(c),
   );
 }
 
-/**
- * Check if a user is the owner of an entity using an already-loaded collaborations array.
- */
 export function isEntityOwnerSync(userId, entityType, entityId, collaborations = []) {
   return collaborations.some(
-    c => c.user_id === userId && c.entity_type === entityType && c.entity_id === entityId
-      && c.role === 'owner'
+    (c) =>
+      c.user_id === userId &&
+      c.entity_type === entityType &&
+      c.entity_id === entityId &&
+      isActiveCollaborator(c) &&
+      isRelationshipAdmin(c),
   );
 }
 
-/**
- * Get the highest role a user has for an entity from an already-loaded collaborations array.
- * Returns 'owner', 'editor', or null.
- */
 export function getHighestRoleSync(userId, entityType, entityId, collaborations = []) {
   const matching = collaborations.filter(
-    c => c.user_id === userId && c.entity_type === entityType && c.entity_id === entityId
+    (c) =>
+      c.user_id === userId &&
+      c.entity_type === entityType &&
+      c.entity_id === entityId &&
+      isActiveCollaborator(c),
   );
   if (matching.length === 0) return null;
-  return matching.reduce((best, c) => {
-    return (ROLE_RANK[c.role] || 0) > (ROLE_RANK[best] || 0) ? c.role : best;
-  }, null);
+  if (matching.some(isRelationshipAdmin)) return 'owner';
+  if (matching.some(isRelationshipStaffOrAbove)) return 'editor';
+  return null;
 }
 
-/**
- * Get all entities owned by a user from an already-loaded collaborations array.
- * Returns array of EntityCollaborator records with role === 'owner'.
- */
 export function getUserOwnedEntitiesSync(userId, collaborations = []) {
-  return collaborations.filter(c => c.user_id === userId && c.role === 'owner');
+  return (collaborations || []).filter(
+    (c) => c.user_id === userId && isActiveCollaborator(c) && isRelationshipAdmin(c),
+  );
 }
 
-/**
- * Filter collaborations by entity type for a specific user.
- */
 export function getCollaborationsByType(userId, entityType, collaborations = []) {
-  return collaborations.filter(c => c.user_id === userId && c.entity_type === entityType);
+  return (collaborations || []).filter(
+    (c) => c.user_id === userId && c.entity_type === entityType && isActiveCollaborator(c),
+  );
 }
 
-// ─── Surface-level permission helpers ────────────────────────────────────────
-// These are re-exported from entityEditPermission for convenience.
+// ─── Surface-level permission helpers (re-exported for convenience) ───────────
 export {
   canEditManagementEntity,
   canEditRaceCoreEntity,

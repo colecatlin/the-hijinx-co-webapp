@@ -104,3 +104,39 @@ export const RACE_CORE_NAV_GROUPS = [
     adminOnly: true,
   },
 ];
+
+/**
+ * getRaceCoreNavForIdentity — registry + approved-relationship + granted-permission
+ * driven navigation filter. Replaces hardcoded role menus.
+ *
+ * Pass the context returned by useIdentityAccess():
+ *   const ctx = useIdentityAccess();
+ *   const nav = getRaceCoreNavForIdentity(ctx);
+ *
+ * Rules:
+ *   • Race Core surface appears only when the user is admin OR holds any active
+ *     Track/Series/Event/Driver/Team collaborator (registry-derived exposure).
+ *   • adminOnly groups/items (Governance, Data) stay admin-only.
+ *   • Per-item granted-permission gating can be layered on items by adding an
+ *     optional `requiredPermission` and entity scope — extend here as modules
+ *     declare their granted_permissions keys.
+ */
+export function getRaceCoreNavForIdentity(identityContext = {}) {
+  const {
+    identity = {},
+    collaborators = [],
+  } = identityContext;
+
+  const isRaceCoreExposed =
+    !!identity.is_admin ||
+    (collaborators || []).some((c) =>
+      ['Track', 'Series', 'Event', 'Driver', 'Team'].includes(c.entity_type),
+    );
+
+  return RACE_CORE_NAV_GROUPS.map((group) => {
+    const groupVisible = group.adminOnly ? !!identity.is_admin : isRaceCoreExposed;
+    if (!groupVisible) return null;
+    const items = group.items.filter((item) => (item.adminOnly ? !!identity.is_admin : true));
+    return { ...group, items };
+  }).filter(Boolean);
+}

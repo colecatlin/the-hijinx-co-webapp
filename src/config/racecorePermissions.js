@@ -268,4 +268,25 @@ export function getPermissionsForRCRole(role, isAdmin = false) {
   return PERMISSION_MATRIX[rcRole] || PERMISSION_MATRIX.read_only;
 }
 
+/**
+ * resolvePermissionForUser — CANONICAL permission resolution through identityAccess.
+ * RaceCore panels should call this (passing the useIdentityAccess() context) instead of
+ * hasPermission(role, key). It consults approved status + permission_level + granted_permissions
+ * for the actual entity the user is acting within.
+ *
+ *   const ctx = useIdentityAccess();
+ *   const canPublish = resolvePermissionForUser(ctx, event.series_id ? 'Series' : 'Track', orgId, 'publish_results');
+ *
+ * Falls back to PERMISSION_MATRIX only when no entity context is supplied (transitional,
+ * for call sites not yet carrying collaborator context — migrate them off this fallback).
+ */
+import { hasGrantedPermission as _hasGrantedPermission } from '@/lib/identityAccess';
+
+export function resolvePermissionForUser(identityContext, entityType, entityId, permKey) {
+  if (!identityContext) return false;
+  if (identityContext.identity?.is_admin) return true;
+  if (!entityType || !entityId || !permKey) return false;
+  return _hasGrantedPermission(identityContext.collaborators || [], entityType, entityId, permKey);
+}
+
 export default PERMISSION_MATRIX;

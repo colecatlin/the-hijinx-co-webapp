@@ -1,78 +1,67 @@
 /**
  * components/access/entityEditPermission.js
  *
- * React hook providing surface-level edit permission resolution for shared entities.
+ * Surface-level edit-permission resolution for shared entities.
+ * Resolves through useIdentityAccess (canonical: approved collaborators,
+ * permission_level, granted_permissions), with the Driver owner_user_id short-circuit
+ * retained as a transitional compatibility path.
  *
  * Returns:
- *   canEditManagement  — Management/profile fields: admin, entity owner, or EntityCollaborator
- *   canEditRaceCore    — Race Core operational fields: admin only (no separate role model yet)
- *   canEditProtectedFields — Protected core overrides: admin only
- *   isLoadingPermission — true while async checks are in-flight
- *
- * Usage:
- *   const { canEditManagement, canEditProtectedFields, isAdmin } =
- *     useEntityEditPermission('Driver', driverId, driverRecord);
+ *   canEditManagement       — admin OR Driver direct-owner OR staff-or-above collaborator
+ *   canEditRaceCore         — admin OR relationship-admin (owner) of the entity
+ *   canEditProtectedFields  — admin only (override/featured/numeric id fields)
+ *   isLoadingPermission     — true while identity context resolves
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useIdentityAccess } from '@/hooks/useIdentityAccess';
+import {
+  getCollaboratorsForEntity,
+  isRelationshipAdmin,
+  isRelationshipStaffOrAbove,
+  getPermissionLevel,
+  isActiveCollaborator,
+} from '@/lib/identityAccess';
 import { base44 } from '@/api/base44Client';
 
 export function useEntityEditPermission(entityType, entityId, entityRecord = null) {
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
+  const { user, collaborators, isLoading } = useIdentityAccess();
 
   const isAdmin = user?.role === 'admin';
 
-  // Driver has an owner_user_id field — check direct ownership
   const isDirectOwner =
     entityType === 'Driver' &&
     !!entityRecord?.owner_user_id &&
     !!user?.id &&
     entityRecord.owner_user_id === user.id;
 
-  // EntityCollaborator lookup (skipped for admins and new records)
-  const { data: collabs = [], isLoading: isLoadingCollabs } = useQuery({
-    queryKey: ['entityCollabPermission', entityType, entityId, user?.id],
-    queryFn: () =>
-      base44.entities.EntityCollaborator.filter({
-        user_id: user.id,
-        entity_type: entityType,
-        entity_id: entityId,
-      }),
-    enabled: !!entityId && entityId !== 'new' && !!user?.id && !isAdmin,
-    staleTime: 60_000,
-  });
+  const activeForEntity =
+    entityId && entityId !== 'new'
+      ? getCollaboratorsForEntity(collaborators, entityType, entityId)
+      : [];
 
-  const collabRole = collabs.length > 0
-    ? (collabs.some(c => c.role === 'owner') ? 'owner' : (collabs[0]?.role || null))
-    : null;
+  const collabRole = activeForEntity.some(isRelationshipAdmin)
+    ? 'owner'
+    : activeForEntity.some(isRelationshipStaffOrAbove)
+      ? 'editor'
+      : activeForEntity.length > 0
+        ? 'viewer'
+        : null;
 
-  const isCollaborator = !!collabRole;
+  const isCollaborator = activeForEntity.length > 0;
+  const permissionLevel = activeForEntity.length > 0 ? getPermissionLevel(activeForEntity[0]) : null;
 
-  // ── Surface-level permission resolution ──────────────────────────────────────
+  // Management / profile fields: admin, Driver direct-owner, or staff-or-above collaborator.
+  const canEditManagement =
+    isAdmin || isDirectOwner || activeForEntity.some(isRelationshipStaffOrAbove);
 
-  /**
-   * canEditManagement: admin OR entity owner OR EntityCollaborator (any role)
-   * Covers all Management-owned presentation/profile fields.
-   */
-  const canEditManagement = isAdmin || isDirectOwner || isCollaborator;
+  // Race Core operational fields: admin or the entity's relationship-admin (owner runs their own ops).
+  const canEditRaceCore = isAdmin || activeForEntity.some(isRelationshipAdmin);
 
-  /**
-   * canEditRaceCore: admin only until a dedicated Race Core role model exists.
-   * Entity owners/collaborators who do NOT have Race Core access are blocked.
-   */
-  const canEditRaceCore = isAdmin;
-
-  /**
-   * canEditProtectedFields: admin only — covers override fields, featured flags,
-   * numeric IDs, canonical keys, etc.
-   */
+  // Protected core fields (overrides, featured flags, numeric IDs, canonical keys): admin only.
   const canEditProtectedFields = isAdmin;
 
   const isLoadingPermission =
-    !user || (!isAdmin && !!entityId && entityId !== 'new' && isLoadingCollabs);
+    isLoading || (!user) || (!!entityId && entityId !== 'new' && !collaborators && !isAdmin);
 
   return {
     user,
@@ -80,6 +69,7 @@ export function useEntityEditPermission(entityType, entityId, entityRecord = nul
     isDirectOwner,
     isCollaborator,
     collabRole,
+    permissionLevel,
     canEditManagement,
     canEditRaceCore,
     canEditProtectedFields,
@@ -87,47 +77,36 @@ export function useEntityEditPermission(entityType, entityId, entityRecord = nul
   };
 }
 
-/**
- * Standalone async helpers (non-hook, for use in event handlers / save actions)
- */
+// ─── Standalone async helpers (non-hook, for event handlers / save actions) ──
 
-/**
- * canEditManagementEntity — async permission check for Management surfaces.
- * @param {object} user  — current user object (must have .id and .role)
- * @param {string} entityType
- * @param {string} entityId
- * @param {object} [entityRecord] — optional; used for owner_user_id on Driver
- */
+import {
+  canManageEntityCanonical,
+  isEntityOwnerCanonical,
+} from '@/lib/identityAccess';
+
 export async function canEditManagementEntity(user, entityType, entityId, entityRecord = null) {
   if (!user) return false;
   if (user.role === 'admin') return true;
-
-  // Driver direct ownership
   if (entityType === 'Driver' && entityRecord?.owner_user_id === user.id) return true;
-
-  // EntityCollaborator
   try {
-    const collabs = await base44.entities.EntityCollaborator.filter({
-      user_id: user.id,
-      entity_type: entityType,
-      entity_id: entityId,
-    });
-    return collabs && collabs.length > 0 && collabs.some(c => ['owner', 'editor'].includes(c.role));
+    const collaborators = await base44.entities.EntityCollaborator.filter({ user_id: user.id });
+    return canManageEntityCanonical(user, collaborators, entityType, entityId);
   } catch {
     return false;
   }
 }
 
-/**
- * canEditRaceCoreEntity — admin only for now.
- */
-export async function canEditRaceCoreEntity(user) {
-  return user?.role === 'admin';
+export async function canEditRaceCoreEntity(user, entityType, entityId) {
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+  try {
+    const collaborators = await base44.entities.EntityCollaborator.filter({ user_id: user.id });
+    return isEntityOwnerCanonical(user, collaborators, entityType, entityId);
+  } catch {
+    return false;
+  }
 }
 
-/**
- * canEditProtectedCoreFields — admin only.
- */
 export async function canEditProtectedCoreFields(user) {
   return user?.role === 'admin';
 }
