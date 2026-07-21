@@ -1,0 +1,171 @@
+import React, { useState, useMemo } from 'react';
+import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
+import {
+  ROLES_BY_CATEGORY,
+  ROLE_CATEGORIES,
+  DEFAULT_ROLE,
+} from '@/config/onboardingRoles';
+import { Button } from '@/components/ui/button';
+import { Loader2, Check } from 'lucide-react';
+
+const TEAL = '#1DA1A1';
+
+export default function RolesStage() {
+  const { user, saveRoles } = useOnboardingWizard();
+
+  // Seed from existing user data (legacy-safe).
+  const [primaryRole, setPrimaryRole] = useState(
+    user?.primary_profile_type && user.primary_profile_type !== DEFAULT_ROLE
+      ? user.primary_profile_type
+      : '',
+  );
+  const existingAdditional = useMemo(() => {
+    const types = user?.profile_types || [DEFAULT_ROLE];
+    const extra = types.filter((t) => t !== DEFAULT_ROLE && t !== user?.primary_profile_type);
+    return extra;
+  }, [user]);
+
+  const [additionalRoles, setAdditionalRoles] = useState(existingAdditional);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const toggleAdditional = (roleId) => {
+    setAdditionalRoles((prev) =>
+      prev.includes(roleId) ? prev.filter((r) => r !== roleId) : [...prev, roleId],
+    );
+  };
+
+  const canContinue = !!primaryRole && !saving;
+
+  const handleContinue = async () => {
+    if (!primaryRole) {
+      setError('Please select a primary role.');
+      return;
+    }
+    setError('');
+    setSaving(true);
+    try {
+      await saveRoles(primaryRole, additionalRoles.filter((r) => r !== primaryRole));
+    } catch (e) {
+      setError(e?.message || 'Could not save roles.');
+      setSaving(false);
+    }
+  };
+
+  // Build category list in display order. ROLE_CATEGORIES is keyed by id.
+  const categories = Object.entries(ROLE_CATEGORIES)
+    .map(([key, cat]) => ({ ...cat, key }))
+    .sort((a, b) => a.order - b.order);
+
+  return (
+    <div className="space-y-5">
+      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+        Pick your <span className="font-bold" style={{ color: TEAL }}>primary role</span> — this sets your default experience.
+        Add any extra roles you want available. Roles unlock modules; they don't grant management access.
+      </p>
+
+      {categories.map((cat) => {
+        const roles = ROLES_BY_CATEGORY[cat.key] || [];
+        if (!roles.length) return null;
+        return (
+          <div key={cat.key} className="space-y-2">
+            <h3
+              className="text-[10px] font-bold uppercase tracking-[0.3em] pt-1"
+              style={{ color: 'rgba(255,255,255,0.3)' }}
+            >
+              {cat.label}
+            </h3>
+            <div className="space-y-1.5">
+              {roles.map((role) => {
+                const isPrimary = primaryRole === role.id;
+                const isAdditional = additionalRoles.includes(role.id);
+                const Icon = role.icon;
+                const selectable = role.can_be_primary;
+                return (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => {
+                      if (selectable) {
+                        setPrimaryRole(isPrimary ? '' : role.id);
+                        // Remove from additional if chosen as primary.
+                        setAdditionalRoles((prev) => prev.filter((r) => r !== role.id));
+                      } else {
+                        // Non-primary-capable roles can only be additional.
+                        toggleAdditional(role.id);
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all duration-150"
+                    style={{
+                      background: isPrimary
+                        ? 'rgba(29,161,161,0.12)'
+                        : isAdditional
+                          ? 'rgba(29,161,161,0.06)'
+                          : 'rgba(255,255,255,0.03)',
+                      border: isPrimary
+                        ? '1px solid rgba(29,161,161,0.4)'
+                        : isAdditional
+                          ? '1px solid rgba(29,161,161,0.2)'
+                          : '1px solid rgba(255,255,255,0.07)',
+                    }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{
+                        background: isPrimary || isAdditional ? 'rgba(29,161,161,0.15)' : 'rgba(255,255,255,0.05)',
+                      }}
+                    >
+                      <Icon className="w-4 h-4" style={{ color: isPrimary || isAdditional ? TEAL : 'rgba(255,255,255,0.5)' }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold" style={{ color: isPrimary || isAdditional ? '#fff' : 'rgba(255,255,255,0.7)' }}>
+                        {role.display_name}
+                      </div>
+                      <div className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        {role.description}
+                      </div>
+                    </div>
+                    {selectable ? (
+                      isPrimary ? (
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                          style={{ background: 'rgba(29,161,161,0.2)', color: TEAL, border: '1px solid rgba(29,161,161,0.4)' }}>
+                          Primary
+                        </span>
+                      ) : isAdditional ? (
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)' }}>
+                          Added
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                          Select
+                        </span>
+                      )
+                    ) : isAdditional ? (
+                      <Check className="w-4 h-4" style={{ color: TEAL }} />
+                    ) : (
+                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                        Add
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {error && <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>}
+
+      <Button
+        onClick={handleContinue}
+        disabled={!canContinue}
+        className="w-full gap-2 h-11 text-sm font-bold"
+        style={{ background: canContinue ? TEAL : 'rgba(255,255,255,0.08)', color: canContinue ? '#050A0A' : 'rgba(255,255,255,0.3)' }}
+      >
+        {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Continue'}
+      </Button>
+    </div>
+  );
+}

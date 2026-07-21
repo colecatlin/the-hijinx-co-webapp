@@ -9,7 +9,7 @@ import ProfileIdentityHero from '@/components/profile/ProfileIdentityHero';
 import GarageAdaptiveModules from '@/components/mydashboard/GarageAdaptiveModules';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
-import OnboardingIntercept from '@/components/onboarding/OnboardingIntercept';
+import OnboardingGuard from '@/components/onboarding/OnboardingGuard';
 import {
   getResolvedManagedEntities,
   getRaceCoreEntities,
@@ -143,8 +143,6 @@ function AdminControlCenter() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function MyDashboard() {
-  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
-
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -176,17 +174,6 @@ export default function MyDashboard() {
     return null;
   }
 
-  const showOnboarding =
-    !isLoading && !!user &&
-    user.role !== 'admin' &&
-    resolvedEntities.length === 0 &&
-    !user.onboarding_complete &&
-    !onboardingDismissed;
-
-  if (showOnboarding) {
-    return <OnboardingIntercept user={user} onSkip={() => setOnboardingDismissed(true)} />;
-  }
-
   if (isLoading) {
     return (
       <HijinxPageShell>
@@ -199,6 +186,7 @@ export default function MyDashboard() {
   }
 
   return (
+    <OnboardingGuard>
     <HijinxPageShell>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-5">
 
@@ -309,5 +297,6 @@ export default function MyDashboard() {
 
       </div>
     </HijinxPageShell>
+    </OnboardingGuard>
   );
 }

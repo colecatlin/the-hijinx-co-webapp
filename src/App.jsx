@@ -208,7 +208,9 @@ const AuthenticatedApp = () => {
       <Route path="/race-core/series/:id" element={<RaceCoreEditorRedirect base="series" />} />
       <Route path="/race-core/events/:id" element={<RaceCoreEditorRedirect base="events" />} />
       <Route path="/ProfileSetup" element={<LayoutWrapper currentPageName="ProfileSetup"><ProfileSetup /></LayoutWrapper>} />
+      <Route path="/ProfileSetup/:stage" element={<LayoutWrapper currentPageName="ProfileSetup"><ProfileSetup /></LayoutWrapper>} />
       <Route path="/DriverProfileSetup" element={<Navigate to="/ProfileSetup" replace />} />
+      <Route path="/EntityOnboarding" element={<Navigate to="/ProfileSetup" replace />} />
       <Route path="/management/products" element={<LayoutWrapper currentPageName="ManageProducts"><ManageProducts /></LayoutWrapper>} />
       <Route path="/management/invoices" element={<LayoutWrapper currentPageName="ManageInvoices"><ManageInvoices /></LayoutWrapper>} />
       <Route path="/checkout-success" element={<LayoutWrapper currentPageName="CheckoutSuccess"><CheckoutSuccess /></LayoutWrapper>} />
