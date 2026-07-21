@@ -17,6 +17,8 @@ export default function DriverProfileSetup() {
   const isNew = urlParams.get('new') === '1';
 
   const [form, setForm] = useState({
+    first_name: '',
+    last_name: '',
     profile_image_url: '',
     tagline: '',
     bio: '',
@@ -61,6 +63,8 @@ export default function DriverProfileSetup() {
   useEffect(() => {
     if (driver) {
       setForm({
+        first_name: driver.first_name || '',
+        last_name: driver.last_name || '',
         profile_image_url: driver.profile_image_url || '',
         tagline: driver.tagline || '',
         bio: driver.bio || '',
@@ -75,7 +79,14 @@ export default function DriverProfileSetup() {
 
   const saveMutation = useMutation({
     mutationFn: (extraFields = {}) =>
-      base44.entities.Driver.update(driver.id, { ...form, ...extraFields }),
+      base44.entities.Driver.update(driver.id, {
+        tagline: form.tagline,
+        bio: form.bio,
+        profile_image_url: form.profile_image_url,
+        instagram_url: form.instagram_url,
+        website_url: form.website_url,
+        ...extraFields,
+      }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['driver_setup', driverId] });
       if (variables?.visibility_status === 'live') {
@@ -85,16 +96,45 @@ export default function DriverProfileSetup() {
     },
   });
 
+  const createMutation = useMutation({
+    mutationFn: (extraFields = {}) =>
+      base44.entities.Driver.create({
+        first_name: form.first_name,
+        last_name: form.last_name,
+        tagline: form.tagline,
+        bio: form.bio,
+        profile_image_url: form.profile_image_url,
+        instagram_url: form.instagram_url,
+        website_url: form.website_url,
+        owner_user_id: user?.id,
+        ...extraFields,
+      }),
+    onSuccess: (created, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['driver_setup', driverId] });
+      if (variables?.visibility_status === 'live') {
+        setPublishedDriver(created);
+        setPublished(true);
+      }
+    },
+  });
+
+  const isCreating = !driver;
+  const isPending = saveMutation.isPending || createMutation.isPending;
+
   const handlePublish = () => {
-    saveMutation.mutate({ visibility_status: 'live' });
+    if (isCreating) {
+      createMutation.mutate({ visibility_status: 'live' });
+    } else {
+      saveMutation.mutate({ visibility_status: 'live' });
+    }
   };
 
   const handleSkip = () => {
     navigate(createPageUrl('MyDashboard'));
   };
 
-  const profileUrl = driver
-    ? `${window.location.origin}/drivers/${driver.slug || driver.id}`
+  const profileUrl = (driver || publishedDriver)
+    ? `${window.location.origin}/drivers/${(driver || publishedDriver).slug || (driver || publishedDriver).id}`
     : '';
 
   const handleCopy = () => {
@@ -112,18 +152,7 @@ export default function DriverProfileSetup() {
     );
   }
 
-  if (!driver) {
-    return (
-      <PageShell className="bg-gray-50 min-h-screen">
-        <div className="max-w-lg mx-auto px-4 py-16 text-center space-y-4">
-          <p className="text-gray-500 text-sm">No driver profile found for your account.</p>
-          <Button variant="outline" onClick={() => navigate(createPageUrl('MyDashboard'))}>
-            Back to Dashboard
-          </Button>
-        </div>
-      </PageShell>
-    );
-  }
+
 
   // ── Success State ──────────────────────────────────────────────────────────
   if (published && publishedDriver) {
@@ -136,13 +165,13 @@ export default function DriverProfileSetup() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Your driver profile is live</h1>
             <p className="text-gray-500 text-sm mt-2">
-              {driver.first_name} {driver.last_name} is now visible on Index46.
+              {publishedDriver?.first_name} {publishedDriver?.last_name} is now visible on Index46.
             </p>
           </div>
           <div className="flex flex-col gap-3">
             <Button
               className="bg-[#232323] hover:bg-black text-white gap-2 w-full"
-              onClick={() => navigate(`/drivers/${driver.slug || driver.id}`)}
+              onClick={() => navigate(`/drivers/${publishedDriver?.slug || publishedDriver?.id}`)}
             >
               <ExternalLink className="w-4 h-4" /> View Profile
             </Button>
@@ -169,11 +198,13 @@ export default function DriverProfileSetup() {
         <div className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold mb-4">
             <Flag className="w-3.5 h-3.5" />
-            {isNew ? 'Welcome to Index46!' : 'Complete Your Profile'}
+            {isNew || isCreating ? 'Welcome to Index46!' : 'Complete Your Profile'}
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Set up your driver profile</h1>
           <p className="text-gray-500 text-sm mt-2">
-            {driver.first_name} {driver.last_name} — add the basics so fans and teams can find you.
+            {driver
+              ? `${driver.first_name} ${driver.last_name} — add the basics so fans and teams can find you.`
+              : 'Tell us who you are so fans and teams can find you.'}
           </p>
         </div>
 
@@ -182,6 +213,27 @@ export default function DriverProfileSetup() {
           {/* Section: Identity */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Identity</h2>
+
+            {isCreating && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>First Name <span className="text-red-500 font-normal text-xs">required</span></Label>
+                  <Input
+                    value={form.first_name}
+                    onChange={e => set('first_name', e.target.value)}
+                    placeholder="First name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name <span className="text-red-500 font-normal text-xs">required</span></Label>
+                  <Input
+                    value={form.last_name}
+                    onChange={e => set('last_name', e.target.value)}
+                    placeholder="Last name"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Profile Photo <span className="text-gray-400 font-normal text-xs">URL</span></Label>
@@ -253,10 +305,10 @@ export default function DriverProfileSetup() {
           <div className="flex flex-col gap-3 pt-2">
             <Button
               onClick={handlePublish}
-              disabled={saveMutation.isPending}
+              disabled={isPending || (isCreating && (!form.first_name.trim() || !form.last_name.trim()))}
               className="bg-[#232323] hover:bg-black text-white w-full gap-2 h-11 text-sm font-semibold"
             >
-              {saveMutation.isPending
+              {isPending
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Publishing...</>
                 : <><CheckCircle2 className="w-4 h-4" /> Publish Profile</>}
             </Button>
