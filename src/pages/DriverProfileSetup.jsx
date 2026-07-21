@@ -222,6 +222,7 @@ export default function DriverProfileSetup() {
                     value={form.first_name}
                     onChange={e => set('first_name', e.target.value)}
                     placeholder="First name"
+                    className="text-zinc-900 placeholder:text-zinc-500"
                   />
                 </div>
                 <div className="space-y-2">
@@ -230,6 +231,7 @@ export default function DriverProfileSetup() {
                     value={form.last_name}
                     onChange={e => set('last_name', e.target.value)}
                     placeholder="Last name"
+                    className="text-zinc-900 placeholder:text-zinc-500"
                   />
                 </div>
               </div>
@@ -241,6 +243,7 @@ export default function DriverProfileSetup() {
                 value={form.profile_image_url}
                 onChange={e => set('profile_image_url', e.target.value)}
                 placeholder="https://..."
+                className="text-zinc-900 placeholder:text-zinc-500"
               />
               {form.profile_image_url && (
                 <img
@@ -263,6 +266,7 @@ export default function DriverProfileSetup() {
                 onChange={e => set('tagline', e.target.value)}
                 placeholder="e.g. Off-road racer from Phoenix, AZ"
                 maxLength={100}
+                className="text-zinc-900 placeholder:text-zinc-500"
               />
             </div>
 
@@ -272,7 +276,7 @@ export default function DriverProfileSetup() {
                 value={form.bio}
                 onChange={e => set('bio', e.target.value)}
                 placeholder="Tell your story — where you started, what you drive, where you're headed."
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400 text-zinc-900 placeholder:text-zinc-500"
                 rows={4}
               />
             </div>
@@ -288,6 +292,7 @@ export default function DriverProfileSetup() {
                 value={form.instagram_url}
                 onChange={e => set('instagram_url', e.target.value)}
                 placeholder="https://instagram.com/yourhandle"
+                className="text-zinc-900 placeholder:text-zinc-500"
               />
             </div>
 
@@ -297,6 +302,7 @@ export default function DriverProfileSetup() {
                 value={form.website_url}
                 onChange={e => set('website_url', e.target.value)}
                 placeholder="https://yoursite.com"
+                className="text-zinc-900 placeholder:text-zinc-500"
               />
             </div>
           </div>
