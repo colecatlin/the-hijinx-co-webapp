@@ -19,11 +19,6 @@ export default function DriverProfileSetup() {
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
-    profile_image_url: '',
-    tagline: '',
-    bio: '',
-    instagram_url: '',
-    website_url: '',
   });
   const [published, setPublished] = useState(false);
   const [publishedDriver, setPublishedDriver] = useState(null);
@@ -65,11 +60,6 @@ export default function DriverProfileSetup() {
       setForm({
         first_name: driver.first_name || '',
         last_name: driver.last_name || '',
-        profile_image_url: driver.profile_image_url || '',
-        tagline: driver.tagline || '',
-        bio: driver.bio || '',
-        instagram_url: driver.instagram_url || '',
-        website_url: driver.website_url || '',
       });
       if (driver.visibility_status === 'live') setPublished(true);
     }
@@ -80,11 +70,6 @@ export default function DriverProfileSetup() {
   const saveMutation = useMutation({
     mutationFn: (extraFields = {}) =>
       base44.entities.Driver.update(driver.id, {
-        tagline: form.tagline,
-        bio: form.bio,
-        profile_image_url: form.profile_image_url,
-        instagram_url: form.instagram_url,
-        website_url: form.website_url,
         ...extraFields,
       }),
     onSuccess: (_, variables) => {
@@ -101,11 +86,6 @@ export default function DriverProfileSetup() {
       base44.entities.Driver.create({
         first_name: form.first_name,
         last_name: form.last_name,
-        tagline: form.tagline,
-        bio: form.bio,
-        profile_image_url: form.profile_image_url,
-        instagram_url: form.instagram_url,
-        website_url: form.website_url,
         owner_user_id: user?.id,
         ...extraFields,
       }),
@@ -237,74 +217,6 @@ export default function DriverProfileSetup() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label style={{ color: '#0a0a0a' }}>Profile Photo <span className="font-normal text-xs">URL</span></Label>
-              <Input
-                value={form.profile_image_url}
-                onChange={e => set('profile_image_url', e.target.value)}
-                placeholder="https://..."
-                className="text-zinc-900 placeholder:text-zinc-500"
-              />
-              {form.profile_image_url && (
-                <img
-                  src={form.profile_image_url}
-                  alt="Preview"
-                  className="w-14 h-14 rounded-full object-cover border border-gray-200"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Section: About */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0a0a0a' }}>About</h2>
-
-            <div className="space-y-2">
-              <Label style={{ color: '#0a0a0a' }}>Tagline <span className="font-normal text-xs">one line</span></Label>
-              <Input
-                value={form.tagline}
-                onChange={e => set('tagline', e.target.value)}
-                placeholder="e.g. Off-road racer from Phoenix, AZ"
-                maxLength={100}
-                className="text-zinc-900 placeholder:text-zinc-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label style={{ color: '#0a0a0a' }}>Bio <span className="font-normal text-xs">your story</span></Label>
-              <textarea
-                value={form.bio}
-                onChange={e => set('bio', e.target.value)}
-                placeholder="Tell your story — where you started, what you drive, where you're headed."
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-1 focus:ring-gray-400 text-zinc-900 placeholder:text-zinc-500"
-                rows={4}
-              />
-            </div>
-          </div>
-
-          {/* Section: Links */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
-            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0a0a0a' }}>Links <span className="font-normal normal-case tracking-normal" style={{ color: '#0a0a0a' }}>optional</span></h2>
-
-            <div className="space-y-2">
-              <Label style={{ color: '#0a0a0a' }}>Instagram</Label>
-              <Input
-                value={form.instagram_url}
-                onChange={e => set('instagram_url', e.target.value)}
-                placeholder="https://instagram.com/yourhandle"
-                className="text-zinc-900 placeholder:text-zinc-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label style={{ color: '#0a0a0a' }}>Website</Label>
-              <Input
-                value={form.website_url}
-                onChange={e => set('website_url', e.target.value)}
-                placeholder="https://yoursite.com"
-                className="text-zinc-900 placeholder:text-zinc-500"
-              />
-            </div>
           </div>
 
           {/* Actions */}
