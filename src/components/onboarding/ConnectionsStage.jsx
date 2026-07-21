@@ -2,8 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import { getRole } from '@/config/onboardingRoles';
 import { Button } from '@/components/ui/button';
-import { Loader2, Plus, Search, Info, Check } from 'lucide-react';
+import { Loader2, Plus, Search, Info, Check, AlertCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { requestRelationship } from '@/components/relationships/relationshipService';
 
 const TEAL = '#1DA1A1';
 
@@ -15,7 +16,7 @@ const ENTITY_API = {
 };
 
 export default function ConnectionsStage() {
-  const { user, pendingConnections, setPendingConnections, saveConnections } = useOnboardingWizard();
+  const { user, relationships = [], refreshRelationships, saveConnections } = useOnboardingWizard();
 
   const selectedTypes = user?.profile_types || ['fan'];
   // Roles the user picked that require an org relationship on onboarding.
@@ -29,23 +30,19 @@ export default function ConnectionsStage() {
 
   const noConnectionsNeeded = rolesNeedingConnection.length === 0;
 
-  const addConnection = (entry) => {
-    // Avoid duplicates per role+entity.
-    setPendingConnections((prev) => {
-      if (prev.some((c) => c.roleId === entry.roleId && c.entityId === entry.entityId && c.mode === entry.mode)) {
-        return prev;
-      }
-      return [...prev, entry];
-    });
-  };
+  // Pending/approved relationships for this role, sourced from EntityCollaborator.
+  const pendingForRole = (roleId) =>
+    (relationships || []).filter((c) => c.role_key === roleId);
 
+  const [submitting, setSubmitting] = useState(null); // roleId currently submitting
+  const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const handleContinue = async () => {
     setSaving(true);
     try {
-      // Phase 2: connection requests are collected here; EntityCollaborator
-      // creation is wired in Phase 3/4. Pending requests never block completion.
+      // Pending requests never block completion — connections are already
+      // persisted as real EntityCollaborator records by this point.
       await saveConnections();
     } catch (e) {
       setSaving(false);
@@ -54,6 +51,14 @@ export default function ConnectionsStage() {
 
   return (
     <div className="space-y-5">
+      {error && (
+        <div className="flex items-start gap-2 p-3 rounded-xl"
+          style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.25)' }}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
+          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.7)' }}>{error}</p>
+        </div>
+      )}
+
       {noConnectionsNeeded ? (
         <div className="text-center py-8 rounded-xl"
           style={{ background: 'rgba(29,161,161,0.05)', border: '1px dashed rgba(29,161,161,0.2)' }}>
@@ -69,8 +74,14 @@ export default function ConnectionsStage() {
           <ConnectionRequestBuilder
             key={role.id}
             role={role}
-            existing={pendingConnections.filter((c) => c.roleId === role.id)}
-            onAdd={addConnection}
+            pending={pendingForRole(role.id)}
+            submitting={submitting === role.id}
+            onSubmitting={(v) => setSubmitting(v ? role.id : null)}
+            onError={setError}
+            onCreated={async () => {
+              setError(null);
+              await refreshRelationships();
+            }}
           />
         ))
       )}
@@ -96,12 +107,13 @@ export default function ConnectionsStage() {
   );
 }
 
-function ConnectionRequestBuilder({ role, existing, onAdd }) {
-  const [mode, setMode] = useState(role.requires_approval === 'conditional' ? 'create' : 'join');
+function ConnectionRequestBuilder({ role, pending, submitting, onSubmitting, onError, onCreated }) {
+  const mode = role.requires_approval === 'conditional' ? 'create' : 'join';
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [createFields, setCreateFields] = useState({ name: '' });
+  const [localCreateEntries, setLocalCreateEntries] = useState([]);
 
   const supportsCreate = role.requires_approval === 'conditional'; // Team Owner
   const entityApi = ENTITY_API[role.relationship_entity_type];
@@ -124,30 +136,34 @@ function ConnectionRequestBuilder({ role, existing, onAdd }) {
     }
   };
 
-  const selectExisting = (entity) => {
-    onAdd({
-      roleId: role.id,
-      roleKey: role.id,
-      mode: 'join',
-      entityType: role.relationship_entity_type,
-      entityId: entity.id,
-      entityName: entity.name,
-    });
-    setQuery('');
-    setResults([]);
+  // Join an existing org → create a REAL pending EntityCollaborator record.
+  const selectExisting = async (entity) => {
+    onSubmitting(true);
+    try {
+      const res = await requestRelationship({
+        entityType: role.relationship_entity_type,
+        entityId: entity.id,
+        roleKey: role.id,
+      });
+      if (!res?.ok) {
+        onError(res?.error || 'Could not submit request');
+      } else {
+        await onCreated();
+      }
+      setQuery('');
+      setResults([]);
+    } catch (e) {
+      onError(e?.message || 'Could not submit request');
+    } finally {
+      onSubmitting(false);
+    }
   };
 
+  // Create a new org — entity creation is a separate flow (Phase 4+). Kept as
+  // a session-only placeholder so it doesn't fabricate a relationship record.
   const submitCreate = () => {
     if (!createFields.name.trim()) return;
-    onAdd({
-      roleId: role.id,
-      roleKey: role.id,
-      mode: 'create',
-      entityType: role.relationship_entity_type,
-      entityId: null,
-      entityName: createFields.name.trim(),
-      createFields: { ...createFields },
-    });
+    setLocalCreateEntries((prev) => [...prev, createFields.name.trim()]);
     setCreateFields({ name: '' });
   };
 
@@ -163,24 +179,12 @@ function ConnectionRequestBuilder({ role, existing, onAdd }) {
         </span>
       </div>
 
-      {supportsCreate ? (
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setMode('create')}
-            className="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
-            style={mode === 'create'
-              ? { background: 'rgba(29,161,161,0.15)', color: TEAL, border: '1px solid rgba(29,161,161,0.3)' }
-              : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            Create new
-          </button>
-          <button type="button" onClick={() => setMode('join')}
-            className="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
-            style={mode === 'join'
-              ? { background: 'rgba(29,161,161,0.15)', color: TEAL, border: '1px solid rgba(29,161,161,0.3)' }
-              : { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            Join existing
-          </button>
-        </div>
-      ) : null}
+      {supportsCreate && (
+        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          Creating a new organization is completed after launch. To join an existing one now,
+          search below.
+        </p>
+      )}
 
       {mode === 'join' && entityApi ? (
         <div className="space-y-2">
@@ -194,13 +198,13 @@ function ConnectionRequestBuilder({ role, existing, onAdd }) {
               className="flex h-10 flex-1 bg-transparent text-sm focus-visible:outline-none"
               style={{ color: 'rgba(255,255,255,0.9)' }}
             />
-            {searching && <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'rgba(255,255,255,0.4)' }} />}
+            {(searching || submitting) && <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'rgba(255,255,255,0.4)' }} />}
           </div>
           {results.length > 0 && (
             <div className="space-y-1">
               {results.map((r) => (
-                <button key={r.id} type="button" onClick={() => selectExisting(r)}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors"
+                <button key={r.id} type="button" onClick={() => selectExisting(r)} disabled={submitting}
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors disabled:opacity-50"
                   style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
                   <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{r.name}</span>
                   <Plus className="w-3.5 h-3.5" style={{ color: TEAL }} />
@@ -227,16 +231,33 @@ function ConnectionRequestBuilder({ role, existing, onAdd }) {
         </div>
       ) : null}
 
-      {existing.length > 0 ? (
+      {/* Server-backed pending / approved requests for this role (survives refresh). */}
+      {pending.length > 0 ? (
         <div className="space-y-1.5">
-          {existing.map((c, idx) => (
-            <div key={idx} className="flex items-center gap-2 px-3 py-2 rounded-lg"
+          {pending.map((c) => (
+            <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-lg"
               style={{ background: 'rgba(29,161,161,0.06)', border: '1px solid rgba(29,161,161,0.2)' }}>
               <Check className="w-3.5 h-3.5" style={{ color: TEAL }} />
-              <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{c.entityName}</span>
+              <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{c.entity_name || c.entity_type}</span>
               <span className="text-[9px] font-bold uppercase tracking-wider"
-                style={{ color: c.mode === 'create' ? TEAL : 'rgba(255,255,255,0.4)' }}>
-                {c.mode === 'create' ? 'New · No approval' : 'Needs approval'}
+                style={{ color: c.status === 'approved' ? TEAL : 'rgba(255,255,255,0.4)' }}>
+                {c.status === 'approved' ? 'Approved' : 'Pending approval'}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {/* Session-only create-new placeholders (not relationships). */}
+      {localCreateEntries.length > 0 ? (
+        <div className="space-y-1.5">
+          {localCreateEntries.map((name, idx) => (
+            <div key={idx} className="flex items-center gap-2 px-3 py-2 rounded-lg"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)' }}>
+              <Plus className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.4)' }} />
+              <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.7)' }}>{name}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                New · After launch
               </span>
             </div>
           ))}

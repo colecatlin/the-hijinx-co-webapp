@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -15,7 +15,6 @@ const WizardContext = createContext(null);
 export function OnboardingWizardProvider({ children }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [pendingConnections, setPendingConnections] = useState([]);
 
   // Single source for the current user — auth.me() returns the live record
   // and is invalidated after every save so stages always read fresh data.
@@ -23,6 +22,20 @@ export function OnboardingWizardProvider({ children }) {
     queryKey: ['onboarding_user'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Server-backed relationship state. No onboarding component owns relationship
+  // records — EntityCollaborator is the single source of truth, so the wizard
+  // simply reads and refreshes it here. Survives refresh and cross-entry reuse.
+  const { data: relationships = [], refetch: refetchRelationships, isLoading: relationshipsLoading } = useQuery({
+    queryKey: ['onboarding_relationships', user?.id],
+    queryFn: () => base44.entities.EntityCollaborator.filter({ user_id: user.id }, '-updated_date', 200),
+    enabled: !!user,
+  });
+
+  const refreshRelationships = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['onboarding_relationships', user?.id] });
+    await queryClient.refetchQueries({ queryKey: ['onboarding_relationships', user?.id] });
+  }, [queryClient, user?.id]);
 
   const refresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['onboarding_user'] });
@@ -122,10 +135,11 @@ export function OnboardingWizardProvider({ children }) {
       goBack,
       goForward,
       saveAndExit,
-      pendingConnections,
-      setPendingConnections,
+      relationships,
+      relationshipsLoading,
+      refreshRelationships,
     }),
-    [user, isLoading, saveIdentity, saveAbout, saveRoles, saveConnections, completeOnboarding, goBack, goForward, saveAndExit, pendingConnections],
+    [user, isLoading, saveIdentity, saveAbout, saveRoles, saveConnections, completeOnboarding, goBack, goForward, saveAndExit, relationships, relationshipsLoading, refreshRelationships],
   );
 
   return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>;

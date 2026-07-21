@@ -9,7 +9,7 @@ const TEAL = '#1DA1A1';
 
 export default function ReviewStage() {
   const navigate = useNavigate();
-  const { user, pendingConnections, completeOnboarding } = useOnboardingWizard();
+  const { user, relationships = [], completeOnboarding } = useOnboardingWizard();
   const [saving, setSaving] = React.useState(false);
 
   const primaryRole = getRole(user?.primary_profile_type);
@@ -102,26 +102,28 @@ export default function ReviewStage() {
             <Pencil className="w-3 h-3" /> Edit
           </button>
         </div>
-        {pendingConnections.length === 0 ? (
+        {(relationships || []).length === 0 ? (
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             No connection requests. You can request organization access anytime from your garage.
           </p>
         ) : (
           <div className="space-y-2">
-            {pendingConnections.map((c, i) => (
-              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg"
+            {relationships.map((c) => (
+              <div key={c.id} className="flex items-center justify-between px-3 py-2 rounded-lg"
                 style={{ background: 'rgba(29,161,161,0.05)', border: '1px solid rgba(29,161,161,0.15)' }}>
-                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>{c.entityName}</span>
+                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                  {c.entity_name || c.entity_type}
+                </span>
                 <span className="text-[9px] font-bold uppercase tracking-wider"
-                  style={{ color: c.mode === 'create' ? TEAL : 'rgba(255,255,255,0.4)' }}>
-                  {c.mode === 'create' ? 'New · Pending' : 'Pending approval'}
+                  style={{ color: c.status === 'approved' ? TEAL : 'rgba(255,255,255,0.4)' }}>
+                  {c.status === 'approved' ? 'Approved' : 'Pending approval'}
                 </span>
               </div>
             ))}
           </div>
         )}
         <p className="text-[11px] mt-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
-          Organization requests are submitted after you launch. Approval is handled separately by org admins.
+          Requests are submitted as you add them and remain pending until an org admin approves them.
         </p>
       </div>
 
