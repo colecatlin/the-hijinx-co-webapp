@@ -212,12 +212,12 @@ export default function DriverProfileSetup() {
 
           {/* Section: Identity */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Identity</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0a0a0a' }}>Identity</h2>
 
             {isCreating && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>First Name <span className="text-red-500 font-normal text-xs">required</span></Label>
+                  <Label style={{ color: '#0a0a0a' }}>First Name <span className="text-red-500 font-normal text-xs">required</span></Label>
                   <Input
                     value={form.first_name}
                     onChange={e => set('first_name', e.target.value)}
@@ -225,7 +225,7 @@ export default function DriverProfileSetup() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Last Name <span className="text-red-500 font-normal text-xs">required</span></Label>
+                  <Label style={{ color: '#0a0a0a' }}>Last Name <span className="text-red-500 font-normal text-xs">required</span></Label>
                   <Input
                     value={form.last_name}
                     onChange={e => set('last_name', e.target.value)}
@@ -236,7 +236,7 @@ export default function DriverProfileSetup() {
             )}
 
             <div className="space-y-2">
-              <Label>Profile Photo <span className="text-gray-400 font-normal text-xs">URL</span></Label>
+              <Label style={{ color: '#0a0a0a' }}>Profile Photo <span className="font-normal text-xs">URL</span></Label>
               <Input
                 value={form.profile_image_url}
                 onChange={e => set('profile_image_url', e.target.value)}
@@ -254,10 +254,10 @@ export default function DriverProfileSetup() {
 
           {/* Section: About */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">About</h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0a0a0a' }}>About</h2>
 
             <div className="space-y-2">
-              <Label>Tagline <span className="text-gray-400 font-normal text-xs">one line</span></Label>
+              <Label style={{ color: '#0a0a0a' }}>Tagline <span className="font-normal text-xs">one line</span></Label>
               <Input
                 value={form.tagline}
                 onChange={e => set('tagline', e.target.value)}
@@ -267,7 +267,7 @@ export default function DriverProfileSetup() {
             </div>
 
             <div className="space-y-2">
-              <Label>Bio <span className="text-gray-400 font-normal text-xs">your story</span></Label>
+              <Label style={{ color: '#0a0a0a' }}>Bio <span className="font-normal text-xs">your story</span></Label>
               <textarea
                 value={form.bio}
                 onChange={e => set('bio', e.target.value)}
@@ -280,10 +280,10 @@ export default function DriverProfileSetup() {
 
           {/* Section: Links */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Links <span className="text-gray-300 font-normal normal-case tracking-normal">optional</span></h2>
+            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0a0a0a' }}>Links <span className="font-normal normal-case tracking-normal" style={{ color: '#0a0a0a' }}>optional</span></h2>
 
             <div className="space-y-2">
-              <Label>Instagram</Label>
+              <Label style={{ color: '#0a0a0a' }}>Instagram</Label>
               <Input
                 value={form.instagram_url}
                 onChange={e => set('instagram_url', e.target.value)}
@@ -292,7 +292,7 @@ export default function DriverProfileSetup() {
             </div>
 
             <div className="space-y-2">
-              <Label>Website</Label>
+              <Label style={{ color: '#0a0a0a' }}>Website</Label>
               <Input
                 value={form.website_url}
                 onChange={e => set('website_url', e.target.value)}
