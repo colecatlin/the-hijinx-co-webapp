@@ -27,10 +27,24 @@ export default function DriverProfileSetup() {
   const [publishedDriver, setPublishedDriver] = useState(null);
   const [copied, setCopied] = useState(false);
 
+  const { data: isAuthenticated, isLoading: authLoading } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    enabled: isAuthenticated === true,
   });
+
+  // Redirect unauthenticated visitors to login, then back to this page
+  useEffect(() => {
+    if (!authLoading && isAuthenticated === false) {
+      base44.auth.redirectToLogin(window.location.pathname + window.location.search);
+    }
+  }, [authLoading, isAuthenticated]);
 
   const driverId = driverIdParam || user?.primary_entity_id;
 
@@ -90,7 +104,7 @@ export default function DriverProfileSetup() {
   };
 
   // ── Loading ────────────────────────────────────────────────────────────────
-  if (!user || isLoading) {
+  if (authLoading || !isAuthenticated || !user || isLoading) {
     return (
       <PageShell className="bg-gray-50 min-h-screen flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
