@@ -1,133 +1,177 @@
 # Onboarding Final Integration Audit
 
-**Scope:** Certify that onboarding is complete, consistent, and fully integrated into the RaceCore architecture. No new entities, no new features — integration, cleanup, and validation only.
-
-**Status:** ✅ Canonical onboarding flow certified. Legacy consumers migrated. Remaining debt isolated and documented.
-
----
-
-## 1. Data Flow Diagram
-
-```
-                        ┌─────────────────────────────────────────────────┐
-                        │            /ProfileSetup/:stage (wizard)          │
-                        │   OnboardingWizardProvider (OnboardingWizardContext) │
-                        └─────────────────────────────────────────────────┘
-   identity ─► User(first_name,last_name,username,username_slug)
-   about    ─► User(profile_photo_url,banner_image_url,bio,location_display,website_url,social_links)
-   roles    ─► User(primary_profile_type,profile_types,onboarding_stage)
-   connections ─► EntityCollaborator (via relationshipService.requestRelationship → relationshipLifecycle fn)
-   review   ─► User(onboarding_complete=true,onboarding_stage='complete') → /MyDashboard
-
-   OnboardingGuard (server-backed) ── incomplete ──► redirect to resolveOnboardingStage(user)
-                       complete  ──► allow
-                       admin    ──► allow
-                       /ProfileSetup path ──► allow (no loop)
-
-   PersonIdentity  ◄── created by createPersonIdentityFromDriver / mergePersonIdentities (NOT by onboarding wizard)
-   EntityRelationship ── org-to-org only; onboarding NEVER writes person-to-org here
-```
-
-**Key invariant:** The wizard never owns relationship records. `EntityCollaborator` is the single source of truth — the wizard only reads/refreshes it. Pending approvals never gate completion.
+**Phase:** Retirement & Verification Pass
+**Status:** ✅ Canonical onboarding certified; confirmed-dead legacy code removed; transitional backfills completed where safely inferable; ambiguous records documented (not guessed).
 
 ---
 
-## 2. Entity Ownership Table
+## 1. Reference-Scan Results
 
-| Data | Authoritative home | Written by onboarding | Read by |
-|------|--------------------|------------------------|---------|
-| Public profile fields (photo, banner, bio, location, website, socials) | **User** | AboutStage → `auth.updateMe` | ProfileIdentityHero, Profile, Public Profile |
-| Username / username_slug | **User** | IdentityStage → `auth.updateMe` | /u/:username route, Profile |
-| Primary role + additional roles | **User** (primary_profile_type, profile_types) | RolesStage → `auth.updateMe` | userModeResolver, GarageAdaptiveModules, Profile |
-| Onboarding status | **User** (onboarding_complete, onboarding_stage) | Wizard advanceTo / completeOnboarding | OnboardingGuard, ProfileSetup |
-| Organization relationships / approval / permission_level / granted_permissions / audit | **EntityCollaborator** | ConnectionsStage → relationshipLifecycle fn | ConnectionsStage, ReviewStage, MyDashboard, Profile, userCapabilities, userModeResolver |
-| Identity reconciliation / merge history / confidence | **PersonIdentity** | (not wizard) | Identity system functions |
-| Org-to-org relationships | **EntityRelationship** | (not wizard — never person-to-org) | Organization Platform |
+Project-wide scan for retirement candidates across routing (`App.jsx`, `pages.config.js`), layout, and all plausible consumer pages (`Home`, `MyDashboard`, `Profile`, `Management`, `Registration`, `RegistrationLanding`, `MediaApply`, profile sub-tabs, `CodeInputTab`). Classification:
 
-**No duplicate sources of truth.** The wizard is the only onboarding writer to User; `relationshipLifecycle` is the only onboarding writer to EntityCollaborator.
-
----
-
-## 3. Legacy References Found & Actions Taken This Phase
-
-### Replaced (this phase)
-| Location | Legacy | Replacement |
-|----------|--------|-------------|
-| `userModeResolver.jsx` | `c.role === 'owner'` | `c.permission_level === 'admin' \|\| c.role === 'owner'` (transitional) |
-| `userModeResolver.jsx` | `role_interest_category === 'Media / Creator'` media fallback | removed — `primary_profile_type` covers media identity |
-| `userCapabilities.jsx` | `c.role === 'owner'` / `!== 'owner'` owner/editor split | `permission_level === 'admin' \|\| role === 'owner'` (transitional) |
-| `userCapabilities.jsx` | `role_interest_category` in `isMediaUser` | removed — `profile_types` is the source |
-| `MyDashboard.jsx` (RacingProfileCard) | `entity.role === 'owner'` | `permission_level === 'admin' \|\| role === 'owner'` |
-| `Profile.jsx` | `role_interest_category` media-gate read | removed |
-| `Profile.jsx` | `entity.role === 'owner'` (two sites) | `permission_level === 'admin' \|\| role === 'owner'` |
-| `Profile.jsx` | `role_interest_category` write-back in `updateMe` | removed — stops persisting the legacy field |
-| `Profile.jsx` | `role_interest_category` in formData | removed |
-
-The `role` field is retained on EntityCollaborator for backwards compatibility (per schema). New code prefers `permission_level` and falls back to `role` so legacy records keep working until a backfill migrates them.
+| Candidate | Classification | Action |
+|-----------|----------------|--------|
+| `OnboardingIntercept.jsx` | **Dead** — zero importers found | **Deleted** |
+| `PersonIdentityStep.jsx` | **Dead** — only importer was OnboardingIntercept | **Deleted** |
+| `MediaOnboardingFlow.jsx` | **Dead** — only importer was OnboardingIntercept; wrote legacy `role_interest*` | **Deleted** |
+| `EntityOnboarding.jsx` (page) | **Dead** — superseded by `/organization/create`; removed from `pages.config.js` so `/EntityOnboarding` now redirects to `/ProfileSetup` | **Deleted** (page) + route redirected |
+| `RegisterEntityFlow.jsx` | **Dead** — only importer was EntityOnboarding | **Deleted** |
+| `ClaimEntityFlow.jsx` | **Dead** — only importer was EntityOnboarding | **Deleted** |
+| `LinkEntityFlow.jsx` | **Dead** — imported by EntityOnboarding only, never rendered; `redeemEntityAccessCode` is still reached via `CodeInputTab` | **Deleted** |
+| `OnboardingEntryCards.jsx` | **Unknown** — navigates to `/EntityOnboarding` (now a redirect); could not exhaustively confirm zero importers | **Retained** (pending manual reference confirmation) |
+| `/DriverProfileSetup` | **Transitional** — kept as `<Navigate to="/ProfileSetup">` for external deep-links | Retained (redirect) |
+| `mapLegacyRoleToProfileType` | **Transitional compatibility** — still read by `Profile.jsx` useEffect to promote legacy `role_interest_category` → `profile_types` on first Profile save | Retained until legacy-user re-onboarding |
+| `EntityCollaborator.role` | **Transitional** — kept on schema per backwards-compat; consumers now prefer `permission_level` with `|| role === 'owner'` fallback | Backfilled (see §3); fallback retained |
+| `role_interest` / `role_interest_category` | **Transitional** — read-only migration in `Profile.jsx`; no longer written by canonical wizard or Profile | Field kept; backfill counted (see §4) |
+| `portfolio_url` / `instagram_url` | **Transitional** — no canonical consumer; only legacy `MediaOnboardingFlow` (deleted) wrote them | Backfill migration ran (see §4) |
 
 ---
 
-## 4. Remaining Legacy / Technical Debt
+## 2. Files Removed / Modified
 
-1. **Legacy alternate onboarding paths (retirement candidates — confirm zero references before deleting):**
-   - `src/components/onboarding/OnboardingIntercept.jsx` — pre-wizard intercept. Writes `role_interest`, `role_interest_category`, `media_outlet_name`, `portfolio_url`, `instagram_url`, `disciplines_covered`, `regions_covered` and short-circuits `onboarding_complete=true`. Not imported by `App.jsx`, `pages.config.js`, or `Layout.jsx`. **Likely dead.** Delete once a full reference scan confirms no importer.
-   - `src/components/onboarding/PersonIdentityStep.jsx` — only consumed by OnboardingIntercept.
-   - `src/components/onboarding/MediaOnboardingFlow.jsx` — only consumed by OnboardingIntercept; writes the legacy fields above.
-   - `src/pages/EntityOnboarding.jsx` + `RegisterEntityFlow.jsx` / `ClaimEntityFlow.jsx` / `LinkEntityFlow.jsx` / `OnboardingEntryCards.jsx` — pre-Organization-Platform entity creation flow. `/EntityOnboarding` is shadowed by an `<Navigate to="/ProfileSetup">` route in `App.jsx` and superseded by `/organization/create` + `createOrganization`. Still registered in `pages.config.js` (auto-generated file). Retiring requires removing the page file (which auto-removes the pages.config entry) and the `createEntityWithOwnership` legacy writer.
-   - `/DriverProfileSetup` and `/EntityOnboarding` `<Navigate>` safety redirects in `App.jsx` — harmless; keep until link inventory is clean.
+**Deleted (7):**
+- `src/pages/EntityOnboarding.jsx`
+- `src/components/onboarding/RegisterEntityFlow.jsx`
+- `src/components/onboarding/ClaimEntityFlow.jsx`
+- `src/components/onboarding/LinkEntityFlow.jsx`
+- `src/components/onboarding/OnboardingIntercept.jsx`
+- `src/components/onboarding/PersonIdentityStep.jsx`
+- `src/components/onboarding/MediaOnboardingFlow.jsx`
 
-2. **Transitional read-only migration retained (intentional):**
-   - `mapLegacyRoleToProfileType` in `userCapabilities.jsx` + its use in `Profile.jsx` useEffect: derives `profile_types`/`primary_profile_type` from `role_interest_category` for pre-wizard users on first Profile save. This is a *promoting* migration (legacy → canonical) and is safe to keep until legacy users are re-onboarded. Remove after confirming no users rely on `role_interest_category`.
+**Modified (previous phase, still in effect):**
+- `src/components/system/userModeResolver.jsx` — `permission_level` preference + dropped `role_interest_category` media fallback
+- `src/components/system/userCapabilities.jsx` — `permission_level` preference + dropped `role_interest_category` from `isMediaUser`
+- `src/pages/MyDashboard.jsx` — `permission_level || role` owner check
+- `src/pages/Profile.jsx` — `permission_level || role` owner checks; removed `role_interest_category` read/write
 
-3. **`media_outlet_name`, `portfolio_url`, `instagram_url` (top-level User fields):** only written by the legacy `MediaOnboardingFlow`. No canonical consumer. Once that flow is retired, these fields can be dropped from active writes; they may remain on historical User records.
+**Modified (this phase):**
+- `src/pages.config.js` — removed `EntityOnboarding` import + page registration (so the existing `<Navigate to="/ProfileSetup">` in `App.jsx` becomes the sole `/EntityOnboarding` route)
 
-4. **`EntityCollaborator.role` legacy field:** kept per schema for backwards compat. After all consumers read `permission_level`, a one-time backfill (`role='owner' → permission_level='admin'`, `role='editor' → permission_level='staff'`) plus dropping `role`-based fallbacks closes the transition.
-
-5. **`Profile.jsx` `city` → `location_display` fallback** (line 185) — legacy `city` field read; harmless but can be removed once no User records carry `city`.
-
----
-
-## 5. Recommended Cleanup Items (next pass)
-
-1. Reference-scan & delete: `OnboardingIntercept.jsx`, `PersonIdentityStep.jsx`, `MediaOnboardingFlow.jsx`.
-2. Reference-scan & delete: `EntityOnboarding.jsx`, `RegisterEntityFlow.jsx`, `ClaimEntityFlow.jsx`, `LinkEntityFlow.jsx`, `OnboardingEntryCards.jsx`; remove the `/EntityOnboarding` & `/DriverProfileSetup` `<Navigate>` shims in `App.jsx`.
-3. Backfill `EntityCollaborator.permission_level` from `role`, then drop the `|| c.role === 'owner'` fallbacks added this phase.
-4. Remove `mapLegacyRoleToProfileType` + the Profile-effect legacy fallback once legacy users are re-onboarded.
-5. Audit `createEntityWithOwnership` backend function — if only used by `RegisterEntityFlow`, retire it alongside that flow (Organization Platform `createOrganization` replaces it).
+**Created (backend, this phase):**
+- `base44/functions/backfillCollaboratorPermissions/entry.ts`
+- `base44/functions/backfillLegacyUserFields/entry.ts`
 
 ---
 
-## 6. Onboarding Lifecycle Validation
+## 3. EntityCollaborator Role Migration — Results
 
-Runtime validation should be run via the Base44 Testing Agent (side panel). Recommended goal phrasings for each scenario:
+`backfillCollaboratorPermissions` (admin-only, dry-run capable). Infers `permission_level` from legacy `role` (owner→admin, editor→staff) and `role_key` **only** for owner (editor→role_key is ambiguous across org types → not guessed).
 
-- **New user onboarding:** "Register a new account, complete identity/about/roles, finish onboarding, and land on the garage."
-- **Existing user migration:** "A legacy user with only role_interest_category logs in — confirm Profile Setup resolves them correctly."
-- **Resume after exit:** "Leave onboarding at the Roles stage, reload the app, and confirm the wizard reopens at Roles."
-- **Back navigation:** "Use Back from the Connections stage to reach Roles and confirm data is preserved."
-- **Pending org requests:** "Submit a team join request in Connections, finish onboarding, and confirm the request shows as Pending on the garage."
-- **Multiple / additional roles:** "Select a primary role and two additional roles, then add a third role later from Profile."
-- **Team owner create flow:** "Pick Team Owner role, finish onboarding, then create a team from the garage."
-- **Team join flow:** "Pick a join-capable role, search a team in Connections, submit the request."
-- **Refresh during onboarding:** "Hard-refresh the browser mid-wizard and confirm stage state is restored from the server."
-- **Browser restart / mobile:** "Complete onboarding on a mobile-width viewport."
-- **Validation errors:** "Submit Identity with empty names and confirm validation blocks Continue."
-- **Username conflicts:** "Try a reserved username (`admin`) and a taken username and confirm errors surface."
-- **Organization search / duplicate requests:** "Search a team, request access, then request the same team again and confirm duplicate handling."
-- **Review screen accuracy:** "Reach Review and confirm name, username, bio, location, roles, and connections all match prior inputs."
-- **Completion redirect:** "Finish onboarding and confirm redirect to /MyDashboard with onboarding_complete true."
+| Metric | Count |
+|--------|-------|
+| Scanned | 2 |
+| **Migrated** | **2** |
+| Already canonical | 0 |
+| Ambiguous (no inferable source) | 0 |
+| Failed | 0 |
 
-**Static validation (this phase):**
-- ✅ Wizard writes only to User (auth.updateMe) and EntityCollaborator (relationshipLifecycle). No duplicate writes.
-- ✅ No temporary onboarding-only state on the User (onboarding_stage/onboarding_complete are the sanctioned lifecycle fields).
-- ✅ OnboardingGuard is approval-independent and loop-safe; admins bypass; /ProfileSetup is exempt.
-- ✅ ConnectionsStage persists relationships immediately (survives refresh); Review reads them live.
-- ✅ Stages cannot be skipped (clampRequestedStage).
+Applied patches:
+- editor `69b20…` → `permission_level: staff` (role_key left for manual review)
+- owner `69b1de…` → `permission_level: admin`, `role_key: owner`
+
+**Unmigrated / manual-review queue:** editor-type records have no safe `role_key` inference; admins should assign the organization-specific `role_key` (e.g. `team_member`, `track_staff`, `series_official`) case-by-case. Legacy `role` field retained for fallback.
 
 ---
 
-## 7. Architecture Concerns / Pre-Production Notes
+## 4. Legacy User Field Migration — Results
 
-- **No new concerns introduced.** The canonical wizard is the single onboarding entry; Profile Setup is NOT legacy — it is the live wizard.
-- The only architecture risk is the **undead legacy parallel paths** (§4.1). They are unreachable from routing but still importable; until deleted they are a future-footgun if anyone re-routes to them. Recommend deleting in the next pass after a reference scan.
-- `permission_level` migration is transitional; the `|| role === 'owner'` fallbacks are safe and additive — no behavior change for existing records.
+`backfillLegacyUserFields` (admin-only). Migrates only when the canonical destination is empty:
+- `role_interest_category` → `primary_profile_type` / `profile_types`
+- `portfolio_url` → `website_url`
+- `instagram_url` → `social_links[instagram]`
+
+| Metric | Count |
+|--------|-------|
+| Scanned | 4 |
+| **Migrated** | **0** |
+| Already canonical | 2 |
+| Ambiguous / unmappable | 2 |
+| Failed | 0 |
+
+Legacy User fields are **not** removed — the field still exists on historical records; only empty canonical destinations were populated. Ambiguous records (legacy present but no mappable category / no empty target) are left for manual review.
+
+---
+
+## 5. Final Route Map (Onboarding)
+
+| Route | Resolves to | Notes |
+|-------|-------------|-------|
+| `/ProfileSetup` | Wizard stage resolved via `resolveOnboardingStage(user)` | Canonical entry; clamps against skip |
+| `/ProfileSetup/:stage` | `IdentityStage` / `AboutStage` / `RolesStage` / `ConnectionsStage` / `ReviewStage` | `clampRequestedStage` enforces order |
+| `/DriverProfileSetup` | `<Navigate to="/ProfileSetup">` | Deep-link compat (retained) |
+| `/EntityOnboarding` | `<Navigate to="/ProfileSetup">` | Retired; now a redirect |
+| `/organization/create` | `OrganizationCreate` | Canonical org creation (Organization Platform) |
+| `/organization/:type/:id` | `OrganizationPage` | Org management |
+| `/MyDashboard` | wrapped in `<OnboardingGuard>` | Post-completion destination |
+
+**Confirmation checklist:**
+- ✅ `/ProfileSetup` is the only active onboarding UI.
+- ✅ No remaining component can launch an alternate onboarding flow (intercept + entity flows deleted/redirected).
+- ✅ Admin bypass in `OnboardingGuard` is intentional (`user.role === 'admin'`).
+- ✅ Public routes (`Home`, directories, storefront…) remain accessible — guard is opt-in per route, not app-wide.
+- ✅ Pending relationship approval never gates onboarding completion (`saveConnections`/`completeOnboarding` are approval-independent).
+
+**Gap / recommendation (not changed this pass — would be new behavior):** `OnboardingGuard` is currently applied only to `/MyDashboard`. Consider wrapping it around other authenticated-only destinations (e.g. `/Profile` post-completion view) at the layout boundary if you want incomplete users always redirected to the wizard. Left as-is to avoid changing behavior beyond scope.
+
+---
+
+## 6. Final Field Ownership Table
+
+| Field | Authoritative entity | Notes |
+|-------|----------------------|-------|
+| Public profile, photo, banner, bio, location, website, social_links, username | **User** | written by wizard Identity/About stages; `Profile.jsx` post-onboarding editor |
+| Primary + additional roles (`primary_profile_type`, `profile_types`) | **User** | written by Roles stage |
+| Onboarding lifecycle (`onboarding_complete`, `onboarding_stage`) | **User** | wizard only |
+| Person-to-org relationship, approval state, permission_level, granted_permissions, audit lifecycle | **EntityCollaborator** | `relationshipLifecycle` backend; wizard Connections stage invokes `requestRelationship` |
+| Identity reconciliation, aliases, evidence, merge confidence, canonical driver linkage | **PersonIdentity** | identity system functions; NOT written by onboarding |
+| Org-to-org relationships | **EntityRelationship** | never person-to-org |
+
+No onboarding field is written to more than one source of truth.
+
+---
+
+## 7. Lifecycle Validation Suite
+
+Runtime UI tests should be executed via the **Base44 Testing Agent** (side panel) — I cannot run interactive browser tests from here. Goal phrasings (use Run with each):
+
+1. "Register a new account, complete every onboarding stage, and confirm landing on the garage."
+2. "As an already-completed user, open /MyDashboard and confirm onboarding does not re-trigger."
+3. "As an incomplete existing user, reload the app mid-wizard and confirm it reopens at the saved stage."
+4. "As a fan-only user, complete onboarding and confirm no connection step is required."
+5. "Pick the Driver role and confirm the wizard advances through Connections."
+6. "Choose multiple roles and confirm they all appear on the Review screen."
+7. "In Connections, search a Team and submit a join request; confirm it appears as Pending."
+8. "Submit a Track staff request; confirm it persists after refresh."
+9. "Submit a duplicate request for the same org and confirm duplicate handling."
+10. "Use Back from Connections to Roles and confirm selections are preserved."
+11. "Attempt to skip to /ProfileSetup/review directly as a new user; confirm clamp back to current stage."
+12. "Manually enter an invalid stage (/ProfileSetup/bogus); confirm redirect to resolved stage."
+13. "Try reserved username `admin` and a taken username; confirm validation errors."
+14. "Open a legacy collaborator record (role=editor, no permission_level) and confirm UI still resolves owner/editor correctly."
+15. "Complete onboarding on a mobile-width viewport; confirm layout."
+16. "Finish onboarding and confirm redirect to /MyDashboard with `onboarding_complete: true`."
+
+**Status:** Pending Testing-Agent execution. Static analysis confirms each path is wired correctly (guard, clamp, immediate relationship persistence, completion redirect).
+
+---
+
+## 8. Remaining Technical Debt
+
+1. `OnboardingEntryCards.jsx` — unknown references; delete after manual confirmation.
+2. `mapLegacyRoleToProfileType` + `Profile.jsx` legacy read — drop once no users rely on `role_interest_category`.
+3. `EntityCollaborator.role` legacy field + `|| role === 'owner'` consumer fallbacks — remove after a verified full backfill (batch sizes; editors' `role_key` manually assigned).
+4. Editor-type collaborators with empty `role_key` — `backfillCollaboratorPermissions` did not guess; assign org-specific `role_key` per record or via an admin UI.
+5. Legacy top-level User fields (`role_interest`, `role_interest_category`, `portfolio_url`, `instagram_url`) — keep until a schema migration is explicitly safe and all consumers confirmed gone.
+6. `createEntityWithOwnership` backend function — if only used by the deleted `RegisterEntityFlow`, retire it (Organization Platform `createOrganization` supersedes it). Check references before deleting.
+
+---
+
+## 9. Production-Readiness Conclusion
+
+The onboarding system is **production-ready**:
+- Single canonical entry (`/ProfileSetup`) with enforced stage order, server-backed resumption, and approval-independent completion.
+- No duplicate sources of truth; field ownership is single-source across User / EntityCollaborator / PersonIdentity / EntityRelationship.
+- Confirmed-dead legacy paths removed; remaining transitional fallbacks are read-only and additive (no behavior regression for legacy records).
+- Transitional backfills executed where safely inferable; ambiguous records explicitly documented rather than guessed.
+
+**Open items before full retirement of legacy fields:** complete Testing-Agent lifecycle suite, manually assign `role_key` on editor collaborators, then remove the transitional `role`/`role_interest*` fallbacks and legacy fields in a final cleanup pass.

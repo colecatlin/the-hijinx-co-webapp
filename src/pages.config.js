@@ -63,7 +63,6 @@ import DriverProfile from './pages/DriverProfile';
 import DriverProgramProfile from './pages/DriverProgramProfile';
 import DriverStats from './pages/DriverStats';
 import EntityEditor from './pages/EntityEditor';
-import EntityOnboarding from './pages/EntityOnboarding';
 import EventDirectory from './pages/EventDirectory';
 import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
@@ -142,7 +141,6 @@ export const PAGES = {
     "DriverProgramProfile": DriverProgramProfile,
     "DriverStats": DriverStats,
     "EntityEditor": EntityEditor,
-    "EntityOnboarding": EntityOnboarding,
     "EventDirectory": EventDirectory,
     "EventProfile": EventProfile,
     "EventResults": EventResults,
