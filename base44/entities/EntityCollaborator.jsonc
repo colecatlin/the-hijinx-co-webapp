@@ -1,6 +1,7 @@
 {
   "name": "EntityCollaborator",
   "type": "object",
+  "description": "Single source of truth for person-to-organization relationships and scoped access. Legacy role field (owner/editor) retained for backwards compatibility until all consumers migrate to role_key + permission_level.",
   "properties": {
     "user_id": {
       "type": "string",
@@ -31,7 +32,7 @@
     },
     "access_code": {
       "type": "string",
-      "description": "8-digit numeric access code from the entity"
+      "description": "8-digit numeric access code from the entity (legacy invite-code flow)"
     },
     "role": {
       "type": "string",
@@ -40,7 +41,70 @@
         "editor"
       ],
       "default": "editor",
-      "description": "Role/permission level for this entity"
+      "description": "[LEGACY] Retained for backwards compatibility. New logic should use role_key + permission_level. Do not remove until all consumers migrate."
+    },
+    "role_key": {
+      "type": "string",
+      "description": "The role the user requested or was granted (e.g. track_staff, team_member, series_official, media, driver, owner). Replaces the legacy two-value role field with a flexible, registry-driven key."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "denied",
+        "revoked"
+      ],
+      "default": "pending",
+      "description": "Approval lifecycle of this relationship. pending = awaiting admin review; approved = active access; denied = rejected; revoked = previously approved, later withdrawn."
+    },
+    "permission_level": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "staff",
+        "viewer"
+      ],
+      "description": "Access tier granted by the admin. admin = full management of the entity; staff = operational access; viewer = read-only. Separate from role_key so an admin can grant a staff role at viewer level if needed."
+    },
+    "granted_permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Granular module-level permission keys granted by the admin (e.g. 'manage_entries', 'publish_results', 'manage_staff'). Empty = inherits permission_level defaults."
+    },
+    "request_message": {
+      "type": "string",
+      "description": "Optional note from the user when submitting the relationship request"
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the user submitted the relationship request"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the admin last approved/denied this request"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "User ID of the admin who reviewed (approved or denied) the request"
+    },
+    "revoked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When access was revoked (for status=revoked records)"
+    },
+    "revoked_by": {
+      "type": "string",
+      "description": "User ID of the admin who revoked access"
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Internal notes from the admin during review"
     }
   },
   "required": [

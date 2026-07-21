@@ -59,7 +59,7 @@
         "creator"
       ],
       "default": "fan",
-      "description": "Controls default dashboard layout and profile experience \u2014 identity only, not a permission"
+      "description": "Primary role. Controls default dashboard layout and profile experience \u2014 identity only, not a permission."
     },
     "profile_types": {
       "type": "array",
@@ -83,7 +83,7 @@
       "default": [
         "fan"
       ],
-      "description": "All identity types this user identifies with"
+      "description": "All roles this user identifies with. Every user is automatically a Fan plus their selected roles. These unlock navigation and modules only \u2014 never management access."
     },
     "social_links": {
       "type": "array",
@@ -168,6 +168,19 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the user has completed or dismissed onboarding"
+    },
+    "onboarding_stage": {
+      "type": "string",
+      "enum": [
+        "identity",
+        "about",
+        "roles",
+        "connections",
+        "review",
+        "complete"
+      ],
+      "default": "identity",
+      "description": "Current stage in the 5-stage profile setup wizard. Tracking the active stage for resumable onboarding. Set to 'complete' when onboarding_complete becomes true."
     },
     "favorite_drivers": {
       "type": "array",
