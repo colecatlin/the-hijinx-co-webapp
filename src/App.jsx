@@ -35,7 +35,7 @@ import RaceCoreTeamEditor from './pages/RaceCoreTeamEditor';
 import RaceCoreTrackEditor from './pages/RaceCoreTrackEditor';
 import RaceCoreSeriesEditor from './pages/RaceCoreSeriesEditor';
 import RaceCoreEventEditor from './pages/RaceCoreEventEditor';
-import DriverProfileSetup from './pages/DriverProfileSetup';
+import ProfileSetup from './pages/ProfileSetup';
 import ManageProducts from './pages/ManageProducts';
 import ManageInvoices from './pages/ManageInvoices';
 import CheckoutSuccess from './pages/CheckoutSuccess';
@@ -207,7 +207,8 @@ const AuthenticatedApp = () => {
       <Route path="/race-core/tracks/:id" element={<RaceCoreEditorRedirect base="tracks" />} />
       <Route path="/race-core/series/:id" element={<RaceCoreEditorRedirect base="series" />} />
       <Route path="/race-core/events/:id" element={<RaceCoreEditorRedirect base="events" />} />
-      <Route path="/DriverProfileSetup" element={<LayoutWrapper currentPageName="DriverProfileSetup"><DriverProfileSetup /></LayoutWrapper>} />
+      <Route path="/ProfileSetup" element={<LayoutWrapper currentPageName="ProfileSetup"><ProfileSetup /></LayoutWrapper>} />
+      <Route path="/DriverProfileSetup" element={<Navigate to="/ProfileSetup" replace />} />
       <Route path="/management/products" element={<LayoutWrapper currentPageName="ManageProducts"><ManageProducts /></LayoutWrapper>} />
       <Route path="/management/invoices" element={<LayoutWrapper currentPageName="ManageInvoices"><ManageInvoices /></LayoutWrapper>} />
       <Route path="/checkout-success" element={<LayoutWrapper currentPageName="CheckoutSuccess"><CheckoutSuccess /></LayoutWrapper>} />

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle2, Loader2, ExternalLink, Copy, Flag } from 'lucide-react';
 
-export default function DriverProfileSetup() {
+export default function ProfileSetup() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const urlParams = new URLSearchParams(window.location.search);
@@ -143,7 +143,7 @@ export default function DriverProfileSetup() {
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Your driver profile is live</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Your profile is live</h1>
             <p className="text-gray-500 text-sm mt-2">
               {publishedDriver?.first_name} {publishedDriver?.last_name} is now visible on Index46.
             </p>
@@ -180,7 +180,7 @@ export default function DriverProfileSetup() {
             <Flag className="w-3.5 h-3.5" />
             {isNew || isCreating ? 'Welcome to Index46!' : 'Complete Your Profile'}
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Set up your driver profile</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Profile Setup</h1>
           <p className="text-gray-500 text-sm mt-2">
             {driver
               ? `${driver.first_name} ${driver.last_name} — add the basics so fans and teams can find you.`
