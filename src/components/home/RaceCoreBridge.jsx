@@ -111,7 +111,7 @@ export default function RaceCoreBridge() {
 
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => navigate(createPageUrl('DriverProfileSetup'))}
+                  onClick={() => navigate(createPageUrl('MyDashboard'))}
                   className="w-full py-4 px-6 text-sm font-black tracking-widest uppercase text-center flex items-center justify-center gap-2.5 transition-all duration-200 hover:brightness-110"
                   style={{
                     background: '#1DA1A1',
