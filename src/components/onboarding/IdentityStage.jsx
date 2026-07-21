@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import { validateUsername } from '@/components/system/userCapabilities';
+import StageErrorBanner, { normalizeBackendError } from '@/components/onboarding/StageErrorBanner';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,84 +15,177 @@ export default function IdentityStage() {
   const [firstName, setFirstName] = useState(user?.first_name || '');
   const [lastName, setLastName] = useState(user?.last_name || '');
   const [username, setUsername] = useState(user?.username || '');
-  const [usernameError, setUsernameError] = useState('');
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
+  const [usernameError, setUsernameError] = useState(''); // format OR conflict
+  const [usernameStatus, setUsernameStatus] = useState(''); // 'checking' | 'available' | ''
+  const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const isFormatValid =
-    firstName.trim().length > 0 &&
-    lastName.trim().length > 0;
+  const trimmedUsername = username.trim().toLowerCase();
+  const isOwnUsername =
+    trimmedUsername && (trimmedUsername === (user?.username || '').toLowerCase());
 
-  const usernameValid =
-    !username ||
-    (username.length >= 3 && !validateUsername(username.toLowerCase().trim()));
+  const usernameFormatOk =
+    !trimmedUsername ||
+    (trimmedUsername.length >= 3 && !validateUsername(trimmedUsername));
 
-  const canContinue = isFormatValid && usernameValid && !saving;
-
-  const handleContinue = async () => {
-    if (!canContinue) return;
-    // Re-validate username format before save (only if provided).
-    if (username) {
-      const err = validateUsername(username.toLowerCase().trim());
-      if (err) {
-        setUsernameError(err);
-        return;
-      }
+  // Debounced server-authoritative availability check (B3 UX layer).
+  useEffect(() => {
+    if (!trimmedUsername || isOwnUsername) {
+      setUsernameError('');
+      setUsernameStatus('');
+      return;
     }
+    if (!usernameFormatOk || trimmedUsername.length < 3) {
+      setUsernameStatus('');
+      return;
+    }
+    let cancelled = false;
+    setUsernameStatus('checking');
+    setUsernameError('');
+    const t = setTimeout(async () => {
+      try {
+        const res = await base44.functions.invoke('checkUsernameUnique', {
+          username: trimmedUsername,
+          current_user_id: user?.id,
+        });
+        if (cancelled) return;
+        if (res?.data && res.data.available === true) {
+          setUsernameStatus('available');
+        } else if (res?.data && res.data.available === false) {
+          setUsernameStatus('');
+          setUsernameError(res.data.reason || 'That username is already taken.');
+        }
+      } catch {
+        if (!cancelled) setUsernameStatus('');
+      }
+    }, 450);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trimmedUsername, isOwnUsername, usernameFormatOk, user?.id]);
+
+  const canContinue =
+    firstName.trim().length > 0 &&
+    lastName.trim().length > 0 &&
+    usernameFormatOk &&
+    !usernameError &&
+    usernameStatus !== 'checking' &&
+    !saving;
+
+  const handleContinue = async (e) => {
+    e?.preventDefault?.();
+    setFormError('');
+    let blocked = false;
+    if (!firstName.trim()) { setFirstNameError('First name is required.'); blocked = true; }
+    else setFirstNameError('');
+    if (!lastName.trim()) { setLastNameError('Last name is required.'); blocked = true; }
+    else setLastNameError('');
+    if (trimmedUsername && !usernameFormatOk) {
+      setUsernameError(validateUsername(trimmedUsername) || 'Username is not valid.');
+      blocked = true;
+    } else if (trimmedUsername && usernameStatus === 'checking') {
+      setUsernameError('');
+      blocked = true; // wait for availability check
+    }
+    if (blocked || !canContinue) return;
+
     setSaving(true);
     try {
       await saveIdentity({ first_name: firstName, last_name: lastName, username });
-    } catch (e) {
-      setUsernameError(e?.message || 'Could not save. Please try again.');
+    } catch (err) {
+      if (err?.code === 'username_conflict') {
+        setUsernameError(err.message || 'That username is already taken.');
+        setUsernameStatus('');
+      } else {
+        setFormError(normalizeBackendError(err));
+      }
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="space-y-5">
+    <form onSubmit={handleContinue} className="space-y-5">
+      {formError && <StageErrorBanner message={formError} />}
+
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label className="text-white text-xs">First name <span style={{ color: '#f87171' }}>*</span></Label>
+          <Label htmlFor="onb-first-name" className="text-white text-xs">
+            First name <span style={{ color: '#f87171' }}>*</span>
+          </Label>
           <Input
+            id="onb-first-name"
             value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={(e) => { setFirstName(e.target.value); if (firstNameError) setFirstNameError(''); }}
             placeholder="Jordan"
             autoFocus
+            aria-invalid={!!firstNameError}
             className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
           />
+          {firstNameError && <p className="text-xs" style={{ color: '#f87171' }}>{firstNameError}</p>}
         </div>
         <div className="space-y-2">
-          <Label className="text-white text-xs">Last name <span style={{ color: '#f87171' }}>*</span></Label>
+          <Label htmlFor="onb-last-name" className="text-white text-xs">
+            Last name <span style={{ color: '#f87171' }}>*</span>
+          </Label>
           <Input
+            id="onb-last-name"
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => { setLastName(e.target.value); if (lastNameError) setLastNameError(''); }}
             placeholder="Racer"
+            aria-invalid={!!lastNameError}
             className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
           />
+          {lastNameError && <p className="text-xs" style={{ color: '#f87171' }}>{lastNameError}</p>}
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label className="text-white text-xs">Username <span className="text-white/30 font-normal">(optional)</span></Label>
-        <div className="flex items-center gap-2 rounded-lg px-3"
+        <Label htmlFor="onb-username" className="text-white text-xs">
+          Username <span className="text-white/30 font-normal">(optional)</span>
+        </Label>
+        <div
+          className="flex items-center gap-2 rounded-lg px-3"
           style={{
             background: 'rgba(255,255,255,0.04)',
-            border: '1px solid ' + (usernameError ? 'rgba(239,68,68,0.4)' : usernameValid ? 'rgba(29,161,161,0.4)' : 'rgba(255,255,255,0.1)'),
-          }}>
+            border:
+              '1px solid ' +
+              (usernameError
+                ? 'rgba(239,68,68,0.4)'
+                : usernameStatus === 'available'
+                  ? 'rgba(29,161,161,0.45)'
+                  : 'rgba(255,255,255,0.1)'),
+          }}
+        >
           <AtSign className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
           <input
+            id="onb-username"
             type="text"
             value={username}
-            onChange={(e) => { setUsername(e.target.value.toLowerCase()); setUsernameError(''); }}
+            onChange={(e) => {
+              setUsername(e.target.value.toLowerCase());
+              setUsernameError('');
+              if (usernameStatus) setUsernameStatus('');
+            }}
             placeholder="yourhandle"
+            aria-invalid={!!usernameError}
             className="flex h-11 flex-1 bg-transparent text-sm font-mono focus-visible:outline-none"
             style={{ color: 'rgba(255,255,255,0.9)' }}
           />
+          {usernameStatus === 'checking' && (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'rgba(255,255,255,0.4)' }} />
+          )}
         </div>
         {usernameError ? (
           <p className="text-xs" style={{ color: '#f87171' }}>{usernameError}</p>
-        ) : usernameValid && username ? (
-          <p className="text-xs font-mono" style={{ color: 'rgba(29,161,161,0.7)' }}>your public URL: /u/{username.toLowerCase().trim()}</p>
+        ) : usernameStatus === 'available' ? (
+          <p className="text-xs font-mono" style={{ color: 'rgba(29,161,161,0.85)' }}>
+            Available · public URL /u/{trimmedUsername}
+          </p>
         ) : (
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
             3–24 chars · lowercase letters, numbers, underscores. You can set this later.
@@ -99,6 +194,7 @@ export default function IdentityStage() {
       </div>
 
       <Button
+        type="submit"
         onClick={handleContinue}
         disabled={!canContinue}
         className="w-full gap-2 h-11 text-sm font-bold"
@@ -106,6 +202,6 @@ export default function IdentityStage() {
       >
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Continue'}
       </Button>
-    </div>
+    </form>
   );
 }

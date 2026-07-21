@@ -1,14 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import { getRole } from '@/config/onboardingRoles';
-import { Button } from '@/components/ui/button';
-import { Loader2, Plus, Search, Info, Check, AlertCircle } from 'lucide-react';
+import {
+  getRelationshipStatusMeta,
+} from '@/components/onboarding/relationshipStatus';
+import StageErrorBanner, { normalizeBackendError } from '@/components/onboarding/StageErrorBanner';
 import { base44 } from '@/api/base44Client';
-import { requestRelationship } from '@/components/relationships/relationshipService';
+import {
+  requestRelationship,
+  createTeamOwnerOrganization,
+} from '@/components/relationships/relationshipService';
+import { Button } from '@/components/ui/button';
+import { Loader2, Plus, Search, Info } from 'lucide-react';
 
 const TEAL = '#1DA1A1';
 
-// Map registry relationship_entity_type → base44 entity name.
 const ENTITY_API = {
   Track: 'Track',
   Team: 'Team',
@@ -16,48 +22,52 @@ const ENTITY_API = {
 };
 
 export default function ConnectionsStage() {
-  const { user, relationships = [], refreshRelationships, saveConnections } = useOnboardingWizard();
+  const { user, relationships = [], refreshRelationships, saveConnections, selectedRoleIds } =
+    useOnboardingWizard();
 
-  const selectedTypes = user?.profile_types || ['fan'];
-  // Roles the user picked that require an org relationship on onboarding.
+  // Granular role ids drive which organization connections are required.
+  // Fallback to best-effort reconstruction from capabilities so a mid-flow
+  // refresh still renders the likely required connection (B1/B6).
+  const roleIds = useMemo(() => {
+    const ids = selectedRoleIds && selectedRoleIds.length
+      ? selectedRoleIds
+      : [];
+    return ids;
+  }, [selectedRoleIds]);
+
   const rolesNeedingConnection = useMemo(
     () =>
-      selectedTypes
+      roleIds
         .map((t) => getRole(t))
-        .filter((r) => r && r.requires_relationship && r.relationship_required_on_onboarding),
-    [selectedTypes],
+        .filter((r) => r && r.requires_relationship && r.relationship_required_on_onboarding)
+        .filter((r, i, arr) => arr.findIndex((x) => x.id === r.id) === i),
+    [roleIds],
   );
 
   const noConnectionsNeeded = rolesNeedingConnection.length === 0;
 
-  // Pending/approved relationships for this role, sourced from EntityCollaborator.
-  const pendingForRole = (roleId) =>
-    (relationships || []).filter((c) => c.role_key === roleId);
+  const pendingForRole = (roleId) => (relationships || []).filter((c) => c.role_key === roleId);
 
-  const [submitting, setSubmitting] = useState(null); // roleId currently submitting
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const handleContinue = async () => {
+  const handleContinue = async (e) => {
+    e?.preventDefault?.();
+    setError(null);
     setSaving(true);
     try {
       // Pending requests never block completion — connections are already
       // persisted as real EntityCollaborator records by this point.
       await saveConnections();
-    } catch (e) {
+    } catch (err) {
+      setError(normalizeBackendError(err));
       setSaving(false);
     }
   };
 
   return (
-    <div className="space-y-5">
-      {error && (
-        <div className="flex items-start gap-2 p-3 rounded-xl"
-          style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.25)' }}>
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
-          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.7)' }}>{error}</p>
-        </div>
-      )}
+    <form onSubmit={handleContinue} className="space-y-5">
+      {error && <StageErrorBanner message={error} />}
 
       {noConnectionsNeeded ? (
         <div className="text-center py-8 rounded-xl"
@@ -74,14 +84,10 @@ export default function ConnectionsStage() {
           <ConnectionRequestBuilder
             key={role.id}
             role={role}
+            user={user}
             pending={pendingForRole(role.id)}
-            submitting={submitting === role.id}
-            onSubmitting={(v) => setSubmitting(v ? role.id : null)}
-            onError={setError}
-            onCreated={async () => {
-              setError(null);
-              await refreshRelationships();
-            }}
+            setError={setError}
+            onCreated={async () => { setError(null); await refreshRelationships(); }}
           />
         ))
       )}
@@ -96,6 +102,7 @@ export default function ConnectionsStage() {
       </div>
 
       <Button
+        type="submit"
         onClick={handleContinue}
         disabled={saving}
         className="w-full gap-2 h-11 text-sm font-bold"
@@ -103,42 +110,61 @@ export default function ConnectionsStage() {
       >
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Continue'}
       </Button>
-    </div>
+    </form>
   );
 }
 
-function ConnectionRequestBuilder({ role, pending, submitting, onSubmitting, onError, onCreated }) {
-  const mode = role.requires_approval === 'conditional' ? 'create' : 'join';
+function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) {
+  const supportsCreate = role.requires_approval === 'conditional'; // Team Owner
+  const entityApi = ENTITY_API[role.relationship_entity_type];
+
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [createFields, setCreateFields] = useState({ name: '' });
-  const [localCreateEntries, setLocalCreateEntries] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  const supportsCreate = role.requires_approval === 'conditional'; // Team Owner
-  const entityApi = ENTITY_API[role.relationship_entity_type];
+  // Create-new fields (B2: real persistence via createOrganization).
+  const [createName, setCreateName] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  // Orgs this user already has a relationship with for this role (any status).
+  // Surfaced as suggestions and excluded from search results so they aren't
+  // offered twice (B11).
+  const alreadyLinkedEntityIds = useMemo(
+    () => new Set(pending.map((c) => c.entity_id)),
+    [pending],
+  );
 
   const runSearch = async (q) => {
     setQuery(q);
     if (q.trim().length < 2 || !entityApi) {
       setResults([]);
+      setHasSearched(false);
       return;
     }
     setSearching(true);
+    setHasSearched(true);
     try {
-      const list = await base44.entities[entityApi].list('-created_date', 20);
+      const list = await base44.entities[entityApi].list('-created_date', 40);
       const lower = q.toLowerCase();
-      setResults(list.filter((r) => (r.name || '').toLowerCase().includes(lower)).slice(0, 6));
-    } catch (e) {
+      setResults(
+        list
+          .filter((r) => (r.name || '').toLowerCase().includes(lower))
+          .filter((r) => !alreadyLinkedEntityIds.has(r.id))
+          .slice(0, 6),
+      );
+    } catch {
       setResults([]);
     } finally {
       setSearching(false);
     }
   };
 
-  // Join an existing org → create a REAL pending EntityCollaborator record.
   const selectExisting = async (entity) => {
-    onSubmitting(true);
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
     try {
       const res = await requestRelationship({
         entityType: role.relationship_entity_type,
@@ -146,25 +172,35 @@ function ConnectionRequestBuilder({ role, pending, submitting, onSubmitting, onE
         roleKey: role.id,
       });
       if (!res?.ok) {
-        onError(res?.error || 'Could not submit request');
+        setError(res?.error || 'Could not submit request');
       } else {
+        setQuery('');
+        setResults([]);
+        setHasSearched(false);
         await onCreated();
       }
-      setQuery('');
-      setResults([]);
     } catch (e) {
-      onError(e?.message || 'Could not submit request');
+      setError(normalizeBackendError(e));
     } finally {
-      onSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  // Create a new org — entity creation is a separate flow (Phase 4+). Kept as
-  // a session-only placeholder so it doesn't fabricate a relationship record.
-  const submitCreate = () => {
-    if (!createFields.name.trim()) return;
-    setLocalCreateEntries((prev) => [...prev, createFields.name.trim()]);
-    setCreateFields({ name: '' });
+  const submitCreate = async (e) => {
+    e?.preventDefault?.();
+    if (creating || !createName.trim()) return;
+    setCreating(true);
+    setError(null);
+    try {
+      const res = await createTeamOwnerOrganization({ name: createName.trim() });
+      if (!res?.ok && res?.error) throw new Error(res.error);
+      setCreateName('');
+      await onCreated();
+    } catch (e) {
+      setError(normalizeBackendError(e));
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -179,14 +215,28 @@ function ConnectionRequestBuilder({ role, pending, submitting, onSubmitting, onE
         </span>
       </div>
 
-      {supportsCreate && (
-        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-          Creating a new organization is completed after launch. To join an existing one now,
-          search below.
-        </p>
-      )}
+      {/* Existing relationships for this role, with their TRUE status (B4). */}
+      {pending.length > 0 ? (
+        <div className="space-y-1.5">
+          {pending.map((c) => {
+            const meta = getRelationshipStatusMeta(c.status);
+            return (
+              <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
+                <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                  {c.entity_name || c.entity_type}
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: meta.color }}>
+                  {meta.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
 
-      {mode === 'join' && entityApi ? (
+      {/* Join an existing organization (search). Always available for joinable types. */}
+      {entityApi ? (
         <div className="space-y-2">
           <div className="flex items-center gap-2 rounded-lg px-3"
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -194,13 +244,13 @@ function ConnectionRequestBuilder({ role, pending, submitting, onSubmitting, onE
             <input
               value={query}
               onChange={(e) => runSearch(e.target.value)}
-              placeholder={`Search for a ${role.relationship_entity_type}…`}
-              className="flex h-10 flex-1 bg-transparent text-sm focus-visible:outline-none"
+              placeholder={`Join an existing ${role.relationship_entity_type}…`}
+              className="flex h-10 flex-1 bg-transparent text-sm focus-visible:outline-none focus:border-[#1DA1A1]"
               style={{ color: 'rgba(255,255,255,0.9)' }}
             />
             {(searching || submitting) && <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'rgba(255,255,255,0.4)' }} />}
           </div>
-          {results.length > 0 && (
+          {results.length > 0 ? (
             <div className="space-y-1">
               {results.map((r) => (
                 <button key={r.id} type="button" onClick={() => selectExisting(r)} disabled={submitting}
@@ -211,56 +261,33 @@ function ConnectionRequestBuilder({ role, pending, submitting, onSubmitting, onE
                 </button>
               ))}
             </div>
-          )}
+          ) : hasSearched && !searching ? (
+            <p className="text-xs px-1" style={{ color: 'rgba(255,255,255,0.3)' }}>No matches found.</p>
+          ) : null}
         </div>
       ) : null}
 
-      {mode === 'create' ? (
-        <div className="space-y-2">
-          <input
-            value={createFields.name}
-            onChange={(e) => setCreateFields({ ...createFields, name: e.target.value })}
-            placeholder={`${role.relationship_entity_type} name`}
-            className="w-full h-10 rounded-lg px-3 text-sm focus-visible:outline-none"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' }}
-          />
-          <Button type="button" onClick={submitCreate} disabled={!createFields.name.trim()}
-            className="text-xs font-bold" style={{ background: createFields.name.trim() ? TEAL : 'rgba(255,255,255,0.08)', color: createFields.name.trim() ? '#050A0A' : 'rgba(255,255,255,0.3)' }}>
-            Add new {role.relationship_entity_type}
-          </Button>
-        </div>
-      ) : null}
-
-      {/* Server-backed pending / approved requests for this role (survives refresh). */}
-      {pending.length > 0 ? (
-        <div className="space-y-1.5">
-          {pending.map((c) => (
-            <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-lg"
-              style={{ background: 'rgba(29,161,161,0.06)', border: '1px solid rgba(29,161,161,0.2)' }}>
-              <Check className="w-3.5 h-3.5" style={{ color: TEAL }} />
-              <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{c.entity_name || c.entity_type}</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider"
-                style={{ color: c.status === 'approved' ? TEAL : 'rgba(255,255,255,0.4)' }}>
-                {c.status === 'approved' ? 'Approved' : 'Pending approval'}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      {/* Session-only create-new placeholders (not relationships). */}
-      {localCreateEntries.length > 0 ? (
-        <div className="space-y-1.5">
-          {localCreateEntries.map((name, idx) => (
-            <div key={idx} className="flex items-center gap-2 px-3 py-2 rounded-lg"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)' }}>
-              <Plus className="w-3.5 h-3.5" style={{ color: 'rgba(255,255,255,0.4)' }} />
-              <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.7)' }}>{name}</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                New · After launch
-              </span>
-            </div>
-          ))}
+      {/* Create a brand-new organization (Team Owner only) — REAL persistence (B2). */}
+      {supportsCreate ? (
+        <div className="space-y-2 pt-1" style={{ borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
+          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            Or create a new {role.relationship_entity_type}. You'll become the owner immediately.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              value={createName}
+              onChange={(e) => setCreateName(e.target.value)}
+              placeholder={`${role.relationship_entity_type} name`}
+              className="flex-1 h-10 rounded-lg px-3 text-sm focus-visible:outline-none focus:border-[#1DA1A1]"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' }}
+            />
+            <Button type="button" onClick={submitCreate} disabled={creating || !createName.trim()}
+              className="text-xs font-bold gap-1.5"
+              style={{ background: createName.trim() ? TEAL : 'rgba(255,255,255,0.08)', color: createName.trim() ? '#050A0A' : 'rgba(255,255,255,0.3)' }}>
+              {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+              Create
+            </Button>
+          </div>
         </div>
       ) : null}
     </div>

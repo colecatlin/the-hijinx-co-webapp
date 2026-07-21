@@ -88,6 +88,25 @@ export async function listRelationshipsForEntity(entityType, entityId, status) {
 
 // ─── Permission templates ─────────────────────────────────────────────────────
 
+/**
+ * Create a brand-new Team for a Team Owner during onboarding. Goes through
+ * the `createOrganization` backend with a granular `owner_role_key`, which:
+ *   1. creates the Team record,
+ *   2. upserts OrganizationSettings,
+ *   3. creates an APPROVED owner EntityCollaborator
+ *      (permission_level=admin, granted_permissions=['*'], role_key=team_owner).
+ *
+ * This is the B2 fix — the Team Owner create flow is no longer session-only.
+ */
+export async function createTeamOwnerOrganization({ name }) {
+  const res = await base44.functions.invoke('createOrganization', {
+    entity_type: 'Team',
+    owner_role_key: 'team_owner',
+    fields: { name },
+  });
+  return res.data;
+}
+
 /** Returns the registry's default permission template for a role, or null. */
 export function getPermissionTemplateForRole(roleId) {
   const role = getRole(roleId);

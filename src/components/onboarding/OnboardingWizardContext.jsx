@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -9,6 +9,11 @@ import {
   prevStage,
   stagePath,
 } from '@/components/onboarding/onboardingConfig';
+import {
+  getRole,
+  buildProfileTypesFromRoles,
+  reconstructOnboardingRolesFromCapabilities,
+} from '@/config/onboardingRoles';
 
 const WizardContext = createContext(null);
 
@@ -32,6 +37,19 @@ export function OnboardingWizardProvider({ children }) {
     enabled: !!user,
   });
 
+  // Granular onboarding role IDs the user selected during the Roles stage.
+  // SESSION STATE ONLY — User.profile_types stores broad capabilities to
+  // satisfy the User schema enum; granular identity lives only in
+  // EntityCollaborator.role_key. After a refresh, `rolesChosenThisSession`
+  // resets to false and Connection/Review reconstruct from capabilities.
+  const [sessionSelectedRoleIds, setSessionSelectedRoleIds] = useState([]);
+  const [rolesChosenThisSession, setRolesChosenThisSession] = useState(false);
+
+  const selectedRoleIds = useMemo(() => {
+    if (rolesChosenThisSession) return sessionSelectedRoleIds;
+    return reconstructOnboardingRolesFromCapabilities(user?.profile_types);
+  }, [rolesChosenThisSession, sessionSelectedRoleIds, user?.profile_types]);
+
   const refreshRelationships = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['onboarding_relationships', user?.id] });
     await queryClient.refetchQueries({ queryKey: ['onboarding_relationships', user?.id] });
@@ -39,7 +57,6 @@ export function OnboardingWizardProvider({ children }) {
 
   const refresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['onboarding_user'] });
-    // Provide an immediate refresh so navigation runs against fresh data.
     await queryClient.refetchQueries({ queryKey: ['onboarding_user'] });
   }, [queryClient]);
 
@@ -62,12 +79,23 @@ export function OnboardingWizardProvider({ children }) {
       if (data.last_name?.trim()) payload.last_name = data.last_name.trim();
       if (data.username?.trim()) {
         const slug = data.username.toLowerCase().trim();
+        // Server-authoritative uniqueness re-check immediately before the
+        // final write (B3). The current user may retain their own username.
+        const check = await base44.functions.invoke('checkUsernameUnique', {
+          username: slug,
+          current_user_id: user?.id,
+        });
+        if (check?.data && check.data.available === false) {
+          const err = new Error(check.data.reason || 'That username is already taken.');
+          err.code = 'username_conflict';
+          throw err;
+        }
         payload.username = slug;
         payload.username_slug = slug;
       }
       return advanceTo(payload, 'about');
     },
-    [advanceTo],
+    [advanceTo, user?.id],
   );
 
   const saveAbout = useCallback(
@@ -77,12 +105,22 @@ export function OnboardingWizardProvider({ children }) {
 
   const saveRoles = useCallback(
     async (primaryRole, additionalRoles) => {
-      // Fan is always present per schema convention. Primary included in types.
-      const typesSet = new Set(['fan', primaryRole, ...additionalRoles]);
+      // B1: store the broad CAPABILITY the role maps to on User.profile_types
+      // (schema-valid enum), NOT the granular registry id. Granular identity
+      // stays in session state + EntityCollaborator.role_key.
+      const primaryCfg = getRole(primaryRole);
+      if (!primaryCfg) throw new Error('Please choose a valid primary role.');
+      if (!primaryCfg.capability) {
+        throw new Error('Selected role is missing a capability mapping.');
+      }
+      const cleanExtras = (additionalRoles || []).filter((r) => r !== primaryRole && r !== 'fan');
+      const profileTypes = buildProfileTypesFromRoles(primaryRole, cleanExtras);
+      setSessionSelectedRoleIds([primaryRole, ...cleanExtras]);
+      setRolesChosenThisSession(true);
       return advanceTo(
         {
-          primary_profile_type: primaryRole,
-          profile_types: Array.from(typesSet),
+          primary_profile_type: primaryCfg.capability,
+          profile_types: profileTypes,
         },
         'connections',
       );
@@ -138,8 +176,16 @@ export function OnboardingWizardProvider({ children }) {
       relationships,
       relationshipsLoading,
       refreshRelationships,
+      // B1 session-state — granular role identity for the current session.
+      selectedRoleIds,
+      rolesChosenThisSession,
     }),
-    [user, isLoading, saveIdentity, saveAbout, saveRoles, saveConnections, completeOnboarding, goBack, goForward, saveAndExit, relationships, relationshipsLoading, refreshRelationships],
+    [
+      user, isLoading, saveIdentity, saveAbout, saveRoles, saveConnections,
+      completeOnboarding, goBack, goForward, saveAndExit, relationships,
+      relationshipsLoading, refreshRelationships, selectedRoleIds,
+      rolesChosenThisSession,
+    ],
   );
 
   return <WizardContext.Provider value={value}>{children}</WizardContext.Provider>;

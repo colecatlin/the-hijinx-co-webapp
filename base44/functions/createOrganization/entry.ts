@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { entity_type: type, fields = {} } = body;
+    const { entity_type: type, fields = {}, owner_role_key } = body;
 
     const spec = TYPE_REGISTRY[type];
     if (!spec) {
@@ -117,7 +117,13 @@ Deno.serve(async (req) => {
       entity_name: created.name || null,
       access_code: '',
       role: LEGACY_ROLE,
-      role_key: OWNER_ROLE_KEY,
+      // Callers may override the owner role_key to a granular onboarding role
+      // (e.g. 'team_owner' for the Team Owner create flow during onboarding).
+      // Falls back to the canonical 'owner' key for the general flow.
+      role_key:
+        typeof owner_role_key === 'string' && owner_role_key.trim()
+          ? owner_role_key.trim()
+          : OWNER_ROLE_KEY,
       status: 'approved',
       permission_level: OWNER_PERMISSION_LEVEL,
       granted_permissions: OWNER_GRANTED_PERMISSIONS,

@@ -1,31 +1,47 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import {
   ROLES_BY_CATEGORY,
   ROLE_CATEGORIES,
   DEFAULT_ROLE,
+  getRole,
+  reconstructPrimaryRoleFromCapability,
 } from '@/config/onboardingRoles';
+import StageErrorBanner, { normalizeBackendError } from '@/components/onboarding/StageErrorBanner';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const TEAL = '#1DA1A1';
 
 export default function RolesStage() {
-  const { user, saveRoles } = useOnboardingWizard();
+  const { user, saveRoles, selectedRoleIds } = useOnboardingWizard();
 
-  // Seed from existing user data (legacy-safe).
-  const [primaryRole, setPrimaryRole] = useState(
-    user?.primary_profile_type && user.primary_profile_type !== DEFAULT_ROLE
-      ? user.primary_profile_type
-      : '',
+  // Seed granular roles from wizard session state when available (the exact
+  // roles the user picked this session); otherwise best-effort reconstruct the
+  // primary from the stored broad capability. Fan and non-canonical values
+  // map to an empty selection rather than a fabricated role.
+  const seedPrimary = useMemo(() => {
+    const fromSession = (selectedRoleIds || []).find((id) => getRole(id)?.can_be_primary);
+    if (fromSession) return fromSession;
+    if (user?.primary_profile_type && user.primary_profile_type !== DEFAULT_ROLE) {
+      return reconstructPrimaryRoleFromCapability(user.primary_profile_type);
+    }
+    return '';
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.primary_profile_type, selectedRoleIds]);
+
+  const seedAdditional = useMemo(
+    () => (selectedRoleIds || []).filter((id) => id !== seedPrimary && id !== DEFAULT_ROLE),
+    [selectedRoleIds, seedPrimary],
   );
-  const existingAdditional = useMemo(() => {
-    const types = user?.profile_types || [DEFAULT_ROLE];
-    const extra = types.filter((t) => t !== DEFAULT_ROLE && t !== user?.primary_profile_type);
-    return extra;
-  }, [user]);
 
-  const [additionalRoles, setAdditionalRoles] = useState(existingAdditional);
+  const [primaryRole, setPrimaryRole] = useState(seedPrimary);
+  const [additionalRoles, setAdditionalRoles] = useState(seedAdditional);
+
+  // Re-seed once the async user query / session state resolves.
+  useEffect(() => { setPrimaryRole(seedPrimary); }, [seedPrimary]);
+  useEffect(() => { setAdditionalRoles(seedAdditional); }, [seedAdditional]);
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -37,7 +53,8 @@ export default function RolesStage() {
 
   const canContinue = !!primaryRole && !saving;
 
-  const handleContinue = async () => {
+  const handleContinue = async (e) => {
+    e?.preventDefault?.();
     if (!primaryRole) {
       setError('Please select a primary role.');
       return;
@@ -46,19 +63,20 @@ export default function RolesStage() {
     setSaving(true);
     try {
       await saveRoles(primaryRole, additionalRoles.filter((r) => r !== primaryRole));
-    } catch (e) {
-      setError(e?.message || 'Could not save roles.');
+    } catch (err) {
+      setError(normalizeBackendError(err));
       setSaving(false);
     }
   };
 
-  // Build category list in display order. ROLE_CATEGORIES is keyed by id.
   const categories = Object.entries(ROLE_CATEGORIES)
     .map(([key, cat]) => ({ ...cat, key }))
     .sort((a, b) => a.order - b.order);
 
   return (
-    <div className="space-y-5">
+    <form onSubmit={handleContinue} className="space-y-5">
+      {error && <StageErrorBanner message={error} />}
+
       <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
         Pick your <span className="font-bold" style={{ color: TEAL }}>primary role</span> — this sets your default experience.
         Add any extra roles you want available. Roles unlock modules; they don't grant management access.
@@ -88,10 +106,8 @@ export default function RolesStage() {
                     onClick={() => {
                       if (selectable) {
                         setPrimaryRole(isPrimary ? '' : role.id);
-                        // Remove from additional if chosen as primary.
                         setAdditionalRoles((prev) => prev.filter((r) => r !== role.id));
                       } else {
-                        // Non-primary-capable roles can only be additional.
                         toggleAdditional(role.id);
                       }
                     }}
@@ -142,7 +158,10 @@ export default function RolesStage() {
                         </span>
                       )
                     ) : isAdditional ? (
-                      <Check className="w-4 h-4" style={{ color: TEAL }} />
+                      <span className="text-[9px] font-bold uppercase tracking-wider"
+                        style={{ color: TEAL }}>
+                        Added
+                      </span>
                     ) : (
                       <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
                         Add
@@ -156,9 +175,8 @@ export default function RolesStage() {
         );
       })}
 
-      {error && <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>}
-
       <Button
+        type="submit"
         onClick={handleContinue}
         disabled={!canContinue}
         className="w-full gap-2 h-11 text-sm font-bold"
@@ -166,6 +184,6 @@ export default function RolesStage() {
       >
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Continue'}
       </Button>
-    </div>
+    </form>
   );
 }

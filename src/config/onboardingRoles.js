@@ -82,6 +82,7 @@ export const ROLE_CATEGORIES = {
 export const ROLES = {
   fan: {
     id: 'fan',
+    capability: 'fan',
     display_name: 'Fan',
     description: 'Follow drivers, teams, series, and events.',
     icon: Heart,
@@ -109,6 +110,7 @@ export const ROLES = {
 
   driver: {
     id: 'driver',
+    capability: 'driver',
     display_name: 'Driver',
     description: 'Compete. Build your driver profile, stats, and race history.',
     icon: Gauge,
@@ -144,6 +146,7 @@ export const ROLES = {
 
   team_owner: {
     id: 'team_owner',
+    capability: 'team',
     display_name: 'Team Owner',
     description: 'Create a new team or join an existing one as an owner.',
     icon: Trophy,
@@ -179,6 +182,7 @@ export const ROLES = {
 
   team_member: {
     id: 'team_member',
+    capability: 'team',
     display_name: 'Team Member',
     description: 'Join a team as a driver or crew member.',
     icon: Users,
@@ -203,6 +207,7 @@ export const ROLES = {
 
   crew_member: {
     id: 'crew_member',
+    capability: 'crew',
     display_name: 'Crew Member',
     description: 'Support a team as a mechanic or crew professional.',
     icon: Wrench,
@@ -227,6 +232,7 @@ export const ROLES = {
 
   track_staff: {
     id: 'track_staff',
+    capability: 'track',
     display_name: 'Track Staff',
     description: 'Operate a track — manage events, entries, and tech at your venue.',
     icon: MapPin,
@@ -255,6 +261,7 @@ export const ROLES = {
 
   series_staff: {
     id: 'series_staff',
+    capability: 'series',
     display_name: 'Series Staff',
     description: 'Run a series — oversee classes, points, and standings.',
     icon: Trophy,
@@ -284,6 +291,7 @@ export const ROLES = {
 
   official: {
     id: 'official',
+    capability: 'series',
     display_name: 'Official',
     description: 'Officiate series events — steward rulings, penalties, and compliance.',
     icon: Flag,
@@ -312,6 +320,7 @@ export const ROLES = {
 
   media: {
     id: 'media',
+    capability: 'media',
     display_name: 'Media',
     description: 'Cover the sport — request credentials, publish stories, and sell content.',
     icon: Megaphone,
@@ -345,6 +354,7 @@ export const ROLES = {
 
   photographer: {
     id: 'photographer',
+    capability: 'photographer',
     display_name: 'Photographer',
     description: 'Shoot and sell motorsports photography.',
     icon: Camera,
@@ -376,6 +386,7 @@ export const ROLES = {
 
   videographer: {
     id: 'videographer',
+    capability: 'creator',
     display_name: 'Videographer',
     description: 'Produce motorsports video content.',
     icon: Video,
@@ -407,6 +418,7 @@ export const ROLES = {
 
   sponsor: {
     id: 'sponsor',
+    capability: 'sponsor',
     display_name: 'Sponsor',
     description: 'Connect with teams, series, tracks, or events to sponsor.',
     icon: Briefcase,
@@ -434,6 +446,7 @@ export const ROLES = {
 
   vendor: {
     id: 'vendor',
+    capability: 'brand',
     display_name: 'Vendor',
     description: 'Offer services to the motorsports community.',
     icon: Store,
@@ -461,6 +474,7 @@ export const ROLES = {
 
   manufacturer: {
     id: 'manufacturer',
+    capability: 'brand',
     display_name: 'Manufacturer',
     description: 'Represent an OEM or parts manufacturer.',
     icon: Package,
@@ -488,6 +502,7 @@ export const ROLES = {
 
   partner: {
     id: 'partner',
+    capability: 'brand',
     display_name: 'Partner',
     description: 'Formal partnership with the platform or organizations.',
     icon: Building2,
@@ -513,6 +528,7 @@ export const ROLES = {
 
   creator: {
     id: 'creator',
+    capability: 'creator',
     display_name: 'Creator',
     description: 'Publish content to The Outlet.',
     icon: Newspaper,
@@ -540,6 +556,7 @@ export const ROLES = {
 
   volunteer: {
     id: 'volunteer',
+    capability: 'fan',
     display_name: 'Volunteer',
     description: 'Help run events and support the community.',
     icon: HandHeart,
@@ -655,4 +672,97 @@ export function getDashboardWidgetsForRoles(roleIds = []) {
     if (role) role.dashboard_widgets.forEach((w) => widgets.add(w));
   });
   return Array.from(widgets);
+}
+
+// ─── Capability mapping (User profile_type) ───────────────────────────────
+// The onboarding registry is granular (team_owner, track_staff, official…)
+// but the User.primary_profile_type / User.profile_types enums must hold the
+// BROAD capability the role belongs to (fan, team, series, brand…). Granular
+// role identity lives only in EntityCollaborator.role_key.
+//
+// These helpers turn a granular role selection into schema-valid User fields
+// and reconstruct granular roles from broad capabilities when the wizard
+// session state is gone (e.g. after a mid-onboarding refresh).
+
+export function getRoleCapability(roleId) {
+  const r = getRole(roleId);
+  return r?.capability || null;
+}
+
+export function buildProfileTypesFromRoles(primaryRoleId, additionalRoleIds = []) {
+  const primary = getRole(primaryRoleId);
+  const caps = new Set(['fan']);
+  if (primary?.capability) caps.add(primary.capability);
+  (additionalRoleIds || [])
+    .filter((id) => id !== primaryRoleId)
+    .forEach((id) => {
+      const r = getRole(id);
+      if (r?.capability) caps.add(r.capability);
+    });
+  return Array.from(caps);
+}
+
+/**
+ * Best-effort reconstruction of the granular onboarding roles that likely
+ * require a relationship, from a user's stored (broad) capabilities. Used
+ * only when wizard session state is gone (mid-onboarding refresh): the exact
+ * granular role the user selected is NOT persisted by design, so we pick the
+ * lowest-order primary-eligible role for each capability. This never
+ * fabricates a relationship — it only renders a connection request builder.
+ */
+export function reconstructOnboardingRolesFromCapabilities(capabilities = []) {
+  if (!Array.isArray(capabilities) || capabilities.length === 0) return [];
+  const result = [];
+  for (const cap of capabilities) {
+    const candidates = Object.values(ROLES)
+      .filter(
+        (r) =>
+          r.visibility === 'onboarding' &&
+          r.can_be_primary &&
+          r.capability === cap &&
+          r.requires_relationship &&
+          r.relationship_required_on_onboarding,
+      )
+      .sort((a, b) => a.onboarding_order - b.onboarding_order);
+    if (candidates[0]) result.push(candidates[0].id);
+  }
+  return Array.from(new Set(result));
+}
+
+export const CAPABILITY_LABELS = {
+  fan: 'Fan',
+  driver: 'Driver',
+  team: 'Team',
+  media: 'Media',
+  brand: 'Brand',
+  track: 'Track',
+  series: 'Series',
+  crew: 'Crew',
+  builder: 'Builder',
+  sponsor: 'Sponsor',
+  photographer: 'Photographer',
+  creator: 'Creator',
+};
+
+/**
+ * Reconstruct a single granular primary role id from a stored broad
+ * capability. Used by the Roles stage when re-opening for a returning user
+ * whose granular selection is not persisted. Returns the lowest-order
+ * primary-eligible role with that capability, or '' when ambiguous/none.
+ * Never crashes — capability values outside the enum map to ''.
+ */
+export function reconstructPrimaryRoleFromCapability(cap) {
+  if (!cap || typeof cap !== 'string') return '';
+  const candidates = Object.values(ROLES)
+    .filter((r) => r.visibility === 'onboarding' && r.can_be_primary && r.capability === cap)
+    .sort((a, b) => a.onboarding_order - b.onboarding_order);
+  return candidates[0]?.id || '';
+}
+
+export function getCapabilityLabel(cap) {
+  if (CAPABILITY_LABELS[cap]) return CAPABILITY_LABELS[cap];
+  if (typeof cap === 'string' && cap.length) {
+    return cap.charAt(0).toUpperCase() + cap.slice(1);
+  }
+  return 'Fan';
 }

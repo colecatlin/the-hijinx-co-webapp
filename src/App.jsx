@@ -38,6 +38,7 @@ import RaceCoreTrackEditor from './pages/RaceCoreTrackEditor';
 import RaceCoreSeriesEditor from './pages/RaceCoreSeriesEditor';
 import RaceCoreEventEditor from './pages/RaceCoreEventEditor';
 import ProfileSetup from './pages/ProfileSetup';
+import OnboardingGuard from '@/components/onboarding/OnboardingGuard';
 import ManageProducts from './pages/ManageProducts';
 import ManageInvoices from './pages/ManageInvoices';
 import CheckoutSuccess from './pages/CheckoutSuccess';
@@ -134,6 +135,12 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
+// Authenticated routes that require ProfileSetup completion. The guard is
+// applied at the router boundary (not inside the page) so incomplete users
+// are redirected to their onboarding stage and completed users are never
+// forced back. Public routes outside this set stay public.
+const GUARDED_PAGES = new Set(['MyDashboard', 'Profile']);
+
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
@@ -175,7 +182,11 @@ const AuthenticatedApp = () => {
           path={`/${path}`}
           element={
             <LayoutWrapper currentPageName={path}>
-              <Page />
+              {GUARDED_PAGES.has(path) ? (
+                <OnboardingGuard><Page /></OnboardingGuard>
+              ) : (
+                <Page />
+              )}
             </LayoutWrapper>
           }
         />
