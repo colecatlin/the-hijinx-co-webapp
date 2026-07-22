@@ -30,6 +30,8 @@ export default function EventDayManager({ event, isAdmin }) {
   const [editingId, setEditingId] = useState(null);
   const [editLabel, setEditLabel] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editRound, setEditRound] = useState('');
+  const [editRoundLabel, setEditRoundLabel] = useState('');
   const [savingId, setSavingId] = useState(null);
 
   const { data: eventDays = [], isLoading } = useQuery({
@@ -97,6 +99,7 @@ export default function EventDayManager({ event, isAdmin }) {
           date: format(d, 'yyyy-MM-dd'),
           sort_order: offset + idx,
           status: 'Planned',
+          round_number: offset + idx + 1,
         }));
 
       if (creates.length === 0) { toast.info('All days already exist'); return; }
@@ -114,21 +117,28 @@ export default function EventDayManager({ event, isAdmin }) {
     setEditingId(day.id);
     setEditLabel(day.label);
     setEditNotes(day.notes || '');
+    setEditRound(day.round_number != null ? String(day.round_number) : '');
+    setEditRoundLabel(day.round_label || '');
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditLabel('');
     setEditNotes('');
+    setEditRound('');
+    setEditRoundLabel('');
   };
 
   const saveEdit = async (dayId) => {
     if (!editLabel.trim()) { toast.error('Label required'); return; }
     setSavingId(dayId);
+    const roundNum = editRound.trim() === '' ? null : Number(editRound);
     try {
       await base44.entities.EventDay.update(dayId, {
         label: editLabel.trim(),
         notes: editNotes || null,
+        round_number: Number.isFinite(roundNum) ? roundNum : null,
+        round_label: editRoundLabel.trim() || null,
       });
       invalidate();
       cancelEdit();
@@ -225,17 +235,33 @@ export default function EventDayManager({ event, isAdmin }) {
                 </div>
 
                 {isEditing ? (
-                  <div className="flex-1 flex items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2 flex-wrap">
                     <Input
                       value={editLabel}
                       onChange={e => setEditLabel(e.target.value)}
-                      className="bg-[#161a1d] border-gray-700 text-white text-xs h-7 w-32"
+                      className="bg-[#161a1d] border-gray-700 text-white text-xs h-7 w-28"
                       placeholder="Label"
+                    />
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-gray-600">Rd</span>
+                      <Input
+                        type="number"
+                        value={editRound}
+                        onChange={e => setEditRound(e.target.value)}
+                        className="bg-[#161a1d] border-gray-700 text-white text-xs h-7 w-14"
+                        placeholder="—"
+                      />
+                    </div>
+                    <Input
+                      value={editRoundLabel}
+                      onChange={e => setEditRoundLabel(e.target.value)}
+                      className="bg-[#161a1d] border-gray-700 text-white text-xs h-7 w-32"
+                      placeholder="Round label (optional)"
                     />
                     <Input
                       value={editNotes}
                       onChange={e => setEditNotes(e.target.value)}
-                      className="bg-[#161a1d] border-gray-700 text-white text-xs h-7 flex-1"
+                      className="bg-[#161a1d] border-gray-700 text-white text-xs h-7 flex-1 min-w-[120px]"
                       placeholder="Notes (optional)"
                     />
                     <button
@@ -256,6 +282,11 @@ export default function EventDayManager({ event, isAdmin }) {
                       <Badge className={`text-[10px] px-1.5 py-px ${DAY_STATUS_COLORS[day.status] || DAY_STATUS_COLORS.Planned}`}>
                         {day.status}
                       </Badge>
+                      {day.round_number != null && (
+                        <Badge className="text-[10px] px-1.5 py-px bg-teal-900/50 text-teal-300 border border-teal-700/40">
+                          Round {day.round_number}
+                        </Badge>
+                      )}
                       {hasLinked && (
                         <span className="text-[9px] font-mono text-gray-600">{sessionCount} session{sessionCount !== 1 ? 's' : ''}</span>
                       )}
@@ -263,6 +294,7 @@ export default function EventDayManager({ event, isAdmin }) {
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="text-[10px] font-mono text-teal-600">{weekday}</span>
                       <span className="text-[10px] font-mono text-gray-600">{day.date}</span>
+                      {day.round_label && <span className="text-[10px] text-teal-500/70 truncate">· {day.round_label}</span>}
                       {day.notes && <span className="text-[10px] text-gray-700 truncate">· {day.notes}</span>}
                     </div>
                   </div>
