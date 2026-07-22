@@ -7,6 +7,7 @@ import ResultsManager from '@/components/registrationdashboard/ResultsManager';
 import { useEventWorkspace } from '../EventWorkspaceContext';
 import SessionResultsStatusStrip from '@/components/registrationdashboard/results/SessionResultsStatusStrip';
 import BulkPublishActions from '@/components/registrationdashboard/results/BulkPublishActions';
+import SessionStatusControl from '@/components/registrationdashboard/results/SessionStatusControl';
 import { Card, CardContent } from '@/components/ui/card';
 
 // R9CU: EventResultsPanel accepts wsData from EventWorkspaceShell (workspace authority)
@@ -49,6 +50,18 @@ export default function EventResultsPanel({ wsData, onResultsProvisional, onResu
         onSelectSession={setSelectedSessionId}
         activeSessionId={selectedSessionId}
       />
+
+      {/* Admin per-session public status control (selected session) */}
+      {isAdmin && selectedSessionId && (() => {
+        const activeSession = sessions.find(s => s.id === selectedSessionId);
+        return activeSession ? (
+          <SessionStatusControl
+            session={activeSession}
+            eventId={eventId}
+            isAdmin={isAdmin}
+          />
+        ) : null;
+      })()}
 
       {/* Bulk publish actions */}
       {isAdmin && sessions.length > 0 && (
