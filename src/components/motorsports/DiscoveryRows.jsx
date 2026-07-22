@@ -497,8 +497,14 @@ export default function DiscoveryRows() {
       return resolvePinned(settings.featured_event_ids, rawEvents).slice(0, 5);
     }
     const today = new Date().toISOString().split('T')[0];
-    const upcoming = rawEvents.filter((e) => e.event_date >= today && e.public_status !== 'archived');
-    return (upcoming.length >= 4 ? upcoming : rawEvents).slice(0, 5);
+    const upcoming = rawEvents
+      .filter((e) => e.event_date >= today && e.public_status !== 'archived')
+      .sort((a, b) => (a.event_date || '').localeCompare(b.event_date || ''));
+    if (upcoming.length >= 4) return upcoming.slice(0, 5);
+    // Fall back to closest dates overall, future-first then recent past
+    return [...rawEvents]
+      .sort((a, b) => Math.abs(new Date(a.event_date || 0) - Date.now()) - Math.abs(new Date(b.event_date || 0) - Date.now()))
+      .slice(0, 5);
   }, [rawEvents, settings]);
 
   // ── Series Spotlight ──────────────────────────────────────────────────────
