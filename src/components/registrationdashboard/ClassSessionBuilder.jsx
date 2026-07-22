@@ -646,7 +646,7 @@ export default function ClassSessionBuilder({
                                <span className="text-[10px] font-mono text-gray-600">#{session.run_order || '0'}</span>
                                <p className="font-medium text-white text-sm">{session.name}</p>
                                <Badge className="bg-purple-500/20 text-purple-400 text-xs">{session.session_type}</Badge>
-                               {session.points_enabled && session.points_type === 'final' && (
+                               {(session.session_type === 'Feature' || session.session_type === 'Final') && (
                                  <Badge className="bg-amber-900/40 text-amber-300 text-xs">
                                    🏆 {session.round_number ? `Round ${session.round_number}` : 'Final'}
                                  </Badge>
