@@ -238,8 +238,10 @@ body {
 .light-page table,
 .light-page table td,
 .light-page table th,
-.light-page table tr {
-  color: #0A0A0A;
+.light-page table tr,
+.light-page table tbody,
+.light-page table thead {
+  color: #0A0A0A !important;
 }
 .light-page .bg-gray-50  { background-color: #F9FAFB !important; }
 .light-page .bg-gray-100 { background-color: #F3F4F6 !important; }
