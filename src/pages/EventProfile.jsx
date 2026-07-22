@@ -103,7 +103,16 @@ export default function EventProfile() {
   }, [sessions, selectedClassName]);
 
   const filteredSessions = useMemo(() =>
-    activeClassSessions.filter(s => selectedSessionType === 'all' || s.session_type === selectedSessionType),
+    activeClassSessions
+      .filter(s => selectedSessionType === 'all' || s.session_type === selectedSessionType)
+      .sort((a, b) => {
+        const at = a.scheduled_time ? new Date(a.scheduled_time).getTime() : null;
+        const bt = b.scheduled_time ? new Date(b.scheduled_time).getTime() : null;
+        if (at === null && bt === null) return (a.name || '').localeCompare(b.name || '');
+        if (at === null) return 1;
+        if (bt === null) return -1;
+        return at - bt;
+      }),
   [activeClassSessions, selectedSessionType]);
 
   const officialSessions = useMemo(() => sessions.filter(s => ['Official', 'Locked'].includes(s.status)), [sessions]);
@@ -384,7 +393,6 @@ export default function EventProfile() {
                       <th className="text-left py-3 px-2 font-semibold text-gray-600">Time</th>
                       <th className="text-left py-3 px-2 font-semibold text-gray-600">Type</th>
                       <th className="text-left py-3 px-2 font-semibold text-gray-600">Name</th>
-                      <th className="text-left py-3 px-2 font-semibold text-gray-600">Status</th>
                       <th className="text-right py-3 px-2 font-semibold text-gray-600">Actions</th>
                     </tr></thead>
                     <tbody>
@@ -392,12 +400,9 @@ export default function EventProfile() {
                         const hasValidTime = session.scheduled_time && isValid(parseISO(session.scheduled_time));
                         return (
                           <tr key={session.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-2 text-xs">{hasValidTime ? format(parseISO(session.scheduled_time), 'HH:mm') : 'TBA'}</td>
+                            <td className="py-3 px-2 text-xs whitespace-nowrap">{hasValidTime ? format(parseISO(session.scheduled_time), 'MMM d · HH:mm') : 'TBA'}</td>
                             <td className="py-3 px-2 font-medium text-[#232323]">{session.session_type}</td>
                             <td className="py-3 px-2">{session.name}</td>
-                            <td className="py-3 px-2">
-                              <Badge className={`${session.status === 'Official' || session.status === 'Locked' ? 'bg-green-100 text-green-700' : session.status === 'completed' ? 'bg-gray-100 text-gray-700' : 'bg-blue-100 text-blue-700'}`}>{session.status}</Badge>
-                            </td>
                             <td className="py-3 px-2 text-right">
                               <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
                                 <Button variant="ghost" size="sm" className="text-xs h-7">View</Button>
