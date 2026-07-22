@@ -22,6 +22,10 @@
       "type": "string",
       "description": "Normalized username slug for routing (/u/:username_slug)"
     },
+    "contact_email": {
+      "type": "string",
+      "description": "Preferred contact email for this user's racing profile. May differ from the login email; used for account notifications and public profile contact."
+    },
     "bio": {
       "type": "string",
       "description": "Short public bio"

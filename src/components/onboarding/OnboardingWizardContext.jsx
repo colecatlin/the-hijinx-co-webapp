@@ -93,6 +93,7 @@ export function OnboardingWizardProvider({ children }) {
         payload.username = slug;
         payload.username_slug = slug;
       }
+      if (data.contact_email?.trim()) payload.contact_email = data.contact_email.trim();
       return advanceTo(payload, 'about');
     },
     [advanceTo, user?.id],
