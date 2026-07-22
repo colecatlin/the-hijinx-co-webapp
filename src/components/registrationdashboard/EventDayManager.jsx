@@ -133,16 +133,34 @@ export default function EventDayManager({ event, isAdmin }) {
     if (!editLabel.trim()) { toast.error('Label required'); return; }
     setSavingId(dayId);
     const roundNum = editRound.trim() === '' ? null : Number(editRound);
+    const finalRound = Number.isFinite(roundNum) ? roundNum : null;
+    const finalRoundLabel = editRoundLabel.trim() || null;
     try {
       await base44.entities.EventDay.update(dayId, {
         label: editLabel.trim(),
         notes: editNotes || null,
-        round_number: Number.isFinite(roundNum) ? roundNum : null,
-        round_label: editRoundLabel.trim() || null,
+        round_number: finalRound,
+        round_label: finalRoundLabel,
       });
+
+      // Cascade round to sessions linked to this day
+      const daySessions = sessions.filter(s => s.event_day_id === dayId);
+      if (daySessions.length > 0) {
+        await base44.entities.Session.bulkUpdate(
+          daySessions.map(s => ({
+            id: s.id,
+            round_number: finalRound,
+            round_label: finalRoundLabel,
+          }))
+        );
+        queryClient.invalidateQueries({ queryKey: ['sessions', event?.id] });
+        toast.success(`Day updated · ${daySessions.length} session${daySessions.length !== 1 ? 's' : ''} synced to Round ${finalRound ?? '—'}`);
+      } else {
+        toast.success('Day updated');
+      }
+
       invalidate();
       cancelEdit();
-      toast.success('Day updated');
     } catch (err) {
       toast.error('Failed to update day');
     } finally {
