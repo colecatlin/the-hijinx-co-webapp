@@ -52,9 +52,36 @@ export default function useDashboardMutation({
   const { mutateAsync: _mutateAsync, isPending, error } = useMutation({
     mutationFn: async (input) => {
       let result;
+      const isDelete = operationType?.endsWith('_deleted');
+      const isUpdate = operationType?.endsWith('_updated');
       try {
         result = await mutationFn(input);
       } catch (err) {
+        const msg = (err?.message ?? '').toLowerCase();
+        const isNotFound = msg.includes('not found');
+
+        // Idempotent delete: the record is already gone — treat as success.
+        if (isNotFound && isDelete) {
+          await logOperation({
+            operation_type: operationType,
+            status: 'success',
+            entity_name: entityName,
+            entity_id: input?.id ?? input?.entity_id ?? undefined,
+            event_id: eventId,
+            series_id: seriesId,
+            track_id: trackId,
+            season_year: seasonYear,
+            message: 'Already removed (idempotent)',
+          });
+          if (invalidateAfterOperation) {
+            invalidateAfterOperation(operationType, {
+              eventId, seriesId, trackId, seasonYear,
+              orgType: dashboardContext?.orgType, orgId: dashboardContext?.orgId,
+            });
+          }
+          return null;
+        }
+
         // Log failure
         await logOperation({
           operation_type: operationType,
@@ -67,6 +94,15 @@ export default function useDashboardMutation({
           season_year: seasonYear,
           message: err?.message ?? 'Unknown error',
         });
+
+        // If an update/delete targeted a stale (no longer existing) record,
+        // refresh the cache so the ghost row disappears instead of sticking.
+        if (isNotFound && (isUpdate || isDelete) && invalidateAfterOperation) {
+          invalidateAfterOperation(operationType, {
+            eventId, seriesId, trackId, seasonYear,
+            orgType: dashboardContext?.orgType, orgId: dashboardContext?.orgId,
+          });
+        }
         throw err;
       }
 
@@ -102,7 +138,12 @@ export default function useDashboardMutation({
       toast.success(successMessage);
     },
     onError: (err) => {
-      toast.error(`${errorMessage}: ${err?.message ?? 'Unknown error'}`);
+      const msg = (err?.message ?? '').toLowerCase();
+      if (msg.includes('not found')) {
+        toast('This item no longer exists — the view was refreshed.');
+      } else {
+        toast.error(`${errorMessage}: ${err?.message ?? 'Unknown error'}`);
+      }
     },
   });
 
