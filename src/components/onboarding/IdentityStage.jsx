@@ -1,15 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
-import { validateUsername } from '@/components/system/userCapabilities';
 import StageErrorBanner, { normalizeBackendError } from '@/components/onboarding/StageErrorBanner';
-import { base44 } from '@/api/base44Client';
+import UsernameFieldWithCheck, { suggestUsernameCandidates } from '@/components/onboarding/UsernameFieldWithCheck';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, AtSign } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const TEAL = '#1DA1A1';
 
+/**
+ * Identity stage of the onboarding wizard.
+ *
+ * Username is OPTIONAL here. The goal is to reduce onboarding friction: a
+ * user may complete setup with no username and choose one later the first
+ * time they hit a public-identity feature (see ClaimUsername +
+ * UsernameRequiredGuard).
+ *
+ * First name, last name, and contact email remain required.
+ *
+ * If a username IS entered, every existing validation rule still apply:
+ *   - lowercase normalization
+ *   - allowed characters (3–24 chars, a-z / 0–9 / _)
+ *   - reserved words
+ *   - server-authoritative uniqueness (checkUsernameUnique)
+ *   - final pre-write re-check on save
+ */
 export default function IdentityStage() {
   const { user, saveIdentity } = useOnboardingWizard();
   const [firstName, setFirstName] = useState(user?.first_name || '');
@@ -18,9 +34,8 @@ export default function IdentityStage() {
   const [email, setEmail] = useState(user?.contact_email || user?.email || '');
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
-  const [usernameError, setUsernameError] = useState(''); // format OR conflict
   const [emailError, setEmailError] = useState('');
-  const [usernameStatus, setUsernameStatus] = useState(''); // 'checking' | 'available' | ''
+  const [usernameStatus, setUsernameStatus] = useState({ blank: true, checking: false, available: false, error: '' });
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -28,59 +43,29 @@ export default function IdentityStage() {
   const isOwnUsername =
     trimmedUsername && (trimmedUsername === (user?.username || '').toLowerCase());
 
-  const usernameFormatOk =
-    !trimmedUsername ||
-    (trimmedUsername.length >= 3 && !validateUsername(trimmedUsername));
-
-  // Debounced server-authoritative availability check (B3 UX layer).
-  useEffect(() => {
-    if (!trimmedUsername || isOwnUsername) {
-      setUsernameError('');
-      setUsernameStatus('');
-      return;
-    }
-    if (!usernameFormatOk || trimmedUsername.length < 3) {
-      setUsernameStatus('');
-      return;
-    }
-    let cancelled = false;
-    setUsernameStatus('checking');
-    setUsernameError('');
-    const t = setTimeout(async () => {
-      try {
-        const res = await base44.functions.invoke('checkUsernameUnique', {
-          username: trimmedUsername,
-          current_user_id: user?.id,
-        });
-        if (cancelled) return;
-        if (res?.data && res.data.available === true) {
-          setUsernameStatus('available');
-        } else if (res?.data && res.data.available === false) {
-          setUsernameStatus('');
-          setUsernameError(res.data.reason || 'That username is already taken.');
-        }
-      } catch {
-        if (!cancelled) setUsernameStatus('');
-      }
-    }, 450);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trimmedUsername, isOwnUsername, usernameFormatOk, user?.id]);
-
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  // First + last name are required; username is optional. When a username is
+  // entered it must be fully validated (format + availability) to continue.
+  const usernameValid =
+    !trimmedUsername ||
+    (usernameStatus.available && !usernameStatus.error && !usernameStatus.checking) ||
+    isOwnUsername;
+
   const canContinue =
     firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
-    trimmedUsername.length > 0 &&
-    usernameFormatOk &&
-    !usernameError &&
-    usernameStatus !== 'checking' &&
     emailValid &&
     !emailError &&
-    !saving;
+    !saving &&
+    usernameValid &&
+    // If the user is typing a username, don't allow submit mid-check.
+    (!trimmedUsername || !usernameStatus.checking);
+
+  const suggestions = useMemo(
+    () => suggestUsernameCandidates({ firstName, lastName }),
+    [firstName, lastName],
+  );
 
   const handleContinue = async (e) => {
     e?.preventDefault?.();
@@ -90,16 +75,16 @@ export default function IdentityStage() {
     else setFirstNameError('');
     if (!lastName.trim()) { setLastNameError('Last name is required.'); blocked = true; }
     else setLastNameError('');
-    if (!trimmedUsername) {
-      setUsernameError('Username is required.');
-      blocked = true;
-    } else if (!usernameFormatOk) {
-      setUsernameError(validateUsername(trimmedUsername) || 'Username is not valid.');
-      blocked = true;
-    } else if (usernameStatus === 'checking') {
-      setUsernameError('');
-      blocked = true; // wait for availability check
+
+    // Username is optional. Only validate if one was entered.
+    if (trimmedUsername) {
+      if (usernameStatus.checking) {
+        blocked = true; // wait for availability check
+      } else if (usernameStatus.error || (!usernameStatus.available && !isOwnUsername)) {
+        blocked = true;
+      }
     }
+
     if (!email.trim()) { setEmailError('Email address is required.'); blocked = true; }
     else if (!emailValid) { setEmailError('Enter a valid email address.'); blocked = true; }
     else setEmailError('');
@@ -107,11 +92,15 @@ export default function IdentityStage() {
 
     setSaving(true);
     try {
-      await saveIdentity({ first_name: firstName, last_name: lastName, username, contact_email: email });
+      await saveIdentity({
+        first_name: firstName,
+        last_name: lastName,
+        username,
+        contact_email: email,
+      });
     } catch (err) {
       if (err?.code === 'username_conflict') {
-        setUsernameError(err.message || 'That username is already taken.');
-        setUsernameStatus('');
+        setUsernameStatus((s) => ({ ...s, available: false, error: err.message || 'That username is already taken.' }));
       } else {
         setFormError(normalizeBackendError(err));
       }
@@ -157,52 +146,20 @@ export default function IdentityStage() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="onb-username" className="text-white text-xs">
-          Username <span style={{ color: '#f87171' }}>*</span>
+        <Label htmlFor="onb-username-input" className="text-white text-xs flex items-center gap-1.5">
+          Username <span className="text-white/30 font-normal">(optional)</span>
         </Label>
-        <div
-          className="flex items-center gap-2 rounded-lg px-3"
-          style={{
-            background: 'rgba(255,255,255,0.04)',
-            border:
-              '1px solid ' +
-              (usernameError
-                ? 'rgba(239,68,68,0.4)'
-                : usernameStatus === 'available'
-                  ? 'rgba(29,161,161,0.45)'
-                  : 'rgba(255,255,255,0.1)'),
-          }}
-        >
-          <AtSign className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
-          <input
-            id="onb-username"
-            type="text"
-            value={username}
-            onChange={(e) => {
-              setUsername(e.target.value.toLowerCase());
-              setUsernameError('');
-              if (usernameStatus) setUsernameStatus('');
-            }}
-            placeholder="yourhandle"
-            aria-invalid={!!usernameError}
-            className="flex h-11 flex-1 bg-transparent text-sm font-mono focus-visible:outline-none"
-            style={{ color: 'rgba(255,255,255,0.9)' }}
-          />
-          {usernameStatus === 'checking' && (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'rgba(255,255,255,0.4)' }} />
-          )}
-        </div>
-        {usernameError ? (
-          <p className="text-xs" style={{ color: '#f87171' }}>{usernameError}</p>
-        ) : usernameStatus === 'available' ? (
-          <p className="text-xs font-mono" style={{ color: 'rgba(29,161,161,0.85)' }}>
-            Available · public URL /u/{trimmedUsername}
-          </p>
-        ) : (
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
-            3–24 chars · lowercase letters, numbers, underscores.
-          </p>
-        )}
+        <UsernameFieldWithCheck
+          value={username}
+          onChange={setUsername}
+          currentUserId={user?.id}
+          suggestions={suggestions}
+          idPrefix="onb-username"
+          onStatusChange={setUsernameStatus}
+        />
+        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          You can always claim a public username later from your profile.
+        </p>
       </div>
 
       <div className="space-y-2">
