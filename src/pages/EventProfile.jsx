@@ -139,7 +139,7 @@ export default function EventProfile() {
 
   if (isLoading) {
     return (
-      <PageShell className="bg-white">
+      <PageShell>
         <div className="max-w-7xl mx-auto px-6 py-12">
           <Skeleton className="h-12 w-64 mb-4" />
           <Skeleton className="h-96" />
@@ -160,7 +160,7 @@ export default function EventProfile() {
   const eventDesc = [track?.name ? `At ${track.name}` : '', event.event_date ? `on ${safeDateFormat(event.event_date)}` : '', series?.name ? `— ${series.name}` : ''].filter(Boolean).join(' ') || `${event.name} event details on HIJINX.`;
 
   return (
-    <PageShell className="bg-white light-page">
+    <PageShell>
       <SeoMeta title={buildEntityTitle(eventTitle, 'Event')} description={eventDesc} image={heroImg || undefined} />
 
     {/* ── HERO ── */}
@@ -200,17 +200,17 @@ export default function EventProfile() {
       </div>
 
       {/* ── NAV ── */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2">
-            <Link to={createPageUrl('EventDirectory')} className="text-xs text-gray-500 hover:text-[#232323] mr-4">← Events</Link>
+            <Link to={createPageUrl('EventDirectory')} className="text-xs text-gray-500 hover:text-white mr-4">← Events</Link>
           </div>
           <div className="flex gap-1 overflow-x-auto">
             {TABS.map(tab => {
               const Icon = tab.icon;
               return (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-[#232323] border-b-2 border-[#00FFDA] -mb-px' : 'text-gray-500 hover:text-[#232323]'}`}
+                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-white border-b-2 border-[#00FFDA] -mb-px' : 'text-gray-500 hover:text-white'}`}
                 >
                   <Icon className="w-3.5 h-3.5" />{tab.label}
                 </button>
@@ -229,10 +229,10 @@ export default function EventProfile() {
             {/* Linked Entities */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {track && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
+                <div className="bg-white border border-white/10 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Venue</div>
                   <Link to={`${createPageUrl('TrackProfile')}?slug=${track.canonical_slug || track.slug || track.id}`} className="group">
-                    <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{track.name}</div>
+                    <div className="font-bold text-white text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{track.name}</div>
                     {(track.location_city || track.location_state) && (
                       <div className="flex items-center gap-1 text-sm text-gray-600">
                         <MapPin className="w-3 h-3" />{[track.location_city, track.location_state].filter(Boolean).join(', ')}
@@ -243,15 +243,15 @@ export default function EventProfile() {
                 </div>
               )}
               {series && (
-                <div className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
+                <div className="bg-white border border-white/10 rounded-lg p-6 hover:border-[#00FFDA] transition-colors">
                   <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Series</div>
                   <Link to={`/series/${series.canonical_slug || series.slug || series.id}`} className="group">
-                    <div className="font-bold text-[#232323] text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{series.name}</div>
+                    <div className="font-bold text-white text-lg mb-1 group-hover:text-[#00FFDA] transition-colors">{series.name}</div>
                     {event.season && <div className="text-sm text-gray-600">Season {event.season}</div>}
                   </Link>
                 </div>
               )}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-white border border-white/10 rounded-lg p-6">
                 <div className="text-xs text-gray-500 uppercase tracking-wide mb-3 font-medium">Status</div>
                 <Badge className={`${event.status === 'Draft' ? 'bg-gray-100 text-gray-700' : event.status === 'Published' ? 'bg-blue-100 text-blue-700' : event.status === 'Live' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{event.status}</Badge>
                 {event.event_date && event.status !== 'completed' && daysUntil !== null && (
@@ -259,21 +259,21 @@ export default function EventProfile() {
                 )}
                 <div className="mt-3">
                   <div className="text-xs text-gray-500 mb-1">Date</div>
-                  <div className="font-semibold text-[#232323]">{safeDateFormat(event.event_date)}{event.end_date && event.end_date !== event.event_date ? ` – ${safeDateFormat(event.end_date)}` : ''}</div>
+                  <div className="font-semibold text-white">{safeDateFormat(event.event_date)}{event.end_date && event.end_date !== event.event_date ? ` – ${safeDateFormat(event.end_date)}` : ''}</div>
                 </div>
               </div>
             </div>
 
             {/* Drivers */}
             {eventDrivers.length > 0 && (
-              <section className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-lg font-bold text-[#232323] mb-4">Drivers</h2>
+              <section className="bg-white border border-white/10 rounded-lg p-6">
+                <h2 className="text-lg font-bold text-white mb-4">Drivers</h2>
                 <div className="flex flex-wrap gap-2">
                   {eventDrivers.map(d => (
                     <Link
                       key={d.id}
                       to={`/drivers/${d.canonical_slug || d.slug || d.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-[#232323] hover:border-[#00FFDA] hover:shadow-sm transition-all"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-white/10 rounded-lg text-sm font-medium text-white hover:border-[#00FFDA] hover:shadow-sm transition-all"
                     >
                       {d.primary_number && <span className="text-[#00FFDA] font-bold text-xs">#{d.primary_number}</span>}
                       {d.first_name} {d.last_name}
@@ -285,17 +285,17 @@ export default function EventProfile() {
 
             {/* Stories */}
             {eventStories.length > 0 && (
-              <section className="bg-white border border-gray-200 rounded-lg p-6">
-                <h2 className="text-lg font-bold text-[#232323] mb-4">Stories</h2>
+              <section className="bg-white border border-white/10 rounded-lg p-6">
+                <h2 className="text-lg font-bold text-white mb-4">Stories</h2>
                 <div className="space-y-3">
                   {eventStories.map(s => (
                     <Link key={s.id} to={`/story/${s.slug}`}
-                      className="flex items-start gap-3 p-3 border border-gray-100 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all group">
+                      className="flex items-start gap-3 p-3 border border-white/5 rounded-lg hover:border-white/20 hover:shadow-sm transition-all group">
                       {s.cover_image && (
                         <img src={s.cover_image} alt={s.title} className="w-16 h-12 object-cover rounded flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#232323] group-hover:underline leading-snug line-clamp-2">{s.title}</p>
+                        <p className="text-sm font-semibold text-white group-hover:underline leading-snug line-clamp-2">{s.title}</p>
                         {s.published_date && (
                           <p className="text-xs text-gray-400 mt-1">{format(new Date(s.published_date), 'MMM d, yyyy')}</p>
                         )}
@@ -308,12 +308,12 @@ export default function EventProfile() {
 
             {/* Classes */}
             {classes.length > 0 && (
-              <section className="bg-white border border-gray-200 rounded-lg p-8">
-                <h2 className="text-2xl font-bold text-[#232323] mb-6">Racing Classes</h2>
+              <section className="bg-white border border-white/10 rounded-lg p-8">
+                <h2 className="text-2xl font-bold text-white mb-6">Racing Classes</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {classes.map(cls => (
-                    <div key={cls.id} className="border border-gray-200 rounded-lg p-4 hover:border-[#00FFDA] transition-colors">
-                      <div className="font-semibold text-[#232323] mb-2">{cls.class_name}</div>
+                    <div key={cls.id} className="border border-white/10 rounded-lg p-4 hover:border-[#00FFDA] transition-colors">
+                      <div className="font-semibold text-white mb-2">{cls.class_name}</div>
                       {cls.vehicle_type && <p className="text-xs text-gray-500 mb-2">Vehicle: {cls.vehicle_type}</p>}
                       <Button variant="outline" size="sm" className="w-full text-xs"
                         onClick={() => { setSelectedClassName(cls.class_name); setActiveTab('sessions'); }}>
@@ -327,16 +327,16 @@ export default function EventProfile() {
 
             {/* Sessions preview */}
             {sortedSessions.length > 0 && (
-              <section className="bg-white border border-gray-200 rounded-lg p-8">
+              <section className="bg-white border border-white/10 rounded-lg p-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-[#232323]">Sessions</h2>
+                  <h2 className="text-2xl font-bold text-white">Sessions</h2>
                   <button onClick={() => setActiveTab('sessions')} className="text-sm text-[#00FFDA] hover:underline font-medium">View all →</button>
                 </div>
                 <div className="space-y-3">
                   {sortedSessions.slice(0, 6).map(session => (
-                    <div key={session.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-gray-300 transition-colors">
+                    <div key={session.id} className="flex items-center justify-between p-4 border border-white/5 rounded-lg hover:border-white/20 transition-colors">
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-[#232323] mb-1">{session.name || `${session.session_type || ''}${session.session_number ? ` #${session.session_number}` : ''}`}</div>
+                        <div className="font-medium text-white mb-1">{session.name || `${session.session_type || ''}${session.session_number ? ` #${session.session_number}` : ''}`}</div>
                         {session.scheduled_time && isValid(parseISO(session.scheduled_time)) && (
                           <div className="text-xs text-gray-500">{format(parseISO(session.scheduled_time), 'MMM d, HH:mm')}</div>
                         )}
@@ -358,15 +358,15 @@ export default function EventProfile() {
         {/* SESSIONS */}
         {activeTab === 'sessions' && (
           <div className="space-y-4">
-            <section className="bg-white border border-gray-200 rounded-lg p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Sessions Schedule</h2>
+            <section className="bg-white border border-white/10 rounded-lg p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">Sessions Schedule</h2>
               {sessions.length > 0 && (
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                   {classes.length > 0 && (
                   <div className="flex-1">
-                    <label className="text-xs text-gray-600 font-medium mb-2 block text-[#232323]">Filter by Class</label>
+                    <label className="text-xs text-gray-600 font-medium mb-2 block text-white">Filter by Class</label>
                     <Select value={selectedClassName || ''} onValueChange={setSelectedClassName}>
-                      <SelectTrigger className="w-full text-[#232323]"><SelectValue placeholder="All sessions" /></SelectTrigger>
+                      <SelectTrigger className="w-full text-white"><SelectValue placeholder="All sessions" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value={null}>All sessions</SelectItem>
                         {classes.map(cls => <SelectItem key={cls.id} value={cls.class_name}>{cls.class_name}</SelectItem>)}
@@ -375,9 +375,9 @@ export default function EventProfile() {
                   </div>
                   )}
                   <div className="flex-1">
-                  <label className="text-xs text-gray-600 font-medium mb-2 block text-[#232323]">Filter by Type</label>
+                  <label className="text-xs text-gray-600 font-medium mb-2 block text-white">Filter by Type</label>
                   <Select value={selectedSessionType} onValueChange={setSelectedSessionType}>
-                    <SelectTrigger className="w-full text-[#232323]"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-full text-white"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All types</SelectItem>
                       {sessionTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
@@ -389,7 +389,7 @@ export default function EventProfile() {
               {filteredSessions.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead><tr className="border-b border-gray-200">
+                    <thead><tr className="border-b border-white/10">
                       <th className="text-left py-3 px-2 font-semibold text-gray-600">Time</th>
                       <th className="text-left py-3 px-2 font-semibold text-gray-600">Type</th>
                       <th className="text-left py-3 px-2 font-semibold text-gray-600">Name</th>
@@ -399,13 +399,13 @@ export default function EventProfile() {
                       {filteredSessions.map(session => {
                         const hasValidTime = session.scheduled_time && isValid(parseISO(session.scheduled_time));
                         return (
-                          <tr key={session.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-2 text-xs whitespace-nowrap text-[#232323]">{hasValidTime ? format(parseISO(session.scheduled_time), 'MMM d · HH:mm') : 'TBA'}</td>
-                            <td className="py-3 px-2 font-medium text-[#232323]">{session.session_type}</td>
-                            <td className="py-3 px-2 text-[#232323]">{session.name}</td>
+                          <tr key={session.id} className="border-b border-white/5 hover:bg-white/5">
+                            <td className="py-3 px-2 text-xs whitespace-nowrap text-white">{hasValidTime ? format(parseISO(session.scheduled_time), 'MMM d · HH:mm') : 'TBA'}</td>
+                            <td className="py-3 px-2 font-medium text-white">{session.session_type}</td>
+                            <td className="py-3 px-2 text-white">{session.name}</td>
                             <td className="py-3 px-2 text-right">
                               <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
-                                <Button variant="ghost" size="sm" className="text-xs h-7 text-[#232323]">View</Button>
+                                <Button variant="ghost" size="sm" className="text-xs h-7 text-white">View</Button>
                               </Link>
                             </td>
                           </tr>
@@ -415,7 +415,7 @@ export default function EventProfile() {
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm text-[#232323]">No sessions match the selected filters.</p>
+                <p className="text-gray-500 text-sm text-white">No sessions match the selected filters.</p>
               )}
             </section>
           </div>
@@ -424,12 +424,12 @@ export default function EventProfile() {
         {/* RESULTS */}
         {activeTab === 'results' && (
           <div className="space-y-6">
-            <section className="bg-white border border-gray-200 rounded-lg p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Results Coverage</h2>
+            <section className="bg-white border border-white/10 rounded-lg p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">Results Coverage</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 {[['Total Sessions', sessions.length], ['Official/Locked', officialSessions.length], ['Results Rows', allResults.length], ['Coverage', `${sessions.length > 0 ? Math.round((officialSessions.length / sessions.length) * 100) : 0}%`]].map(([label, val]) => (
-                  <div key={label} className="bg-gray-50 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-black text-[#232323]">{val}</div>
+                  <div key={label} className="bg-white/5 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-black text-white">{val}</div>
                     <div className="text-xs text-gray-600 uppercase tracking-wide mt-1">{label}</div>
                   </div>
                 ))}
@@ -442,10 +442,10 @@ export default function EventProfile() {
             </section>
 
             {event.series_id && (
-              <section className="bg-white border border-gray-200 rounded-lg p-8">
-                <h2 className="text-2xl font-bold text-[#232323] mb-6">Standings Preview</h2>
+              <section className="bg-white border border-white/10 rounded-lg p-8">
+                <h2 className="text-2xl font-bold text-white mb-6">Standings Preview</h2>
                 {eventStandings.length === 0 ? (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-white/5 text-gray-600">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
                     <p className="text-sm">Standings not calculated yet for this season.</p>
                   </div>
@@ -453,16 +453,16 @@ export default function EventProfile() {
                   <>
                     <div className="overflow-x-auto mb-4">
                       <table className="w-full text-sm">
-                        <thead><tr className="border-b border-gray-200">
+                        <thead><tr className="border-b border-white/10">
                           <th className="text-left py-3 px-2 font-semibold text-gray-600">#</th>
                           <th className="text-left py-3 px-2 font-semibold text-gray-600">Driver</th>
                           <th className="text-right py-3 px-2 font-semibold text-gray-600">Points</th>
                         </tr></thead>
                         <tbody>
                           {eventStandings.map(stand => (
-                            <tr key={stand.id} className="border-b border-gray-100 hover:bg-gray-50">
-                              <td className="py-3 px-2 font-semibold text-[#232323]">{stand.position}</td>
-                              <td className="py-3 px-2 font-medium text-[#232323]">{stand.driver_name || 'N/A'}</td>
+                            <tr key={stand.id} className="border-b border-white/5 hover:bg-white/5">
+                              <td className="py-3 px-2 font-semibold text-white">{stand.position}</td>
+                              <td className="py-3 px-2 font-medium text-white">{stand.driver_name || 'N/A'}</td>
                               <td className="py-3 px-2 text-right font-semibold">{stand.total_points}</td>
                             </tr>
                           ))}
@@ -484,12 +484,12 @@ export default function EventProfile() {
               </section>
             )}
 
-            <section className="bg-white border border-gray-200 rounded-lg p-8">
+            <section className="bg-white border border-white/10 rounded-lg p-8">
               <PublicMediaGallery targetType="event_recap" targetEntityId={event?.id} title="Media" />
             </section>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-8">
-              <h2 className="text-2xl font-bold text-[#232323] mb-6">Official Results & Standings</h2>
+            <div className="bg-white border border-white/10 rounded-lg p-8">
+              <h2 className="text-2xl font-bold text-white mb-6">Official Results & Standings</h2>
               <ResultsPanel eventId={event?.id} seriesName={event.series} />
             </div>
           </div>
