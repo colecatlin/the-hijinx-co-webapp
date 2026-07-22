@@ -21,6 +21,7 @@ import DriverRecordRow    from '@/components/drivers/DriverRecordRow';
 import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import DriverDrawer from '@/components/racecore/records/DriverDrawer';
+import QuickAddDriverDialog from '@/components/management/DriverManagement/QuickAddDriverDialog';
 
 // ── Filter option sets ────────────────────────────────────────────────────────
 const RACING_STATUS_OPTIONS  = ['Active', 'Part Time', 'Inactive'];
@@ -52,9 +53,11 @@ export default function ManageDrivers() {
   // ── Drawer state ──────────────────────────────────────────────────────────────
   const [drawerOpen,    setDrawerOpen]    = useState(false);
   const [drawerDriverId, setDrawerDriverId] = useState(null);
+  const [quickAddOpen,   setQuickAddOpen]   = useState(false);
 
   const openDriverDrawer = (id) => { setDrawerDriverId(id); setDrawerOpen(true); };
   const closeDriverDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerDriverId(null), 300); };
+  const handleQuickAddCreated = (id) => { openDriverDrawer(id); };
 
   // ── Bulk edit state (preserved) ───────────────────────────────────────────────
   const [bulkStatus,        setBulkStatus]        = useState('');
@@ -367,9 +370,9 @@ export default function ManageDrivers() {
         Activity
       </button>
 
-      {/* Add Driver */}
+      {/* Add Driver — opens the focused quick-add dialog (mirrors Add Session) */}
       <button
-        onClick={() => openDriverDrawer('new')}
+        onClick={() => setQuickAddOpen(true)}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -531,6 +534,13 @@ export default function ManageDrivers() {
           <RecordActivityRail entityName="Driver" onClose={() => setShowActivity(false)} overlayOnMobile />
         )}
       </RecordsPageShell>
+
+      {/* Quick-add dialog (mirrors the Add Session modal) */}
+      <QuickAddDriverDialog
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        onCreated={handleQuickAddCreated}
+      />
 
       {/* Driver drawer */}
       <DriverDrawer
