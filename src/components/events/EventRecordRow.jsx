@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash2, ExternalLink, Flag } from 'lucide-react';
 import { buildRaceCoreUrl, getOrgContextFromEvent, getSeasonFromEvent } from '@/components/registrationdashboard/raceCoreLinks';
@@ -41,6 +41,22 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
   const endDisplay = event.end_date && event.end_date !== event.event_date
     ? ' – ' + format(new Date(event.end_date + 'T12:00:00'), 'MMM d')
     : '';
+
+  // Date-aware display status. LIVE only on the actual event day(s);
+  // UPCOMING before, DONE after. Replaces the legacy "live/published" duo
+  // that rendered two identical LIVE badges side-by-side.
+  const displayStatus = useMemo(() => {
+    if (event.event_date) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const start = new Date(event.event_date + 'T00:00:00'); start.setHours(0, 0, 0, 0);
+      const endRaw = event.end_date || event.event_date;
+      const end = new Date(endRaw + 'T23:59:59'); end.setHours(23, 59, 59, 999);
+      if (today < start) return 'Upcoming';
+      if (today > end) return 'Completed';
+      return 'Live'; // event day(s)
+    }
+    return event.status || 'Draft';
+  }, [event.event_date, event.end_date, event.status]);
 
   const updatedDisplay = event.updated_date
     ? format(new Date(event.updated_date), 'MMM d, yy')
@@ -115,10 +131,7 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-gray-100 truncate">{event.name}</span>
-          <RecordStatusBadge status={event.status} />
-          {event.published_flag && (
-            <RecordStatusBadge status="live" />
-          )}
+          <RecordStatusBadge status={displayStatus} />
         </div>
         <div className="text-xs text-gray-500 truncate mt-0.5">
           {event.series_name || '—'}
