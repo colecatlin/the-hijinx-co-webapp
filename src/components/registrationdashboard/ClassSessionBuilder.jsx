@@ -273,7 +273,7 @@ export default function ClassSessionBuilder({
       session_number: session.session_number != null ? String(session.session_number) : '',
       round_number: session.round_number != null ? String(session.round_number) : '',
       round_label: session.round_label || '',
-      scheduled_time: session.scheduled_time || '',
+      scheduled_time: session.scheduled_time ? String(session.scheduled_time).slice(11, 16) : '',
       duration_minutes: session.duration_minutes != null ? String(session.duration_minutes) : '',
       laps: session.laps != null ? String(session.laps) : '',
       run_order: session.run_order != null ? String(session.run_order) : '',
@@ -320,6 +320,16 @@ export default function ClassSessionBuilder({
       ? (editingSession?.status || 'Draft')
       : sessionForm.status;
 
+    // Reconstruct full datetime: time-of-day combined with the selected Event Day's date
+    // (falls back to the event's start date, then today) so storage stays a valid date-time.
+    let scheduledTime = undefined;
+    if (sessionForm.scheduled_time) {
+      const dayId = sessionForm.event_day_id;
+      const dayRecord = dayId ? eventDays.find((d) => d.id === dayId) : null;
+      const baseDate = dayRecord?.date || selectedEvent?.event_date || new Date().toISOString().slice(0, 10);
+      scheduledTime = `${baseDate}T${String(sessionForm.scheduled_time).padStart(5, '0').slice(0, 5)}:00`;
+    }
+
     const payload = {
       event_id: eventId,
       event_class_id: sessionForm.event_class_id,
@@ -327,7 +337,7 @@ export default function ClassSessionBuilder({
       session_type: sessionForm.session_type,
       name: sessionForm.name.trim(),
       session_number: sessionForm.session_number ? Number(sessionForm.session_number) : undefined,
-      scheduled_time: sessionForm.scheduled_time || undefined,
+      scheduled_time: scheduledTime,
       duration_minutes: sessionForm.duration_minutes ? Number(sessionForm.duration_minutes) : undefined,
       laps: sessionForm.laps ? Number(sessionForm.laps) : undefined,
       run_order: sessionForm.run_order !== ''
@@ -786,7 +796,7 @@ export default function ClassSessionBuilder({
                     {[...eventDays].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((d) => {
                       let wd = '';
                       try { wd = format(parseISO(d.date), 'EEE'); } catch {}
-                      return <SelectItem key={d.id} value={d.id}>{d.label} — {wd} {d.date}</SelectItem>;
+                      return <SelectItem key={d.id} value={d.id}>{wd} {d.date}</SelectItem>;
                     })}
                   </SelectContent>
                 </Select>
@@ -909,7 +919,7 @@ export default function ClassSessionBuilder({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Scheduled Time</label>
-                <Input type="datetime-local" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" />
+                <Input type="time" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" />
               </div>
               <div>
                 <label className="text-xs text-gray-400 uppercase block mb-1">Duration (min)</label>
