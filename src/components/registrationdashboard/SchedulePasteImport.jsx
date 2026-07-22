@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -194,52 +194,78 @@ export default function SchedulePasteImport({
     });
   }, [allEventDays, detectedDays]);
 
-  // Resolve each parsed row to an EventClass (existing or to-create from SeriesClass)
-  // Build a "resolution" map keyed by normalized class name.
+  // ── Class verification model ────────────────────────────────────────────
+  // Every pasted class name must be verified / mapped to an existing EventClass
+  // BEFORE import. We do NOT auto-create EventClasses here — a paste is for
+  // sessions only. Each resolved row surfaces a dropdown so the operator can
+  // confirm the target class (e.g. "Amsoil Pro SxS" → existing "PRO SxS").
+  //
+  // `classAssignments` is the operator's explicit choice, keyed by normalized
+  // class name → EventClass id (or '' to skip, '__auto' to defer to suggestion).
+  const [classAssignments, setClassAssignments] = useState({});
+
   const resolution = useMemo(() => {
-    const byName = new Map(); // normalized -> { rawName, eventClassId, seriesClassId, needsCreate }
-    const existingIndex = new Map();
+    const ecIndex = new Map(); // normalized -> EventClass
     (eventClasses || []).forEach((ec) => {
-      existingIndex.set(normalizeClassName(ec.class_name), ec);
-      if (ec.series_class_id) existingIndex.set(`sc:${ec.series_class_id}`, ec);
-    });
-    const scIndex = new Map();
-    (seriesClasses || []).forEach((sc) => {
-      scIndex.set(normalizeClassName(sc.class_name), sc);
+      ecIndex.set(normalizeClassName(ec.class_name), ec);
+      if (ec.series_class_id) ecIndex.set(`sc:${ec.series_class_id}`, ec);
     });
 
+    const byName = new Map();
     parsedRows.forEach((row) => {
       if (!row.className) return;
       const key = normalizeClassName(row.className);
       if (byName.has(key)) return;
-      const existing = existingIndex.get(key);
-      let sc = scIndex.get(key);
-      // Fallback: substring match for "AMSOIL PRO SXS" vs "PRO SXS"
-      if (!sc) {
-        for (const [norm, candidate] of scIndex.entries()) {
-          if (key.includes(norm) || norm.includes(key)) { sc = candidate; break; }
+      const exact = ecIndex.get(key);
+      // Best-effort suggestion: verbatim name difference is suspicious even when
+      // normalized match hits, so classify as 'suggested' instead of silent.
+      let near = null;
+      if (!exact) {
+        for (const [norm, ec] of ecIndex.entries()) {
+          if (typeof norm === 'string' && (key.includes(norm) || norm.includes(key))) { near = ec; break; }
         }
       }
       byName.set(key, {
         rawName: row.className,
-        eventClassId: existing?.id || null,
-        seriesClassId: sc?.id || existing?.series_class_id || null,
-        needsCreate: !existing,
+        exactEC: exact || null,
+        suggestedEC: exact ? null : near,
       });
     });
     return byName;
-  }, [parsedRows, eventClasses, seriesClasses]);
+  }, [parsedRows, eventClasses]);
 
-  const unresolvedCount = useMemo(
-    () => [...resolution.values()].filter((r) => !r.eventClassId && !r.seriesClassId).length,
-    [resolution]
-  );
-  const toCreateClasses = useMemo(
-    () => [...resolution.values()].filter((r) => r.needsCreate),
-    [resolution]
-  );
+  // Effective target EventClass id for a normalized key:
+  // user override > exact auto > suggested auto > none
+  const targetFor = useCallback((key) => {
+    const info = resolution.get(key);
+    const override = classAssignments[key];
+    if (override) return override === '__auto' ? (info?.exactEC?.id || info?.suggestedEC?.id || '') : override;
+    return info?.exactEC?.id || info?.suggestedEC?.id || '';
+  }, [resolution, classAssignments]);
+
+  const unassignedCount = useMemo(() => {
+    let n = 0;
+    parsedRows.forEach((row) => {
+      if (!row.className) return;
+      if (!targetFor(normalizeClassName(row.className))) n += 1;
+    });
+    return n;
+  }, [parsedRows, targetFor]);
+
+  const verifyFlags = useMemo(() => {
+    // Rows whose normalized match differs from the verbatim raw name → the
+    // operator must consciously confirm the routing (these are the "Amsoil Pro
+    // SxS" → "PRO SxS" cases).
+    let n = 0;
+    for (const [key, info] of resolution.entries()) {
+      const target = info.exactEC || info.suggestedEC;
+      if (target && normalizeClassName(target.class_name) === key && target.class_name !== info.rawName) n += 1;
+    }
+    return n;
+  }, [resolution]);
 
   const unmappedDays = detectedDays.filter((d) => !dayMapping[d]);
+  const allEventClasses = eventClasses || [];
 
   // Compute the base event date for days without a mapped EventDay (so we can still build scheduled_time).
   // selectedEventDate is YYYY-MM-DD. We map FRIDAY=+0, SATURDAY=+1, SUNDAY=+2 relative to the start.
@@ -268,48 +294,20 @@ export default function SchedulePasteImport({
       toast.error('No rows detected. Check the pasted format.');
       return;
     }
+    if (unassignedCount > 0) {
+      toast.error(`Assign a class to every session (${unassignedCount} unassigned).`);
+      return;
+    }
 
     setSubmitting(true);
     try {
-      // 1. Create missing EventClasses (those with a seriesClassId link first, plain-named after).
-      const classIdByNorm = new Map();
-      const createPayloads = [];
-      const baseOrder = eventClasses?.length
-        ? Math.max(...eventClasses.map((ec) => ec.class_order || 0))
-        : 0;
-      let orderIdx = 0;
-
-      for (const [norm, info] of resolution.entries()) {
-        if (info.eventClassId) {
-          classIdByNorm.set(norm, info.eventClassId);
-          continue;
-        }
-        createPayloads.push({
-          event_id: eventId,
-          class_name: info.rawName,
-          series_class_id: info.seriesClassId || undefined,
-          class_status: 'Open',
-          class_order: baseOrder + (++orderIdx),
-        });
-      }
-
-      let createdClasses = [];
-      if (createPayloads.length) {
-        createdClasses = await base44.entities.EventClass.bulkCreate(createPayloads);
-        createdClasses.forEach((ec, i) => {
-          const norm = normalizeClassName(createPayloads[i].class_name);
-          classIdByNorm.set(norm, ec.id);
-        });
-      }
-
-      // 2. Build session payloads.
-      const maxRunOrder = 0;
+      // Sessions only — no EventClasses are created during paste import.
       const sessionPayloads = [];
       parsedRows.forEach((row, idx) => {
         if (!row.className) return;
         const norm = normalizeClassName(row.className);
-        const eventClassId = classIdByNorm.get(norm);
-        if (!eventClassId) return; // skip unresolved
+        const eventClassId = targetFor(norm);
+        if (!eventClassId) return; // unresolved after verification
 
         const dateStr = dateForDay(row.day);
         const scheduled_time = dateStr ? `${dateStr}T${row.time}:00` : undefined;
@@ -330,20 +328,13 @@ export default function SchedulePasteImport({
         });
       });
 
-      // 3. Bulk create sessions.
       let createdSessions = [];
       if (sessionPayloads.length) {
         createdSessions = await base44.entities.Session.bulkCreate(sessionPayloads);
       }
 
-      // 4. Invalidate + report.
       await invalidateAfterOperation('session_created', { eventId });
-      if (createPayloads.length) {
-        await invalidateAfterOperation('event_class_created', { eventId });
-      }
-      toast.success(
-        `Imported ${createdSessions?.length || 0} sessions${createdClasses?.length ? `, created ${createdClasses.length} classes` : ''}.`
-      );
+      toast.success(`Imported ${createdSessions?.length || 0} sessions.`);
       setRawText('');
       onOpenChange(false);
     } catch (err) {
@@ -355,17 +346,14 @@ export default function SchedulePasteImport({
   }
 
   // Stats for display
-  const stats = useMemo(() => {
-    const sessionsCount = parsedRows.filter((r) => r.className).length;
-    return {
-      total: parsedRows.length,
-      sessions: sessionsCount,
-      classesToCreate: toCreateClasses.length,
-      unresolved: unresolvedCount,
-      mappedDays: detectedDays.length - unmappedDays.length,
-      detectedDays: detectedDays.length,
-    };
-  }, [parsedRows, toCreateClasses, unresolvedCount, detectedDays, unmappedDays]);
+  const stats = useMemo(() => ({
+    total: parsedRows.length,
+    sessions: parsedRows.filter((r) => r.className).length,
+    unresolved: unassignedCount,
+    verifyFlags,
+    mappedDays: detectedDays.length - unmappedDays.length,
+    detectedDays: detectedDays.length,
+  }), [parsedRows, unassignedCount, verifyFlags, detectedDays, unmappedDays]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -400,12 +388,14 @@ export default function SchedulePasteImport({
               <Badge className="bg-teal-900/30 text-teal-300 border-teal-700/40">
                 {stats.sessions} sessions
               </Badge>
-              <Badge className="bg-blue-900/30 text-blue-300 border-blue-700/40">
-                {stats.classesToCreate ? `${stats.classesToCreate} new class${stats.classesToCreate !== 1 ? 'es' : ''}` : '0 new classes'}
-              </Badge>
-              {stats.unresolved > 0 && (
+              {stats.verifyFlags > 0 && (
                 <Badge className="bg-amber-900/30 text-amber-300 border-amber-700/40 flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" /> {stats.unresolved} unresolved
+                  <AlertTriangle className="w-3 h-3" /> {stats.verifyFlags} need verify
+                </Badge>
+              )}
+              {stats.unresolved > 0 && (
+                <Badge className="bg-red-900/30 text-red-300 border-red-700/40 flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" /> {stats.unresolved} unassigned
                 </Badge>
               )}
               <Badge className="bg-gray-700/40 text-gray-300">
@@ -464,20 +454,15 @@ export default function SchedulePasteImport({
                       <th className="text-left px-2 py-1.5">Time</th>
                       <th className="text-left px-2 py-1.5">Class</th>
                       <th className="text-left px-2 py-1.5">Type</th>
-                      <th className="text-left px-2 py-1.5">Resolved</th>
+                      <th className="text-left px-2 py-1.5">Attach To (verify)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {parsedRows.slice(0, 60).map((row, i) => {
-                      const norm = normalizeClassName(row.className);
-                      const info = row.className ? resolution.get(norm) : null;
-                      const resolved = info?.eventClassId
-                        ? 'existing'
-                        : info?.seriesClassId
-                          ? 'series'
-                          : row.className
-                            ? 'unresolved'
-                            : 'skip';
+                      const key = normalizeClassName(row.className);
+                      const info = row.className ? resolution.get(key) : null;
+                      const isVerify = !!(info && (info.exactEC || info.suggestedEC) && (info.exactEC || info.suggestedEC).class_name !== info.rawName);
+                      const targetId = row.className ? targetFor(key) : '';
                       return (
                         <tr key={i} className="border-b border-gray-900/60 hover:bg-gray-900/30">
                           <td className="px-2 py-1.5 font-mono text-gray-500">{row.day || '—'}</td>
@@ -487,10 +472,31 @@ export default function SchedulePasteImport({
                             <Badge className="text-[9px] bg-purple-900/30 text-purple-300 border-purple-700/40">{row.sessionType}</Badge>
                           </td>
                           <td className="px-2 py-1.5">
-                            {resolved === 'existing' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                            {resolved === 'series' && <Badge className="text-[9px] bg-teal-900/30 text-teal-300 border-teal-700/40">+class</Badge>}
-                            {resolved === 'unresolved' && <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />}
-                            {resolved === 'skip' && <span className="text-gray-600 text-[9px]">—</span>}
+                            {!row.className && <span className="text-gray-600 text-[9px]">—</span>}
+                            {row.className && (
+                              <div className="flex items-center gap-1.5">
+                                {isVerify && <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
+                                <Select
+                                  value={targetId || '__none'}
+                                  onValueChange={(v) => v === '__none'
+                                    ? setClassAssignments((p) => ({ ...p, [key]: '' }))
+                                    : setClassAssignments((p) => ({ ...p, [key]: v }))}
+                                >
+                                  <SelectTrigger className={`h-7 text-[10px] w-[200px] ${!targetId ? 'border-red-700/60 text-red-300' : isVerify ? 'border-amber-700/60 text-amber-200' : 'border-emerald-700/60 text-emerald-200'} bg-[#1A1A1A]`}>
+                                    <SelectValue placeholder="Assign a class…" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-[#262626] border-gray-700 max-h-60">
+                                    <SelectItem value="__none" className="text-gray-400">Unassigned</SelectItem>
+                                    {allEventClasses.map((ec) => (
+                                      <SelectItem key={ec.id} value={ec.id} className="text-white">{ec.class_name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {targetId && info?.exactEC?.id === targetId && !isVerify && (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                                )}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       );
@@ -507,11 +513,21 @@ export default function SchedulePasteImport({
           )}
         </div>
 
-        <DialogFooter className="border-t border-gray-800 pt-3">
+        <DialogFooter className="border-t border-gray-800 pt-3 flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
+          {stats.verifyFlags > 0 && (
+            <div className="flex items-center gap-2 text-xs text-amber-300 bg-amber-950/40 border border-amber-800/40 rounded-md px-3 py-1.5">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              {stats.verifyFlags} class mapping{stats.verifyFlags === 1 ? '' : 's'} differ from the stored name — confirm each dropdown.
+            </div>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-700 text-gray-300">
             Cancel
           </Button>
-          <Button onClick={handleImport} disabled={submitting || parsedRows.length === 0} className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Button
+            onClick={handleImport}
+            disabled={submitting || parsedRows.length === 0 || unassignedCount > 0}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
             {submitting ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Zap className="w-4 h-4 mr-1" />}
             Import {stats.sessions} Sessions
           </Button>
