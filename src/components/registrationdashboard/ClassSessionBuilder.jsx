@@ -21,13 +21,14 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
-  Plus, Edit2, Copy, Trash2, Lock, LockOpen, ChevronUp, ChevronDown, Settings, Zap, Layers,
+  Plus, Edit2, Copy, Trash2, Lock, LockOpen, ChevronUp, ChevronDown, Settings, Zap, Layers, ClipboardPaste,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import useDashboardMutation from './useDashboardMutation';
 import { buildInvalidateAfterOperation } from './invalidationHelper';
 import { isSessionLocked } from './sessionLifecycle';
 import { sortSessionsChronologically } from './ops/sessionOrdering';
+import SchedulePasteImport from './SchedulePasteImport';
 
 const EMPTY_CLASS_FORM = {
   class_name: '', series_class_id: '', max_entries: '', class_status: 'Open', class_order: '', notes: '',
@@ -67,6 +68,9 @@ export default function ClassSessionBuilder({
   const [selectedClassForGen, setSelectedClassForGen] = useState(null);
   // Part 2 — optional date for quick-create generators
   const [quickGenDate, setQuickGenDate] = useState('');
+
+  // ── Paste-to-Schedule import dialog ────────────────────────────────────────
+  const [pasteImportOpen, setPasteImportOpen] = useState(false);
 
   const sharedOpts = {
     invalidateAfterOperation,
@@ -506,6 +510,15 @@ export default function ClassSessionBuilder({
               <Layers className="w-4 h-4 mr-1" /> Import Series Classes
             </Button>
           )}
+          <Button
+            onClick={() => setPasteImportOpen(true)}
+            variant="outline"
+            size="sm"
+            className="border-teal-700 text-teal-300 hover:bg-teal-900/30"
+            title="Paste a full schedule and bulk-create sessions"
+          >
+            <ClipboardPaste className="w-4 h-4 mr-1" /> Paste Schedule
+          </Button>
           <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="w-4 h-4 mr-1" /> Add Class
           </Button>
@@ -985,6 +998,19 @@ export default function ClassSessionBuilder({
           </div>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Paste-to-Schedule Import Dialog ─────────────────────────────────── */}
+      <SchedulePasteImport
+        open={pasteImportOpen}
+        onOpenChange={setPasteImportOpen}
+        eventId={eventId}
+        seriesId={seriesId}
+        eventDays={eventDays}
+        eventClasses={eventClasses}
+        seriesClasses={seriesClasses}
+        selectedEventDate={selectedEvent?.event_date || selectedEvent?.start_date || null}
+        invalidateAfterOperation={invalidateAfterOperation}
+      />
 
       {/* ── Heat Generator Dialog ──────────────────────────────────────────── */}
       <Dialog open={quickGenDialog === 'heats'} onOpenChange={(o) => !o && setQuickGenDialog(null)}>
