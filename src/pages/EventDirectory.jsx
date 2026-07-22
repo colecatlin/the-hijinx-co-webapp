@@ -260,12 +260,12 @@ export default function EventDirectory() {
     return (
       <Link
         to={createPageUrl('EventResults') + `?id=${event.id}`}
-        className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+        className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 hover:shadow-lg transition-shadow"
       >
         <div className="flex items-start justify-between mb-4">
-          <h3 className="font-bold text-lg leading-tight">{getDisplayName(event)}</h3>
+          <h3 className="font-bold text-lg leading-tight text-[#232323]">{getDisplayName(event)}</h3>
           <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
-            <span className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">Completed</span>
+            <span className="px-2 py-1 text-xs rounded bg-[#f3f4f6] text-[#444]">Completed</span>
             {sessionCount > 1 && (
               <span className="flex items-center gap-1 px-2 py-0.5 text-xs rounded bg-blue-50 text-blue-700 font-medium">
                 <Layers className="w-3 h-3" />
@@ -275,26 +275,26 @@ export default function EventDirectory() {
           </div>
         </div>
         <div className="space-y-3">
-          <div className="space-y-1 text-sm text-gray-600">
+          <div className="space-y-1 text-sm text-[#3a3a3a]">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
               {isMultiDay && event.end_date && (
-                <span className="text-gray-400">– {format(new Date(event.end_date), 'MMM d')}</span>
+                <span className="text-[#999]">– {format(new Date(event.end_date), 'MMM d')}</span>
               )}
             </div>
             {event.series && (
-              <div className="text-xs text-gray-400 font-medium uppercase tracking-wide">{event.series}</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-[#888]">{event.series}</div>
             )}
           </div>
           {podium.length > 0 && (
             <div className="pt-3 border-t border-gray-100">
-              <div className="text-xs text-gray-500 font-medium mb-2">Top Finishers (Final)</div>
+              <div className="text-xs font-medium mb-2 text-[#888]">Top Finishers (Final)</div>
               <div className="space-y-1.5">
                 {podium.map((p) => (
                   <div key={p.position} className="flex items-center gap-2">
                     {positionIcon(p.position)}
-                    <span className="text-xs text-gray-700">
+                    <span className="text-xs text-[#555]">
                       {p.number ? `#${p.number} ` : ''}{p.name}
                     </span>
                   </div>
@@ -404,22 +404,22 @@ export default function EventDirectory() {
                     <Link
                       key={event.id}
                       to={`${createPageUrl('EventProfile')}?id=${event.id}`}
-                      className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow relative overflow-hidden"
+                      className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 hover:shadow-lg transition-shadow relative overflow-hidden"
                     >
                       {cls.disciplineColor && (
                         <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: cls.disciplineColor }} />
                       )}
                       <div className="mb-3 mt-1">
-                        <h3 className="font-bold text-lg leading-tight">{event.name}</h3>
+                        <h3 className="font-bold text-lg leading-tight text-[#232323]">{event.name}</h3>
                         {event.series_name && (
-                          <div className="text-xs text-gray-400 font-medium uppercase tracking-wide mt-0.5">{event.series_name}</div>
+                          <div className="text-xs font-medium uppercase tracking-wide mt-0.5 text-[#888]">{event.series_name}</div>
                         )}
                       </div>
-                      <div className="space-y-1 text-sm text-gray-600">
+                      <div className="space-y-1 text-sm text-[#3a3a3a]">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Calendar className="w-4 h-4" />
                           {event.event_date ? format(new Date(event.event_date), 'MMM d, yyyy') : 'TBA'}
-                          {event.round_number && seriesRecord?.uses_rounds && <span className="text-gray-400">&middot; Rd {event.round_number}</span>}
+                          {event.round_number && seriesRecord?.uses_rounds && <span className="text-[#999]">&middot; Rd {event.round_number}</span>}
                           <DaysUntilBadge eventDate={event.event_date} status={event.status} />
                         </div>
                       </div>
@@ -434,7 +434,7 @@ export default function EventDirectory() {
                             </span>
                           )}
                           {cls.formatName && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#f3f4f6] text-[#555]">
                               {cls.formatName}
                             </span>
                           )}
