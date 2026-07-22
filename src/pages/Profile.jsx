@@ -15,7 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Save, LogOut, ChevronRight, CheckCircle2, AlertCircle,
   KeyRound, Gauge, Star, Globe, Camera, FileText, Flag, Users, BookOpen,
-  Clock, XCircle
+  Clock, XCircle, AtSign
 } from 'lucide-react';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import { createPageUrl } from '@/components/utils';
@@ -352,6 +352,28 @@ export default function Profile() {
           buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
           buildEditorUrl={buildEditorUrl}
         />
+
+        {/* Username prompt — only for users who skipped username at onboarding */}
+        {user && !user.username && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+            style={{ background: 'rgba(29,161,161,0.07)', border: '1px solid rgba(29,161,161,0.2)' }}>
+            <div className="flex items-center gap-2.5">
+              <AtSign className="w-4 h-4 flex-shrink-0" style={{ color: TEAL }} />
+              <div>
+                <p className="text-sm font-semibold text-white">Claim your public username</p>
+                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  You skipped this at sign-up. Grab one so people can find you at /u/yourname.
+                </p>
+              </div>
+            </div>
+            <Link to="/ClaimUsername?return_to=/Profile&feature=set%20up%20your%20public%20profile"
+              className="flex-shrink-0 px-3 py-2 text-xs font-bold rounded-lg transition-all"
+              style={{ background: TEAL, color: '#050A0A' }}>
+              Claim
+            </Link>
+          </motion.div>
+        )}
 
         {/* Feedback */}
         {updateMutation.isSuccess && (

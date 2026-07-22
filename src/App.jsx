@@ -38,6 +38,8 @@ import RaceCoreTrackEditor from './pages/RaceCoreTrackEditor';
 import RaceCoreSeriesEditor from './pages/RaceCoreSeriesEditor';
 import RaceCoreEventEditor from './pages/RaceCoreEventEditor';
 import ProfileSetup from './pages/ProfileSetup';
+import ClaimUsername from './pages/ClaimUsername';
+import UsernameRequiredGuard from '@/components/onboarding/UsernameRequiredGuard';
 import OnboardingGuard from '@/components/onboarding/OnboardingGuard';
 import ManageProducts from './pages/ManageProducts';
 import ManageInvoices from './pages/ManageInvoices';
@@ -221,6 +223,8 @@ const AuthenticatedApp = () => {
       <Route path="/race-core/series/:id" element={<RaceCoreEditorRedirect base="series" />} />
       <Route path="/race-core/events/:id" element={<RaceCoreEditorRedirect base="events" />} />
       <Route path="/ProfileSetup" element={<LayoutWrapper currentPageName="ProfileSetup"><ProfileSetup /></LayoutWrapper>} />
+      {/* Username on-demand: standalone lightweight completion flow (no layout) */}
+      <Route path="/ClaimUsername" element={<ClaimUsername />} />
       <Route path="/ProfileSetup/:stage" element={<LayoutWrapper currentPageName="ProfileSetup"><ProfileSetup /></LayoutWrapper>} />
       <Route path="/DriverProfileSetup" element={<Navigate to="/ProfileSetup" replace />} />
       <Route path="/EntityOnboarding" element={<Navigate to="/ProfileSetup" replace />} />
@@ -243,7 +247,8 @@ const AuthenticatedApp = () => {
       <Route path="/u/:username" element={<LayoutWrapper currentPageName="UserPublicProfile"><UserPublicProfile /></LayoutWrapper>} />
 
       {/* Organization Platform — one reusable shell for every org type */}
-      <Route path="/organization/create" element={<LayoutWrapper currentPageName="OrganizationCreate"><OrganizationCreate /></LayoutWrapper>} />
+      {/* Username on-demand: creating an org requires a public handle */}
+      <Route path="/organization/create" element={<LayoutWrapper currentPageName="OrganizationCreate"><UsernameRequiredGuard featureLabel="create an organization"><OrganizationCreate /></UsernameRequiredGuard></LayoutWrapper>} />
       <Route path="/organization/:entityType/:entityId" element={<LayoutWrapper currentPageName="OrganizationPage"><OrganizationPage /></LayoutWrapper>} />
       <Route path="/organization/:entityType/:entityId/:section" element={<LayoutWrapper currentPageName="OrganizationPage"><OrganizationPage /></LayoutWrapper>} />
 
