@@ -52,14 +52,14 @@ export default function QuickAddDriverDialog({ open, onOpenChange, onCreated }) 
   const [creating, setCreating] = useState(false);
 
   const { data: seriesList = [] } = useQuery({
-    queryKey: ['series', 'list', 'active'],
+    queryKey: ['series', 'list', 'quick-add-drivers'],
     queryFn: () => base44.entities.Series.list('-created_date', 200),
     enabled: open,
   });
 
   const { data: seriesClasses = [] } = useQuery({
-    queryKey: ['series-classes', 'all'],
-    queryFn: () => base44.entities.SeriesClass.list('-sort_order', 500),
+    queryKey: ['series-classes', 'quick-add-drivers', 'all'],
+    queryFn: () => base44.entities.SeriesClass.list('class_name', 1000),
     enabled: open,
   });
 
