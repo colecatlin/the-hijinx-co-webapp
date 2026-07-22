@@ -400,12 +400,12 @@ export default function EventProfile() {
                         const hasValidTime = session.scheduled_time && isValid(parseISO(session.scheduled_time));
                         return (
                           <tr key={session.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-2 text-xs whitespace-nowrap">{hasValidTime ? format(parseISO(session.scheduled_time), 'MMM d · HH:mm') : 'TBA'}</td>
+                            <td className="py-3 px-2 text-xs whitespace-nowrap text-[#232323]">{hasValidTime ? format(parseISO(session.scheduled_time), 'MMM d · HH:mm') : 'TBA'}</td>
                             <td className="py-3 px-2 font-medium text-[#232323]">{session.session_type}</td>
-                            <td className="py-3 px-2">{session.name}</td>
+                            <td className="py-3 px-2 text-[#232323]">{session.name}</td>
                             <td className="py-3 px-2 text-right">
                               <Link to={`${createPageUrl('SessionProfile')}?id=${session.id}`}>
-                                <Button variant="ghost" size="sm" className="text-xs h-7">View</Button>
+                                <Button variant="ghost" size="sm" className="text-xs h-7 text-[#232323]">View</Button>
                               </Link>
                             </td>
                           </tr>
