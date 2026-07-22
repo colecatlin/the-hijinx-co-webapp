@@ -42,6 +42,7 @@ import { buildEntryPayload, getEntryFieldValue } from './entryFieldSupport';
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 function entryStatusBadge(status) {
   switch (status) {
+    case 'Pending Approval': return 'bg-orange-500/20 text-orange-400';
     case 'Checked In':  return 'bg-green-500/20 text-green-400';
     case 'Teched':      return 'bg-purple-500/20 text-purple-400';
     case 'Tech Failed': return 'bg-red-500/20 text-red-400';
@@ -205,6 +206,7 @@ export default function EntriesManager({
   const stats = useMemo(() => ({
     total: entries.length,
     registered: entries.filter((e) => e.entry_status === 'Registered').length,
+    pending: entries.filter((e) => e.entry_status === 'Pending Approval').length,
     checkedIn: entries.filter((e) => e.entry_status === 'Checked In').length,
     teched: entries.filter((e) => e.entry_status === 'Teched').length,
     unpaid: entries.filter((e) => e.payment_status === 'Unpaid').length,
@@ -215,6 +217,20 @@ export default function EntriesManager({
     await updateEntry({ id, data });
     setEditingEntry(null);
     setDetailEntry(null);
+  };
+
+  const handleApproveEntry = async (id) => {
+    await updateEntry({ id, data: { entry_status: 'Registered' } });
+    refetchAll();
+    invalidateAfterOperation('entry_updated', { eventId });
+  };
+
+  const handleBulkApprove = async () => {
+    const updates = Array.from(selectedEntries).map((id) => ({ id, data: { entry_status: 'Registered' } }));
+    await bulkUpdateEntries(updates);
+    setSelectedEntries(new Set());
+    refetchAll();
+    invalidateAfterOperation('entry_bulk_approved', { eventId });
   };
 
   const handleArchiveEntry = async (id, reason) => {
@@ -342,6 +358,7 @@ export default function EntriesManager({
       <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 grid grid-cols-2 md:grid-cols-6 gap-2">
         {[
           { label: 'Total', value: stats.total, color: 'text-white' },
+          { label: 'Pending', value: stats.pending, color: 'text-orange-400' },
           { label: 'Registered', value: stats.registered, color: 'text-blue-400' },
           { label: 'Checked In', value: stats.checkedIn, color: 'text-green-400' },
           { label: 'Teched', value: stats.teched, color: 'text-purple-400' },
@@ -402,6 +419,7 @@ export default function EntriesManager({
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
                 <SelectItem value="all">All</SelectItem>
+                <SelectItem value="pending">Pending Approval</SelectItem>
                 <SelectItem value="registered">Registered</SelectItem>
                 <SelectItem value="checkedin">Checked In</SelectItem>
                 <SelectItem value="teched">Teched</SelectItem>
@@ -440,6 +458,7 @@ export default function EntriesManager({
         <div className="bg-blue-950/30 border border-blue-800/50 rounded-lg p-3 flex items-center justify-between flex-wrap gap-2">
           <p className="text-sm text-blue-300">{selectedEntries.size} selected</p>
           <div className="flex gap-2 flex-wrap">
+            <Button onClick={handleBulkApprove} size="sm" className="bg-green-700 hover:bg-green-600 text-white">Approve Selected</Button>
             <Button onClick={() => setShowBulkTransponderModal(true)} size="sm" className="bg-cyan-700 hover:bg-cyan-600 text-white">Assign Transponders</Button>
             {seriesClasses.length > 0 && (
               <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
@@ -491,7 +510,8 @@ export default function EntriesManager({
                   <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Payment</th>
                   <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Tech</th>
                   <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Flags</th>
-                </tr>
+                  {canEdit && <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Action</th>}
+                  </tr>
               </thead>
               <tbody>
                 {filteredEntries.map((entry) => (
@@ -540,10 +560,24 @@ export default function EntriesManager({
                           )}
                         </div>
                       ) : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                      </td>
+                      {canEdit && (
+                      <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
+                        {entry.entry_status === 'Pending Approval' ? (
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white h-7 text-xs"
+                            onClick={() => handleApproveEntry(entry.id)}
+                            disabled={updatingEntry}
+                          >
+                            Approve
+                          </Button>
+                        ) : '—'}
+                      </td>
+                      )}
+                      </tr>
+                      ))}
+                      </tbody>
             </table>
           </div>
         </Card>

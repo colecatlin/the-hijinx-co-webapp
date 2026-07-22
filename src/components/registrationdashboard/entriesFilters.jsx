@@ -50,6 +50,7 @@ export function applyFilters(entries, filters, driversMap) {
       if (filters.status === 'teched'      && entry.entry_status !== 'Teched')       return false;
       if (filters.status === 'techfailed'  && entry.entry_status !== 'Tech Failed') return false;
       if (filters.status === 'techhold'    && entry.entry_status !== 'Tech Hold')   return false;
+      if (filters.status === 'pending'      && entry.entry_status !== 'Pending Approval') return false;
       if (filters.status === 'withdrawn'   && entry.entry_status !== 'Withdrawn')   return false;
     }
 
@@ -80,6 +81,7 @@ export function applyFilters(entries, filters, driversMap) {
 export function rowNeedsAttention(entry) {
   return (
     entry.payment_status !== 'Paid' ||
+    entry.entry_status === 'Pending Approval' ||
     (entry.tech_status !== 'Passed' && entry.tech_status !== 'Teched') ||
     !entry.transponder_id
   );

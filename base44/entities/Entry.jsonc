@@ -41,6 +41,7 @@
     "entry_status": {
       "type": "string",
       "enum": [
+        "Pending Approval",
         "Registered",
         "Checked In",
         "Teched",
@@ -49,7 +50,7 @@
         "Withdrawn"
       ],
       "default": "Registered",
-      "description": "Operational entry state. Tech actions auto-advance: Pass\u2192Teched, Fail\u2192Tech Failed, Recheck\u2192Tech Hold"
+      "description": "Operational entry state. 'Pending Approval' = self-declared entry awaiting admin approval. Admin-created entries skip straight to Registered. Tech actions auto-advance: Pass\u2192Teched, Fail\u2192Tech Failed, Recheck\u2192Tech Hold"
     },
     "payment_status": {
       "type": "string",

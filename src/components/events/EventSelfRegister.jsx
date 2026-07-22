@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Flag, CheckCircle2, UserPlus, LogIn, X } from 'lucide-react';
+import { Flag, CheckCircle2, UserPlus, LogIn, X, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**
@@ -81,7 +81,7 @@ export default function EventSelfRegister({ event, classes = [], seriesId }) {
     mutationFn: (data) => base44.entities.Entry.create(data),
     onSuccess: () => {
       invalidateEntryQueries();
-      toast.success("You're entered! See you at the track.");
+      toast.success("Entry submitted — pending admin approval.");
     },
     onError: (e) => toast.error(`Failed to register: ${e.message}`),
   });
@@ -116,6 +116,7 @@ export default function EventSelfRegister({ event, classes = [], seriesId }) {
   }, [myEntry]);
 
   const isRegistered = !!myEntry && myEntry.entry_status !== 'Withdrawn';
+  const isPending = isRegistered && myEntry?.entry_status === 'Pending Approval';
 
   const handleCreateDriver = async () => {
     if (!user) { toast.error('Not authenticated'); return; }
@@ -139,7 +140,7 @@ export default function EventSelfRegister({ event, classes = [], seriesId }) {
       series_id: seriesId || event.series_id,
       car_number: form.car_number.trim(),
       team_id: form.team_id || undefined,
-      entry_status: 'Registered',
+      entry_status: 'Pending Approval',
       tech_status: 'Not Inspected',
       created_by_user_id: user.id,
     };
@@ -221,12 +222,16 @@ export default function EventSelfRegister({ event, classes = [], seriesId }) {
         onClick={() => setOpen(true)}
         size="sm"
         className={
-          isRegistered
-            ? 'bg-green-600 hover:bg-green-700 text-white font-semibold'
-            : 'bg-[#00FFDA] text-[#0A0A0A] hover:bg-[#00E6CC] font-semibold'
+          isPending
+            ? 'bg-amber-600 hover:bg-amber-700 text-white font-semibold'
+            : isRegistered
+              ? 'bg-green-600 hover:bg-green-700 text-white font-semibold'
+              : 'bg-[#00FFDA] text-[#0A0A0A] hover:bg-[#00E6CC] font-semibold'
         }
       >
-        {isRegistered ? (
+        {isPending ? (
+          <><Clock className="w-3.5 h-3.5 mr-1.5" /> Pending</>
+        ) : isRegistered ? (
           <><CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Entered</>
         ) : (
           <><Flag className="w-3.5 h-3.5 mr-1.5" /> I'm Going</>
@@ -286,19 +291,38 @@ export default function EventSelfRegister({ event, classes = [], seriesId }) {
 
             {showRegistered && (
               <div className="space-y-4">
-                <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-green-400">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span className="text-sm font-bold">You're entered!</span>
+                {isPending ? (
+                  <div className="bg-amber-900/30 border border-amber-700/50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-amber-400">
+                      <Clock className="w-5 h-5" />
+                      <span className="text-sm font-bold">Entry submitted — pending approval</span>
+                    </div>
+                    <p className="text-xs text-amber-300/70 mt-1.5">
+                      A series or event admin must approve your entry before you appear on the official roster.
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      <Badge className="bg-amber-500/20 text-amber-400">{myEntry.entry_status}</Badge>
+                      <Badge className="bg-amber-500/20 text-amber-400">{myEntry.payment_status}</Badge>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {myDriver.first_name} {myDriver.last_name} · #{myEntry.car_number}
+                    </p>
                   </div>
-                  <div className="flex gap-2 mt-2">
-                    <Badge className="bg-blue-500/20 text-blue-400">{myEntry.entry_status}</Badge>
-                    <Badge className="bg-amber-500/20 text-amber-400">{myEntry.payment_status}</Badge>
+                ) : (
+                  <div className="bg-green-900/30 border border-green-700/50 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-green-400">
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span className="text-sm font-bold">You're entered!</span>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Badge className="bg-blue-500/20 text-blue-400">{myEntry.entry_status}</Badge>
+                      <Badge className="bg-amber-500/20 text-amber-400">{myEntry.payment_status}</Badge>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {myDriver.first_name} {myDriver.last_name} · #{myEntry.car_number}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-400 mt-2">
-                    {myDriver.first_name} {myDriver.last_name} · #{myEntry.car_number}
-                  </p>
-                </div>
+                )}
 
                 <p className="text-xs text-gray-500">Update your entry details:</p>
                 {renderClassField()}
@@ -349,7 +373,7 @@ export default function EventSelfRegister({ event, classes = [], seriesId }) {
                       {creatingEntry ? 'Entering…' : "I'm Going — Enter Me"}
                     </Button>
                     <p className="text-xs text-gray-500 text-center">
-                      You'll show up on the event's entered drivers list immediately.
+                      Your entry will appear on the event roster once an admin approves it.
                     </p>
                   </>
                 )}

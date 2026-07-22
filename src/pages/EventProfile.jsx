@@ -77,7 +77,7 @@ export default function EventProfile() {
     queryKey: ['eventEntries', event?.id],
     queryFn: async () => {
       const all = await base44.entities.Entry.filter({ event_id: event.id }, '-created_date', 200);
-      return all.filter((e) => !e.is_archived && e.entry_status !== 'Withdrawn');
+      return all.filter((e) => !e.is_archived && e.entry_status !== 'Withdrawn' && e.entry_status !== 'Pending Approval');
     },
     enabled: !!event?.id,
   });
