@@ -363,26 +363,26 @@ export default function EventProfile() {
               {sessions.length > 0 && (
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                   {classes.length > 0 && (
-                    <div className="flex-1">
-                      <label className="text-xs text-gray-600 font-medium mb-2 block">Filter by Class</label>
-                      <Select value={selectedClassName || ''} onValueChange={setSelectedClassName}>
-                        <SelectTrigger className="w-full"><SelectValue placeholder="All sessions" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value={null}>All sessions</SelectItem>
-                          {classes.map(cls => <SelectItem key={cls.id} value={cls.class_name}>{cls.class_name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
                   <div className="flex-1">
-                    <label className="text-xs text-gray-600 font-medium mb-2 block">Filter by Type</label>
-                    <Select value={selectedSessionType} onValueChange={setSelectedSessionType}>
-                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <label className="text-xs text-gray-600 font-medium mb-2 block text-[#232323]">Filter by Class</label>
+                    <Select value={selectedClassName || ''} onValueChange={setSelectedClassName}>
+                      <SelectTrigger className="w-full text-[#232323]"><SelectValue placeholder="All sessions" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All types</SelectItem>
-                        {sessionTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                        <SelectItem value={null}>All sessions</SelectItem>
+                        {classes.map(cls => <SelectItem key={cls.id} value={cls.class_name}>{cls.class_name}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                  </div>
+                  )}
+                  <div className="flex-1">
+                  <label className="text-xs text-gray-600 font-medium mb-2 block text-[#232323]">Filter by Type</label>
+                  <Select value={selectedSessionType} onValueChange={setSelectedSessionType}>
+                    <SelectTrigger className="w-full text-[#232323]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All types</SelectItem>
+                      {sessionTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   </div>
                 </div>
               )}
@@ -415,7 +415,7 @@ export default function EventProfile() {
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm">No sessions match the selected filters.</p>
+                <p className="text-gray-500 text-sm text-[#232323]">No sessions match the selected filters.</p>
               )}
             </section>
           </div>
