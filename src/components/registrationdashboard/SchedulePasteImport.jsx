@@ -105,7 +105,7 @@ function parseSchedule(text) {
     const restUpper = rest.toUpperCase();
     let sessionType = null;
     for (const kw of SESSION_TYPE_KEYWORDS) {
-      if (kw.words.some((w) => restUpper.includes(w))) {
+      if (kw.words.some((w) => restUpper.includes(w.toUpperCase()))) {
         sessionType = kw.type;
         break;
       }
@@ -115,10 +115,10 @@ function parseSchedule(text) {
     let className = rest.trim();
     if (sessionType) {
       const matchedWord = SESSION_TYPE_KEYWORDS.find((k) => k.type === sessionType)
-        .words.find((w) => className.toUpperCase().includes(w));
+        .words.find((w) => className.toUpperCase().includes(w.toUpperCase()));
       if (matchedWord) {
         // strip everything from the matched keyword onward, including trailing separators
-        const idx = className.toUpperCase().indexOf(matchedWord);
+        const idx = className.toUpperCase().indexOf(matchedWord.toUpperCase());
         if (idx >= 0) className = className.slice(0, idx);
       }
     }
