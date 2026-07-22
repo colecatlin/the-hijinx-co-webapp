@@ -160,7 +160,7 @@ export default function EventProfile() {
   const eventDesc = [track?.name ? `At ${track.name}` : '', event.event_date ? `on ${safeDateFormat(event.event_date)}` : '', series?.name ? `— ${series.name}` : ''].filter(Boolean).join(' ') || `${event.name} event details on HIJINX.`;
 
   return (
-    <PageShell>
+    <PageShell className="light-page">
       <SeoMeta title={buildEntityTitle(eventTitle, 'Event')} description={eventDesc} image={heroImg || undefined} />
 
     {/* ── HERO ── */}
@@ -200,17 +200,17 @@ export default function EventProfile() {
       </div>
 
       {/* ── NAV ── */}
-      <div className="bg-white border-b border-white/10">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2">
-            <Link to={createPageUrl('EventDirectory')} className="text-xs text-gray-500 hover:text-white mr-4">← Events</Link>
+            <Link to={createPageUrl('EventDirectory')} className="text-xs text-gray-500 hover:text-black mr-4">← Events</Link>
           </div>
           <div className="flex gap-1 overflow-x-auto">
             {TABS.map(tab => {
               const Icon = tab.icon;
               return (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-white border-b-2 border-[#00FFDA] -mb-px' : 'text-gray-500 hover:text-white'}`}
+                  className={`flex items-center gap-2 px-4 py-3 text-xs font-medium whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-black border-b-2 border-[#00FFDA] -mb-px' : 'text-gray-500 hover:text-black'}`}
                 >
                   <Icon className="w-3.5 h-3.5" />{tab.label}
                 </button>

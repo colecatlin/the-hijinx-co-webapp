@@ -256,7 +256,7 @@ body {
 .light-page .text-gray-900,
 .light-page .text-black,
 .light-page .text-foreground { color: #0A0A0A !important; }
-.light-page .text-white { color: #FFFFFF !important; }
+.light-page .text-white { color: #0A0A0A !important; }
 .light-page .text-gray-800 { color: #1A1A1A !important; }
 .light-page .text-gray-700 { color: #333333 !important; }
 .light-page .text-gray-600 { color: #525252 !important; }
