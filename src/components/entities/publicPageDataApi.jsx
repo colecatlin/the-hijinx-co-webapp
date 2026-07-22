@@ -10,6 +10,7 @@
 
 import { base44 } from '@/api/base44Client';
 import { resolveEntityByRouteParam, resolveLinkedEntityById } from './publicEntityResolver';
+import { sortSeriesClassesByHierarchy } from '@/lib/classHierarchy';
 
 /** Wraps a promise so it never rejects – returns fallback instead */
 const safe = (promise, fallback) => promise.catch(() => fallback);
@@ -83,7 +84,7 @@ export async function getDriverProfileData({ slug, id }) {
     results:       resultsResult.status       === 'fulfilled' ? resultsResult.value       : [],
     sessions:      sessionsResult.status      === 'fulfilled' ? sessionsResult.value      : [],
     series:        seriesResult.status        === 'fulfilled' ? seriesResult.value        : [],
-    classes:       classesResult.status       === 'fulfilled' ? classesResult.value       : [],
+    classes:       sortSeriesClassesByHierarchy(classesResult.status === 'fulfilled' ? classesResult.value : []),
     careerEntries: careerEntriesResult.status === 'fulfilled' ? careerEntriesResult.value : [],
     sponsors:      sponsorsResult.status      === 'fulfilled' ? sponsorsResult.value      : [],
   };
@@ -288,7 +289,7 @@ export async function getSeriesDetailData({ id, slug }) {
 
   return {
     series,
-    classes:   classesResult.status   === 'fulfilled' ? classesResult.value   : [],
+    classes:   sortSeriesClassesByHierarchy(classesResult.status === 'fulfilled' ? classesResult.value : []),
     events:    seriesEvents,
     tracks:    tracksResult.status    === 'fulfilled' ? tracksResult.value    : [],
     sessions:  sessionsResult.status  === 'fulfilled' ? sessionsResult.value  : [],
@@ -348,7 +349,7 @@ export async function getEventProfileData({ id, slug }) {
     track:     trackResult.status     === 'fulfilled' ? trackResult.value     : null,
     series:    seriesResult.status    === 'fulfilled' ? seriesResult.value    : null,
     sessions:  sessionsResult.status  === 'fulfilled' ? sessionsResult.value  : [],
-    classes:   classesResult.status   === 'fulfilled' ? classesResult.value   : [],
+    classes:   sortSeriesClassesByHierarchy(classesResult.status === 'fulfilled' ? classesResult.value : []),
     results:   resultsResult.status   === 'fulfilled' ? resultsResult.value   : [],
     standings: standingsResult.status === 'fulfilled' ? standingsResult.value : [],
   };
