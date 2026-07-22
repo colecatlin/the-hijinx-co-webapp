@@ -160,11 +160,11 @@ export default function EventProfile() {
   const eventDesc = [track?.name ? `At ${track.name}` : '', event.event_date ? `on ${safeDateFormat(event.event_date)}` : '', series?.name ? `— ${series.name}` : ''].filter(Boolean).join(' ') || `${event.name} event details on HIJINX.`;
 
   return (
-    <PageShell className="bg-white">
+    <PageShell className="bg-white light-page">
       <SeoMeta title={buildEntityTitle(eventTitle, 'Event')} description={eventDesc} image={heroImg || undefined} />
 
-      {/* ── HERO ── */}
-      <div className="relative w-full h-[300px] bg-[#0A0A0A] overflow-hidden">
+    {/* ── HERO ── */}
+    <div className="hero-dark relative w-full h-[300px] bg-[#0A0A0A] overflow-hidden">
         {heroImg ? (
           <>
             <img src={heroImg} alt={event.name} className="w-full h-full object-cover opacity-50" />

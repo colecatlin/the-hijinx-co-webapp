@@ -222,3 +222,46 @@ body {
     linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
 }
+
+/* ── Light page escape hatch ──
+   Pages explicitly designed as light (white cards + black text) opt in with
+   the .light-page class. These rules neutralize the global dark-theme
+   !important overrides below so dark text + white surfaces render correctly. */
+.light-page,
+.light-page .bg-white,
+.light-page [class*="bg-white"] {
+  background-color: #ffffff !important;
+}
+.light-page .bg-gray-50  { background-color: #F9FAFB !important; }
+.light-page .bg-gray-100 { background-color: #F3F4F6 !important; }
+
+.light-page .text-gray-900,
+.light-page .text-black,
+.light-page .text-foreground,
+.light-page .text-white,
+.light-page [class*="text-"] {
+  /* base text color reset below per-class */
+}
+.light-page .text-gray-900,
+.light-page .text-black,
+.light-page .text-foreground { color: #0A0A0A !important; }
+.light-page .text-white { color: #FFFFFF !important; }
+.light-page .text-gray-800 { color: #1A1A1A !important; }
+.light-page .text-gray-700 { color: #333333 !important; }
+.light-page .text-gray-600 { color: #525252 !important; }
+.light-page .text-gray-500 { color: #737373 !important; }
+.light-page .text-gray-400 { color: #A3A3A3 !important; }
+.light-page .text-gray-300 { color: #D4D4D4 !important; }
+.light-page .text-white\/50 { color: rgba(10,10,10,0.5) !important; }
+.light-page .text-white\/60 { color: rgba(10,10,10,0.6) !important; }
+.light-page .text-white\/70 { color: rgba(10,10,10,0.7) !important; }
+
+/* Keep the hero section imagery legible — hero keeps its own dark bg + light text */
+.light-page .hero-dark { background-color: #0A0A0A !important; }
+.light-page .hero-dark .text-white\/50,
+.light-page .hero-dark .text-white\/60,
+.light-page .hero-dark .text-white\/70,
+.light-page .hero-dark .text-white,
+.light-page .hero-dark .text-gray-400,
+.light-page .hero-dark .text-gray-500,
+.light-page .hero-dark .text-gray-600 { color: rgba(255,255,255,0.9) !important; }
