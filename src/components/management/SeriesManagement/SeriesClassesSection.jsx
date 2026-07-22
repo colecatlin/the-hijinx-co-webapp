@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Pencil, AlertCircle, ArrowUp, ArrowDown } from 'lucide-react';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
 import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
+import SeriesClassesBulkQuickAdd from './SeriesClassesBulkQuickAdd';
 
 const LEVEL_OPTIONS = [
   { value: 1, label: '1 — Foundation' },
@@ -62,7 +63,7 @@ function sortClasses(classes) {
   });
 }
 
-export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
+export default function SeriesClassesSection({ seriesId, seriesName, userRole = 'admin' }) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState(emptyForm);
@@ -271,10 +272,13 @@ export default function SeriesClassesSection({ seriesId, userRole = 'admin' }) {
           )}
           <p className="text-xs text-gray-400 mt-1">Displayed highest competition level first. Use ↑↓ to manually reorder.</p>
         </div>
-        <Button size="sm" onClick={() => { setFormData(emptyForm); setEditing('new'); }}>
-          <Plus className="w-4 h-4 mr-1" />
-          Add Class
-        </Button>
+        <div className="flex items-center gap-2">
+          <SeriesClassesBulkQuickAdd seriesId={seriesId} seriesName={seriesName} />
+          <Button size="sm" onClick={() => { setFormData(emptyForm); setEditing('new'); }}>
+            <Plus className="w-4 h-4 mr-1" />
+            Add Class
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {sorted.length > 0 ? (
