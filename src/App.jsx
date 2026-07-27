@@ -41,6 +41,7 @@ import ProfileSetup from './pages/ProfileSetup';
 import ClaimUsername from './pages/ClaimUsername';
 import UsernameRequiredGuard from '@/components/onboarding/UsernameRequiredGuard';
 import OnboardingGuard from '@/components/onboarding/OnboardingGuard';
+import PostAuthOnboardingRedirect from '@/components/onboarding/PostAuthOnboardingRedirect';
 import ManageProducts from './pages/ManageProducts';
 import ManageInvoices from './pages/ManageInvoices';
 import CheckoutSuccess from './pages/CheckoutSuccess';
@@ -150,6 +151,10 @@ const LayoutWrapper = ({ children, currentPageName }) => Layout ?
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
+  // Seamless bridge: immediately after Base44 auth completes, walk incomplete
+  // users into their onboarding stage once per session.
+  const showPostAuthHandoff = !isLoadingPublicSettings && !authError;
+
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -172,7 +177,9 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <Routes>
+    <>
+      {showPostAuthHandoff && <PostAuthOnboardingRedirect />}
+      <Routes>
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
@@ -371,6 +378,7 @@ const AuthenticatedApp = () => {
       
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </>
   );
 };
 
