@@ -74,12 +74,16 @@ export default function EventDirectory() {
     staleTime: 3 * 60 * 1000,
   });
 
-  const upcomingEvents = allEventsList.filter(e => 
-    isEventPublic(e) && ['Published', 'Live', 'upcoming'].includes(e.status)
+  // An event is "upcoming" only while its final day is still today or later.
+  // Events whose end_date (or event_date when there's no end_date) is in the
+  // past automatically flow into the Results / past-events bucket — keeping a
+  // Live/Published event from lingering under "Upcoming" after it's finished.
+  const upcomingEvents = allEventsList.filter(e =>
+    isEventPublic(e) && (e.end_date || e.event_date) >= today
   );
 
   const completedEvents = allEventsList.filter(e =>
-    isEventPublic(e) && ['Completed', 'completed'].includes(e.status)
+    isEventPublic(e) && (e.end_date || e.event_date) < today
   );
 
   const isLoading = false;

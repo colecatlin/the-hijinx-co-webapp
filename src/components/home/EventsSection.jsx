@@ -41,8 +41,10 @@ export default function EventsSection() {
   const seriesMap = Object.fromEntries(seriesList.map(s => [s.id, s]));
 
   const today = new Date().toISOString().split('T')[0];
-  const upcoming = events.filter(e => e.event_date >= today).slice(0, 6);
-  const displayEvents = upcoming.length > 0 ? upcoming : events.slice(0, 6);
+  // An event is genuinely "upcoming" only if its final day hasn't passed —
+  // past-date events move out and stay out (no all-events fallback), so the
+  // Upcoming section never shows an event whose date is in the past.
+  const displayEvents = events.filter(e => (e.end_date || e.event_date) >= today).slice(0, 6);
 
   return (
     <section className="relative pt-16 md:pt-20 pb-20 md:pb-28 overflow-hidden" style={{ background: 'transparent' }}>
