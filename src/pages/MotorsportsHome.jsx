@@ -4,7 +4,7 @@ import { Search, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import StatCard from '@/components/motorsports/StatCard';
-import DiscoveryRows from '@/components/motorsports/DiscoveryRows';
+import PlatformShowcase from '@/components/motorsports/PlatformShowcase';
 
 const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/d3e32f1e6_46HeaderPhoto.png';
 
@@ -169,8 +169,8 @@ export default function MotorsportsHome() {
         </div>
       </div>
 
-      {/* ── DISCOVERY ROWS ── */}
-      <DiscoveryRows />
+      {/* ── PLATFORM SHOWCASE (pre-launch landing) ── */}
+      <PlatformShowcase />
     </div>
   );
 }
