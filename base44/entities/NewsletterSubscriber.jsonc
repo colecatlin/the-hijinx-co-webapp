@@ -3,14 +3,41 @@
   "type": "object",
   "properties": {
     "email": {
-      "type": "string"
+      "type": "string",
+      "description": "Subscriber email"
     },
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Optional subscriber name"
     },
     "source": {
       "type": "string",
-      "description": "Where they signed up from"
+      "description": "Where they signed up from (e.g. apparel, home, outlet)"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "New Drops",
+          "Restocks",
+          "Collaborations",
+          "Limited Editions",
+          "Sales & Promos"
+        ]
+      },
+      "default": [],
+      "description": "Topics the subscriber wants to stay informed about"
+    },
+    "terms_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the subscriber agreed to the terms and conditions"
+    },
+    "terms_accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the subscriber accepted the terms"
     }
   },
   "required": [

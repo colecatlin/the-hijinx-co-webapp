@@ -4,7 +4,7 @@ import Analytics from '@/components/system/analyticsTracker';
 import { ExternalLink } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 import { motion } from 'framer-motion';
-import NewsletterSignup from '@/components/shared/NewsletterSignup';
+import ApparelStayConnected from '@/components/apparel/ApparelStayConnected';
 
 const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
 const APPAREL_BG = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/d5e66ab94_Screenshot2026-07-28at94143AM.png';
@@ -51,13 +51,17 @@ export default function ApparelHome() {
         </motion.div>
       </div>
 
-      {/* Newsletter */}
+      {/* Stay Connected */}
       <div className="max-w-7xl mx-auto px-6 py-20">
-        <div className="border border-[#1a1a1a] bg-[#0D0D0D] p-8 md:p-12">
-          <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase block mb-3">Stay Connected</span>
-          <h2 className="text-2xl font-black tracking-tight mb-2 text-[#F5F5F5]">New Drops & Releases</h2>
-          <p className="text-sm text-[#555] mb-6">Be the first to know when the new shop drops.</p>
-          <NewsletterSignup source="apparel" />
+        <div className="border border-[#1a1a1a] bg-[#0D0D0D] p-8 md:p-14 flex flex-col items-center text-center">
+          <span className="font-mono text-[10px] tracking-[0.4em] text-[#00FFDA] uppercase block mb-4">Stay Connected</span>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight mb-3 text-[#F5F5F5]">
+            Stay connected: Be the first to know about all things HIJINX apparel.
+          </h2>
+          <p className="text-sm text-[#555] mb-8 max-w-xl">
+            Pick what you want to hear about and we'll keep you in the loop.
+          </p>
+          <ApparelStayConnected />
         </div>
       </div>
     </PageShell>
