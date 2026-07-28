@@ -53,6 +53,7 @@ import HashtagAnalytics from './pages/HashtagAnalytics';
 import ManageDisciplineColors from './pages/ManageDisciplineColors';
 import StandingsHome from './pages/StandingsHome';
 import JoinIndex46 from './pages/JoinIndex46';
+import JoinSignUp from './pages/JoinSignUp';
 import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
 import UserPublicProfile from './pages/UserPublicProfile';
 import StorefrontHome from './pages/StorefrontHome';
@@ -246,6 +247,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/discipline" element={<LayoutWrapper currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />
       <Route path="/StandingsHome" element={<LayoutWrapper currentPageName="StandingsHome"><StandingsHome /></LayoutWrapper>} />
       <Route path="/join" element={<LayoutWrapper currentPageName="JoinIndex46"><JoinIndex46 /></LayoutWrapper>} />
+      <Route path="/join/sign-up" element={<LayoutWrapper currentPageName="JoinSignUp"><JoinSignUp /></LayoutWrapper>} />
       <Route path="/ManageMotorsportsHome" element={<LayoutWrapper currentPageName="ManageMotorsportsHome"><ManageMotorsportsHome /></LayoutWrapper>} />
       <Route path="/PlatformDataMap" element={
         <LayoutWrapper currentPageName="PlatformDataMap">

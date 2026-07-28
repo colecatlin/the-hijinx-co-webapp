@@ -81,11 +81,7 @@ export default function JoinIndex46() {
   });
 
   const goClaim = (entityType) => {
-    if (!user) {
-      base44.auth.redirectToLogin('/ClaimsCenter' + (entityType ? `?entityType=${entityType}` : ''));
-      return;
-    }
-    navigate('/ClaimsCenter' + (entityType ? `?entityType=${entityType}` : ''));
+    navigate('/join/sign-up' + (entityType ? `?entityType=${entityType}` : ''));
   };
 
   return (
