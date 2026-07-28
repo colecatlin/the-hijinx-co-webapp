@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import JoinPreviews from '@/components/onboarding/JoinPreviews';
 
 const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/d3e32f1e6_46HeaderPhoto.png';
 
@@ -153,7 +154,7 @@ export default function JoinIndex46() {
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110"
               style={{ background: '#1DA1A1', color: '#050A0A' }}
             >
-              Claim Your Profile
+              Claim or Sign Up
               <ArrowRight className="w-4 h-4" />
             </button>
             <a
@@ -177,6 +178,9 @@ export default function JoinIndex46() {
           )}
         </div>
       </div>
+
+      {/* SNEAK PEEK PREVIEWS */}
+      <JoinPreviews />
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="relative z-[3] px-5 sm:px-8 md:px-12 lg:px-20 py-16 md:py-24">
@@ -312,7 +316,7 @@ export default function JoinIndex46() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110"
               style={{ background: '#1DA1A1', color: '#050A0A' }}
             >
-              {user ? 'Go to Claims Center' : 'Sign in & Claim'}
+              {user ? 'Go to Claims Center' : 'Claim or Sign Up'}
               <ArrowRight className="w-4 h-4" />
             </button>
             <Link
