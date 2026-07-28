@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Search, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import StatCard from '@/components/motorsports/StatCard';
@@ -134,6 +134,22 @@ export default function MotorsportsHome() {
                 Explore
               </button>
             </form>
+
+            {/* Early Access CTA */}
+            <div className="mt-5 flex items-center gap-3">
+              <Link
+                to="/join"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200 hover:brightness-110"
+                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#1DA1A1' }} />
+                Claim Your Profile
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <span className="text-[10px] font-mono tracking-[0.3em] uppercase" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Drivers · Teams · Tracks · Series
+              </span>
+            </div>
           </div>
 
           {/* RIGHT: Live stat cards — hidden on smallest screens, shown as horizontal row on sm */}
