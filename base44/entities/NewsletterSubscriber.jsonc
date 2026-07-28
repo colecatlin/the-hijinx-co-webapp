@@ -12,7 +12,7 @@
     },
     "source": {
       "type": "string",
-      "description": "Where they signed up from (e.g. apparel, home, outlet)"
+      "description": "Where they signed up from (e.g. apparel, marketplace, home, outlet)"
     },
     "interests": {
       "type": "array",
@@ -23,7 +23,12 @@
           "Restocks",
           "Collaborations",
           "Limited Editions",
-          "Sales & Promos"
+          "Sales & Promos",
+          "Marketplace Launch",
+          "New Sellers & Vendors",
+          "Parts & Hardware",
+          "Memorabilia Releases",
+          "Team & Builder Gear"
         ]
       },
       "default": [],

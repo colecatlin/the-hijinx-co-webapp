@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingBag, Shirt, Wrench, Trophy, Tag } from 'lucide-react';
 import SeoMeta from '@/components/system/seoMeta';
+import MarketplaceStayConnected from '@/components/marketplace/MarketplaceStayConnected';
 
 const CATEGORIES = [
   { name: 'Apparel', icon: Shirt, description: 'Team kits, tees, and race-day essentials.' },
@@ -120,6 +121,32 @@ export default function MarketplaceHome() {
           >
             Visit The Store <ArrowRight className="w-3 h-3" />
           </Link>
+        </motion.div>
+
+        {/* ── STAY CONNECTED ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.5 }}
+          className="mt-12 rounded-2xl p-10 md:p-14 text-center"
+          style={{
+            background: 'rgba(8, 12, 14, 0.5)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+          }}
+        >
+          <span className="font-mono text-[10px] tracking-[0.5em] uppercase font-bold mb-4 block" style={{ color: '#1DA1A1' }}>
+            Stay Connected
+          </span>
+          <h2 className="text-2xl md:text-3xl font-black tracking-tight uppercase text-white mb-3">
+            Be the first to know when the Marketplace opens.
+          </h2>
+          <p className="text-white/55 text-sm max-w-xl mx-auto leading-relaxed font-light mb-8">
+            Pick what you want to hear about and we'll keep you in the loop as the Marketplace comes online.
+          </p>
+          <MarketplaceStayConnected />
         </motion.div>
       </div>
     </div>
