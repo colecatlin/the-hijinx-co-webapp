@@ -4,7 +4,7 @@ import { ExternalLink } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const APPAREL_BG = 'https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=1400&q=90&fit=crop';
+const APPAREL_BG = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/d5e66ab94_Screenshot2026-07-28at94143AM.png';
 const DEFAULT_SHOPIFY = 'https://www.hijinxco.com';
 
 export default function ApparelSection({ products = [] }) {
@@ -36,7 +36,7 @@ export default function ApparelSection({ products = [] }) {
           <img
             src={APPAREL_BG}
             alt="HIJINX Apparel"
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
+            className="absolute inset-0 w-full h-full object-cover opacity-40"
             style={{ filter: 'contrast(1.12) saturate(0.85)' }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/70" />
