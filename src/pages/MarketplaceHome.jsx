@@ -1,7 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, ShoppingBag, Shirt, Wrench, Trophy, Tag } from 'lucide-react';
+import { ShoppingBag, Shirt, Wrench, Trophy, Tag } from 'lucide-react';
 import SeoMeta from '@/components/system/seoMeta';
 import MarketplaceStayConnected from '@/components/marketplace/MarketplaceStayConnected';
 
@@ -115,12 +114,14 @@ export default function MarketplaceHome() {
           <p className="text-white/55 text-base max-w-2xl mx-auto leading-relaxed font-light mb-8">
             List your team kits, parts, and memorabilia alongside the rest of the paddock. The Marketplace connects your products to the fans and crews who already live here.
           </p>
-          <Link
-            to="/store"
-            className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.35em] uppercase font-bold text-white/80 hover:text-white border-b border-white/40 hover:border-white pb-0.5 transition-all"
+          <button
+            type="button"
+            disabled
+            className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.35em] uppercase font-bold cursor-not-allowed pb-0.5"
+            style={{ color: 'rgba(29,161,161,0.7)', borderBottom: '1px solid rgba(29,161,161,0.3)' }}
           >
-            Visit The Store <ArrowRight className="w-3 h-3" />
-          </Link>
+            Coming Soon
+          </button>
         </motion.div>
 
         {/* ── STAY CONNECTED ── */}
