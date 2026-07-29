@@ -5,6 +5,7 @@
  * R7E Part 3: Added selectedSessionId state for Results panel targeting.
  */
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { EventWorkspaceProvider } from './EventWorkspaceContext';
 import EventWorkspaceShell from './EventWorkspaceShell';
 import { ModuleProvider } from '@/components/racecore/modules/ModuleProvider';
@@ -78,6 +79,7 @@ export default function EventWorkspaceContainer({
   const [eventWorkspacePanel, setEventWorkspacePanel] = useState(startPanel);
   const [lastWorkspacePanel, setLastWorkspacePanel] = useState(startPanel);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const navigate = useNavigate();
 
   // R7H: Apply pending panel when it changes
   useEffect(() => {
@@ -88,9 +90,24 @@ export default function EventWorkspaceContainer({
     }
   }, [pendingWorkspacePanel, onPendingPanelApplied]);
 
+  // Route mode (EventFile): keep active panel state in sync with the :panel
+  // route param so browser/hardware back navigates inner panels instead of
+  // exiting to the events list.
+  useEffect(() => {
+    if (routeMode && initialPanel) {
+      setEventWorkspacePanel((prev) => (prev === initialPanel ? prev : initialPanel));
+      setLastWorkspacePanel(initialPanel);
+    }
+  }, [initialPanel, routeMode]);
+
   const handleSetEventWorkspacePanel = (panel) => {
     setEventWorkspacePanel(panel);
     setLastWorkspacePanel(panel);
+    // Push a history entry on user-initiated panel switches in route mode so
+    // the back button walks through inner panels.
+    if (routeMode && eventId && panel !== initialPanel) {
+      navigate(`/racecore/event-files/${eventId}/${panel}`);
+    }
   };
 
   // R8G Part 5C: action → eventPermissions key map

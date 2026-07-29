@@ -339,6 +339,7 @@ export default function EventFile() {
           initialPanel={safePanel}                    // D4: route panel via initialPanel
           pendingWorkspacePanel={null}                // D4: not used in route mode
           onPendingPanelApplied={() => {}}
+          routeMode                                   // panel switches push browser history
           eventPermissions={eventPermissions}         // R8G Part 3: provider-derived permissions
         />
       </div>
