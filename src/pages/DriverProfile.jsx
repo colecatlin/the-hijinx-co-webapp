@@ -9,6 +9,7 @@ import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { isPublicVisible } from '@/components/core/publishModel';
 import { getDriverProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
+import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -246,6 +247,8 @@ export default function DriverProfile() {
         image={heroImg || profileImg || SITE_FALLBACK_IMAGE}
         type="profile"
       />
+
+      <MobileBackHeader tone="light" title={fullName} to={createPageUrl('DriverDirectory')} />
 
       {/* ── HERO ─────────────────────────────────────────── */}
       <div className="relative w-full h-[380px] bg-[#0A0A0A] overflow-hidden">

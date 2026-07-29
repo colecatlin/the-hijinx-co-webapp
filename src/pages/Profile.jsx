@@ -234,14 +234,46 @@ export default function Profile() {
         favorite_tracks: data.favorite_tracks || [],
       });
     },
-    onSuccess: () => {
-      setUsernameError('');
-      invalidateDataGroups(queryClient, ['profile']);
+    // Optimistic update: reflect the new profile fields in the auth.me cache
+    // immediately so the header/identity UI transitions before the server
+    // confirms; roll back on error.
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: QueryKeys.auth.me() });
+      const prev = queryClient.getQueryData(QueryKeys.auth.me());
+      queryClient.setQueryData(QueryKeys.auth.me(), (old) => old ? {
+        ...old,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        display_name: data.display_name,
+        username: data.username || old.username,
+        username_slug: data.username_slug || old.username_slug,
+        bio: data.bio,
+        location_display: data.location_display,
+        website_url: data.website_url,
+        profile_photo_url: data.profile_photo_url,
+        banner_image_url: data.banner_image_url,
+        newsletter_subscriber: data.newsletter_subscriber || false,
+        profile_visibility: data.profile_visibility,
+        primary_profile_type: data.primary_profile_type,
+        profile_types: data.profile_types,
+        social_links: data.social_links || [],
+        favorite_drivers: data.favorite_drivers || [],
+        favorite_teams: data.favorite_teams || [],
+        favorite_series: data.favorite_series || [],
+        favorite_tracks: data.favorite_tracks || [],
+        full_name: [data.first_name, data.last_name].filter(Boolean).join(' '),
+      } : old);
+      return { prev };
     },
-    onError: (err) => {
-      if (err.message.includes('sername') || err.message.includes('reserved')) {
+    onSuccess: () => setUsernameError(''),
+    onError: (err, _data, ctx) => {
+      if (ctx?.prev) queryClient.setQueryData(QueryKeys.auth.me(), ctx.prev);
+      if (err.message?.includes('sername') || err.message?.includes('reserved')) {
         setUsernameError(err.message);
       }
+    },
+    onSettled: () => {
+      invalidateDataGroups(queryClient, ['profile']);
     },
   });
 

@@ -12,6 +12,7 @@ import { ArrowLeft, MapPin, Tag, User, Calendar, ArrowRight } from 'lucide-react
 import DOMPurify from 'dompurify';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import AdvertisementCard from '@/components/outlet/AdvertisementCard';
+import MobileBackHeader from '@/components/shared/MobileBackHeader';
 
 const OUTLET_CYAN = '#00F5D4';
 const LOGO_URL = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/c948034eb_TheOutletO2x.png';
@@ -106,6 +107,8 @@ export default function OutletStoryPage() {
   return (
     <div style={{ background: '#080808', minHeight: '100vh' }}>
       <SeoMeta title={story.title} description={storyDesc} image={storyImg} type="article" />
+
+      <MobileBackHeader tone="dark" title={story.title} to={createPageUrl('OutletHome')} />
 
       {/* ── MASTHEAD ── */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>

@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getEventProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
+import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -162,6 +163,8 @@ export default function EventProfile() {
   return (
     <PageShell className="light-page">
       <SeoMeta title={buildEntityTitle(eventTitle, 'Event')} description={eventDesc} image={heroImg || undefined} />
+
+      <MobileBackHeader tone="light" title={eventTitle} to={createPageUrl('EventDirectory')} />
 
     {/* ── HERO ── */}
     <div className="hero-dark relative w-full h-[300px] bg-[#0A0A0A] overflow-hidden">

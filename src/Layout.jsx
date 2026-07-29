@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Search, Menu, X, ChevronDown, User } from 'lucide-react';
@@ -14,6 +14,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
+import { useTabKeepAlive } from '@/hooks/useTabKeepAlive';
 import Home from '@/pages/Home';
 import OutletHome from '@/pages/OutletHome';
 import ApparelHome from '@/pages/ApparelHome';
@@ -73,10 +74,9 @@ export default function Layout({ children, currentPageName }) {
   // Android WebView: graceful hardware back-button handling.
   useAndroidBackButton();
 
-  // Tab keep-alive: track which tab routes have been visited (lazily mounted).
-  const [mountedTabs, setMountedTabs] = useState(() => isTabRoute(location.pathname) ? [location.pathname] : []);
-  const prevTabPath = useRef(location.pathname);
-  const tabScrollCache = useRef({});
+  // Tab keep-alive: each bottom tab stays mounted (hidden) across switches so
+  // in-page state + scroll are preserved, and only resets to root on a
+  // double-tap of the active tab (handled in MobileBottomNav).
 
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
@@ -90,29 +90,14 @@ export default function Layout({ children, currentPageName }) {
     enabled: isAuthenticated,
   });
 
-  // Lazy-mount visited tabs so their in-page state is preserved across switches.
-  useEffect(() => {
-    if (isTabRoute(location.pathname)) {
-      setMountedTabs(prev => prev.includes(location.pathname) ? prev : [...prev, location.pathname]);
-    }
-  }, [location.pathname]);
+  // Encapsulated keep-alive (mount + per-tab scroll restoration).
+  const { mountedTabs } = useTabKeepAlive(TAB_ROUTES, location);
 
   useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
     setSearchQuery('');
     setSearchResults(EMPTY_RESULTS);
-    const prev = prevTabPath.current;
-    const next = location.pathname;
-    if (prev !== next) {
-      if (TAB_ROUTES.includes(prev)) tabScrollCache.current[prev] = window.scrollY;
-      prevTabPath.current = next;
-      if (TAB_ROUTES.includes(next) && tabScrollCache.current[next] != null) {
-        requestAnimationFrame(() => window.scrollTo(0, tabScrollCache.current[next]));
-      } else {
-        window.scrollTo(0, 0);
-      }
-    }
   }, [location.pathname]);
 
   useEffect(() => {

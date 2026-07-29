@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Compass, LayoutGrid, User } from 'lucide-react';
+import { clearTabScrollCache } from '@/hooks/useTabKeepAlive';
 
 /**
  * Mobile-only bottom tab navigation.
@@ -33,7 +34,9 @@ export default function MobileBottomNav() {
   const handleTap = (to) => {
     const now = Date.now();
     if (isActive(to) && now - lastTap.current < DOUBLE_TAP_MS) {
-      // Double-tap on the active tab: reset to root + scroll top.
+      // Double-tap on the active tab: reset to root (clearing the cached
+      // scroll offset for that tab) + scroll top.
+      clearTabScrollCache(to);
       navigate(to);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       lastTap.current = 0;
