@@ -71,11 +71,12 @@ function SectionLabel({ children }) {
 
 // ─── Dark input ───────────────────────────────────────────────────────────────
 
-function DarkInput({ label, hint, ...props }) {
+function DarkInput({ label, hint, id, ...props }) {
   return (
     <div>
-      {label && <label className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</label>}
+      {label && <label htmlFor={id} className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</label>}
       <input
+        id={id}
         className="flex h-9 w-full rounded-lg px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1DA1A1] transition-all"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
         {...props}
@@ -85,11 +86,12 @@ function DarkInput({ label, hint, ...props }) {
   );
 }
 
-function DarkTextarea({ label, ...props }) {
+function DarkTextarea({ label, id, ...props }) {
   return (
     <div>
-      {label && <label className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</label>}
+      {label && <label htmlFor={id} className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</label>}
       <textarea
+        id={id}
         className="flex w-full rounded-lg px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1DA1A1] transition-all"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
         {...props}
@@ -419,21 +421,24 @@ export default function Profile() {
                 <SectionLabel>Your Identity</SectionLabel>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DarkInput label="First Name" value={formData.first_name}
+                    <DarkInput id="first_name" label="First Name" value={formData.first_name}
                       onChange={e => setFormData({ ...formData, first_name: e.target.value })} />
-                    <DarkInput label="Last Name" value={formData.last_name}
+                    <DarkInput id="last_name" label="Last Name" value={formData.last_name}
                       onChange={e => setFormData({ ...formData, last_name: e.target.value })} />
                   </div>
-                  <DarkInput label="Display Name" value={formData.display_name}
+                  <DarkInput id="display_name" label="Display Name" value={formData.display_name}
                     placeholder="How you want to be known publicly"
                     onChange={e => setFormData({ ...formData, display_name: e.target.value })} />
                   <div>
-                    <label className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                    <label htmlFor="profile_username" className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
                       Username {user?.username && <span style={{ color: TEAL }}>· @{user.username}</span>}
                     </label>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>@</span>
                       <input
+                        id="profile_username"
+                        name="profile_username"
+                        autoComplete="username"
                         value={formData.username}
                         onChange={e => { setFormData({ ...formData, username: e.target.value.toLowerCase() }); setUsernameError(''); }}
                         placeholder="yourhandle"
@@ -450,28 +455,29 @@ export default function Profile() {
                       3–24 characters. Letters, numbers, underscores. Your URL: /u/yourhandle
                     </p>
                   </div>
-                  <DarkTextarea label="Bio" value={formData.bio} rows={3}
+                  <DarkTextarea id="bio" label="Bio" value={formData.bio} rows={3}
                     placeholder="A quick line about you and your scene"
                     onChange={e => setFormData({ ...formData, bio: e.target.value })} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DarkInput label="Location" value={formData.location_display}
+                    <DarkInput id="location_display" label="Location" value={formData.location_display}
                       placeholder="e.g. Phoenix, AZ"
                       onChange={e => setFormData({ ...formData, location_display: e.target.value })} />
-                    <DarkInput label="Website" value={formData.website_url}
+                    <DarkInput id="website_url" label="Website" value={formData.website_url}
                       placeholder="https://yoursite.com"
                       onChange={e => setFormData({ ...formData, website_url: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>Email</label>
-                    <input value={user?.email || ''} disabled
+                    <label htmlFor="profile_email" className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>Email</label>
+                    <input id="profile_email" value={user?.email || ''} disabled
                       className="flex h-9 w-full rounded-lg px-3 text-sm"
                       style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }} />
                   </div>
 
                   <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     <SectionLabel>Profile Visibility</SectionLabel>
+                    <Label htmlFor="profile_visibility" className="sr-only">Profile visibility</Label>
                     <Select value={formData.profile_visibility} onValueChange={v => setFormData({ ...formData, profile_visibility: v })}>
-                      <SelectTrigger className="h-9 text-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)' }}>
+                      <SelectTrigger id="profile_visibility" className="h-9 text-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)' }}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
