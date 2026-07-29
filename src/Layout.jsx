@@ -13,6 +13,7 @@ import UserMenu from '@/components/layout/UserMenu';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
+import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
@@ -52,6 +53,9 @@ export default function Layout({ children, currentPageName }) {
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const location = useLocation();
+
+  // Android WebView: graceful hardware back-button handling.
+  useAndroidBackButton();
 
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
