@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import { createPageUrl } from '@/components/utils';
+import DeleteAccountModal from '@/components/profile/DeleteAccountModal';
 import { format } from 'date-fns';
 import ManageTab from '@/components/profile/ManageTab';
 import CodeInputTab from '@/components/profile/CodeInputTab';
@@ -123,6 +124,7 @@ export default function Profile() {
   const [mediaAppSubmitted, setMediaAppSubmitted] = useState(null);
   const [showAccountControls, setShowAccountControls] = useState(false);
   const [usernameError, setUsernameError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const tabFromUrl = urlParams.get('tab');
@@ -516,14 +518,16 @@ export default function Profile() {
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                           <div>
-                            <p className="text-sm font-semibold text-white">Request Account Deletion</p>
-                            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Handled by our team within 2 business days.</p>
+                            <p className="text-sm font-semibold text-white">Delete My Account</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                              Permanently removes your driver, team, and operational associations.
+                            </p>
                           </div>
                           <button type="button"
-                            className="px-3 py-1.5 text-xs font-medium rounded-lg flex-shrink-0 transition-all"
-                            style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.6)', border: '1px solid rgba(239,68,68,0.15)' }}
-                            onClick={() => { base44.entities.ContactMessage.create({ name: user.full_name || user.email, email: user.email, subject: 'Account Deletion Request', message: `User ${user.email} (ID: ${user.id}) has requested account deletion.` }).catch(() => {}); alert('Deletion request submitted. Our team will follow up within 2 business days.'); }}>
-                            Request
+                            className="px-3 py-1.5 text-xs font-bold rounded-lg flex-shrink-0 transition-all"
+                            style={{ background: 'rgba(239,68,68,0.08)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+                            onClick={() => setShowDeleteModal(true)}>
+                            Delete Account
                           </button>
                         </div>
                       </div>
@@ -771,6 +775,12 @@ export default function Profile() {
 
           </Tabs>
         </form>
+
+        <DeleteAccountModal
+          open={showDeleteModal}
+          onOpenChange={setShowDeleteModal}
+          user={user}
+        />
       </div>
     </HijinxPageShell>
   );

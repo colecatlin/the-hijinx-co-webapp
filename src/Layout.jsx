@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Footer from '@/components/shared/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
 import GoogleMapsInitializer from '@/components/shared/GoogleMapsInitializer';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
 import ErrorBoundary from '@/components/system/errorBoundary';
 import UserMenu from '@/components/layout/UserMenu';
 import { base44 } from '@/api/base44Client';
@@ -614,13 +615,14 @@ export default function Layout({ children, currentPageName }) {
         </AnimatePresence>
 
         {/* Page content */}
-        <main className="flex-1 relative z-[1]">
+        <main className="flex-1 relative z-[1] pb-16 lg:pb-0">
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
         </main>
 
         {(!location.pathname.startsWith('/race-core') && !location.pathname.startsWith('/racecore') && !location.pathname.startsWith('/race-control')) && <Footer />}
+        <MobileBottomNav />
       </div>
     </GoogleMapsInitializer>
   );

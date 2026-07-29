@@ -276,3 +276,112 @@ body {
 .light-page .hero-dark .text-gray-400,
 .light-page .hero-dark .text-gray-500,
 .light-page .hero-dark .text-gray-600 { color: rgba(255,255,255,0.9) !important; }
+
+/* ── Mobile WebView compatibility ──
+   Disable rubber-banding, tap highlights, and selection on interactive
+   chrome elements while preserving text selection for article/body content. */
+
+/* Prevent rubber-banding overscroll on the main app wrapper */
+#root,
+main,
+.app-scroll-wrapper {
+  overscroll-behavior-y: none;
+}
+
+/* Disable tap highlight, callouts, and selection on interactive chrome */
+button,
+a,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+nav,
+header,
+[role="navigation"],
+.icon,
+svg,
+button svg,
+a svg {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Preserve user text selection on articles and body text content */
+article,
+.editorial-body,
+.prose,
+[contenteditable="true"],
+[contenteditable=""],
+input,
+textarea,
+.selectable-text,
+p,
+li,
+blockquote {
+  user-select: auto;
+  -webkit-user-select: auto;
+  -webkit-touch-callout: default;
+}
+
+/* ── Mobile responsive list/table cards ──
+   On small viewports, convert high-density tables and lists into stacked
+   high-contrast card blocks for readability. */
+
+@media (max-width: 640px) {
+  /* Stack table rows as cards */
+  table {
+    display: block;
+    width: 100%;
+  }
+  thead {
+    display: none;
+  }
+  tbody {
+    display: block;
+    width: 100%;
+  }
+  tbody tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    background: rgba(8, 12, 14, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+  tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border: none;
+    text-align: left;
+    gap: 1rem;
+  }
+  /* Auto-label cells using data-label when present */
+  tbody td[data-label]::before {
+    content: attr(data-label);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+  }
+  /* Tighten dense grids into stacked card blocks */
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4,
+  .sm\:grid-cols-2,
+  .sm\:grid-cols-3,
+  .sm\:grid-cols-4,
+  .md\:grid-cols-2,
+  .md\:grid-cols-3,
+  .md\:grid-cols-4 {
+    gap: 0.75rem;
+  }
+  .grid > * {
+    min-width: 0;
+  }
+}
