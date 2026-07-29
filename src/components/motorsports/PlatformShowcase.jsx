@@ -7,12 +7,12 @@ import {
 } from 'lucide-react';
 
 const index46Tiles = [
-  { icon: Users,        label: 'Drivers',  to: '/DriverDirectory', desc: 'Pro, semi-pro & amateur competitor profiles.' },
-  { icon: Building2,    label: 'Teams',    to: '/TeamDirectory',   desc: 'Racing teams, builders & programs.' },
-  { icon: MapPin,       label: 'Tracks',   to: '/TrackDirectory',  desc: 'Venues & facilities across every discipline.' },
-  { icon: Trophy,       label: 'Series',    to: '/SeriesHome',      desc: 'Sanctioned series, classes & championships.' },
-  { icon: CalendarDays, label: 'Events',    to: '/EventDirectory',  desc: 'Race schedules, rounds & results.' },
-  { icon: BarChart3,    label: 'Standings', to: '/StandingsHome',    desc: 'Live championship points & rankings.' },
+  { icon: Users,        label: 'Drivers',  to: '/DriverDirectory', desc: 'Pro, semi-pro & amateur competitor profiles.', disabled: true },
+  { icon: Building2,    label: 'Teams',    to: '/TeamDirectory',   desc: 'Racing teams, builders & programs.',          disabled: true },
+  { icon: MapPin,       label: 'Tracks',   to: '/TrackDirectory',  desc: 'Venues & facilities across every discipline.',disabled: true },
+  { icon: Trophy,       label: 'Series',    to: '/SeriesHome',      desc: 'Sanctioned series, classes & championships.', disabled: true },
+  { icon: CalendarDays, label: 'Events',    to: '/EventDirectory',  desc: 'Race schedules, rounds & results.',          disabled: true },
+  { icon: BarChart3,    label: 'Standings', to: '/StandingsHome',    desc: 'Live championship points & rankings.',       disabled: true },
 ];
 
 const raceCoreTiles = [
@@ -44,11 +44,14 @@ function TileGrid({ tiles }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {tiles.map((t) => {
         const Icon = t.icon;
+        const Wrapper = t.disabled ? 'div' : Link;
+        const wrapperProps = t.disabled ? {} : { to: t.to };
         return (
-          <Link
+          <Wrapper
             key={t.label}
-            to={t.to}
-            className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-200 hover:-translate-y-0.5"
+            {...wrapperProps}
+            aria-disabled={t.disabled ? true : undefined}
+            className={`group relative overflow-hidden rounded-2xl p-5 ${t.disabled ? 'cursor-default opacity-60' : 'transition-all duration-200 hover:-translate-y-0.5'}`}
             style={{
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.08)',
@@ -70,12 +73,18 @@ function TileGrid({ tiles }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <h3 className="text-sm font-bold tracking-wider uppercase text-white">{t.label}</h3>
-                  <ArrowRight className="w-3.5 h-3.5 text-white/30 group-hover:text-[#1DA1A1] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                  {t.disabled ? (
+                    <span className="flex-shrink-0 text-[8px] font-mono tracking-[0.25em] uppercase" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                      Soon
+                    </span>
+                  ) : (
+                    <ArrowRight className="w-3.5 h-3.5 text-white/30 group-hover:text-[#1DA1A1] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                  )}
                 </div>
                 <p className="text-xs leading-relaxed text-white/50">{t.desc}</p>
               </div>
             </div>
-          </Link>
+          </Wrapper>
         );
       })}
     </div>
