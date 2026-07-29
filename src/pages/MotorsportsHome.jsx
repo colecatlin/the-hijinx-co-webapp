@@ -39,6 +39,12 @@ export default function MotorsportsHome() {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
 
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: driverStats,  isLoading: loadingDrivers  } = useEntityStats('Driver');
   const { data: eventStats,   isLoading: loadingEvents   } = useEntityStats('Event');
   const { data: resultStats,  isLoading: loadingResults  } = useEntityStats('Results');
@@ -136,16 +142,26 @@ export default function MotorsportsHome() {
             </form>
 
             {/* Early Access CTA */}
-            <div className="mt-5 flex items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
                 to="/join"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200 hover:brightness-110"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+                style={{ background: '#1DA1A1', color: '#050A0A' }}
               >
-                <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#1DA1A1' }} />
+                <ShieldCheck className="w-3.5 h-3.5" />
                 Claim Your Profile
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
+              {isAuthenticated ? null : (
+                <button
+                  onClick={() => base44.auth.redirectToLogin('/join/sign-up')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200 hover:brightness-110"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+                >
+                  Sign Up
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
               <span className="text-[10px] font-mono tracking-[0.3em] uppercase" style={{ color: 'rgba(255,255,255,0.35)' }}>
                 Drivers · Teams · Tracks · Series
               </span>
