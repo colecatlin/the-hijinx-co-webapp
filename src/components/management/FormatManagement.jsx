@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, AlertTriangle, Save, X, Eye, EyeOff, Pencil, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
 function slugify(str) {
@@ -23,7 +24,7 @@ export default function FormatManagement() {
     queryFn: () => base44.entities.Format.list('sort_order'),
   });
 
-  const [filterDisciplineId, setFilterDisciplineId] = useState('');
+  const [filterDisciplineId, setFilterDisciplineId] = useState('all');
   const [newName, setNewName] = useState('');
   const [newDisciplineId, setNewDisciplineId] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -102,7 +103,7 @@ export default function FormatManagement() {
     return m;
   }, [disciplines]);
 
-  const filteredFormats = filterDisciplineId
+  const filteredFormats = filterDisciplineId && filterDisciplineId !== 'all'
     ? formats.filter(f => f.discipline_id === filterDisciplineId)
     : formats;
 
@@ -130,16 +131,16 @@ export default function FormatManagement() {
       <div className="bg-white border border-gray-200 rounded-lg p-5 mb-6">
         <h2 className="text-sm font-semibold text-gray-700 mb-3">Add Format</h2>
         <div className="flex flex-col sm:flex-row gap-3 mb-2">
-          <select
-            value={newDisciplineId}
-            onChange={(e) => setNewDisciplineId(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-          >
-            <option value="">Select Discipline *</option>
-            {activeDisciplines.map(d => (
-              <option key={d.id} value={d.id}>{d.name}</option>
-            ))}
-          </select>
+          <Select value={newDisciplineId || undefined} onValueChange={setNewDisciplineId}>
+            <SelectTrigger className="w-full sm:w-52 text-sm">
+              <SelectValue placeholder="Select Discipline *" />
+            </SelectTrigger>
+            <SelectContent>
+              {activeDisciplines.map(d => (
+                <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <input
             type="text"
             placeholder="Format name (e.g. Road Course)"
@@ -173,16 +174,17 @@ export default function FormatManagement() {
       {/* Filter */}
       <div className="flex items-center gap-3 mb-3">
         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Filter by Discipline:</label>
-        <select
-          value={filterDisciplineId}
-          onChange={(e) => setFilterDisciplineId(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1 text-sm"
-        >
-          <option value="">All</option>
-          {disciplines.map(d => (
-            <option key={d.id} value={d.id}>{d.name}</option>
-          ))}
-        </select>
+        <Select value={filterDisciplineId} onValueChange={setFilterDisciplineId}>
+          <SelectTrigger className="w-44 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            {disciplines.map(d => (
+              <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <span className="text-xs text-gray-400">{filteredFormats.length} format{filteredFormats.length !== 1 ? 's' : ''}</span>
       </div>
 
@@ -219,15 +221,19 @@ export default function FormatManagement() {
                         onChange={(e) => setEditFields(prev => ({ ...prev, name: e.target.value }))}
                         className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
                       />
-                      <select
-                        value={editFields.discipline_id}
-                        onChange={(e) => setEditFields(prev => ({ ...prev, discipline_id: e.target.value }))}
-                        className="border border-gray-300 rounded px-2 py-1 text-xs"
+                      <Select
+                        value={editFields.discipline_id || undefined}
+                        onValueChange={(v) => setEditFields(prev => ({ ...prev, discipline_id: v }))}
                       >
-                        {disciplines.map(d => (
-                          <option key={d.id} value={d.id}>{d.name}</option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="text-xs h-8">
+                          <SelectValue placeholder="Discipline" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {disciplines.map(d => (
+                            <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <input
                       type="number"

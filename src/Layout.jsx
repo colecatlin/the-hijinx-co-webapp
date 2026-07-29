@@ -14,6 +14,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
+import Home from '@/pages/Home';
+import OutletHome from '@/pages/OutletHome';
+import ApparelHome from '@/pages/ApparelHome';
+import MarketplaceHome from '@/pages/MarketplaceHome';
 
 const navItems = [
   { name: 'Home', page: 'Home' },
@@ -41,6 +45,18 @@ const navItems = [
   { name: 'Marketplace', page: 'MarketplaceHome' },
 ];
 
+// Native-style tab keep-alive: these four destinations stay mounted and
+// hidden when switching between them so their scroll position and in-page
+// state (filters, selections) are preserved across tab switches.
+const TAB_ROUTES = ['/Home', '/OutletHome', '/ApparelHome', '/MarketplaceHome'];
+const TAB_PAGES = [
+  ['/Home', Home],
+  ['/OutletHome', OutletHome],
+  ['/ApparelHome', ApparelHome],
+  ['/MarketplaceHome', MarketplaceHome],
+];
+const isTabRoute = (p) => TAB_ROUTES.includes(p);
+
 export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -57,6 +73,11 @@ export default function Layout({ children, currentPageName }) {
   // Android WebView: graceful hardware back-button handling.
   useAndroidBackButton();
 
+  // Tab keep-alive: track which tab routes have been visited (lazily mounted).
+  const [mountedTabs, setMountedTabs] = useState(() => isTabRoute(location.pathname) ? [location.pathname] : []);
+  const prevTabPath = useRef(location.pathname);
+  const tabScrollCache = useRef({});
+
   const { data: isAuthenticated } = useQuery({
     queryKey: ['isAuthenticated'],
     queryFn: () => base44.auth.isAuthenticated(),
@@ -69,12 +90,29 @@ export default function Layout({ children, currentPageName }) {
     enabled: isAuthenticated,
   });
 
+  // Lazy-mount visited tabs so their in-page state is preserved across switches.
+  useEffect(() => {
+    if (isTabRoute(location.pathname)) {
+      setMountedTabs(prev => prev.includes(location.pathname) ? prev : [...prev, location.pathname]);
+    }
+  }, [location.pathname]);
+
   useEffect(() => {
     setMobileOpen(false);
     setSearchOpen(false);
     setSearchQuery('');
     setSearchResults(EMPTY_RESULTS);
-    window.scrollTo(0, 0);
+    const prev = prevTabPath.current;
+    const next = location.pathname;
+    if (prev !== next) {
+      if (TAB_ROUTES.includes(prev)) tabScrollCache.current[prev] = window.scrollY;
+      prevTabPath.current = next;
+      if (TAB_ROUTES.includes(next) && tabScrollCache.current[next] != null) {
+        requestAnimationFrame(() => window.scrollTo(0, tabScrollCache.current[next]));
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }
   }, [location.pathname]);
 
   useEffect(() => {
@@ -621,17 +659,27 @@ export default function Layout({ children, currentPageName }) {
         {/* Page content */}
         <main className="flex-1 relative z-[1] pb-16 lg:pb-0">
           <ErrorBoundary>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
+            {isTabRoute(location.pathname) ? (
+              <div className="relative">
+                {TAB_PAGES.map(([route, Page]) => mountedTabs.includes(route) && (
+                  <div key={route} style={{ display: location.pathname === route ? 'block' : 'none' }}>
+                    <Page />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
+            )}
           </ErrorBoundary>
         </main>
 

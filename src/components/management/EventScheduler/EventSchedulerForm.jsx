@@ -113,18 +113,21 @@ export default function EventSchedulerForm({ seriesId, onSuccess }) {
 
             <div className="space-y-2">
               <Label htmlFor="track_id">Track *</Label>
-              <select
-                id="track_id"
-                {...register('track_id', { required: 'Track is required' })}
-                className="w-full border border-input rounded-md px-3 py-2"
+              <Select
+                value={watch('track_id') || undefined}
+                onValueChange={(v) => setValue('track_id', v, { shouldValidate: true })}
               >
-                <option value="">Select a track</option>
-                {tracks.map((track) => (
-                  <option key={track.id} value={track.id}>
-                    {track.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a track" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tracks.map((track) => (
+                    <SelectItem key={track.id} value={track.id}>
+                      {track.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.track_id && <p className="text-xs text-red-600">{errors.track_id.message}</p>}
             </div>
 
@@ -195,17 +198,19 @@ export default function EventSchedulerForm({ seriesId, onSuccess }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor={`session_type_${index}`}>Session Type *</Label>
-                  <select
-                    id={`session_type_${index}`}
-                    {...register(`sessions.${index}.session_type`, { required: true })}
-                    className="w-full border border-input rounded-md px-3 py-2"
+                  <Select
+                    value={watch(`sessions.${index}.session_type`) || 'Practice'}
+                    onValueChange={(v) => setValue(`sessions.${index}.session_type`, v)}
                   >
-                    {SESSION_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SESSION_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

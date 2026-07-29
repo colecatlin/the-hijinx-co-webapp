@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { GitCompare } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import { isDriverPublic } from '@/components/system/publishHelpers';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 
 export default function DriverDirectory() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export default function DriverDirectory() {
     }
   };
 
-  const { data: allDrivers = [], isLoading: driversLoading } = useQuery({
+  const { data: allDrivers = [], isLoading: driversLoading, refetch: refetchDrivers } = useQuery({
     queryKey: ['drivers-all'],
     queryFn: () => base44.entities.Driver.list('first_name', 500),
     staleTime: 5 * 60 * 1000,
@@ -179,6 +180,7 @@ export default function DriverDirectory() {
 
   return (
     <PageShell className="bg-[#FFF8F5]">
+      <PullToRefresh onRefresh={refetchDrivers}>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -359,6 +361,7 @@ export default function DriverDirectory() {
           </div>
         )}
       </div>
+      </PullToRefresh>
     </PageShell>
   );
 }

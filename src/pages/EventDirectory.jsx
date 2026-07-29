@@ -12,6 +12,7 @@ import { createPageUrl } from '@/components/utils';
 import { format, differenceInCalendarDays, parseISO, differenceInCalendarDays as diffDays } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isEventPublic } from '@/components/system/publishHelpers';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { resolveEventClassification, buildClassificationMaps } from '@/components/utils/eventClassification';
 
 function DaysUntilBadge({ eventDate, status }) {
@@ -68,7 +69,7 @@ export default function EventDirectory() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const { data: allEventsList = [] } = useQuery({
+  const { data: allEventsList = [], refetch: refetchEvents } = useQuery({
     queryKey: ['events-all'],
     queryFn: async () => base44.entities.Event.list('event_date', 500),
     staleTime: 3 * 60 * 1000,
@@ -313,6 +314,7 @@ export default function EventDirectory() {
 
   return (
     <PageShell>
+      <PullToRefresh onRefresh={refetchEvents}>
       <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-12">
         <div className="mb-6 md:mb-8">
           <h1 className="text-3xl md:text-4xl font-black mb-2">Events</h1>
@@ -488,6 +490,7 @@ export default function EventDirectory() {
           </TabsContent>
         </Tabs>
       </div>
+      </PullToRefresh>
     </PageShell>
   );
 }
