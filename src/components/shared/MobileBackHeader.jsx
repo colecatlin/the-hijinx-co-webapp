@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 /**
- * Unified, sticky, mobile-only back header for detail views.
+ * Unified, mobile-only back header for detail views (non-sticky so it never
+ * collides with the global floating app header).
  *
  * - Left-aligned back arrow (history-aware) with a centered title.
  * - `tone="dark"` for dark surfaces (e.g. The Outlet), `tone="light"` for
@@ -24,15 +25,12 @@ export default function MobileBackHeader({ title, to, onBack, tone = 'dark' }) {
 
   return (
     <div
-      className="lg:hidden sticky top-0 z-30 relative flex items-center"
+      className="lg:hidden relative flex items-center"
       style={{
         height: '3rem',
         paddingLeft: 'env(safe-area-inset-left)',
         paddingRight: 'env(safe-area-inset-right)',
-        paddingTop: 'env(safe-area-inset-top)',
         background: dark ? 'rgba(8,10,12,0.92)' : 'rgba(255,255,255,0.92)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
         borderBottom: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
         color: dark ? '#fff' : '#0A0A0A',
       }}

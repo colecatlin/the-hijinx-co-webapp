@@ -140,3 +140,19 @@ body {
 /* Safe-area utilities for Android edge-to-edge / home indicator */
 .app-bottom-safe { padding-bottom: env(safe-area-inset-bottom); }
 .app-top-safe { padding-top: env(safe-area-inset-top); }
+
+/* ── Site-wide mobile media / overflow safeguards ──
+   Prevent oversized media and unbreakable strings from forcing horizontal
+   scroll on small viewports. Class-based heights (h-full, h-16…) still
+   override these element-level rules, so intentional layouts are preserved. */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Allow long URLs / tokens in body content to wrap instead of overflowing */
+.editorial-body,
+.prose,
+article {
+  overflow-wrap: anywhere;
+}
