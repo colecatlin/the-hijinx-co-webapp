@@ -175,7 +175,7 @@ export default function Layout({ children, currentPageName }) {
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E")`,
           opacity: 0.5,
         }} />
-        <div className="sticky top-0 z-50 relative" style={{ background: '#050A0A' }}>
+        <div className="sticky top-0 z-50 relative" style={{ background: '#050A0A', paddingTop: 'env(safe-area-inset-top)' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
           <div className="px-3 py-2">
@@ -617,7 +617,17 @@ export default function Layout({ children, currentPageName }) {
         {/* Page content */}
         <main className="flex-1 relative z-[1] pb-16 lg:pb-0">
           <ErrorBoundary>
-            {children}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </ErrorBoundary>
         </main>
 

@@ -7,6 +7,7 @@ import { getOutletStoryUrl } from '@/lib/storyUrl';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight, PenLine } from 'lucide-react';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 
 const OUTLET_CYAN = '#00F5D4';
 const LOGO_URL = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/cb38872af_Asset42x.png';
@@ -120,7 +121,7 @@ export default function OutletHome() {
   const [activePrimary, setActivePrimary] = useState('All');
   const [activeSub, setActiveSub] = useState('All');
 
-  const { data: stories = [], isLoading } = useQuery({
+  const { data: stories = [], isLoading, refetch: refetchStories } = useQuery({
     queryKey: ['outletStories'],
     queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 50),
     staleTime: 3 * 60 * 1000,
@@ -141,6 +142,7 @@ export default function OutletHome() {
   const sidebarStories = activePrimary === 'All' ? filtered.slice(1, 8) : [];
 
   return (
+    <PullToRefresh onRefresh={refetchStories}>
     <div style={{ background: '#080808', minHeight: '100vh' }}>
 
       {/* ── MASTHEAD ── */}
@@ -323,5 +325,6 @@ export default function OutletHome() {
         </div>
       </div>
     </div>
+    </PullToRefresh>
   );
 }

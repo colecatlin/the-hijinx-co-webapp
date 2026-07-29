@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
 import HijinxPageShell from '@/components/shared/HijinxPageShell';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import ProfileIdentityHero from '@/components/profile/ProfileIdentityHero';
 import GarageAdaptiveModules from '@/components/mydashboard/GarageAdaptiveModules';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
@@ -160,6 +161,15 @@ export default function MyDashboard() {
     enabled: !!user?.id,
   });
 
+  const queryClient = useQueryClient();
+  const handleRefresh = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
+      queryClient.invalidateQueries({ queryKey: ['resolvedEntities'] }),
+      queryClient.invalidateQueries({ queryKey: ['mediaProfile'] }),
+    ]);
+  };
+
   const isLoading = userLoading || resolvedLoading;
   const hasEntities = resolvedEntities.length > 0;
   const primaryEntity = getValidPrimaryEntity(user, resolvedEntities);
@@ -187,8 +197,9 @@ export default function MyDashboard() {
 
   return (
     <OnboardingGuard>
-    <HijinxPageShell>
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-5">
+      <HijinxPageShell>
+        <PullToRefresh onRefresh={handleRefresh}>
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-5">
 
         {/* Access banners */}
         <AccessSuccessBanner
@@ -296,6 +307,7 @@ export default function MyDashboard() {
         {user && <PendingAccessSection user={user} />}
 
       </div>
+        </PullToRefresh>
     </HijinxPageShell>
     </OnboardingGuard>
   );
