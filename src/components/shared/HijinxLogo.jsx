@@ -30,10 +30,15 @@ export default function HijinxLogo({ compact = false, className = '', iconClassN
     ? { opacity: 0.92 }
     : { filter: 'brightness(0) invert(1)', opacity: 0.92 };
 
-  const content = (
+  // The light-theme wordmark asset (Logo-HIjinxWeb4x) is a full icon+wordmark
+  // lockup — rendering the standalone icon alongside it duplicates the mark.
+  // In light mode show that single lockup; in dark mode show icon + wordmark.
+  const content = isLight ? (
+    <img src={WORDMARK_LIGHT} alt="HIJINX" className={wordmarkClassName} style={wordmarkStyle} />
+  ) : (
     <>
       <img src={ICON_DARK} alt="HIJINX icon" className={iconClassName} style={iconStyle} />
-      {!compact && <img src={isLight ? WORDMARK_LIGHT : WORDMARK_DARK} alt="HIJINX" className={wordmarkClassName} style={wordmarkStyle} />}
+      {!compact && <img src={WORDMARK_DARK} alt="HIJINX" className={wordmarkClassName} style={wordmarkStyle} />}
     </>
   );
 
