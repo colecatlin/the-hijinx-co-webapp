@@ -392,6 +392,80 @@ body {
 .light-page .hero-dark .text-gray-500,
 .light-page .hero-dark .text-gray-600 { color: rgba(255,255,255,0.9) !important; }
 
+/* ════════════════════════════════════════════════════════════
+   LIGHT THEME — dark-surface neutralization
+   Under .theme-light, opaque dark utility/hex/inline backgrounds and the
+   white text inside them are remapped to light tokens so every page
+   renders light, even unmigrated ones. Translucent overlays
+   (bg-black/40, bg-white/10, gradient halos) are intentionally left
+   intact so hero imagery and glassmorphism over images keep their
+   light text.
+   ════════════════════════════════════════════════════════════ */
+.theme-light .bg-zinc-900,
+.theme-light .bg-zinc-950,
+.theme-light .bg-neutral-900,
+.theme-light .bg-neutral-950,
+.theme-light .bg-slate-900,
+.theme-light .bg-slate-950,
+.theme-light .bg-gray-900,
+.theme-light .bg-gray-950,
+.theme-light .bg-black,
+.theme-light [class*="050B0B"],
+.theme-light [class*="0C1515"],
+.theme-light [class*="171717"],
+.theme-light [class*="262626"],
+.theme-light [class*="0a0a0a"],
+.theme-light [class*="000000"],
+.theme-light [style*="#050B0B"],
+.theme-light [style*="#0C1515"],
+.theme-light [style*="#121B1B"],
+.theme-light [style*="#1A2929"],
+.theme-light [style*="#171717"],
+.theme-light [style*="#262626"],
+.theme-light [style*="rgb(5, 11, 11"],
+.theme-light [style*="rgb(12, 21, 21"],
+.theme-light [style*="rgb(18, 27, 27"],
+.theme-light [style*="rgb(26, 41, 41"],
+.theme-light [style*="rgba(5, 11, 11"],
+.theme-light [style*="rgba(12, 21, 21"] {
+  background-color: hsl(var(--surface-elevated)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Flip white text inside those now-light containers to dark ink */
+.theme-light .bg-zinc-900 .text-white,
+.theme-light .bg-zinc-950 .text-white,
+.theme-light .bg-neutral-900 .text-white,
+.theme-light .bg-neutral-950 .text-white,
+.theme-light .bg-slate-900 .text-white,
+.theme-light .bg-slate-950 .text-white,
+.theme-light .bg-gray-900 .text-white,
+.theme-light .bg-gray-950 .text-white,
+.theme-light .bg-black .text-white,
+.theme-light [class*="050B0B"] .text-white,
+.theme-light [class*="0C1515"] .text-white,
+.theme-light [class*="171717"] .text-white,
+.theme-light [class*="262626"] .text-white,
+.theme-light [style*="#050B0B"] .text-white,
+.theme-light [style*="#0C1515"] .text-white,
+.theme-light [style*="rgb(5, 11, 11"] .text-white,
+.theme-light [style*="rgba(5, 11, 11"] .text-white {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Dark border utilities → light divider under light theme */
+.theme-light .border-zinc-800,
+.theme-light .border-zinc-900,
+.theme-light .border-neutral-800,
+.theme-light .border-neutral-900,
+.theme-light .border-slate-800,
+.theme-light .border-slate-900,
+.theme-light .border-black,
+.theme-light [class*="border-\[\#243434"],
+.theme-light [class*="border-\[\#1A2929"] {
+  border-color: hsl(var(--divider)) !important;
+}
+
 /* ── Mobile WebView compatibility ──
    Disable rubber-banding, tap highlights, and selection on interactive
    chrome elements while preserving text selection for article/body content. */
