@@ -37,7 +37,7 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
         <div className="pt-16 pb-5 mb-2 relative flex items-center justify-between">
           <Link to={createPageUrl('OutletHome')} className="flex items-center gap-4 group">
             <img
-              src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/cb38872af_Asset42x.png"
+              src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/735f3b096_Asset62x.png"
               alt="The Outlet"
               className="w-10 h-10 object-contain"
             />

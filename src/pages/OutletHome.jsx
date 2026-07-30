@@ -10,7 +10,7 @@ import { ArrowRight, PenLine } from 'lucide-react';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 
 const OUTLET_CYAN = '#00F5D4';
-const LOGO_URL = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/cb38872af_Asset42x.png';
+const LOGO_URL = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/735f3b096_Asset62x.png';
 
 const CATEGORY_MAP = {
   Racing:      ['Race Reports', 'Results', 'Standings', 'Championship Watch', 'Track Profiles'],
