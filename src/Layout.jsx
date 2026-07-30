@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
 import { useTabKeepAlive } from '@/hooks/useTabKeepAlive';
+import HijinxLogo from '@/components/shared/HijinxLogo';
 import Home from '@/pages/Home';
 import OutletHome from '@/pages/OutletHome';
 import ApparelHome from '@/pages/ApparelHome';
@@ -229,20 +230,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Top row — logo + nav + actions */}
               <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between w-full gap-8">
                 {/* Logo */}
-                <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 flex-shrink-0">
-                  <img
-                    src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/857494da6_Asset444x.png"
-                    alt="HIJINX icon"
-                    className="h-6 w-auto"
-                    style={{ filter: 'brightness(0) invert(1)', opacity: 0.92 }}
-                  />
-                  <img
-                    src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png"
-                    alt="HIJINX"
-                    className="h-10 w-auto"
-                    style={{ filter: 'brightness(0) invert(1)', opacity: 0.92 }}
-                  />
-                </Link>
+                <HijinxLogo to={createPageUrl('Home')} />
 
                 {/* Desktop nav */}
                 <nav className="hidden lg:flex flex-1 items-center justify-center">
