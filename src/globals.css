@@ -38,6 +38,43 @@
   --hijinx-danger: #DC2828;
   }
 
+  /* ════════════════════════════════════════════════════════════
+     LIGHT THEME — legacy Hijinx hex-var overrides
+     Mirrors Design System v1.0 `.theme-light` tokens for legacy
+     `--hijinx-*` consumers (body bg, motorsports-glass, editorial
+     text, inline-style consumers). Defaults remain the dark
+     `:root` values above, preserved as the optional dark theme.
+     ════════════════════════════════════════════════════════════ */
+  .theme-light {
+    --hijinx-black: #131314;
+    --hijinx-white: #FFFFFF;
+    --hijinx-gray-100: #F7F5F2;
+    --hijinx-gray-200: #F0EEE9;
+    --hijinx-gray-300: #E6E4DF;
+    --hijinx-gray-400: #CBD1D1;
+    --hijinx-gray-500: #767F7F;
+    --hijinx-gray-600: #4D5353;
+    --hijinx-gray-700: #2A2E2E;
+    --hijinx-gray-800: #1B1F1F;
+    --hijinx-gray-900: #131314;
+    --hijinx-teal: #1E9E9E;
+    --hijinx-accent: #E5FF00;
+    --hijinx-canvas: #F7F5F2;
+    --hijinx-surface: #FFFFFF;
+    --hijinx-surface-elevated: #FFFFFF;
+    --hijinx-surface-interactive: #E6E4DF;
+    --hijinx-motion: #1E9E9E;
+    --hijinx-motion-hover: #158484;
+    --hijinx-motion-active: #114F4F;
+    --hijinx-foreground: #131314;
+    --hijinx-foreground-secondary: #4D5353;
+    --hijinx-foreground-quiet: #767F7F;
+    --hijinx-divider: #CBD1D1;
+    --hijinx-success: #278658;
+    --hijinx-warning: #CF8A11;
+    --hijinx-danger: #D22B28;
+  }
+
 * {
   font-family: var(--font-sans);
 }
@@ -58,24 +95,35 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(32,172,172,0.55) !important;
 }
-::-webkit-scrollbar-track {
+:root:not(.theme-light) ::-webkit-scrollbar-track {
   background: rgba(5,11,11,0.8) !important;
+}
+.theme-light ::-webkit-scrollbar-track {
+  background: rgba(203,209,209,0.4) !important;
 }
 
 /* Glass card system — Hijinx Surface with Motion hairline */
-.bg-white,
-[class*="bg-white"] {
+/* Dark-only: force white surfaces → dark and dark text → light so the
+   dark Hijinx canvas reads correctly. In light theme these fall back to
+   Tailwind defaults (white surfaces, dark text) automatically. */
+:root:not(.theme-light) .bg-white,
+:root:not(.theme-light) [class*="bg-white"] {
   background-color: rgba(12, 21, 21, 0.92) !important;
 }
 
 /* Force text on white/light backgrounds to be readable on dark */
-.text-gray-900, .text-black, .text-foreground {
+:root:not(.theme-light) .text-gray-900,
+:root:not(.theme-light) .text-black,
+:root:not(.theme-light) .text-foreground {
   color: #F5F5F5 !important;
 }
-.text-gray-600, .text-gray-500, .text-muted-foreground {
+:root:not(.theme-light) .text-gray-600,
+:root:not(.theme-light) .text-gray-500,
+:root:not(.theme-light) .text-muted-foreground {
   color: #8C8C8C !important;
 }
-.text-gray-400, .text-gray-300 {
+:root:not(.theme-light) .text-gray-400,
+:root:not(.theme-light) .text-gray-300 {
   color: rgba(215,215,215,0.45) !important;
 }
 
@@ -111,17 +159,27 @@ body {
 
 /* Fonts */
 .motorsports-glass {
-  background: rgba(12, 21, 21, 0.72);
+  background: hsl(var(--surface-elevated) / 0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid hsl(var(--divider));
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  border: 1px solid hsl(var(--divider) / 0.6);
+  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.12);
 }
 
 /* Motion divider utility */
 .teal-glow-divider {
   background: linear-gradient(90deg, transparent 0%, hsl(var(--divider)) 35%, hsl(var(--divider)) 65%, transparent 100%);
   height: 1px;
+}
+
+/* Hijinx canvas surface — ivory paper in light, branded hero image in dark */
+.hijinx-canvas-bg { background-color: hsl(var(--canvas)); }
+:root:not(.theme-light) .hijinx-canvas-bg {
+  background-image: url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png');
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* Hijinx mono tag utility */
@@ -176,7 +234,7 @@ body {
 .editorial-body *,
 .editorial-body .ql-editor,
 .editorial-body .ql-editor * {
-  color: rgba(255,255,255,0.72) !important;
+  color: hsl(var(--foreground) / 0.82) !important;
   background-color: transparent !important;
 }
 
@@ -185,7 +243,7 @@ body {
   font-size: 1.125rem;
   line-height: 1.5;
   margin-bottom: 1.5rem;
-  color: rgba(255,255,255,0.72) !important;
+  color: hsl(var(--foreground) / 0.82) !important;
 }
 
 .editorial-body h2 {
@@ -193,15 +251,15 @@ body {
   font-weight: 700;
   margin-top: 2.5rem;
   margin-bottom: 1rem;
-  color: rgba(255,255,255,0.92) !important;
+  color: hsl(var(--foreground) / 0.95) !important;
 }
 
 .editorial-body blockquote {
-  border-left: 3px solid rgba(255,255,255,0.3);
+  border-left: 3px solid hsl(var(--divider));
   padding-left: 1.5rem;
   margin: 2rem 0;
   font-style: italic;
-  color: rgba(255,255,255,0.5);
+  color: hsl(var(--foreground-muted));
 }
 
 .editorial-body img {
@@ -214,7 +272,7 @@ body {
 .editorial-body h4,
 .editorial-body h5,
 .editorial-body h6 {
-  color: rgba(255,255,255,0.92);
+  color: hsl(var(--foreground) / 0.95);
   font-weight: 700;
   margin-top: 2rem;
   margin-bottom: 0.75rem;
@@ -222,7 +280,7 @@ body {
 
 .editorial-body ul,
 .editorial-body ol {
-  color: rgba(255,255,255,0.72);
+  color: hsl(var(--foreground) / 0.82);
   padding-left: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -235,23 +293,23 @@ body {
 }
 
 .editorial-body a {
-  color: rgba(255,255,255,0.85);
+  color: hsl(var(--foreground) / 0.9);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
 .editorial-body a:hover {
-  color: #1DA1A1;
+  color: hsl(var(--motion-hover));
 }
 
 .editorial-body strong,
 .editorial-body b {
-  color: rgba(255,255,255,0.92);
+  color: hsl(var(--foreground) / 0.95);
 }
 
 .editorial-body em,
 .editorial-body i {
-  color: rgba(255,255,255,0.72);
+  color: hsl(var(--foreground) / 0.82);
 }
 
 /* Accent highlight */
@@ -403,9 +461,9 @@ blockquote {
     margin-bottom: 0.75rem;
     padding: 0.75rem;
     border-radius: 0.75rem;
-    background: rgba(8, 12, 14, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    background: hsl(var(--surface-elevated));
+    border: 1px solid hsl(var(--divider));
+    box-shadow: 0 4px 20px hsl(0 0% 0% / 0.08);
   }
   tbody td {
     display: flex;
@@ -423,7 +481,7 @@ blockquote {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, 0.4);
+    color: hsl(var(--foreground-quiet));
     flex-shrink: 0;
   }
   /* Tighten dense grids into stacked card blocks */

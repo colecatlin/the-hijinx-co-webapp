@@ -183,14 +183,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
     <GoogleMapsInitializer>
-      <div className="flex flex-col min-h-screen relative" style={{
-          background: 'hsl(var(--canvas))',
-          backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-          backgroundAttachment: 'fixed',
-        }}>
+      <div className="flex flex-col min-h-screen relative hijinx-canvas-bg">
         {/* ── GLOBAL: Repeating motorsports grid texture overlay ── */}
         <div className="fixed inset-0 z-0 pointer-events-none" style={{
           backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`,

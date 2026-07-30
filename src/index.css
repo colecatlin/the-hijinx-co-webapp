@@ -130,7 +130,7 @@
   /* Dark Mode is the canonical Hijinx theme. The `.dark` selector
      is kept for shadcn components that gate on `darkMode: ["class"]`
      but it simply re-asserts the same canonical token set. */
-  .dark {
+  .dark, .theme-dark {
     --canvas: 180 38% 3%;
     --canvas-hex: #050B0B;
     --surface: 180 27% 6%;
@@ -175,14 +175,110 @@
     --chart-gold-hex: #D7B15A;
   }
 
-  /* ────────────────────────────────────────────────────────
-     FUTURE: Light Mode stub
-     When ready, provide token VALUES only here. Components never
-     change — they read semantic tokens, not theme names.
-     .theme-light {
-       --canvas: 0 0% 100%;            ... etc
-     }
-     ──────────────────────────────────────────────────────── */
+  /* ════════════════════════════════════════════════════════════
+     LIGHT THEME (canonical Hijinx light interface — default)
+     Premium ivory / light-stone surfaces, dark charcoal type,
+     Hijinx motion teal retained as accent. Active when <html>
+     carries `.theme-light`. Dark values preserved under
+     `.theme-dark` / `.dark` for future use.
+     ════════════════════════════════════════════════════════════ */
+  .theme-light {
+    /* ── Foundation ─────────────────────────────────────── */
+    --canvas: 42 24% 96%;
+    --canvas-hex: #F7F5F2;
+    --surface: 40 18% 93%;
+    --surface-hex: #F0EEE9;
+    --surface-elevated: 0 0% 100%;
+    --surface-elevated-hex: #FFFFFF;
+    --surface-sunken: 40 12% 89%;
+    --surface-sunken-hex: #E6E4DF;
+    --surface-interactive: 40 12% 89%;
+    --surface-interactive-hex: #E6E4DF;
+
+    /* ── Motion (brand teal, slightly darker for light bg) ── */
+    --motion: 180 69% 37%;
+    --motion-hex: #1E9E9E;
+    --motion-hover: 180 72% 30%;
+    --motion-hover-hex: #158484;
+    --motion-active: 180 70% 24%;
+    --motion-active-hex: #114F4F;
+    --motion-muted: 180 28% 89%;
+    --motion-muted-hex: #DBEBEB;
+
+    /* ── Typography (dark charcoal, never pure black) ───── */
+    --foreground: 180 8% 8%;
+    --foreground-hex: #131314;
+    --foreground-secondary: 180 5% 31%;
+    --foreground-secondary-hex: #4D5353;
+    --foreground-muted: 180 5% 31%;
+    --foreground-muted-hex: #4D5353;
+    --foreground-quiet: 180 4% 48%;
+    --foreground-quiet-hex: #767F7F;
+
+    /* ── Structure ─────────────────────────────────────── */
+    --divider: 180 6% 81%;
+    --divider-hex: #CBD1D1;
+    --input: 180 6% 81%;
+    --input-hex: #CBD1D1;
+    --popover: 0 0% 100%;
+    --popover-hex: #FFFFFF;
+
+    /* ── Status ────────────────────────────────────────── */
+    --success: 151 55% 34%;
+    --success-hex: #278658;
+    --warning: 38 85% 44%;
+    --warning-hex: #CF8A11;
+    --danger: 1 68% 49%;
+    --danger-hex: #D22B28;
+
+    /* ── Data visualization palette ────────────────────── */
+    --chart-motion: 180 69% 37%;
+    --chart-motion-hex: #1E9E9E;
+    --chart-ocean: 207 54% 43%;
+    --chart-ocean-hex: #3274A9;
+    --chart-slate: 37 70% 50%;
+    --chart-slate-hex: #D89427;
+    --chart-bronze: 152 47% 40%;
+    --chart-bronze-hex: #369669;
+    --chart-gold: 270 40% 52%;
+    --chart-gold-hex: #8554B6;
+
+    /* ── shadcn compatibility aliases ──────────────────── */
+    --background: var(--canvas);
+    --foreground-shadcn: var(--foreground);
+    --card: var(--surface-elevated);
+    --card-foreground: var(--foreground);
+    --popover-shadcn: var(--popover);
+    --popover-foreground: var(--foreground);
+    --primary: var(--motion);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--surface);
+    --secondary-foreground: var(--foreground);
+    --muted: var(--surface);
+    --muted-foreground: var(--foreground-muted);
+    --accent: var(--motion-muted);
+    --accent-foreground: var(--foreground);
+    --destructive: var(--danger);
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--divider);
+    --input-shadcn: var(--input);
+    --ring: var(--motion);
+
+    --chart-1: var(--chart-motion);
+    --chart-2: var(--chart-ocean);
+    --chart-3: var(--chart-slate);
+    --chart-4: var(--chart-bronze);
+    --chart-5: var(--chart-gold);
+
+    --sidebar-background: var(--surface);
+    --sidebar-foreground: var(--foreground-secondary);
+    --sidebar-primary: var(--motion);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--surface-interactive);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--divider);
+    --sidebar-ring: var(--motion);
+  }
 }
 
 @layer base {
