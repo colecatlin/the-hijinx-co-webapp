@@ -16,12 +16,12 @@ const index46Tiles = [
 ];
 
 const raceCoreTiles = [
-  { icon: Gauge,         label: 'Dashboard',     to: '/racecore',                     desc: 'Mission control for event ops.' },
-  { icon: ClipboardList, label: 'Event Files',   to: '/racecore/event-files',         desc: 'Per-event workspace: entries, sessions, results.' },
-  { icon: BarChart3,     label: 'Standings Ops',  to: '/racecore/standings',           desc: 'Calculation, tie-breakers & publishing.' },
-  { icon: Database,      label: 'Records',        to: '/racecore/records/drivers',     desc: 'Drivers, teams, tracks, series, events.' },
-  { icon: FileSpreadsheet, label: 'Data Tools',   to: '/racecore/data/imports',        desc: 'CSV import, calendar sync, diagnostics.' },
-  { icon: Flag,          label: 'Race Control',   to: '/racecore/event-files',         desc: 'Incidents, penalties, grids & holds.' },
+  { icon: Gauge,         label: 'Dashboard',     to: '/racecore',                     desc: 'Mission control for event ops.', disabled: true },
+  { icon: ClipboardList, label: 'Event Files',   to: '/racecore/event-files',         desc: 'Per-event workspace: entries, sessions, results.', disabled: true },
+  { icon: BarChart3,     label: 'Standings Ops',  to: '/racecore/standings',           desc: 'Calculation, tie-breakers & publishing.', disabled: true },
+  { icon: Database,      label: 'Records',        to: '/racecore/records/drivers',     desc: 'Drivers, teams, tracks, series, events.', disabled: true },
+  { icon: FileSpreadsheet, label: 'Data Tools',   to: '/racecore/data/imports',        desc: 'CSV import, calendar sync, diagnostics.', disabled: true },
+  { icon: Flag,          label: 'Race Control',   to: '/racecore/event-files',         desc: 'Incidents, penalties, grids & holds.', disabled: true },
 ];
 
 function SectionHeader({ kicker, title, blurb }) {
