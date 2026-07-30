@@ -7,7 +7,7 @@ export default function ManagementLayout({ children, currentPage, embedded = fal
     // In embedded mode (inside RaceCoreLayout): no sidebar, no header.
     // RaceCoreLayout owns the scroll axis — do NOT add overflow-y-auto here.
     return (
-      <div className="flex-1 min-h-full bg-[#0A0A0A]">
+      <div className="flex-1 min-h-full bg-canvas">
         {children}
       </div>
     );

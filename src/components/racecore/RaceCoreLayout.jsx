@@ -74,8 +74,8 @@ export default function RaceCoreLayout() {
 
   if (authLoading || isAuthenticated === false) {
     return (
-      <div className="flex h-screen items-center justify-center" style={{ background: '#0A0A0A' }}>
-        <div className="w-6 h-6 border-2 border-gray-700 border-t-gray-400 rounded-full animate-spin" />
+      <div className="flex h-screen items-center justify-center" style={{ background: 'hsl(var(--canvas))' }}>
+        <div className="w-6 h-6 border-2 border-divider border-t-motion rounded-full animate-spin" />
       </div>
     );
   }
@@ -95,7 +95,7 @@ export default function RaceCoreLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#0B0D0D' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'hsl(var(--canvas))' }}>
       {/* Desktop sidebar */}
       <div className="hidden lg:flex flex-shrink-0">
         <RaceCoreSidebar {...sidebarProps} />
@@ -103,15 +103,15 @@ export default function RaceCoreLayout() {
 
       {/* Mobile hamburger header strip */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 flex items-center px-4 h-11 border-b"
-        style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}>
+        style={{ background: 'hsl(var(--surface))', borderColor: 'hsl(var(--divider))' }}>
         <button
           onClick={() => setDrawerOpen(true)}
-          className="p-1.5 rounded text-gray-500 hover:text-gray-200 hover:bg-gray-800/40 transition-colors"
+          className="p-1.5 rounded text-foreground-quiet hover:text-foreground hover:bg-surface-interactive transition-colors"
           aria-label="Open menu"
         >
           <Menu className="w-4 h-4" />
         </button>
-        <span className="ml-3 text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">
+        <span className="ml-3 text-[10px] font-mono font-bold uppercase tracking-widest text-foreground-quiet">
           RACECORE
         </span>
       </div>
@@ -141,17 +141,17 @@ export default function RaceCoreLayout() {
               style={{ width: 224 }}
             >
               <div className="flex items-center justify-between px-3 h-11 border-b"
-                style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}>
-                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RACECORE</span>
+                style={{ background: 'hsl(var(--surface))', borderColor: 'hsl(var(--divider))' }}>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-foreground-quiet">RACECORE</span>
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="p-1 rounded text-gray-600 hover:text-gray-300 transition-colors"
+                  className="p-1 rounded text-foreground-quiet hover:text-foreground transition-colors"
                   aria-label="Close menu"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto" style={{ background: '#0F1212' }}>
+              <div className="flex-1 overflow-y-auto" style={{ background: 'hsl(var(--surface))' }}>
                 <RaceCoreSidebar {...sidebarProps} />
               </div>
             </motion.div>

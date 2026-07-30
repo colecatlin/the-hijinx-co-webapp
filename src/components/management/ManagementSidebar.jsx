@@ -36,19 +36,19 @@ export default function ManagementSidebar({ onNavigate }) {
     : MANAGEMENT_SECTIONS;
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-screen overflow-y-auto sticky top-0 flex flex-col">
+    <div className="w-64 bg-surface-elevated border-r border-divider h-screen overflow-y-auto sticky top-0 flex flex-col">
       <div className="p-4 flex-1">
-        <h3 className="text-xs font-mono tracking-wider text-gray-400 uppercase mb-3">Management</h3>
+        <h3 className="text-xs font-mono tracking-wider text-foreground-quiet uppercase mb-3">Management</h3>
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-foreground-quiet pointer-events-none" />
           <input
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 placeholder-gray-400"
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-surface border border-divider rounded-lg focus:outline-none focus:ring-1 focus:ring-motion focus:border-motion placeholder:text-foreground-quiet"
           />
         </div>
 
@@ -62,8 +62,8 @@ export default function ManagementSidebar({ onNavigate }) {
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors mb-1 font-semibold',
                   currentPage === DASHBOARD_ITEM.page
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-motion text-white'
+                    : 'text-foreground-secondary hover:bg-surface-interactive'
                 )}
               >
                 <LayoutDashboard className="w-4 h-4 shrink-0" />
@@ -75,19 +75,19 @@ export default function ManagementSidebar({ onNavigate }) {
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors mb-1 font-semibold border',
                   location.pathname.startsWith('/racecore')
-                    ? 'bg-teal-900/30 text-teal-300 border-teal-800/60'
-                    : 'text-teal-700 hover:bg-teal-50 hover:text-teal-900 border-teal-200/60'
+                    ? 'bg-motion-muted text-motion border-motion/40'
+                    : 'text-motion hover:bg-motion-muted hover:text-motion-active border-motion/20'
                 )}
               >
                 <Gauge className="w-4 h-4 shrink-0" />
                 <span className="flex-1">RaceCore OS →</span>
               </Link>
-              <div className="border-t border-gray-200 my-2" />
+              <div className="border-t border-divider my-2" />
             </>
           )}
 
           {filteredSections.length === 0 && (
-            <p className="text-xs text-gray-400 px-3 py-4 text-center">No matches</p>
+            <p className="text-xs text-foreground-quiet px-3 py-4 text-center">No matches</p>
           )}
 
           {filteredSections.map((section) => {
@@ -97,7 +97,7 @@ export default function ManagementSidebar({ onNavigate }) {
                 <button
                   onClick={() => !trimmed && toggleSection(section.title)}
                   className={cn(
-                    'w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded transition-colors',
+                    'w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase text-foreground-quiet hover:text-foreground hover:bg-surface-interactive rounded transition-colors',
                     trimmed && 'cursor-default'
                   )}
                 >
@@ -128,8 +128,8 @@ export default function ManagementSidebar({ onNavigate }) {
                           className={cn(
                             'flex items-center gap-2 px-3 py-2 text-xs rounded transition-colors',
                             isActive
-                              ? 'bg-gray-900 text-white font-semibold'
-                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                              ? 'bg-motion text-white font-semibold'
+                              : 'text-foreground-secondary hover:bg-surface-interactive hover:text-foreground'
                           )}
                         >
                           <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -137,7 +137,7 @@ export default function ManagementSidebar({ onNavigate }) {
                           {item.shortcut && (
                             <span className={cn(
                               'text-[10px] font-mono shrink-0',
-                              isActive ? 'opacity-60' : 'text-gray-400'
+                              isActive ? 'opacity-60' : 'text-foreground-quiet'
                             )}>
                               ⌘{item.shortcut}
                             </span>

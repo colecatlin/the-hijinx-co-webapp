@@ -27,6 +27,7 @@ module.exports = {
           DEFAULT: 'hsl(var(--surface))',
           elevated: 'hsl(var(--surface-elevated))',
           interactive: 'hsl(var(--surface-interactive))',
+          sunken: 'hsl(var(--surface-sunken))',
         },
 
         /* ── Motion (brand color — interactive only) ───── */
@@ -34,6 +35,7 @@ module.exports = {
           DEFAULT: 'hsl(var(--motion))',
           hover: 'hsl(var(--motion-hover))',
           active: 'hsl(var(--motion-active))',
+          muted: 'hsl(var(--motion-muted))',
         },
 
         /* ── Foreground / typography ───────────────────── */

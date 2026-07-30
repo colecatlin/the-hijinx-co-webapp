@@ -16,11 +16,11 @@ export default function ManagementShell({ title, subtitle, actions, children, ma
   return (
     <div className={`${maxWidth} mx-auto px-6 py-6`}>
       {/* Page header */}
-      <div className="flex items-start gap-4 mb-6 pb-5 border-b border-gray-200">
+      <div className="flex items-start gap-4 mb-6 pb-5 border-b border-divider">
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-900 leading-tight">{title}</h1>
+          <h1 className="text-2xl font-bold text-foreground leading-tight">{title}</h1>
           {subtitle &&
-          <p className="text-sm text-gray-500 mt-0.5 leading-snug">{subtitle}</p>
+          <p className="text-sm text-foreground-quiet mt-0.5 leading-snug">{subtitle}</p>
           }
         </div>
         {actions &&

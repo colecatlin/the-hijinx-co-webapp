@@ -83,7 +83,7 @@ export default function RaceCoreSidebar({
         'shrink-0 border-r min-h-full flex flex-col overflow-y-auto transition-[width] duration-200',
         navCollapsed ? 'w-12' : 'w-44'
       )}
-      style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}
+      style={{ background: 'hsl(var(--surface))', borderColor: 'hsl(var(--divider))' }}
     >
       {/* Home link — HIJINX platform */}
       <button
@@ -98,14 +98,14 @@ export default function RaceCoreSidebar({
           src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/857494da6_Asset444x.png"
           alt="HIJINX"
           className="h-4 w-auto object-contain"
-          style={{ filter: 'brightness(0) invert(1)', opacity: 0.7 }}
+          style={{ opacity: 0.8 }}
         />
         {!navCollapsed && (
           <img
             src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/69875e8c5d41c7f087ed1b90/8021cd5dd_Asset484x.png"
             alt="HIJINX"
             className="h-5 w-auto object-contain"
-            style={{ filter: 'brightness(0) invert(1)', opacity: 0.55 }}
+            style={{ opacity: 0.7 }}
           />
         )}
       </button>
@@ -116,13 +116,13 @@ export default function RaceCoreSidebar({
           'flex items-center gap-2',
           navCollapsed ? 'justify-center px-1 py-2' : 'px-3 py-2 justify-between'
         )}
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+        style={{ borderBottom: '1px solid hsl(var(--divider))' }}
       >
         {navCollapsed ? (
-          <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600">RC</span>
+          <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-foreground-quiet">RC</span>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">RaceCore</span>
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-foreground-quiet">RaceCore</span>
             {isAdmin && (
               <span className="text-[9px] font-mono text-amber-600 border border-amber-800/50 px-1 py-px rounded-sm tracking-widest">ADM</span>
             )}
@@ -141,7 +141,7 @@ export default function RaceCoreSidebar({
               }
             }}
             title="Collapse all / Expand all sections"
-            className="text-[9px] font-mono uppercase tracking-widest text-gray-700 hover:text-teal-400 transition-colors"
+            className="text-[9px] font-mono uppercase tracking-widest text-foreground-quiet hover:text-motion transition-colors"
           >
             All
           </button>
@@ -153,7 +153,7 @@ export default function RaceCoreSidebar({
         onClick={onToggleNavCollapsed}
         title={navCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         className={cn(
-          'w-full flex items-center text-gray-600 hover:text-teal-400 hover:bg-gray-800/30 transition-colors',
+          'w-full flex items-center text-foreground-quiet hover:text-motion hover:bg-surface-interactive transition-colors',
           navCollapsed ? 'justify-center py-2' : 'justify-end px-3 py-1 gap-1 text-[9px] font-mono uppercase tracking-widest'
         )}
       >
@@ -165,7 +165,7 @@ export default function RaceCoreSidebar({
 
       {/* Quick Actions */}
       {quickActions.length > 0 && (
-        <div className="py-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="py-1" style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
@@ -178,7 +178,7 @@ export default function RaceCoreSidebar({
                   navCollapsed ? 'justify-center px-1 py-1.5' : 'gap-2 px-3 py-1',
                   action.active
                     ? 'text-amber-300 bg-amber-900/20'
-                    : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/30'
+                    : 'text-foreground-quiet hover:text-foreground hover:bg-surface-interactive'
                 )}
               >
                 <Icon className="w-3 h-3 shrink-0" />
@@ -203,8 +203,8 @@ export default function RaceCoreSidebar({
               {/* Group label — collapsible (hidden in icon-only mode) */}
               {!navCollapsed && (
                 <button
-                 onClick={() => toggle(group.id)}
-                 className="w-full flex items-center justify-between px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-gray-600 hover:text-gray-300 hover:bg-gray-800/30 rounded-sm transition-colors"
+                  onClick={() => toggle(group.id)}
+                  className="w-full flex items-center justify-between px-3 py-1 text-[9px] font-mono font-bold uppercase tracking-widest text-foreground-quiet hover:text-foreground hover:bg-surface-interactive rounded-sm transition-colors"
                 >
                   <span>{group.label}</span>
                   <ChevronDown className={cn('w-2.5 h-2.5 transition-transform opacity-40', !isOpen && '-rotate-90')} />
@@ -241,17 +241,17 @@ export default function RaceCoreSidebar({
                       'relative w-full flex items-center text-xs transition-colors text-left',
                       navCollapsed ? 'justify-center px-1 py-1.5 gap-0' : 'gap-2 pl-3 pr-2 py-1',
                       active
-                        ? 'text-white bg-gray-800/50'
+                        ? 'text-motion bg-motion-muted'
                         : disabled
-                        ? 'text-gray-800 cursor-not-allowed'
+                        ? 'text-foreground-quiet opacity-40 cursor-not-allowed'
                         : isHref
-                        ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/20'
-                        : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/20'
+                        ? 'text-foreground-quiet hover:text-foreground hover:bg-surface-interactive'
+                        : 'text-foreground-quiet hover:text-foreground hover:bg-surface-interactive'
                     )}
                   >
                     {/* Active left rail */}
                     {active && (
-                      <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-teal-500" />
+                      <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-motion" />
                     )}
                     <Icon className="w-3 h-3 shrink-0 flex-shrink-0" />
                     {!navCollapsed && <span className="truncate flex-1">{item.label}</span>}

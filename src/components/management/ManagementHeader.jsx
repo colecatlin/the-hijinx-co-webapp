@@ -23,11 +23,11 @@ export default function ManagementHeader({ currentPage }) {
   const info = PAGE_TITLES[currentPage] || { title: currentPage || 'Management', subtitle: '' };
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm px-6 py-3 flex items-center gap-4 shrink-0">
+    <div className="bg-surface-elevated border-b border-divider shadow-sm px-6 py-3 flex items-center gap-4 shrink-0">
       {/* Title */}
       <div className="min-w-0 flex-1">
-        <h1 className="text-base font-bold text-gray-900 leading-tight truncate">{info.title}</h1>
-        {info.subtitle && <p className="text-xs text-gray-400 leading-tight truncate">{info.subtitle}</p>}
+        <h1 className="text-base font-bold text-foreground leading-tight truncate">{info.title}</h1>
+        {info.subtitle && <p className="text-xs text-foreground-quiet leading-tight truncate">{info.subtitle}</p>}
       </div>
 
       {/* Search */}
