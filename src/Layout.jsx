@@ -16,6 +16,7 @@ import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
 import { useTabKeepAlive } from '@/hooks/useTabKeepAlive';
 import HijinxLogo from '@/components/shared/HijinxLogo';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 import Home from '@/pages/Home';
 import OutletHome from '@/pages/OutletHome';
 import ApparelHome from '@/pages/ApparelHome';
@@ -262,6 +263,7 @@ export default function Layout({ children, currentPageName }) {
                 </nav>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  <ThemeToggle />
                   <button
                     onClick={() => { setSearchOpen(!searchOpen); setHoveredItem(null); }}
                     className="p-2 rounded-lg transition-colors hidden lg:flex items-center justify-center"
