@@ -2,81 +2,188 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ════════════════════════════════════════════════════════════
+   HIJINX DESIGN SYSTEM v1.0
+   ────────────────────────────────────────────────────────────
+   Permanent design foundation for every Hijinx product:
+   RaceCore, INDEX46, The Outlet, Hijinx Creative, & future apps.
+
+   ARCHITECTURE
+   • Every visual value is a SEMANTIC TOKEN (HSL channels for
+     Tailwind `hsl(var(--x))` consumption + hex mirrors for raw
+     `var(--x-hex)` consumption).
+   • Components consume semantic tokens only — never raw hex and
+     never know which theme is active.
+   • Dark Mode is the default. Light Mode will be added later by
+     providing token values under `.theme-light` only — no
+     component changes required.
+   • Tailwind compatibility: generic shadcn aliases (--background,
+     --foreground, --primary, --border, …) are mapped to the
+     semantic tokens so existing utility classes inherit the new
+     system automatically.
+   ════════════════════════════════════════════════════════════ */
+
 @layer base {
   :root {
-    /* ── Motorsports Dark Theme ── */
-    --background: 180 38% 3%;
+    /* ── Canvas ─────────────────────────────────────────── */
+    --canvas: 180 38% 3%;
+    --canvas-hex: #050B0B;
+
+    /* ── Surfaces ───────────────────────────────────────── */
+    --surface: 180 27% 6%;
+    --surface-hex: #0C1515;
+    --surface-elevated: 180 20% 9%;
+    --surface-elevated-hex: #121B1B;
+    --surface-interactive: 180 22% 13%;
+    --surface-interactive-hex: #1A2929;
+
+    /* ── Motion (Hijinx brand color) ───────────────────── */
+    --motion: 180 69% 40%;
+    --motion-hex: #20ACAC;
+    --motion-hover: 180 65% 45%;
+    --motion-hover-hex: #28BCBC;
+    --motion-active: 180 70% 34%;
+    --motion-active-hex: #1A9595;
+
+    /* ── Typography ────────────────────────────────────── */
     --foreground: 0 0% 96%;
-    --card: 180 30% 5%;
-    --card-foreground: 0 0% 96%;
-    --popover: 180 30% 6%;
-    --popover-foreground: 0 0% 96%;
-    --primary: 180 69% 40%;
-    --primary-foreground: 180 38% 3%;
-    --secondary: 180 20% 10%;
-    --secondary-foreground: 0 0% 90%;
-    --muted: 180 20% 10%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 180 20% 12%;
-    --accent-foreground: 0 0% 96%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 180 20% 14%;
-    --input: 180 20% 12%;
-    --ring: 180 69% 40%;
-    --chart-1: 180 69% 40%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --foreground-hex: #F5F5F5;
+    --foreground-secondary: 0 0% 84%;
+    --foreground-secondary-hex: #D7D7D7;
+    --foreground-quiet: 0 0% 55%;
+    --foreground-quiet-hex: #8C8C8C;
+
+    /* ── Structure ─────────────────────────────────────── */
+    --divider: 180 18% 17%;
+    --divider-hex: #243434;
+    --input: 180 22% 13%;
+    --input-hex: #1A2929;
+    --popover: 180 20% 9%;
+    --popover-hex: #121B1B;
+
+    /* ── Semantic status (reserved for app status only) ── */
+    --success: 150 50% 50%;
+    --success-hex: #3FBF7F;
+    --warning: 42 61% 60%;
+    --warning-hex: #D7B15A;
+    --danger: 0 72% 51%;
+    --danger-hex: #DC2828;
+
+    /* ── Data visualization palette ────────────────────── */
+    --chart-motion: 180 69% 40%;
+    --chart-motion-hex: #20ACAC;
+    --chart-ocean: 180 52% 36%;
+    --chart-ocean-hex: #2C8D8D;
+    --chart-slate: 196 18% 35%;
+    --chart-slate-hex: #49616A;
+    --chart-bronze: 29 42% 52%;
+    --chart-bronze-hex: #B88352;
+    --chart-gold: 42 61% 60%;
+    --chart-gold-hex: #D7B15A;
+
+    /* ── Standard radius ────────────────────────────────── */
     --radius: 0.5rem;
-    --sidebar-background: 180 38% 4%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 180 69% 40%;
-    --sidebar-primary-foreground: 180 38% 3%;
-    --sidebar-accent: 180 20% 10%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 180 20% 14%;
-    --sidebar-ring: 180 69% 40%;
+
+    /* ── Generic / shadcn compatibility aliases ───────────
+       Map standard shadcn tokens to the Hijinx semantic tokens
+       so every existing `bg-background`, `bg-card`, `border-border`,
+       `text-foreground`, `bg-primary`, `ring-ring` … utility class
+       automatically inherits the Hijinx Design System. */
+    --background: var(--canvas);
+    --foreground-shadcn: var(--foreground);
+    --card: var(--surface);
+    --card-foreground: var(--foreground);
+    --popover-shadcn: var(--popover);
+    --popover-foreground: var(--foreground);
+    --primary: var(--motion);
+    --primary-foreground: var(--canvas);
+    --secondary: var(--surface-interactive);
+    --secondary-foreground: var(--foreground-secondary);
+    --muted: var(--surface-interactive);
+    --muted-foreground: var(--foreground-quiet);
+    --accent: var(--surface-interactive);
+    --accent-foreground: var(--foreground);
+    --destructive: var(--danger);
+    --destructive-foreground: var(--foreground);
+    --border: var(--divider);
+    --input-shadcn: var(--input);
+    --ring: var(--motion);
+
+    /* ── Chart aliases (shadcn chart-1..5) ──────────────── */
+    --chart-1: var(--chart-motion);
+    --chart-2: var(--chart-ocean);
+    --chart-3: var(--chart-slate);
+    --chart-4: var(--chart-bronze);
+    --chart-5: var(--chart-gold);
+
+    /* ── Sidebar aliases (integrated, not floating panel) ─ */
+    --sidebar-background: var(--surface);
+    --sidebar-foreground: var(--foreground-secondary);
+    --sidebar-primary: var(--motion);
+    --sidebar-primary-foreground: var(--canvas);
+    --sidebar-accent: var(--surface-interactive);
+    --sidebar-accent-foreground: var(--foreground);
+    --sidebar-border: var(--divider);
+    --sidebar-ring: var(--motion);
   }
 
+  /* Dark Mode is the canonical Hijinx theme. The `.dark` selector
+     is kept for shadcn components that gate on `darkMode: ["class"]`
+     but it simply re-asserts the same canonical token set. */
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --canvas: 180 38% 3%;
+    --canvas-hex: #050B0B;
+    --surface: 180 27% 6%;
+    --surface-hex: #0C1515;
+    --surface-elevated: 180 20% 9%;
+    --surface-elevated-hex: #121B1B;
+    --surface-interactive: 180 22% 13%;
+    --surface-interactive-hex: #1A2929;
+    --motion: 180 69% 40%;
+    --motion-hex: #20ACAC;
+    --motion-hover: 180 65% 45%;
+    --motion-hover-hex: #28BCBC;
+    --motion-active: 180 70% 34%;
+    --motion-active-hex: #1A9595;
+    --foreground: 0 0% 96%;
+    --foreground-hex: #F5F5F5;
+    --foreground-secondary: 0 0% 84%;
+    --foreground-secondary-hex: #D7D7D7;
+    --foreground-quiet: 0 0% 55%;
+    --foreground-quiet-hex: #8C8C8C;
+    --divider: 180 18% 17%;
+    --divider-hex: #243434;
+    --input: 180 22% 13%;
+    --input-hex: #1A2929;
+    --popover: 180 20% 9%;
+    --popover-hex: #121B1B;
+    --success: 150 50% 50%;
+    --success-hex: #3FBF7F;
+    --warning: 42 61% 60%;
+    --warning-hex: #D7B15A;
+    --danger: 0 72% 51%;
+    --danger-hex: #DC2828;
+    --chart-motion: 180 69% 40%;
+    --chart-motion-hex: #20ACAC;
+    --chart-ocean: 180 52% 36%;
+    --chart-ocean-hex: #2C8D8D;
+    --chart-slate: 196 18% 35%;
+    --chart-slate-hex: #49616A;
+    --chart-bronze: 29 42% 52%;
+    --chart-bronze-hex: #B88352;
+    --chart-gold: 42 61% 60%;
+    --chart-gold-hex: #D7B15A;
   }
+
+  /* ────────────────────────────────────────────────────────
+     FUTURE: Light Mode stub
+     When ready, provide token VALUES only here. Components never
+     change — they read semantic tokens, not theme names.
+     .theme-light {
+       --canvas: 0 0% 100%;            ... etc
+     }
+     ──────────────────────────────────────────────────────── */
 }
-
-
 
 @layer base {
   * {
@@ -89,11 +196,10 @@
 }
 
 /* ── Android / WebView native-app optimizations ──
-   Disable text selection on interactive chrome (buttons, tabs, headers,
-   nav) while keeping it enabled for textual/article content. Disable
-   browser-like bounce overscroll on the body and scroll wrappers. Safe-area
-   utilities keep bottom nav / sticky buttons clear of the home indicator. */
-
+   Disable text selection on interactive chrome (buttons, tabs,
+   headers, nav) while keeping it enabled for textual / article
+   content. Disable browser bounce overscroll; safe-area utilities
+   keep sticky chrome clear of the notch / home indicator. */
 @layer base {
   button,
   a,
@@ -137,20 +243,16 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Safe-area utilities for Android edge-to-edge / home indicator */
+/* Safe-area utilities for edge-to-edge / home indicator */
 .app-bottom-safe { padding-bottom: env(safe-area-inset-bottom); }
 .app-top-safe { padding-top: env(safe-area-inset-top); }
 
-/* ── Site-wide mobile media / overflow safeguards ──
-   Prevent oversized media and unbreakable strings from forcing horizontal
-   scroll on small viewports. Class-based heights (h-full, h-16…) still
-   override these element-level rules, so intentional layouts are preserved. */
+/* ── Site-wide mobile media / overflow safeguards ── */
 img, video, canvas, svg {
   max-width: 100%;
   height: auto;
 }
 
-/* Allow long URLs / tokens in body content to wrap instead of overflowing */
 .editorial-body,
 .prose,
 article {
