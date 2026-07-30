@@ -5,6 +5,7 @@ import {
   Users, Building2, MapPin, Trophy, CalendarDays, BarChart3,
   ShieldCheck, ClipboardList, Flag, Database, FileSpreadsheet, Gauge,
 } from 'lucide-react';
+import { Index46ConceptScreen, RaceCoreConceptScreen } from '@/components/motorsports/PlatformConceptScreens';
 
 const index46Tiles = [
   { icon: Users,        label: 'Drivers',  to: '/DriverDirectory', desc: 'Pro, semi-pro & amateur competitor profiles.', disabled: true },
@@ -117,6 +118,9 @@ export default function PlatformShowcase() {
             Pre-launch · early access for drivers, teams, tracks & series
           </span>
         </div>
+        <div className="mt-10">
+          <Index46ConceptScreen />
+        </div>
       </section>
 
       {/* ── RACE CORE ── */}
@@ -139,6 +143,9 @@ export default function PlatformShowcase() {
           <span className="text-[10px] font-mono tracking-[0.3em] uppercase text-white/35">
             Admins · officials · series & track staff
           </span>
+        </div>
+        <div className="mt-10">
+          <RaceCoreConceptScreen />
         </div>
       </section>
 

@@ -8,6 +8,7 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import JoinPreviews from '@/components/onboarding/JoinPreviews';
+import PlatformConceptScreens from '@/components/motorsports/PlatformConceptScreens';
 
 const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/d3e32f1e6_46HeaderPhoto.png';
 
@@ -177,6 +178,9 @@ export default function JoinIndex46() {
 
       {/* SNEAK PEEK PREVIEWS */}
       <JoinPreviews />
+
+      {/* CONCEPT SCREENS — INDEX46 network + Race Core engine */}
+      <PlatformConceptScreens />
 
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="relative z-[3] px-5 sm:px-8 md:px-12 lg:px-20 py-16 md:py-24">
