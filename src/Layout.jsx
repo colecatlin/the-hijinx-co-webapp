@@ -224,7 +224,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Top row — logo + nav + actions */}
               <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between w-full gap-8">
                 {/* Logo */}
-                <HijinxLogo to={createPageUrl('Home')} />
+                <HijinxLogo to={createPageUrl('Home')} iconClassName="h-5 w-auto" wordmarkClassName="h-8 w-auto" className="gap-2" />
 
                 {/* Desktop nav */}
                 <nav className="hidden lg:flex flex-1 items-center justify-center">
