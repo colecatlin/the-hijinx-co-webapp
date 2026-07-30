@@ -132,14 +132,13 @@ export default function PlatformShowcase() {
         />
         <TileGrid tiles={raceCoreTiles} />
         <div className="mt-6 flex items-center gap-3">
-          <Link
-            to="/racecore"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200 hover:brightness-110"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.9)' }}
+          <button
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200 cursor-not-allowed"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.35)' }}
           >
             Open Race Core
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+            <span className="text-[8px] font-mono tracking-[0.3em] uppercase" style={{ color: 'rgba(29,161,161,0.5)' }}>Soon</span>
+          </button>
           <span className="text-[10px] font-mono tracking-[0.3em] uppercase text-white/35">
             Admins · officials · series & track staff
           </span>
