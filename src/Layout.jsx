@@ -183,7 +183,7 @@ export default function Layout({ children, currentPageName }) {
   return (
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen relative" style={{
-          background: '#050A0A',
+          background: 'hsl(var(--canvas))',
           backgroundImage: 'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'top center',
@@ -202,7 +202,7 @@ export default function Layout({ children, currentPageName }) {
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E")`,
           opacity: 0.5,
         }} />
-        <div className="sticky top-0 z-50 relative" style={{ background: '#050A0A', paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="sticky top-0 z-50 relative" style={{ background: 'hsl(var(--canvas))', paddingTop: 'env(safe-area-inset-top)' }}>
           <AnnouncementBar />
           {/* Floating glass header */}
           <div className="px-3 py-2">
@@ -212,18 +212,18 @@ export default function Layout({ children, currentPageName }) {
               className="transition-all duration-300 rounded-[20px]"
               style={{
                 background: isHeaderHovered
-                  ? 'rgba(8, 12, 14, 0.82)'
+                  ? 'hsl(var(--surface-elevated) / 0.82)'
                   : scrolled
-                    ? 'rgba(5, 10, 10, 0.55)'
-                    : 'rgba(5, 10, 10, 0.25)',
+                    ? 'hsl(var(--canvas) / 0.55)'
+                    : 'hsl(var(--canvas) / 0.25)',
                 backdropFilter: 'blur(24px)',
                 WebkitBackdropFilter: 'blur(24px)',
                 border: isHeaderHovered
-                  ? '1.5px solid rgba(29,161,161,0.25)'
-                  : '1.5px solid rgba(255,255,255,0.18)',
+                  ? '1.5px solid hsl(var(--motion) / 0.25)'
+                  : '1.5px solid hsl(var(--divider))',
                 boxShadow: isHeaderHovered
-                  ? '0 0 48px rgba(29,161,161,0.15), 0 16px 64px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)'
-                  : '0 0 32px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12)',
+                  ? '0 0 48px hsl(var(--motion) / 0.15), 0 16px 64px hsl(0 0% 0% / 0.7), inset 0 1px 0 hsl(var(--foreground) / 0.08)'
+                  : '0 0 32px hsl(var(--foreground) / 0.08), 0 8px 40px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(var(--foreground) / 0.12)',
               }}
             >
               {/* Top row — logo + nav + actions */}
@@ -258,13 +258,13 @@ export default function Layout({ children, currentPageName }) {
                            className={`flex items-center gap-1 px-3 py-4 text-[13.75px] font-bold tracking-[0.18em] uppercase transition-all duration-200`}
                           style={{
                             color: hoveredItem === item.name
-                              ? '#1DA1A1'
+                              ? 'hsl(var(--motion))'
                               : isActive(item.page)
-                                ? '#1DA1A1'
+                                ? 'hsl(var(--motion))'
                                 : isHeaderHovered
-                                  ? 'rgba(255,255,255,0.55)'
-                                  : 'rgba(255,255,255,0.78)',
-                            textShadow: (hoveredItem === item.name || isActive(item.page)) ? '0 0 12px rgba(29,161,161,0.4)' : 'none',
+                                  ? 'hsl(var(--foreground-quiet))'
+                                  : 'hsl(var(--foreground-secondary))',
+                            textShadow: (hoveredItem === item.name || isActive(item.page)) ? '0 0 12px hsl(var(--motion) / 0.4)' : 'none',
                           }}
                         >
                           {item.name}
@@ -284,9 +284,9 @@ export default function Layout({ children, currentPageName }) {
                   <button
                     onClick={() => { setSearchOpen(!searchOpen); setHoveredItem(null); }}
                     className="p-2 rounded-lg transition-colors hidden lg:flex items-center justify-center"
-                    style={{ color: searchOpen ? '#1DA1A1' : isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)' }}
-                    onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.9)'}
-                    onMouseLeave={e => e.currentTarget.style.color = searchOpen ? '#1DA1A1' : isHeaderHovered ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.55)'}
+                    style={{ color: searchOpen ? 'hsl(var(--motion))' : isHeaderHovered ? 'hsl(var(--foreground-quiet))' : 'hsl(var(--foreground-quiet))' }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'hsl(var(--foreground))'}
+                    onMouseLeave={e => e.currentTarget.style.color = searchOpen ? 'hsl(var(--motion))' : isHeaderHovered ? 'hsl(var(--foreground-quiet))' : 'hsl(var(--foreground-quiet))'}
                   >
                     <Search className="w-4 h-4" />
                   </button>
@@ -295,12 +295,12 @@ export default function Layout({ children, currentPageName }) {
                       to={createPageUrl('Management')}
                       className="px-3 py-1.5 text-[10px] font-bold tracking-[0.15em] uppercase rounded-lg transition-all hidden lg:block"
                       style={{
-                        background: 'rgba(29,161,161,0.15)',
-                        color: '#1DA1A1',
-                        border: '1px solid rgba(29,161,161,0.3)',
+                        background: 'hsl(var(--motion) / 0.15)',
+                        color: 'hsl(var(--motion))',
+                        border: '1px solid hsl(var(--motion) / 0.3)',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(29,161,161,0.25)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(29,161,161,0.15)'; }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--motion) / 0.25)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--motion) / 0.15)'; }}
                     >
                       Admin Tools
                     </Link>
@@ -314,21 +314,21 @@ export default function Layout({ children, currentPageName }) {
                       onClick={() => base44.auth.redirectToLogin()}
                       className="px-3 py-1.5 text-[10px] font-bold tracking-[0.15em] uppercase rounded-lg transition-all hidden lg:block"
                       style={{
-                        background: 'rgba(255,255,255,0.1)',
-                        color: 'rgba(255,255,255,0.85)',
-                        border: '1px solid rgba(255,255,255,0.15)',
+                        background: 'hsl(var(--foreground) / 0.08)',
+                        color: 'hsl(var(--foreground-secondary))',
+                        border: '1px solid hsl(var(--divider))',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--foreground) / 0.15)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--foreground) / 0.08)'; }}
                     >
                       Login
                     </button>
                   )}
-                  <CartIcon style={{ color: 'rgba(255,255,255,0.65)' }} />
+                  <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />
                   <button
                     onClick={() => setMobileOpen(!mobileOpen)}
                     className="p-2 rounded-lg transition-colors lg:hidden"
-                    style={{ color: 'rgba(255,255,255,0.75)' }}
+                    style={{ color: 'hsl(var(--foreground-secondary))' }}
                   >
                     {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
                   </button>
@@ -346,10 +346,10 @@ export default function Layout({ children, currentPageName }) {
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="max-w-7xl mx-auto px-6 pb-4 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div className="max-w-7xl mx-auto px-6 pb-4 pt-3" style={{ borderTop: '1px solid hsl(var(--divider) / 0.6)' }}>
                       {/* Search input */}
                       <div className="flex items-center gap-3 mb-3">
-                        <Search className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                        <Search className="w-4 h-4 flex-shrink-0" style={{ color: 'hsl(var(--foreground-quiet))' }} />
                         <input
                           ref={searchInputRef}
                           type="text"
@@ -357,35 +357,35 @@ export default function Layout({ children, currentPageName }) {
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
                           className="flex-1 bg-transparent outline-none text-sm font-medium"
-                          style={{ color: 'rgba(255,255,255,0.85)', caretColor: '#1DA1A1' }}
+                          style={{ color: 'hsl(var(--foreground))', caretColor: 'hsl(var(--motion))' }}
                         />
                         {searchQuery && (
-                          <button onClick={() => setSearchQuery('')} style={{ color: 'rgba(255,255,255,0.3)' }}>
+                          <button onClick={() => setSearchQuery('')} style={{ color: 'hsl(var(--foreground-quiet) / 0.6)' }}>
                             <X className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
                       {/* Results */}
                       {searchLoading && (
-                        <p className="font-mono text-[10px] tracking-widest" style={{ color: 'rgba(255,255,255,0.3)' }}>SEARCHING...</p>
+                        <p className="font-mono text-[10px] tracking-widest" style={{ color: 'hsl(var(--foreground-quiet) / 0.6)' }}>SEARCHING...</p>
                       )}
                       {!searchLoading && searchQuery.length >= 2 &&
                         Object.values(searchResults).every(arr => arr.length === 0) && (
-                        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>No results for "{searchQuery}"</p>
+                        <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet) / 0.6)' }}>No results for "{searchQuery}"</p>
                       )}
                       {Object.values(searchResults).some(arr => arr.length > 0) && (
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
                           {searchResults.stories.length > 0 && (
                             <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>STORIES</p>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>STORIES</p>
                               <div className="space-y-0.5">
                                 {searchResults.stories.map(story => (
                                   <Link key={story.id} to={story.slug ? `/story/${story.slug}` : `/OutletStoryPage?id=${story.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'rgba(255,255,255,0.6)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {story.title}
                                   </Link>
                                 ))}
@@ -394,15 +394,15 @@ export default function Layout({ children, currentPageName }) {
                           )}
                           {searchResults.drivers.length > 0 && (
                             <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>DRIVERS</p>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>DRIVERS</p>
                               <div className="space-y-0.5">
                                 {searchResults.drivers.map(driver => (
                                   <Link key={driver.id} to={driver.slug ? `/drivers/${driver.slug}` : `/DriverProfile?id=${driver.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'rgba(255,255,255,0.6)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {driver.first_name} {driver.last_name}
                                   </Link>
                                 ))}
@@ -411,15 +411,15 @@ export default function Layout({ children, currentPageName }) {
                           )}
                           {searchResults.events.length > 0 && (
                             <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>EVENTS</p>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>EVENTS</p>
                               <div className="space-y-0.5">
                                 {searchResults.events.map(event => (
                                   <Link key={event.id} to={`/EventProfile?id=${event.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'rgba(255,255,255,0.6)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {event.name}
                                   </Link>
                                 ))}
@@ -428,15 +428,15 @@ export default function Layout({ children, currentPageName }) {
                           )}
                           {searchResults.tracks.length > 0 && (
                             <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>TRACKS</p>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>TRACKS</p>
                               <div className="space-y-0.5">
                                 {searchResults.tracks.map(track => (
                                   <Link key={track.id} to={track.slug ? `/TrackProfile?slug=${track.slug}` : `/TrackProfile?id=${track.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'rgba(255,255,255,0.6)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {track.name}
                                   </Link>
                                 ))}
@@ -445,15 +445,15 @@ export default function Layout({ children, currentPageName }) {
                           )}
                           {searchResults.series.length > 0 && (
                             <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>SERIES</p>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>SERIES</p>
                               <div className="space-y-0.5">
                                 {searchResults.series.map(s => (
                                   <Link key={s.id} to={s.slug ? `/series/${s.slug}` : `/SeriesDetail?id=${s.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'rgba(255,255,255,0.6)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {s.name}
                                   </Link>
                                 ))}
@@ -462,15 +462,15 @@ export default function Layout({ children, currentPageName }) {
                           )}
                           {searchResults.teams.length > 0 && (
                             <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: '#1DA1A1' }}>TEAMS</p>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>TEAMS</p>
                               <div className="space-y-0.5">
                                 {searchResults.teams.map(team => (
                                   <Link key={team.id} to={`/TeamProfile?id=${team.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'rgba(255,255,255,0.6)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {team.name}
                                   </Link>
                                 ))}
@@ -497,14 +497,14 @@ export default function Layout({ children, currentPageName }) {
                   >
                     <div
                       className="max-w-7xl mx-auto px-6 pb-4 pt-1 hidden lg:flex flex-wrap gap-x-1 gap-y-0.5"
-                      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                      style={{ borderTop: '1px solid hsl(var(--divider) / 0.6)' }}
                     >
                       {activeSubItems.map((sub) =>
                         sub.disabled ? (
                           <div
                             key={sub.name}
                             className="w-full pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em] first:pt-2"
-                            style={{ color: 'rgba(29,161,161,0.5)' }}
+                            style={{ color: 'hsl(var(--motion) / 0.6)' }}
                           >
                             {sub.name.replace(/^— | —$/g, '')}
                           </div>
@@ -513,9 +513,9 @@ export default function Layout({ children, currentPageName }) {
                             key={sub.name}
                             to={sub.href || createPageUrl(sub.page)}
                             className="px-3 py-1.5 text-xs font-semibold tracking-wide uppercase rounded-lg transition-all"
-                            style={{ color: 'rgba(255,255,255,0.9)' }}
-                            onMouseEnter={e => { e.currentTarget.style.color = '#1DA1A1'; e.currentTarget.style.background = 'rgba(29,161,161,0.08)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; e.currentTarget.style.background = 'transparent'; }}
+                            style={{ color: 'hsl(var(--foreground))' }}
+                            onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--motion))'; e.currentTarget.style.background = 'hsl(var(--motion) / 0.08)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'transparent'; }}
                           >
                             {sub.name}
                           </Link>
@@ -550,22 +550,22 @@ export default function Layout({ children, currentPageName }) {
                 transition={{ type: 'tween', duration: 0.3 }}
                 className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm z-[56] overflow-y-auto lg:hidden"
                 style={{
-                  background: 'rgba(5, 8, 10, 0.97)',
+                  background: 'hsl(var(--surface) / 0.97)',
                   backdropFilter: 'blur(24px)',
                   WebkitBackdropFilter: 'blur(24px)',
-                  borderLeft: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: '-16px 0 48px rgba(0,0,0,0.6)',
+                  borderLeft: '1px solid hsl(var(--divider))',
+                  boxShadow: '-16px 0 48px hsl(0 0% 0% / 0.6)',
                 }}
               >
-                <div className="sticky top-0 px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(5,8,10,0.9)' }}>
+                <div className="sticky top-0 px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid hsl(var(--divider) / 0.8)', background: 'hsl(var(--surface) / 0.9)' }}>
                   <button
                     onClick={() => setMobileOpen(false)}
                     className="p-2 rounded-lg transition-colors"
-                    style={{ color: 'rgba(255,255,255,0.6)' }}
+                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
                   >
                     <X className="w-5 h-5" />
                   </button>
-                  <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ color: 'rgba(255,255,255,0.5)' }}>Menu</span>
+                  <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ color: 'hsl(var(--foreground-quiet))' }}>Menu</span>
                 </div>
                 <nav className="px-6 py-6">
                   {isAuthenticated && (
@@ -573,21 +573,21 @@ export default function Layout({ children, currentPageName }) {
                       <Link
                         to={createPageUrl('MyDashboard')}
                         className="block py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
+                        style={{ color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface-interactive) / 0.4)' }}
                       >
                         Dashboard
                       </Link>
                       <Link
                         to={createPageUrl('Profile')}
                         className="block py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
+                        style={{ color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface-interactive) / 0.4)' }}
                       >
                         Profile
                       </Link>
                       <button
                         onClick={() => base44.auth.logout(createPageUrl('Home'))}
                         className="w-full text-left py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'rgba(239,68,68,0.85)', border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.04)' }}
+                        style={{ color: 'hsl(var(--danger) / 0.85)', border: '1px solid hsl(var(--danger) / 0.2)', background: 'hsl(var(--danger) / 0.08)' }}
                       >
                         Sign Out
                       </button>
@@ -598,18 +598,18 @@ export default function Layout({ children, currentPageName }) {
                       <Link
                         to={createPageUrl('Management')}
                         className="block py-3 px-4 text-sm font-bold rounded-lg transition-colors"
-                        style={{ color: '#1DA1A1', border: '1px solid rgba(29,161,161,0.3)', background: 'rgba(29,161,161,0.1)' }}
+                        style={{ color: 'hsl(var(--motion))', border: '1px solid hsl(var(--motion) / 0.3)', background: 'hsl(var(--motion) / 0.1)' }}
                       >
                         Management
                       </Link>
                     </div>
                   )}
                   {navItems.map((item) => (
-                    <div key={item.name} className="mb-1" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div key={item.name} className="mb-1" style={{ borderBottom: '1px solid hsl(var(--divider) / 0.6)' }}>
                       <Link
                         to={item.href || createPageUrl(item.page)}
                         className="block py-3 text-base font-bold tracking-[0.1em] uppercase transition-colors"
-                        style={{ color: isActive(item.page) ? '#1DA1A1' : 'rgba(255,255,255,0.75)' }}
+                        style={{ color: isActive(item.page) ? 'hsl(var(--motion))' : 'hsl(var(--foreground-secondary))' }}
                       >
                         {item.name}
                       </Link>
@@ -617,7 +617,7 @@ export default function Layout({ children, currentPageName }) {
                         <div className="pl-4 mb-2">
                           {item.sub.map((sub) => (
                             sub.disabled ? (
-                              <div key={sub.name} className="pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em]" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                              <div key={sub.name} className="pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em]" style={{ color: 'hsl(var(--foreground-quiet) / 0.5)' }}>
                                 {sub.name.replace(/^— | —$/g, '')}
                               </div>
                             ) : (
@@ -625,7 +625,7 @@ export default function Layout({ children, currentPageName }) {
                                 key={sub.name}
                                 to={sub.href || createPageUrl(sub.page)}
                                 className="block py-2 text-sm transition-colors"
-                                style={{ color: 'rgba(255,255,255,0.5)' }}
+                                style={{ color: 'hsl(var(--foreground-quiet))' }}
                               >
                                 {sub.name}
                               </Link>

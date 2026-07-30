@@ -16,7 +16,7 @@ export default function CartIcon({ style = {} }) {
       {totalItems > 0 && (
         <span
           className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-[9px] font-black leading-none px-1"
-          style={{ background: '#00FFDA', color: '#050505' }}
+          style={{ background: 'hsl(var(--motion))', color: 'hsl(var(--canvas))' }}
         >
           {totalItems > 99 ? '99+' : totalItems}
         </span>

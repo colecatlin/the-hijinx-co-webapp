@@ -45,19 +45,19 @@ export default function AnnouncementBar() {
     <div
       className="py-2.5 px-4"
       style={{
-        background: 'rgba(5, 8, 10, 0.85)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'hsl(var(--surface) / 0.85)',
+        borderBottom: '1px solid hsl(var(--divider) / 0.6)',
       }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
-        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: '#1DA1A1', boxShadow: '0 0 6px rgba(29,161,161,0.8)' }} />
+        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'hsl(var(--motion))', boxShadow: '0 0 6px hsl(var(--motion) / 0.8)' }} />
         <span
           className="font-mono text-[9px] tracking-[0.45em] uppercase"
-          style={{ color: 'rgba(255,255,255,0.9)' }}
+          style={{ color: 'hsl(var(--foreground))' }}
         >
           {betaMessage}
         </span>
-        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: '#1DA1A1', boxShadow: '0 0 6px rgba(29,161,161,0.8)' }} />
+        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'hsl(var(--motion))', boxShadow: '0 0 6px hsl(var(--motion) / 0.8)' }} />
       </div>
     </div>
   );
