@@ -182,31 +182,26 @@ export default function DriverDirectory() {
     <PageShell className="bg-[#FFF8F5]">
       <PullToRefresh onRefresh={refetchDrivers}>
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex items-center justify-end gap-3 mb-3">
-          {compareMode && selectedDrivers.length === 2 &&
-            <Button onClick={handleCompare} className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm">
-              Compare Selected
-            </Button>
-          }
-          <Button
-            variant={compareMode ? "default" : "outline"}
-            size="sm"
-            onClick={() => { setCompareMode(!compareMode); setSelectedDrivers([]); }}
-          >
-            <GitCompare className="w-4 h-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">{compareMode ? 'Cancel' : 'Compare Drivers'}</span>
-            <span className="sm:hidden">{compareMode ? 'Cancel' : 'Compare'}</span>
-          </Button>
-        </div>
-        {compareMode &&
-          <div className="mb-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-900">
-              Select 2 drivers to compare ({selectedDrivers.length}/2 selected)
-            </p>
-          </div>
-        }
-
         <DirectoryFilters
+          extraActions={
+            <>
+              {compareMode && selectedDrivers.length === 2 && (
+                <Button onClick={handleCompare} className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm">
+                  Compare Selected
+                </Button>
+              )}
+              <Button
+                variant={compareMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => { setCompareMode(!compareMode); setSelectedDrivers([]); }}
+              >
+                <GitCompare className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">{compareMode ? 'Cancel' : 'Compare'}
+                </span>
+                <span className="sm:hidden">{compareMode ? 'Cancel' : 'Compare'}</span>
+              </Button>
+            </>
+          }
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             searchPlaceholder="Search by name, number, series, team, hometown..."
@@ -299,8 +294,20 @@ export default function DriverDirectory() {
             { value: 'newest', label: 'Newest' },
             { value: 'oldest', label: 'Oldest' }]
             } />
-          
 
+        {compareMode &&
+          <div className="mb-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-900">
+              Select 2 drivers to compare ({selectedDrivers.length}/2 selected)
+            </p>
+          </div>
+        }
+
+        {driversLoading &&
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-72" />)}
+          </div>
+        }
         {!driversLoading && sortedDrivers.length > 0 &&
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedDrivers.map((driver) => {
@@ -349,6 +356,11 @@ export default function DriverDirectory() {
             })}
           </div>
           }
+        {!driversLoading && sortedDrivers.length === 0 &&
+          <div className="text-center py-12">
+            <p className="text-gray-600">No drivers found matching your filters.</p>
+          </div>
+        }
       </div>
       </PullToRefresh>
     </PageShell>);

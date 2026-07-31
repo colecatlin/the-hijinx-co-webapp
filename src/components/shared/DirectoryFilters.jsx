@@ -17,16 +17,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export default function DirectoryFilters({ 
-  searchQuery, 
+export default function DirectoryFilters({
+  searchQuery,
   onSearchChange,
   searchPlaceholder = 'Search...',
-  filters, 
-  onFilterChange, 
+  filters,
+  onFilterChange,
   filterConfig,
   sortBy,
   onSortChange,
-  sortOptions 
+  sortOptions,
+  extraActions
 }) {
   const [open, setOpen] = useState(false);
 
@@ -122,6 +123,8 @@ export default function DirectoryFilters({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {extraActions}
     </div>
   );
 }
