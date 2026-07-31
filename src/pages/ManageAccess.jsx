@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Trash2, ChevronDown, ChevronRight, Users, Key, Search, Shield, RefreshCw, Zap, CheckCircle2, XCircle, Clock, User as UserIcon, MailX } from 'lucide-react';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
+import RaceClaimsReview from '@/components/management/RaceClaimsReview';
 import { toast } from 'sonner';
 import { invalidateDataGroups } from '@/components/data/invalidationContract';
 
@@ -194,10 +195,10 @@ export default function ManageAccess({ embedded = false }) {
 
   return (
     <ManagementLayout currentPage="ManageAccess" embedded={embedded}>
-      <ManagementShell title="Access Management" subtitle="View and revoke user access to entities across the platform" maxWidth="max-w-5xl">
+      <ManagementShell title="Access Management" subtitle="Approve claims, invitations, collaborators, and segment ownership across the platform" maxWidth="max-w-5xl">
 
         {/* Section tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           <button
             onClick={() => setActiveSection('collaborators')}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
@@ -227,6 +228,16 @@ export default function ManageAccess({ embedded = false }) {
             }`}
           >
             Claim Requests ({allClaims.filter(c => c.status === 'pending').length} pending)
+          </button>
+          <button
+            onClick={() => setActiveSection('raceclaims')}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              activeSection === 'raceclaims'
+                ? 'bg-gray-900 text-white'
+                : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-900'
+            }`}
+          >
+            Race Result Claims
           </button>
         </div>
 
@@ -575,6 +586,11 @@ export default function ManageAccess({ embedded = false }) {
           </div>
         )}
           </>
+        )}
+
+        {/* Race Result Claims Segment (DriverClaim race-result submissions) */}
+        {activeSection === 'raceclaims' && (
+          <RaceClaimsReview />
         )}
       </ManagementShell>
     </ManagementLayout>
