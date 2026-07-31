@@ -27,7 +27,7 @@ export default function EventsSection() {
   const displayEvents = events.filter(e => (e.end_date || e.event_date) >= today).slice(0, 6);
 
   return (
-    <section className="relative pt-16 md:pt-20 pb-20 md:pb-28 overflow-hidden bg-canvas">
+    <section className="relative pt-16 md:pt-20 pb-20 md:pb-28 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="relative max-w-7xl mx-auto px-6">
 
         {/* Section label row */}

@@ -20,7 +20,8 @@ export default function OutletSection({ featuredStory, supportingStories = [] })
 
   return (
     <section
-      className="pt-10 md:pt-14 pb-16 md:pb-24 relative bg-canvas"
+      className="pt-10 md:pt-14 pb-16 md:pb-24 relative"
+      style={{ background: 'transparent' }}
     >
       {/* Subtle ambient glow behind the section */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 60%, hsl(var(--motion) / 0.05) 0%, transparent 70%)' }} />

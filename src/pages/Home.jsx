@@ -27,7 +27,16 @@ export default function Home() {
   useEffect(() => { Analytics.pageView('Home'); }, []);
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-canvas">
+    <div
+      className="min-h-screen overflow-x-hidden bg-canvas"
+      style={{
+        backgroundImage:
+          'url(https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/582f361b5_PlatformBackground.png)',
+        backgroundRepeat: 'repeat',
+        backgroundPosition: '0 0',
+        backgroundSize: 'cover',
+      }}
+    >
       <SeoMeta
         title="Motorsports, Culture, and Competition"
         description="HIJINX — where motorsports, media, and culture collide."

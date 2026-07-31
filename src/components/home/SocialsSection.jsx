@@ -60,7 +60,7 @@ export default function SocialsSection() {
   };
 
   return (
-    <section className="py-16 md:py-24 overflow-hidden bg-canvas">
+    <section className="py-16 md:py-24 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex items-end justify-between mb-12">

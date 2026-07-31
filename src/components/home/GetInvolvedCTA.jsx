@@ -20,7 +20,7 @@ export default function GetInvolvedCTA() {
   };
 
   return (
-    <section className="py-12 md:py-16 overflow-hidden bg-canvas">
+    <section className="py-12 md:py-16 overflow-hidden" style={{ background: 'transparent' }}>
       <div className="max-w-5xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
