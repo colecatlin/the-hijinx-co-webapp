@@ -2,10 +2,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Calendar, Trophy, Medal, Flag, Layers, Map } from 'lucide-react';
+import { Calendar, Trophy, Medal, Flag, Layers, Map } from 'lucide-react';
 import EventMapTab from '@/components/events/EventMapTab';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
@@ -30,6 +29,7 @@ export default function EventDirectory() {
   const [disciplineFilter, setDisciplineFilter] = useState(searchParams.get('discipline') || 'all');
   const [formatFilter, setFormatFilter] = useState(searchParams.get('format') || 'all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('latest');
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'upcoming');
 
   // Sync filter state → URL
@@ -209,10 +209,18 @@ export default function EventDirectory() {
     const matchesDiscipline = validatedDisciplineFilter === 'all' || cls?.disciplineId === validatedDisciplineFilter;
     const matchesFormat = resolvedFormatFilter === 'all' || cls?.formatId === resolvedFormatFilter;
     return matchesSearch && matchesStatus && matchesDiscipline && matchesFormat;
+  }).sort((a, b) => {
+    const da = a.event_date || '';
+    const db = b.event_date || '';
+    return sortBy === 'oldest' ? da.localeCompare(db) : db.localeCompare(da);
   });
 
   const filteredCompletedEvents = [...completedEvents]
-    .sort((a, b) => (b.event_date || '').localeCompare(a.event_date || ''))
+    .sort((a, b) => {
+      const da = a.event_date || '';
+      const db = b.event_date || '';
+      return sortBy === 'oldest' ? da.localeCompare(db) : db.localeCompare(da);
+    })
     .filter(event => {
       const cls = classificationByEventId[event.id];
       const matchesDiscipline = validatedDisciplineFilter === 'all' || cls?.disciplineId === validatedDisciplineFilter;
@@ -313,59 +321,53 @@ export default function EventDirectory() {
   };
 
   return (
-    <PageShell>
+    <PageShell className="bg-[#FFF8F5]">
       <PullToRefresh onRefresh={refetchEvents}>
-      <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-12">
-        <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
-          <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search events..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={validatedDisciplineFilter} onValueChange={handleDisciplineChange}>
-            <SelectTrigger className="flex-1 min-w-[140px]">
-              <SelectValue placeholder="Discipline" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Disciplines</SelectItem>
-              {disciplines.filter(d => d.is_active !== false).map(d => (
-                <SelectItem key={d.id} value={d.id}>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color_code }} />
-                    {d.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={resolvedFormatFilter} onValueChange={handleFormatChange} disabled={availableFormats.length === 0}>
-            <SelectTrigger className="flex-1 min-w-[130px]">
-              <SelectValue placeholder="Format" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Formats</SelectItem>
-              {availableFormats.map(f => (
-                <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {activeTab === 'upcoming' && (
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="flex-1 min-w-[120px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        </div>
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search events..."
+          filters={{ discipline: validatedDisciplineFilter, format: resolvedFormatFilter, status: statusFilter }}
+          onFilterChange={(key, value) => {
+            if (key === 'discipline') handleDisciplineChange(value);
+            else if (key === 'format') handleFormatChange(value);
+            else if (key === 'status') setStatusFilter(value);
+          }}
+          filterConfig={[
+            {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                ...disciplines.filter(d => d.is_active !== false).map(d => ({ value: d.id, label: d.name })),
+              ],
+            },
+            {
+              key: 'format',
+              label: 'Format',
+              options: [
+                { value: 'all', label: 'All Formats' },
+                ...availableFormats.map(f => ({ value: f.id, label: f.name })),
+              ],
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { value: 'all', label: 'All Status' },
+                { value: 'upcoming', label: 'Upcoming' },
+                { value: 'in_progress', label: 'In Progress' },
+              ],
+            },
+          ]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={[
+            { value: 'latest', label: 'Latest First' },
+            { value: 'oldest', label: 'Oldest First' },
+          ]}
+        />
 
         <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="mb-8 bg-transparent border-b border-gray-200 rounded-none w-full justify-start gap-0 h-auto p-0">

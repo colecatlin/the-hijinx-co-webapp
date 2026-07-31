@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
-import { Input } from '@/components/ui/input';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search } from 'lucide-react';
 import SeriesCard from '@/components/series/SeriesCard';
 
 export default function SeriesHome() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [discipline, setDiscipline] = useState('all');
-  const [region, setRegion] = useState('all');
-  const [competitionLevel, setCompetitionLevel] = useState('all');
-  const [status, setStatus] = useState('all');
+  const [filters, setFilters] = useState({
+    discipline: 'all',
+    region: 'all',
+    level: 'all',
+    status: 'all',
+  });
   const [sortBy, setSortBy] = useState('name');
 
   const { data: rawSeries, isLoading } = useQuery({
@@ -24,17 +24,20 @@ export default function SeriesHome() {
 
   const series = Array.isArray(rawSeries) ? rawSeries : [];
 
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
   let filteredSeries = series.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDiscipline = discipline === 'all' || s.discipline === discipline;
-    const matchesRegion = region === 'all' || s.region === region || s.geographic_scope === region;
+    const matchesSearch = s.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDiscipline = filters.discipline === 'all' || s.discipline === filters.discipline;
+    const matchesRegion = filters.region === 'all' || s.region === filters.region || s.geographic_scope === filters.region;
     const effectiveLevel = s.override_competition_level || s.derived_competition_level;
-    const matchesLevel = competitionLevel === 'all' || String(effectiveLevel) === competitionLevel;
-    const matchesStatus = status === 'all' || s.status === status;
+    const matchesLevel = filters.level === 'all' || String(effectiveLevel) === filters.level;
+    const matchesStatus = filters.status === 'all' || s.status === filters.status;
     return matchesSearch && matchesDiscipline && matchesRegion && matchesLevel && matchesStatus;
   });
 
-  // Sort
   filteredSeries.sort((a, b) => {
     switch (sortBy) {
       case 'name':
@@ -52,116 +55,96 @@ export default function SeriesHome() {
   });
 
   return (
-    <PageShell>
-      <div className="min-h-screen bg-white">
-        {/* Filters & Search */}
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="mb-8 space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search series..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+    <PageShell className="bg-[#FFF8F5]">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <DirectoryFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          searchPlaceholder="Search series..."
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={[
+            {
+              key: 'discipline',
+              label: 'Discipline',
+              options: [
+                { value: 'all', label: 'All Disciplines' },
+                { value: 'Stock Car', label: 'Stock Car' },
+                { value: 'Off Road', label: 'Off Road' },
+                { value: 'Dirt Oval', label: 'Dirt Oval' },
+                { value: 'Snowmobile', label: 'Snowmobile' },
+                { value: 'Dirt Bike', label: 'Dirt Bike' },
+                { value: 'Open Wheel', label: 'Open Wheel' },
+                { value: 'Sports Car', label: 'Sports Car' },
+                { value: 'Touring Car', label: 'Touring Car' },
+                { value: 'Rally', label: 'Rally' },
+                { value: 'Drag', label: 'Drag' },
+                { value: 'Motorcycle', label: 'Motorcycle' },
+                { value: 'Karting', label: 'Karting' },
+                { value: 'Water', label: 'Water' },
+                { value: 'Alternative', label: 'Alternative' },
+              ],
+            },
+            {
+              key: 'region',
+              label: 'Region',
+              options: [
+                { value: 'all', label: 'All Regions' },
+                { value: 'Global', label: 'Global' },
+                { value: 'North America', label: 'North America' },
+                { value: 'Europe', label: 'Europe' },
+                { value: 'Regional', label: 'Regional' },
+              ],
+            },
+            {
+              key: 'level',
+              label: 'Level',
+              options: [
+                { value: 'all', label: 'All Levels' },
+                { value: '1', label: 'L1 — Foundation' },
+                { value: '2', label: 'L2 — Development' },
+                { value: '3', label: 'L3 — National' },
+                { value: '4', label: 'L4 — Premier' },
+                { value: '5', label: 'L5 — World' },
+              ],
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              options: [
+                { value: 'all', label: 'All Status' },
+                { value: 'Active', label: 'Active' },
+                { value: 'Historic', label: 'Historic' },
+              ],
+            },
+          ]}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          sortOptions={[
+            { value: 'name', label: 'Name' },
+            { value: 'founded', label: 'Founded' },
+            { value: 'discipline', label: 'Discipline' },
+            { value: 'contentValue', label: 'Content Value' },
+          ]}
+        />
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              <Select value={discipline} onValueChange={setDiscipline}>
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Discipline" />
-                </SelectTrigger>
-                <SelectContent>
-                   <SelectItem value="all">All Disciplines</SelectItem>
-                   <SelectItem value="Stock Car">Stock Car</SelectItem>
-                   <SelectItem value="Off Road">Off Road</SelectItem>
-                   <SelectItem value="Dirt Oval">Dirt Oval</SelectItem>
-                   <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                   <SelectItem value="Dirt Bike">Dirt Bike</SelectItem>
-                   <SelectItem value="Open Wheel">Open Wheel</SelectItem>
-                   <SelectItem value="Sports Car">Sports Car</SelectItem>
-                   <SelectItem value="Touring Car">Touring Car</SelectItem>
-                   <SelectItem value="Rally">Rally</SelectItem>
-                   <SelectItem value="Drag">Drag</SelectItem>
-                   <SelectItem value="Motorcycle">Motorcycle</SelectItem>
-                   <SelectItem value="Karting">Karting</SelectItem>
-                   <SelectItem value="Water">Water</SelectItem>
-                   <SelectItem value="Alternative">Alternative</SelectItem>
-                 </SelectContent>
-              </Select>
-
-              <Select value={region} onValueChange={setRegion}>
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Region" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Regions</SelectItem>
-                  <SelectItem value="Global">Global</SelectItem>
-                  <SelectItem value="North America">North America</SelectItem>
-                  <SelectItem value="Europe">Europe</SelectItem>
-                  <SelectItem value="Regional">Regional</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={competitionLevel} onValueChange={setCompetitionLevel}>
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="1">L1 — Foundation</SelectItem>
-                  <SelectItem value="2">L2 — Development</SelectItem>
-                  <SelectItem value="3">L3 — National</SelectItem>
-                  <SelectItem value="4">L4 — Premier</SelectItem>
-                  <SelectItem value="5">L5 — World</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Historic">Historic</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="text-sm">
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="founded">Founded</SelectItem>
-                  <SelectItem value="discipline">Discipline</SelectItem>
-                  <SelectItem value="contentValue">Content Value</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-64 rounded-lg" />
+            ))}
           </div>
-
-          {/* Series Grid */}
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-64 rounded-lg" />
-              ))}
-            </div>
-          ) : filteredSeries.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredSeries.map((s) => (
-                <SeriesCard key={s.id} series={s} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <p className="text-gray-500 text-lg">No series found</p>
-            </div>
-          )}
-        </div>
+        ) : filteredSeries.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredSeries.map((s) => (
+              <SeriesCard key={s.id} series={s} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <p className="text-gray-500 text-lg">No series found</p>
+          </div>
+        )}
       </div>
     </PageShell>
   );

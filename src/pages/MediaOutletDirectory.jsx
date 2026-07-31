@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search, X } from 'lucide-react';
+import PageShell from '@/components/shared/PageShell';
+import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import OutletCard from '@/components/media/public/OutletCard';
 import { isPublicOutlet, OUTLET_TYPE_LABELS } from '@/components/media/public/mediaPublicHelpers';
 
 export default function MediaOutletDirectory() {
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
+  const [filters, setFilters] = useState({ type: 'all' });
+  const [sort, setSort] = useState('featured');
 
   const { data: allOutlets = [], isLoading } = useQuery({
     queryKey: ['publicMediaOutlets'],
@@ -22,6 +22,10 @@ export default function MediaOutletDirectory() {
     return Array.from(t);
   }, [allOutlets]);
 
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
   const filtered = useMemo(() => {
     let result = [...allOutlets];
     if (search) {
@@ -33,51 +37,46 @@ export default function MediaOutletDirectory() {
         (o.series_covered || []).some(s => s.toLowerCase().includes(q))
       );
     }
-    if (typeFilter) result = result.filter(o => o.outlet_type === typeFilter);
-    // Featured first
-    result.sort((a, b) => {
-      const score = o => o.verification_status === 'featured' ? 2 : o.verification_status === 'verified' ? 1 : 0;
-      return score(b) - score(a);
-    });
-    return result;
-  }, [allOutlets, search, typeFilter]);
+    if (filters.type !== 'all') result = result.filter(o => o.outlet_type === filters.type);
 
-  const hasFilters = search || typeFilter;
+    if (sort === 'alpha') {
+      result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    } else {
+      // Featured first (default)
+      result.sort((a, b) => {
+        const score = o => o.verification_status === 'featured' ? 2 : o.verification_status === 'verified' ? 1 : 0;
+        return score(b) - score(a);
+      });
+    }
+    return result;
+  }, [allOutlets, search, filters.type, sort]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex flex-wrap gap-3 mb-6">
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search outlets..."
-              className="pl-9 bg-gray-50 border-gray-200"
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {types.map(type => (
-              <Button
-                key={type}
-                size="sm"
-                variant={typeFilter === type ? 'default' : 'outline'}
-                onClick={() => setTypeFilter(t => t === type ? '' : type)}
-                className="text-xs h-9"
-              >
-                {OUTLET_TYPE_LABELS[type] || type}
-              </Button>
-            ))}
-            {hasFilters && (
-              <Button size="sm" variant="ghost" onClick={() => { setSearch(''); setTypeFilter(''); }} className="text-xs h-9 text-gray-400 gap-1">
-                <X className="w-3 h-3" /> Clear
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <p className="text-gray-500 text-sm mb-4">{filtered.length} outlet{filtered.length !== 1 ? 's' : ''}</p>
+    <PageShell className="bg-[#FFF8F5]">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <DirectoryFilters
+          searchQuery={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search outlets..."
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          filterConfig={[
+            {
+              key: 'type',
+              label: 'Type',
+              options: [
+                { value: 'all', label: 'All Types' },
+                ...types.map(t => ({ value: t, label: OUTLET_TYPE_LABELS[t] || t })),
+              ],
+            },
+          ]}
+          sortBy={sort}
+          onSortChange={setSort}
+          sortOptions={[
+            { value: 'featured', label: 'Featured First' },
+            { value: 'alpha', label: 'A–Z' },
+          ]}
+        />
 
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -88,9 +87,6 @@ export default function MediaOutletDirectory() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 border border-dashed border-gray-200 rounded-2xl">
             <p className="text-gray-400 font-medium">No outlets found</p>
-            {hasFilters && (
-              <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setTypeFilter(''); }} className="mt-2 text-gray-400">Clear filters</Button>
-            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -98,6 +94,6 @@ export default function MediaOutletDirectory() {
           </div>
         )}
       </div>
-    </div>
+    </PageShell>
   );
 }
