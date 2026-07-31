@@ -28,7 +28,7 @@ export default function RaceCorePageHeader({
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-2 sm:gap-4 border-b border-white/[0.06] flex-shrink-0 min-w-0',
+        'flex items-center justify-between gap-2 sm:gap-4 border-b border-divider flex-shrink-0 min-w-0',
         compact ? 'px-3 sm:px-5 py-2 sm:py-2.5' : 'px-3 sm:px-5 py-2.5 sm:py-3',
         className
       )}
@@ -37,13 +37,13 @@ export default function RaceCorePageHeader({
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         {/* Icon + Title + Subtitle */}
         <div className="flex items-center gap-2 shrink-0">
-          {Icon && <Icon className="w-3.5 h-3.5 text-teal-500 shrink-0" />}
+          {Icon && <Icon className="w-3.5 h-3.5 text-motion shrink-0" />}
           <div className="flex flex-col">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-gray-300 whitespace-nowrap leading-none">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-foreground whitespace-nowrap leading-none">
               {title}
             </span>
             {subtitle && (
-              <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest mt-0.5 whitespace-nowrap">
+              <span className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest mt-0.5 whitespace-nowrap">
                 {subtitle}
               </span>
             )}
@@ -52,7 +52,7 @@ export default function RaceCorePageHeader({
 
         {/* Stats slot */}
         {stats && (
-          <div className="flex items-center pl-2 sm:pl-3 border-l border-gray-800 min-w-0">
+          <div className="flex items-center pl-2 sm:pl-3 border-l border-divider min-w-0">
             {stats}
           </div>
         )}

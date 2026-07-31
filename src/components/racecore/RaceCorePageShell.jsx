@@ -15,25 +15,25 @@ export default function RaceCorePageShell({
   className,
 }) {
   return (
-    <div className={cn('flex flex-col min-h-screen', className)} style={{ background: '#0B0D0D' }}>
+    <div className={cn('flex flex-col min-h-screen', className)} style={{ background: 'hsl(var(--canvas))' }}>
       {/* Header strip */}
       <div
-        className="flex items-center justify-between gap-4 px-5 py-4 border-b shrink-0"
-        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+        className="flex items-center justify-between gap-4 px-5 py-4 border-b shrink-0 bg-surface-elevated"
+        style={{ borderColor: 'hsl(var(--divider))' }}
       >
         {/* Left: icon + title + description */}
         <div className="flex items-start gap-3 min-w-0">
           {Icon && (
             <div className="mt-0.5 shrink-0">
-              <Icon className="w-4 h-4 text-teal-500" />
+              <Icon className="w-4 h-4 text-motion" />
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="text-[11px] font-mono font-bold uppercase tracking-[0.22em] text-gray-300 leading-tight">
+            <h1 className="text-[11px] font-mono font-bold uppercase tracking-[0.22em] text-foreground leading-tight">
               {title}
             </h1>
             {description && (
-              <p className="text-xs text-gray-600 mt-0.5 leading-snug">{description}</p>
+              <p className="text-xs text-foreground-quiet mt-0.5 leading-snug">{description}</p>
             )}
           </div>
         </div>
