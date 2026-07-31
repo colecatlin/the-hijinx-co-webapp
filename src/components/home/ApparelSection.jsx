@@ -21,8 +21,8 @@ export default function ApparelSection({ products = [] }) {
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-6 h-[2px] bg-[#E5FF00]" />
-          <span className="font-mono text-[10px] tracking-[0.45em] text-[#E5FF00] uppercase font-bold">
+          <div className="w-16 h-[2px] bg-motion" />
+          <span className="font-mono text-xs tracking-[0.45em] text-motion uppercase font-bold">
             HIJINX CO. · Apparel
           </span>
         </div>
