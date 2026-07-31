@@ -57,13 +57,11 @@ import Contact from './pages/Contact';
 import CreativeServices from './pages/CreativeServices';
 import Diagnostics from './pages/Diagnostics';
 import DriverComparison from './pages/DriverComparison';
-import DriverDirectory from './pages/DriverDirectory';
 import DriverEditor from './pages/DriverEditor';
 import DriverProfile from './pages/DriverProfile';
 import DriverProgramProfile from './pages/DriverProgramProfile';
 import DriverStats from './pages/DriverStats';
 import EntityEditor from './pages/EntityEditor';
-import EventDirectory from './pages/EventDirectory';
 import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
@@ -112,13 +110,10 @@ import RegistrationLanding from './pages/RegistrationLanding';
 import ScheduleEmbed from './pages/ScheduleEmbed';
 import ScheduleHome from './pages/ScheduleHome';
 import SeriesDetail from './pages/SeriesDetail';
-import SeriesHome from './pages/SeriesHome';
 import SessionProfile from './pages/SessionProfile';
 import StandingsHome from './pages/StandingsHome';
-import TeamDirectory from './pages/TeamDirectory';
 import TeamProfile from './pages/TeamProfile';
 import TechHome from './pages/TechHome';
-import TrackDirectory from './pages/TrackDirectory';
 import TrackProfile from './pages/TrackProfile';
 import UserDashboard from './pages/UserDashboard';
 import __Layout from './Layout.jsx';
@@ -135,13 +130,11 @@ export const PAGES = {
     "CreativeServices": CreativeServices,
     "Diagnostics": Diagnostics,
     "DriverComparison": DriverComparison,
-    "DriverDirectory": DriverDirectory,
     "DriverEditor": DriverEditor,
     "DriverProfile": DriverProfile,
     "DriverProgramProfile": DriverProgramProfile,
     "DriverStats": DriverStats,
     "EntityEditor": EntityEditor,
-    "EventDirectory": EventDirectory,
     "EventProfile": EventProfile,
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
@@ -190,13 +183,10 @@ export const PAGES = {
     "ScheduleEmbed": ScheduleEmbed,
     "ScheduleHome": ScheduleHome,
     "SeriesDetail": SeriesDetail,
-    "SeriesHome": SeriesHome,
     "SessionProfile": SessionProfile,
     "StandingsHome": StandingsHome,
-    "TeamDirectory": TeamDirectory,
     "TeamProfile": TeamProfile,
     "TechHome": TechHome,
-    "TrackDirectory": TrackDirectory,
     "TrackProfile": TrackProfile,
     "UserDashboard": UserDashboard,
 }

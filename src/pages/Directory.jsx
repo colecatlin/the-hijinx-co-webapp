@@ -5,13 +5,15 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import SeoMeta from '@/components/system/seoMeta';
 import {
-  Users, Building2, MapPin, Trophy, CalendarDays, Database, ArrowRight,
+  Users, Building2, MapPin, Trophy, CalendarDays, Database, ArrowRight, Camera, Newspaper,
 } from 'lucide-react';
 import DriverDirectory from './DriverDirectory';
 import TeamDirectory from './TeamDirectory';
 import TrackDirectory from './TrackDirectory';
 import SeriesHome from './SeriesHome';
 import EventDirectory from './EventDirectory';
+import CreatorDirectory from './CreatorDirectory';
+import MediaOutletDirectory from './MediaOutletDirectory';
 
 const ACCENT = 'hsl(var(--motion))';
 const ACCENT_MUTED = 'hsl(var(--motion-muted))';
@@ -28,6 +30,8 @@ const CATEGORIES = [
   { key: 'tracks',  label: 'Tracks',  icon: MapPin,       Component: TrackDirectory },
   { key: 'series',  label: 'Series',  icon: Trophy,       Component: SeriesHome },
   { key: 'events',  label: 'Events',  icon: CalendarDays, Component: EventDirectory },
+  { key: 'creators', label: 'Creators', icon: Camera,      Component: CreatorDirectory },
+  { key: 'outlets',  label: 'Outlets',  icon: Newspaper,    Component: MediaOutletDirectory },
 ];
 
 const VALID_KEYS = new Set(CATEGORIES.map(c => c.key));
@@ -52,13 +56,17 @@ export default function Directory() {
   const tracks    = useCount('Track');
   const series    = useCount('Series');
   const events    = useCount('Event');
+  const creators  = useCount('MediaProfile');
+  const outlets   = useCount('MediaOutlet');
   const counts = useMemo(() => ({
     drivers: drivers.data?.length,
     teams: teams.data?.length,
     tracks: tracks.data?.length,
     series: series.data?.length,
     events: events.data?.length,
-  }), [drivers.data, teams.data, tracks.data, series.data, events.data]);
+    creators: creators.data?.length,
+    outlets: outlets.data?.length,
+  }), [drivers.data, teams.data, tracks.data, series.data, events.data, creators.data, outlets.data]);
 
   const totalCount = Object.values(counts).reduce((a, n) => a + (n || 0), 0);
 
@@ -73,7 +81,7 @@ export default function Directory() {
     <div className="relative" style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
       <SeoMeta
         title="Directory · INDEX46"
-        description="The INDEX46 directory — a master database of drivers, teams, tracks, series and events."
+        description="The INDEX46 directory — a master database of drivers, teams, tracks, series, events and media."
       />
 
       {/* ── MASTHEAD ── */}
@@ -92,7 +100,7 @@ export default function Directory() {
           The Directory.
         </motion.h1>
         <p className="mt-3 text-sm sm:text-base max-w-2xl leading-relaxed" style={{ color: FG_SEC }}>
-          One master database for the entire ecosystem — drivers, teams, tracks, series and events. Pick a category and start exploring.
+          One master database for the entire ecosystem — drivers, teams, tracks, series, events and media. Pick a category and start exploring.
         </p>
         <div className="mt-4 flex items-center gap-2 font-mono text-[10px] tracking-[0.3em] uppercase" style={{ color: FG_QUIET }}>
           <Database className="w-3.5 h-3.5" style={{ color: ACCENT }} />

@@ -24,9 +24,7 @@ import ManageAssignments from './pages/ManageAssignments';
 import ManageRequests from './pages/ManageRequests';
 import ManageRevenue from './pages/ManageRevenue';
 import MediaHome from './pages/MediaHome';
-import CreatorDirectory from './pages/CreatorDirectory';
 import CreatorProfile from './pages/CreatorProfile';
-import MediaOutletDirectory from './pages/MediaOutletDirectory';
 import MediaOutletProfile from './pages/MediaOutletProfile';
 import OutletStoryPage from './pages/OutletStoryPage';
 import { DriverProfileRouteWrapper } from './pages/DriverProfile';
@@ -214,9 +212,9 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/writer-workspace" element={<LayoutWrapper currentPageName="management/editorial/writer-workspace"><WriterWorkspace /></LayoutWrapper>} />
       {/* R9BI: /management/media/* now redirect to canonical /racecore/media/* (handled above) */}
       <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><MediaHome /></LayoutWrapper>} />
-      <Route path="/creators" element={<LayoutWrapper currentPageName="creators"><CreatorDirectory /></LayoutWrapper>} />
+      <Route path="/creators" element={<Navigate to="/Directory?cat=creators" replace />} />
       <Route path="/creators/:slug" element={<LayoutWrapper currentPageName="creators"><CreatorProfile /></LayoutWrapper>} />
-      <Route path="/media-outlets" element={<LayoutWrapper currentPageName="media-outlets"><MediaOutletDirectory /></LayoutWrapper>} />
+      <Route path="/media-outlets" element={<Navigate to="/Directory?cat=outlets" replace />} />
       <Route path="/media-outlets/:slug" element={<LayoutWrapper currentPageName="media-outlets"><MediaOutletProfile /></LayoutWrapper>} />
       {/* Canonical slug-based story route */}
       <Route path="/story/:slug" element={<LayoutWrapper currentPageName="OutletStoryPage"><OutletStoryPage /></LayoutWrapper>} />
@@ -247,8 +245,14 @@ const AuthenticatedApp = () => {
       <Route path="/hashtag-analytics" element={<LayoutWrapper currentPageName="HashtagAnalytics"><HashtagAnalytics /></LayoutWrapper>} />
       <Route path="/management/discipline" element={<LayoutWrapper currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />
       <Route path="/StandingsHome" element={<LayoutWrapper currentPageName="StandingsHome"><StandingsHome /></LayoutWrapper>} />
-      {/* INDEX46 unified master directory — houses drivers, teams, tracks, series & events */}
+      {/* INDEX46 unified master directory — houses drivers, teams, tracks, series, events & media */}
       <Route path="/Directory" element={<LayoutWrapper currentPageName="Directory"><Directory /></LayoutWrapper>} />
+      {/* Legacy standalone directory routes → consolidated into /Directory */}
+      <Route path="/DriverDirectory" element={<Navigate to="/Directory?cat=drivers" replace />} />
+      <Route path="/TeamDirectory" element={<Navigate to="/Directory?cat=teams" replace />} />
+      <Route path="/TrackDirectory" element={<Navigate to="/Directory?cat=tracks" replace />} />
+      <Route path="/SeriesHome" element={<Navigate to="/Directory?cat=series" replace />} />
+      <Route path="/EventDirectory" element={<Navigate to="/Directory?cat=events" replace />} />
       <Route path="/join" element={<LayoutWrapper currentPageName="JoinIndex46"><JoinIndex46 /></LayoutWrapper>} />
       <Route path="/join/sign-up" element={<LayoutWrapper currentPageName="JoinSignUp"><JoinSignUp /></LayoutWrapper>} />
       <Route path="/ManageMotorsportsHome" element={<LayoutWrapper currentPageName="ManageMotorsportsHome"><ManageMotorsportsHome /></LayoutWrapper>} />

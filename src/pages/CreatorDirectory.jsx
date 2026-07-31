@@ -73,15 +73,6 @@ export default function CreatorDirectory() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-[#0A0A0A] text-white py-14 px-6">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Discover</p>
-          <h1 className="text-4xl font-black mb-2">Creator Directory</h1>
-          <p className="text-gray-400 max-w-lg">Photographers, writers, videographers, and journalists covering motorsports.</p>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-6">

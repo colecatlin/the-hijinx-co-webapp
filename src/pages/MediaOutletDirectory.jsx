@@ -46,14 +46,6 @@ export default function MediaOutletDirectory() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="bg-[#0A0A0A] text-white py-14 px-6">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Media</p>
-          <h1 className="text-4xl font-black mb-2">Media Outlets</h1>
-          <p className="text-gray-400 max-w-lg">Publications, creator brands, podcasts, and media organizations covering motorsports.</p>
-        </div>
-      </div>
-
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="flex flex-wrap gap-3 mb-6">
           <div className="relative flex-1 min-w-[200px]">
