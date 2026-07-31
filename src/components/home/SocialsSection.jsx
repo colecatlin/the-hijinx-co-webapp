@@ -23,33 +23,6 @@ const ThreadsIcon = ({ className, style }) => (
   </svg>
 );
 
-const HASHTAG_THEMES = [
-  {
-    title: 'HIJINX Associated',
-    hashtags: ['#hijinx', '#inmotionwithpurpose', '#thehijinxco', '#inmotion', '#withpurpose'],
-  },
-  {
-    title: 'Motorsports Culture',
-    hashtags: ['#motorsports', '#racinglife', '#grassrootsracing', '#racingcommunity', '#itsracingtime'],
-  },
-  {
-    title: 'INDEX46 Directory',
-    hashtags: ['#index46', '#drivers', '#teams', '#tracks', '#series'],
-  },
-  {
-    title: 'The Outlet',
-    hashtags: ['#theoutlet', '#motorsportsmedia', '#racingstories', '#racingculture', '#pitlanelive'],
-  },
-  {
-    title: 'Apparel & Lifestyle',
-    hashtags: ['#hijinxapparel', '#weartheculture', '#racingstyle', '#paddocklife', '#garagestyle'],
-  },
-  {
-    title: 'Race Day',
-    hashtags: ['#raceday', '#flagtoflag', '#chaosonthetracks', '#greenwhitecheckered', '#postrace'],
-  },
-];
-
 const SOCIAL_CONFIG = [
   { key: 'social_instagram_url', handleKey: 'social_instagram_handle', label: 'Instagram', icon: Instagram, color: '#E1306C' },
   { key: 'social_x_url', handleKey: 'social_x_handle', label: 'X / Twitter', icon: Twitter, color: '#1DA1F2' },
@@ -86,30 +59,27 @@ export default function SocialsSection() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-
   return (
-    <section className="py-16 md:py-24 overflow-hidden" style={{ background: 'transparent' }}>
+    <section className="py-16 md:py-24 overflow-hidden bg-canvas">
       <div className="max-w-7xl mx-auto px-6">
 
         <div className="flex items-end justify-between mb-12">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-6 h-[1px]" style={{ background: '#1DA1A1' }} />
-              <span className="font-mono text-[10px] tracking-[0.45em] uppercase font-bold" style={{ color: '#1DA1A1' }}>
+              <div className="w-6 h-[1px] bg-motion" />
+              <span className="font-mono text-[10px] tracking-[0.45em] uppercase font-bold text-motion">
                 Community
               </span>
-              {/* Live pulse indicator */}
               <motion.div
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ background: '#1DA1A1' }}
+                className="w-1.5 h-1.5 rounded-full bg-motion"
                 animate={{ opacity: [1, 0.2, 1] }}
                 transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
               />
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">
+            <h2 className="text-4xl md:text-5xl font-black text-foreground tracking-tight">
               Follow the chaos.
             </h2>
-            <p className="text-white/35 text-sm mt-3 max-w-md">
+            <p className="text-foreground-quiet text-sm mt-3 max-w-md">
               Keep up with HIJINX across all platforms — race coverage, culture, and everything in between.
             </p>
           </div>
@@ -129,11 +99,7 @@ export default function SocialsSection() {
               whileHover={{ y: -3, scale: 1.01 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.06, duration: 0.5 }}
-              className="group relative flex items-center gap-4 p-5 overflow-hidden hover:border-white/20 transition-all duration-300"
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.07)',
-              }}
+              className="group relative flex items-center gap-4 p-5 overflow-hidden bg-surface-elevated border border-divider hover:border-motion/40 transition-all duration-300"
             >
               <div
                 className="absolute left-0 top-0 bottom-0 w-[3px] opacity-60 group-hover:opacity-100 transition-opacity"
@@ -150,36 +116,33 @@ export default function SocialsSection() {
               )}
               </div>
               <div className="min-w-0">
-                <p className="text-white font-bold text-sm leading-none mb-1">{label}</p>
+                <p className="text-foreground font-bold text-sm leading-none mb-1">{label}</p>
                 {singleton[handleKey] ? (
-                  <p className="font-mono text-[9px] tracking-[0.15em] text-white/50 truncate">{singleton[handleKey]}</p>
+                  <p className="font-mono text-[9px] tracking-[0.15em] text-foreground-quiet truncate">{singleton[handleKey]}</p>
                 ) : (
-                  <p className="font-mono text-[9px] tracking-[0.2em] text-white/30 uppercase truncate">
+                  <p className="font-mono text-[9px] tracking-[0.2em] text-foreground-quiet uppercase truncate">
                     {singleton[key].replace(/^https?:\/\/(www\.)?/, '').split('/')[0]}
                   </p>
                 )}
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/60 ml-auto flex-shrink-0 transition-colors" />
+              <ArrowRight className="w-3.5 h-3.5 text-foreground-quiet group-hover:text-foreground ml-auto flex-shrink-0 transition-colors" />
             </motion.a>
           ))}
         </div>
         )}
 
         {/* Hashtag glimpse */}
-        <div className="mt-10 p-6 flex flex-col gap-4"
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
-        >
+        <div className="mt-10 p-6 flex flex-col gap-4 bg-surface-elevated border border-divider">
           {/* Header row */}
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-mono text-xs tracking-[0.35em] uppercase font-bold" style={{ color: '#1DA1A1' }}>Tag Us In Your Posts</p>
-              <p className="text-white/35 text-xs mt-1">Find your hashtags. Stay relevant to the community you're a part of.</p>
+              <p className="font-mono text-xs tracking-[0.35em] uppercase font-bold text-motion">Tag Us In Your Posts</p>
+              <p className="text-foreground-quiet text-xs mt-1">Find your hashtags. Stay relevant to the community you're a part of.</p>
             </div>
             {selected.length > 0 && (
               <button
                 onClick={handleCopySelected}
-                className="flex-shrink-0 px-4 py-2 text-black text-xs font-bold transition-colors hover:brightness-110"
-                style={{ background: '#1DA1A1' }}
+                className="flex-shrink-0 px-4 py-2 text-white text-xs font-bold transition-colors hover:brightness-110 bg-motion"
               >
                 {copied ? 'Copied!' : `Copy (${selected.length})`}
               </button>
@@ -196,10 +159,10 @@ export default function SocialsSection() {
                   onClick={() => toggleHashtag(tag)}
                   className={`font-mono text-sm px-3 py-1.5 border transition-all rounded ${
                     isSelected
-                      ? 'text-[#1DA1A1] bg-[rgba(29,161,161,0.10)]'
-                      : 'border-white/15 text-white/50 hover:border-white/30 hover:text-white/70'
+                      ? 'text-motion'
+                      : 'border-divider text-foreground-quiet hover:border-motion/40 hover:text-foreground'
                   }`}
-            style={isSelected ? { borderColor: '#1DA1A1' } : {}}
+                  style={isSelected ? { borderColor: 'hsl(var(--motion))', background: 'hsl(var(--motion) / 0.10)' } : {}}
                 >
                   {tag}
                 </button>
@@ -207,18 +170,17 @@ export default function SocialsSection() {
             })}
             <button
               onClick={() => setSelected(['#hijinx', '#thehijinxco', '#inmotiononpurpose', '#inmotion', '#onpurpose'])}
-              className="ml-auto text-[10px] font-mono text-white/30 hover:text-white/60 uppercase tracking-wider transition-colors"
+              className="ml-auto text-[10px] font-mono text-foreground-quiet hover:text-foreground uppercase tracking-wider transition-colors"
             >
               Select All
             </button>
           </div>
 
           {/* Browse link */}
-          <div className="pt-1 border-t border-white/[0.06]">
+          <div className="pt-1 border-t border-divider">
             <Link
               to="/hashtag-library"
-              className="inline-flex items-center gap-2 text-xs font-bold hover:gap-3 transition-all"
-              style={{ color: '#1DA1A1' }}
+              className="inline-flex items-center gap-2 text-xs font-bold hover:gap-3 transition-all text-motion"
             >
               Browse Full Hashtag Library <ArrowRight className="w-3.5 h-3.5" />
             </Link>
