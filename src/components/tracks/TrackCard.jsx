@@ -10,10 +10,12 @@ function getTrackUrl(track) {
   return `/TrackProfile?id=${track.id}`;
 }
 
-export default function TrackCard({ track, disciplines = [], media }) {
+export default function TrackCard({ track, disciplines = [], media, nonClickable = false }) {
+  const Wrapper = nonClickable ? 'div' : Link;
+  const wrapperProps = nonClickable ? {} : { to: getTrackUrl(track) };
   return (
-    <Link
-      to={getTrackUrl(track)}
+    <Wrapper
+      {...wrapperProps}
       className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group relative overflow-hidden"
     >
       <div className="p-5">
@@ -87,6 +89,6 @@ export default function TrackCard({ track, disciplines = [], media }) {
           />
         </div>
       )}
-    </Link>
+    </Wrapper>
   );
 }

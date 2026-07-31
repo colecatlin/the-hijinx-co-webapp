@@ -4,10 +4,12 @@ import { CheckCircle2, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { OUTLET_TYPE_LABELS } from './mediaPublicHelpers';
 
-export default function OutletCard({ outlet }) {
+export default function OutletCard({ outlet, nonClickable = false }) {
+  const Wrapper = nonClickable ? 'div' : Link;
+  const wrapperProps = nonClickable ? {} : { to: `/media-outlets/${outlet.slug}` };
   return (
-    <Link
-      to={`/media-outlets/${outlet.slug}`}
+    <Wrapper
+      {...wrapperProps}
       className="group block bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5"
     >
       {/* Cover */}
@@ -42,6 +44,6 @@ export default function OutletCard({ outlet }) {
           <p className="text-gray-400 text-xs mt-1.5 truncate">{outlet.specialties.slice(0, 2).join(' · ')}</p>
         )}
       </div>
-    </Link>
+    </Wrapper>
   );
 }

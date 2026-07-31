@@ -27,7 +27,7 @@ function sortedSeriesNames(programs, allSeries = []) {
   });
 }
 
-export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats, programClassName, isRookie }) {
+export default function DriverCard({ driver, program, programs = [], allSeries = [], team, media, performance, overallStats, programClassName, isRookie, nonClickable = false }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
@@ -65,9 +65,9 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
 
   return (
     <div 
-      className="relative h-[480px] cursor-pointer"
+      className={`relative h-[480px] ${nonClickable ? '' : 'cursor-pointer'}`}
       style={{ perspective: '1000px' }}
-      onClick={(e) => {
+      onClick={nonClickable ? undefined : (e) => {
         if (!e.target.closest('button')) {
           handleFlip();
         }
@@ -271,13 +271,15 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
           {/* Footer */}
           <div className="mt-auto pt-2 border-t border-gray-300">
             <div className="flex items-center justify-end">
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className="text-2xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
-              >
-                Profile →
-              </button>
+              {!nonClickable && (
+                <button
+                  type="button"
+                  onClick={handleProfileClick}
+                  className="text-2xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
+                >
+                  Profile →
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -349,7 +349,8 @@ export default function DriverDirectory() {
                     team={team}
                     media={media}
                     programClassName={programClassName}
-                    isRookie={isRookie} />
+                    isRookie={isRookie}
+                    nonClickable />
                   
                 </div>);
 

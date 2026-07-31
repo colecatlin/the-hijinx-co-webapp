@@ -5,7 +5,7 @@ import { MapPin } from 'lucide-react';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 
-export default function TeamCard({ team, programs = [], drivers = [], media, series = [] }) {
+export default function TeamCard({ team, programs = [], drivers = [], media, series = [], nonClickable = false }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const navigate = useNavigate();
 
@@ -54,9 +54,9 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
 
   return (
     <div 
-      className="relative aspect-square cursor-pointer"
+      className={`relative aspect-square ${nonClickable ? '' : 'cursor-pointer'}`}
       style={{ perspective: '1000px' }}
-      onClick={(e) => {
+      onClick={nonClickable ? undefined : (e) => {
         if (!e.target.closest('button') && !e.target.closest('a')) {
           handleFlip();
         }
@@ -186,17 +186,21 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
           {/* Footer */}
           <div className="mt-auto pt-2 border-t border-gray-300">
             <div className="flex items-center justify-end mb-3">
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
-              >
-                View full profile →
-              </button>
+              {!nonClickable && (
+                <button
+                  type="button"
+                  onClick={handleProfileClick}
+                  className="text-xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer"
+                >
+                  View full profile →
+                </button>
+              )}
             </div>
-            <div className="text-right text-xs text-gray-500 font-medium">
-              Back →
-            </div>
+            {!nonClickable && (
+              <div className="text-right text-xs text-gray-500 font-medium">
+                Back →
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

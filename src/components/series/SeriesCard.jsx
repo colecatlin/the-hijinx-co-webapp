@@ -14,13 +14,15 @@ const disciplineColors = {
   'Mixed': 'bg-gray-100 text-gray-800',
 };
 
-export default function SeriesCard({ series }) {
+export default function SeriesCard({ series, nonClickable = false }) {
   const displayLevel = series.override_competition_level || series.derived_competition_level || series.competition_level;
   const isOverride = !!series.override_competition_level;
 
+  const Wrapper = nonClickable ? 'div' : Link;
+  const wrapperProps = nonClickable ? {} : { to: series.canonical_slug || series.slug ? buildProfileUrl('Series', series.canonical_slug || series.slug) : `/SeriesDetail?slug=${series.id}` };
   return (
-    <Link
-      to={series.canonical_slug || series.slug ? buildProfileUrl('Series', series.canonical_slug || series.slug) : `/SeriesDetail?slug=${series.id}`}
+    <Wrapper
+      {...wrapperProps}
       className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col relative"
     >
       {displayLevel && (
@@ -60,6 +62,6 @@ export default function SeriesCard({ series }) {
         <span className="text-xs font-semibold">View Series</span>
         <ChevronRight className="w-3 h-3" />
       </div>
-    </Link>
+    </Wrapper>
   );
 }

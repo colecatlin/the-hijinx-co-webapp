@@ -181,6 +181,7 @@ export default function TeamDirectory() {
                    drivers={allTeamDrivers}
                    media={media}
                    series={allSeries}
+                   nonClickable
                  />
                );
              })}

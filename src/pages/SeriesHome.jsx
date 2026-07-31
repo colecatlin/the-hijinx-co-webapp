@@ -137,7 +137,7 @@ export default function SeriesHome() {
         ) : filteredSeries.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredSeries.map((s) => (
-              <SeriesCard key={s.id} series={s} />
+              <SeriesCard key={s.id} series={s} nonClickable />
             ))}
           </div>
         ) : (

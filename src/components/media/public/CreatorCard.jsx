@@ -4,10 +4,12 @@ import { CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ROLE_LABELS } from './mediaPublicHelpers';
 
-export default function CreatorCard({ profile }) {
+export default function CreatorCard({ profile, nonClickable = false }) {
+  const Wrapper = nonClickable ? 'div' : Link;
+  const wrapperProps = nonClickable ? {} : { to: `/creators/${profile.slug}` };
   return (
-    <Link
-      to={`/creators/${profile.slug}`}
+    <Wrapper
+      {...wrapperProps}
       className="group block bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5"
     >
       {/* Cover / avatar area */}
@@ -42,6 +44,6 @@ export default function CreatorCard({ profile }) {
           <p className="text-gray-400 text-xs mt-1.5 truncate">{profile.specialties.slice(0, 2).join(' · ')}</p>
         )}
       </div>
-    </Link>
+    </Wrapper>
   );
 }

@@ -281,9 +281,8 @@ export default function EventDirectory() {
       : 1;
 
     return (
-      <Link
-        to={createPageUrl('EventResults') + `?id=${event.id}`}
-        className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 hover:shadow-lg transition-shadow"
+      <div
+        className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6"
       >
         <div className="flex items-start justify-between mb-4">
           <h3 className="font-bold text-lg leading-tight text-[#232323]">{getDisplayName(event)}</h3>
@@ -326,7 +325,7 @@ export default function EventDirectory() {
             </div>
           )}
         </div>
-      </Link>
+      </div>
     );
   };
 
@@ -414,10 +413,9 @@ export default function EventDirectory() {
                   const cls = classificationByEventId[event.id] || {};
                   const seriesRecord = seriesById[event.series_id];
                   return (
-                    <Link
+                    <div
                       key={event.id}
-                      to={`${createPageUrl('EventProfile')}?id=${event.id}`}
-                      className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 hover:shadow-lg transition-shadow relative overflow-hidden"
+                      className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 relative overflow-hidden"
                     >
                       {cls.disciplineColor && (
                         <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: cls.disciplineColor }} />
@@ -453,7 +451,7 @@ export default function EventDirectory() {
                           )}
                         </div>
                       )}
-                    </Link>
+                    </div>
                   );
                 })}
               </div>
