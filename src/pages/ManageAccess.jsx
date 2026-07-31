@@ -237,7 +237,7 @@ export default function ManageAccess({ embedded = false }) {
                 : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-900'
             }`}
           >
-            Race Result Claims
+            Claims
           </button>
         </div>
 
@@ -588,7 +588,7 @@ export default function ManageAccess({ embedded = false }) {
           </>
         )}
 
-        {/* Race Result Claims Segment (DriverClaim race-result submissions) */}
+        {/* Claims Segment (DriverClaim submissions) */}
         {activeSection === 'raceclaims' && (
           <RaceClaimsReview />
         )}

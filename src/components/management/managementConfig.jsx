@@ -95,7 +95,7 @@ export const MANAGEMENT_SECTIONS = [
     title: 'Access Control',
     description: 'Claims review, collaborator access, and entity ownership management',
     items: [
-      { name: 'Claims',             page: 'ManageDriverClaims',  icon: FileTextIcon, description: 'Review and verify driver-submitted race result claims' },
+      { name: 'Claims',             page: 'ManageDriverClaims',  icon: FileTextIcon, description: 'Review and approve driver claims' },
       { name: 'Entity Claims',      page: 'ManageEntityClaims',  icon: FileTextIcon, description: 'Review and approve entity ownership claims' },
       { name: 'Access Management',  page: 'ManageAccess',        icon: Handshake,    description: 'Manage user collaborator access to entities' },
     ],
