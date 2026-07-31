@@ -52,6 +52,7 @@ import HashtagLibrary from './pages/HashtagLibrary';
 import HashtagAnalytics from './pages/HashtagAnalytics';
 import ManageDisciplineColors from './pages/ManageDisciplineColors';
 import StandingsHome from './pages/StandingsHome';
+import Directory from './pages/Directory';
 import JoinIndex46 from './pages/JoinIndex46';
 import JoinSignUp from './pages/JoinSignUp';
 import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
@@ -246,6 +247,8 @@ const AuthenticatedApp = () => {
       <Route path="/hashtag-analytics" element={<LayoutWrapper currentPageName="HashtagAnalytics"><HashtagAnalytics /></LayoutWrapper>} />
       <Route path="/management/discipline" element={<LayoutWrapper currentPageName="ManageDisciplineColors"><ManageDisciplineColors /></LayoutWrapper>} />
       <Route path="/StandingsHome" element={<LayoutWrapper currentPageName="StandingsHome"><StandingsHome /></LayoutWrapper>} />
+      {/* INDEX46 unified master directory — houses drivers, teams, tracks, series & events */}
+      <Route path="/Directory" element={<LayoutWrapper currentPageName="Directory"><Directory /></LayoutWrapper>} />
       <Route path="/join" element={<LayoutWrapper currentPageName="JoinIndex46"><JoinIndex46 /></LayoutWrapper>} />
       <Route path="/join/sign-up" element={<LayoutWrapper currentPageName="JoinSignUp"><JoinSignUp /></LayoutWrapper>} />
       <Route path="/ManageMotorsportsHome" element={<LayoutWrapper currentPageName="ManageMotorsportsHome"><ManageMotorsportsHome /></LayoutWrapper>} />
