@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import PageShell from '@/components/shared/PageShell';
 import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import CreatorCard from '@/components/media/public/CreatorCard';
+import { Skeleton } from '@/components/ui/skeleton';
 import { isPublicProfile, ROLE_LABELS } from '@/components/media/public/mediaPublicHelpers';
 
 export default function CreatorDirectory() {
@@ -65,7 +66,7 @@ export default function CreatorDirectory() {
   }, [allProfiles, search, filters.role, sort]);
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <DirectoryFilters
           searchQuery={search}
@@ -93,17 +94,17 @@ export default function CreatorDirectory() {
         />
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-gray-50 rounded-2xl h-52 animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-72" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 border border-dashed border-gray-200 rounded-2xl">
-            <p className="text-gray-400 font-medium">No creators found</p>
+          <div className="text-center py-12">
+            <p className="text-gray-600">No creators found matching your filters.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map(p => <CreatorCard key={p.id} profile={p} />)}
           </div>
         )}

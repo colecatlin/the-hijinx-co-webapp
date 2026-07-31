@@ -321,7 +321,7 @@ export default function EventDirectory() {
   };
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       <PullToRefresh onRefresh={refetchEvents}>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <DirectoryFilters
@@ -395,11 +395,11 @@ export default function EventDirectory() {
 
           <TabsContent value="upcoming">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-72 w-full" />)}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredUpcomingEvents.map(event => {
                   const cls = classificationByEventId[event.id] || {};
                   const seriesRecord = seriesById[event.series_id];
@@ -450,24 +450,23 @@ export default function EventDirectory() {
             )}
 
             {!isLoading && filteredUpcomingEvents.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
-                No upcoming events found
+              <div className="text-center py-12 text-gray-600">
+                No events found matching your filters.
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="results">
             {isLoading || resultsLoading || driversLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-72 w-full" />)}
               </div>
             ) : filteredCompletedEvents.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 flex flex-col items-center gap-2">
-                <Flag className="w-8 h-8 text-gray-300" />
-                No completed events yet
+              <div className="text-center py-12 text-gray-600">
+                No events found matching your filters.
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredCompletedEvents.map(event => (
                   <EventResultCard key={event.id} event={event} />
                 ))}

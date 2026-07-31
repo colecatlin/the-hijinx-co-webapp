@@ -78,7 +78,7 @@ export default function Directory() {
   };
 
   return (
-    <div className="relative" style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
+    <div className="relative bg-white" style={{ minHeight: '100vh' }}>
       <SeoMeta
         title="Directory · INDEX46"
         description="The INDEX46 directory — a master database of drivers, teams, tracks, series, events and media."

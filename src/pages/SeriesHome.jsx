@@ -55,7 +55,7 @@ export default function SeriesHome() {
   });
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <DirectoryFilters
           searchQuery={searchQuery}
@@ -129,20 +129,20 @@ export default function SeriesHome() {
         />
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-64 rounded-lg" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-72" />
             ))}
           </div>
         ) : filteredSeries.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredSeries.map((s) => (
               <SeriesCard key={s.id} series={s} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <p className="text-gray-500 text-lg">No series found</p>
+          <div className="text-center py-12">
+            <p className="text-gray-600">No series found matching your filters.</p>
           </div>
         )}
       </div>

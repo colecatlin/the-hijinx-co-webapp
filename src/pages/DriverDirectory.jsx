@@ -179,7 +179,7 @@ export default function DriverDirectory() {
   });
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       <PullToRefresh onRefresh={refetchDrivers}>
       <div className="max-w-7xl mx-auto px-6 py-12">
         <DirectoryFilters

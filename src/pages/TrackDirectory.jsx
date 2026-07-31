@@ -105,7 +105,7 @@ export default function TrackDirectory() {
   ];
 
   return (
-    <PageShell className="bg-[#FFF8F5]">
+    <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <DirectoryFilters
           searchQuery={searchQuery}
@@ -119,13 +119,13 @@ export default function TrackDirectory() {
         />
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-48" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-72" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredTracks.map(track => (
               <TrackCard key={track.id} track={track} />
             ))}
