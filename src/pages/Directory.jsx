@@ -14,6 +14,7 @@ import SeriesHome from './SeriesHome';
 import EventDirectory from './EventDirectory';
 import CreatorDirectory from './CreatorDirectory';
 import MediaOutletDirectory from './MediaOutletDirectory';
+import { isEventPublic } from '@/components/system/publishHelpers';
 
 const ACCENT = 'hsl(var(--motion))';
 const ACCENT_MUTED = 'hsl(var(--motion-muted))';
@@ -63,7 +64,7 @@ export default function Directory() {
     teams: teams.data?.length,
     tracks: tracks.data?.length,
     series: series.data?.length,
-    events: events.data?.length,
+    events: events.data?.filter(isEventPublic).length,
     creators: creators.data?.length,
     outlets: outlets.data?.length,
   }), [drivers.data, teams.data, tracks.data, series.data, events.data, creators.data, outlets.data]);
