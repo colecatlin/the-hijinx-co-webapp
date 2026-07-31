@@ -12,6 +12,13 @@ const INTEREST_OPTIONS = [
   { key: 'Sales & Promos', label: 'Sales & Promos' },
 ];
 
+const ACCENT = 'hsl(var(--motion))';
+const ACCENT_MUTED = 'hsl(var(--motion-muted))';
+const FG = 'hsl(var(--foreground))';
+const FG_SEC = 'hsl(var(--foreground-secondary))';
+const FG_QUIET = 'hsl(var(--foreground-quiet))';
+const DIV = 'hsl(var(--divider))';
+
 export default function ApparelStayConnected() {
   const [email, setEmail] = useState('');
   const [interests, setInterests] = useState([]);
@@ -61,7 +68,7 @@ export default function ApparelStayConnected() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center text-center gap-2 py-4">
-        <div className="flex items-center gap-2 text-[#00FFDA]">
+        <div className="flex items-center gap-2" style={{ color: ACCENT }}>
           <Check className="w-4 h-4" />
           <span className="font-mono text-sm tracking-wide">You're in. Stay tuned.</span>
         </div>
@@ -79,13 +86,14 @@ export default function ApparelStayConnected() {
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
-          className="rounded-none border-0 border-b-2 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-center placeholder:text-center border-[#333] text-[#F5F5F5] placeholder:text-[#666] focus:border-[#00FFDA]"
+          className="rounded-none border-0 border-b-2 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-center placeholder:text-center focus:border-[var(--motion)]"
+          style={{ borderColor: DIV, color: FG }}
         />
       </div>
 
       {/* Interest checklist */}
       <div className="w-full max-w-md mb-6">
-        <p className="font-mono text-[9px] tracking-[0.35em] text-[#666] uppercase mb-4 text-center">
+        <p className="font-mono text-[9px] tracking-[0.35em] uppercase mb-4 text-center" style={{ color: FG_QUIET }}>
           What do you want to stay informed about?
         </p>
         <div className="flex flex-wrap justify-center gap-2.5">
@@ -98,9 +106,9 @@ export default function ApparelStayConnected() {
                 onClick={() => toggleInterest(opt.key)}
                 className="px-3.5 py-2 text-xs font-medium uppercase tracking-wide transition-all"
                 style={{
-                  border: `1px solid ${active ? '#00FFDA' : 'rgba(255,255,255,0.14)'}`,
-                  background: active ? 'rgba(0,255,218,0.08)' : 'transparent',
-                  color: active ? '#00FFDA' : 'rgba(255,255,255,0.55)',
+                  border: `1px solid ${active ? ACCENT : DIV}`,
+                  background: active ? ACCENT_MUTED : 'transparent',
+                  color: active ? ACCENT : FG_SEC,
                 }}
               >
                 {opt.label}
@@ -116,15 +124,16 @@ export default function ApparelStayConnected() {
           id="apparel-terms"
           checked={termsAccepted}
           onCheckedChange={v => setTermsAccepted(v === true)}
-          className="mt-0.5 border-[#444] data-[state=checked]:bg-[#00FFDA] data-[state=checked]:border-[#00FFDA] data-[state=checked]:text-[#050505]"
+          className="mt-0.5 data-[state=checked]:bg-[var(--motion)] data-[state=checked]:border-[var(--motion)] data-[state=checked]:text-white"
+          style={{ borderColor: DIV }}
         />
-        <label htmlFor="apparel-terms" className="text-[11px] text-[#777] leading-relaxed text-center">
+        <label htmlFor="apparel-terms" className="text-[11px] leading-relaxed text-center" style={{ color: FG_SEC }}>
           I agree to receive emails from HIJINX and accept the{' '}
           <a
             href="https://www.hijinxco.com/policies/privacy-policy"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#00FFDA] underline underline-offset-2"
+            className="underline underline-offset-2" style={{ color: ACCENT }}
           >
             Terms & Conditions
           </a>
@@ -133,13 +142,16 @@ export default function ApparelStayConnected() {
       </div>
 
       {error && (
-        <p className="text-xs text-red-400 mb-4 -mt-2">{error}</p>
+        <p className="text-xs mb-4 -mt-2" style={{ color: 'hsl(var(--danger))' }}>{error}</p>
       )}
 
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#00FFDA] text-[#050505] text-xs font-black tracking-[0.15em] uppercase hover:bg-white transition-colors disabled:opacity-50"
+        className="inline-flex items-center gap-2 px-7 py-3.5 text-xs font-black tracking-[0.15em] uppercase transition-colors disabled:opacity-50"
+        style={{ background: ACCENT, color: '#fff' }}
+        onMouseEnter={e => { if (!loading) e.currentTarget.style.background = 'hsl(var(--motion-hover))'; }}
+        onMouseLeave={e => { if (!loading) e.currentTarget.style.background = ACCENT; }}
       >
         {loading ? 'Submitting...' : 'Stay Informed'}
         {!loading && <ArrowRight className="w-3.5 h-3.5" />}

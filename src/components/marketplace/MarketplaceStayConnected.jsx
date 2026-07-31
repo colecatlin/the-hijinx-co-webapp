@@ -12,6 +12,13 @@ const INTEREST_OPTIONS = [
   { key: 'Team & Builder Gear', label: 'Team & Builder Gear' },
 ];
 
+const ACCENT = 'hsl(var(--motion))';
+const ACCENT_MUTED = 'hsl(var(--motion-muted))';
+const FG = 'hsl(var(--foreground))';
+const FG_SEC = 'hsl(var(--foreground-secondary))';
+const FG_QUIET = 'hsl(var(--foreground-quiet))';
+const DIV = 'hsl(var(--divider))';
+
 export default function MarketplaceStayConnected() {
   const [email, setEmail] = useState('');
   const [interests, setInterests] = useState([]);
@@ -61,7 +68,7 @@ export default function MarketplaceStayConnected() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center text-center gap-2 py-4">
-        <div className="flex items-center gap-2" style={{ color: '#1DA1A1' }}>
+        <div className="flex items-center gap-2" style={{ color: ACCENT }}>
           <Check className="w-4 h-4" />
           <span className="font-mono text-sm tracking-wide">You're on the list. We'll be in touch.</span>
         </div>
@@ -79,13 +86,14 @@ export default function MarketplaceStayConnected() {
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
-          className="rounded-none border-0 border-b-2 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-center placeholder:text-center border-[#333] text-white placeholder:text-[#888] focus:border-[#1DA1A1]"
+          className="rounded-none border-0 border-b-2 bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-center placeholder:text-center focus:border-[var(--motion)]"
+          style={{ borderColor: DIV, color: FG }}
         />
       </div>
 
       {/* Interest checklist */}
       <div className="w-full max-w-md mb-6">
-        <p className="font-mono text-[9px] tracking-[0.35em] uppercase mb-4 text-center" style={{ color: '#777' }}>
+        <p className="font-mono text-[9px] tracking-[0.35em] uppercase mb-4 text-center" style={{ color: FG_QUIET }}>
           What do you want to stay informed about?
         </p>
         <div className="flex flex-wrap justify-center gap-2.5">
@@ -98,9 +106,9 @@ export default function MarketplaceStayConnected() {
                 onClick={() => toggleInterest(opt.key)}
                 className="px-3.5 py-2 text-xs font-medium uppercase tracking-wide transition-all"
                 style={{
-                  border: `1px solid ${active ? '#1DA1A1' : 'rgba(255,255,255,0.14)'}`,
-                  background: active ? 'rgba(29,161,161,0.08)' : 'transparent',
-                  color: active ? '#1DA1A1' : 'rgba(255,255,255,0.55)',
+                  border: `1px solid ${active ? ACCENT : DIV}`,
+                  background: active ? ACCENT_MUTED : 'transparent',
+                  color: active ? ACCENT : FG_SEC,
                 }}
               >
                 {opt.label}
@@ -116,15 +124,16 @@ export default function MarketplaceStayConnected() {
           id="marketplace-terms"
           checked={termsAccepted}
           onCheckedChange={v => setTermsAccepted(v === true)}
-          className="mt-0.5 border-[#444] data-[state=checked]:bg-[#1DA1A1] data-[state=checked]:border-[#1DA1A1] data-[state=checked]:text-[#050505]"
+          className="mt-0.5 data-[state=checked]:bg-[var(--motion)] data-[state=checked]:border-[var(--motion)] data-[state=checked]:text-white"
+          style={{ borderColor: DIV }}
         />
-        <label htmlFor="marketplace-terms" className="text-[11px] leading-relaxed text-center" style={{ color: '#888' }}>
+        <label htmlFor="marketplace-terms" className="text-[11px] leading-relaxed text-center" style={{ color: FG_SEC }}>
           I agree to receive emails from HIJINX and accept the{' '}
           <a
             href="https://www.hijinxco.com/policies/privacy-policy"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline underline-offset-2" style={{ color: '#1DA1A1' }}
+            className="underline underline-offset-2" style={{ color: ACCENT }}
           >
             Terms & Conditions
           </a>
@@ -133,16 +142,16 @@ export default function MarketplaceStayConnected() {
       </div>
 
       {error && (
-        <p className="text-xs text-red-400 mb-4 -mt-2">{error}</p>
+        <p className="text-xs mb-4 -mt-2" style={{ color: 'hsl(var(--danger))' }}>{error}</p>
       )}
 
       <button
         type="submit"
         disabled={loading}
         className="inline-flex items-center gap-2 px-7 py-3.5 text-xs font-black tracking-[0.15em] uppercase transition-all disabled:opacity-50"
-        style={{ background: '#1DA1A1', color: '#050505' }}
-        onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#fff'; }}
-        onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#1DA1A1'; }}
+        style={{ background: ACCENT, color: '#fff' }}
+        onMouseEnter={e => { if (!loading) e.currentTarget.style.background = 'hsl(var(--motion-hover))'; }}
+        onMouseLeave={e => { if (!loading) e.currentTarget.style.background = ACCENT; }}
       >
         {loading ? 'Submitting...' : 'Stay Informed'}
         {!loading && <ArrowRight className="w-3.5 h-3.5" />}
