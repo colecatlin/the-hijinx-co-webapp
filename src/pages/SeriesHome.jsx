@@ -54,14 +54,6 @@ export default function SeriesHome() {
   return (
     <PageShell>
       <div className="min-h-screen bg-white">
-        {/* Header */}
-        <div className="bg-gray-50 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-6 py-12">
-            <h1 className="text-4xl lg:text-5xl font-black mb-4">Series</h1>
-            <p className="text-gray-600 text-lg">Championships and racing formats across motorsports</p>
-          </div>
-        </div>
-
         {/* Filters & Search */}
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="mb-8 space-y-4">

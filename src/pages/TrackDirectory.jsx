@@ -107,11 +107,6 @@ export default function TrackDirectory() {
   return (
     <PageShell className="bg-[#FFF8F5]">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-black text-[#232323] mb-2">Tracks</h1>
-          <p className="text-gray-600">Find venues, formats, history, and what matters.</p>
-        </div>
-
         <DirectoryFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}

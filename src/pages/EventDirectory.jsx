@@ -316,11 +316,6 @@ export default function EventDirectory() {
     <PageShell>
       <PullToRefresh onRefresh={refetchEvents}>
       <div className="max-w-7xl mx-auto px-4 py-8 md:px-6 md:py-12">
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-3xl md:text-4xl font-black mb-2">Events</h1>
-          <p className="text-gray-600">Browse racing events and schedules</p>
-        </div>
-
         <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
           <div className="relative w-full sm:flex-1 sm:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
