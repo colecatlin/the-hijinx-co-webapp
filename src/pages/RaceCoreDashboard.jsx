@@ -179,24 +179,22 @@ export default function RaceCoreDashboard() {
   if (!isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-full py-20">
-        <div className="bg-[#0A0A0A] flex items-center justify-center p-6">
-          <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+          <Card className="bg-surface-elevated border-divider w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Clock className="w-5 h-5 text-teal-500" /> Login Required
+              <CardTitle className="text-foreground flex items-center gap-2">
+                <Clock className="w-5 h-5 text-motion" /> Login Required
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-300">You must be logged in to access RaceCore Dashboard.</p>
+              <p className="text-foreground-secondary">You must be logged in to access RaceCore Dashboard.</p>
               <Button
                 onClick={() => base44.auth.redirectToLogin()}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                className="w-full bg-motion hover:bg-motion-hover text-white"
               >
                 Log In
               </Button>
             </CardContent>
           </Card>
-        </div>
       </div>
     );
   }
@@ -206,26 +204,24 @@ export default function RaceCoreDashboard() {
   if (!hasAnyAccess) {
     return (
       <div className="flex items-center justify-center min-h-full py-20">
-        <div className="bg-[#0A0A0A] flex items-center justify-center">
-          <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+          <Card className="bg-surface-elevated border-divider w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-yellow-500" /> Access Not Configured
+              <CardTitle className="text-foreground flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-warning" /> Access Not Configured
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-300">
+              <p className="text-foreground-secondary">
                 Your role does not have access to any dashboard features. Please contact an administrator.
               </p>
               <Button
                 onClick={() => navigate(createPageUrl('Home'))}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-white"
+                className="w-full bg-surface-interactive hover:bg-surface-interactive/80 text-foreground"
               >
                 Return to Home
               </Button>
             </CardContent>
           </Card>
-        </div>
       </div>
     );
   }
@@ -256,13 +252,13 @@ export default function RaceCoreDashboard() {
             {canTab(dashboardPermissions, 'event_builder') && activeTab === 'eventBuilder' && (
               <div className="space-y-4">
                 {selectedEvent && (
-                  <div className="flex items-center justify-between bg-[#1a1a1a] border border-gray-800 rounded-lg px-4 py-3">
-                    <p className="text-xs text-gray-400">Need to edit all event record fields in depth?</p>
+                  <div className="flex items-center justify-between bg-surface-elevated border border-divider rounded-lg px-4 py-3">
+                    <p className="text-xs text-foreground-secondary">Need to edit all event record fields in depth?</p>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/race-core/events/${selectedEvent.id}`)}
-                      className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white gap-2"
+                      className="border-divider text-foreground-secondary hover:bg-surface-interactive hover:text-foreground gap-2"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       Open Event Deep Editor
@@ -304,16 +300,16 @@ export default function RaceCoreDashboard() {
 
       {/* Archive warning dialog */}
       <AlertDialog open={showArchiveWarning} onOpenChange={setShowArchiveWarning}>
-        <AlertDialogContent className="bg-[#262626] border-gray-700">
-          <AlertDialogTitle className="text-white">Event Currently Live</AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-400">
+        <AlertDialogContent className="bg-popover border-divider">
+          <AlertDialogTitle className="text-foreground">Event Currently Live</AlertDialogTitle>
+          <AlertDialogDescription className="text-foreground-quiet">
             This event is currently marked as Live. Are you sure you want to archive it?
           </AlertDialogDescription>
           <div className="flex gap-2 justify-end">
-            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-divider text-foreground-secondary">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => setShowArchiveWarning(false)}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-danger hover:bg-danger/90"
             >
               Archive Anyway
             </AlertDialogAction>
