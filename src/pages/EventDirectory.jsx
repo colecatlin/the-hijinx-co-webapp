@@ -87,6 +87,16 @@ export default function EventDirectory() {
     isEventPublic(e) && (e.end_date || e.event_date) < today
   );
 
+  // If there are no upcoming events but past events exist, jump to the
+  // Results tab automatically so the directory isn't an empty void.
+  useEffect(() => {
+    if (!allEventsList.length) return;
+    if (activeTab === 'upcoming' && upcomingEvents.length === 0 && completedEvents.length > 0 && !searchParams.get('tab')) {
+      setActiveTab('results');
+      updateUrl('results', disciplineFilter, formatFilter);
+    }
+  }, [allEventsList.length, upcomingEvents.length, completedEvents.length, activeTab]);
+
   const isLoading = false;
   const completedLoading = false;
 
