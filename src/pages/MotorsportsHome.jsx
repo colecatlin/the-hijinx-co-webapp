@@ -35,6 +35,8 @@ function useEntityStats(entityName) {
   });
 }
 
+const ACCENT = 'hsl(var(--motion))';
+
 export default function MotorsportsHome() {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
@@ -65,12 +67,12 @@ export default function MotorsportsHome() {
   ];
 
   return (
-    <div className="relative bg-[#050A0A]">
+    <div className="relative" style={{ background: 'hsl(var(--canvas))' }}>
 
-      {/* ── FULL PAGE TEXTURE OVERLAY ── */}
-      <div className="absolute inset-0 z-[1] pointer-events-none" style={{ backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`, backgroundRepeat: 'repeat', backgroundSize: '1024px auto', opacity: 0.35 }} />
+      {/* ── FULL PAGE TEXTURE OVERLAY (faint) ── */}
+      <div className="absolute inset-0 z-[1] pointer-events-none" style={{ backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`, backgroundRepeat: 'repeat', backgroundSize: '1024px auto', opacity: 0.05 }} />
 
-      {/* ── BACKGROUND ── */}
+      {/* ── BACKGROUND IMAGE HERO ── */}
       <div className="absolute inset-0 z-[2] h-[70vh]">
         <img
           src={BG_IMAGE}
@@ -78,11 +80,11 @@ export default function MotorsportsHome() {
           className="w-full h-full object-cover object-top"
           style={{ filter: 'saturate(1.15) contrast(1.08)' }}
         />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.88) 0%, rgba(4,8,8,0.65) 38%, rgba(4,8,8,0.15) 65%, rgba(4,8,8,0.35) 100%)' }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.4) 0%, rgba(4,8,8,0.05) 35%, rgba(4,8,8,0.35) 80%, rgba(4,8,8,0.80) 100%)' }} />
-        <div className="absolute top-0 left-0 w-[500px] h-[2px] opacity-50" style={{ background: 'linear-gradient(to right, #1DA1A1, transparent)' }} />
-        <div className="absolute top-0 left-0 w-[2px] h-40 opacity-40" style={{ background: 'linear-gradient(to bottom, #1DA1A1, transparent)' }} />
-        <div className="absolute bottom-0 right-0 w-[300px] h-[1px] opacity-25" style={{ background: 'linear-gradient(to left, #1DA1A1, transparent)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.86) 0%, rgba(4,8,8,0.6) 38%, rgba(4,8,8,0.10) 65%, rgba(4,8,8,0.32) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.35) 0%, rgba(4,8,8,0.02) 35%, rgba(247,245,242,0.0) 70%, hsl(var(--canvas)) 100%)' }} />
+        <div className="absolute top-0 left-0 w-[500px] h-[2px] opacity-50" style={{ background: `linear-gradient(to right, ${ACCENT}, transparent)` }} />
+        <div className="absolute top-0 left-0 w-[2px] h-40 opacity-40" style={{ background: `linear-gradient(to bottom, ${ACCENT}, transparent)` }} />
+        <div className="absolute bottom-0 right-0 w-[300px] h-[1px] opacity-25" style={{ background: `linear-gradient(to left, ${ACCENT}, transparent)` }} />
         <div className="absolute inset-0 opacity-25 mix-blend-overlay" style={grainStyle} />
       </div>
 
@@ -93,8 +95,8 @@ export default function MotorsportsHome() {
           {/* LEFT: Hero text + search */}
           <div className="lg:col-span-3 max-w-xl">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-5 h-[1px] bg-[#1DA1A1]" />
-              <span className="font-mono text-[9px] tracking-[0.45em] text-[#1DA1A1] uppercase">INDEX46 · Motorsports</span>
+              <div className="w-5 h-[1px]" style={{ background: ACCENT }} />
+              <span className="font-mono text-[9px] tracking-[0.45em] uppercase" style={{ color: ACCENT }}>INDEX46 · Motorsports</span>
             </div>
             <h1
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[0.92] tracking-tight uppercase mb-2"
@@ -104,11 +106,11 @@ export default function MotorsportsHome() {
             </h1>
             <p
               className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black italic uppercase mb-3 leading-tight"
-              style={{ color: '#1DA1A1', textShadow: '0 0 40px rgba(29,161,161,0.4)' }}
+              style={{ color: ACCENT, textShadow: '0 0 40px rgba(29,161,161,0.4)' }}
             >
               All in one place.
             </p>
-            <p className="text-white/60 text-xs sm:text-sm leading-relaxed mb-5 max-w-md">
+            <p className="text-white/70 text-xs sm:text-sm leading-relaxed mb-5 max-w-md">
               Drivers. Teams. Tracks. Events. Results.<br />
               The most comprehensive motorsports data platform, built for the culture.
             </p>
@@ -119,23 +121,23 @@ export default function MotorsportsHome() {
                   background: 'rgba(255,255,255,0.08)',
                   backdropFilter: 'blur(12px)',
                   WebkitBackdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  border: '1px solid rgba(255,255,255,0.16)',
                   borderRight: 'none',
                 }}
               >
-                <Search className="w-4 h-4 text-white/40 mr-2 flex-shrink-0" />
+                <Search className="w-4 h-4 text-white/50 mr-2 flex-shrink-0" />
                 <input
                   type="text"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Search drivers, teams..."
-                  className="flex-1 bg-transparent text-white text-sm placeholder-white/30 outline-none min-w-0"
+                  className="flex-1 bg-transparent text-white text-sm placeholder-white/40 outline-none min-w-0"
                 />
               </div>
               <button
                 type="submit"
                 className="px-4 sm:px-6 py-3 rounded-r-xl text-xs sm:text-sm font-black tracking-widest uppercase transition-all duration-200 hover:brightness-110 flex-shrink-0 whitespace-nowrap"
-                style={{ background: '#1DA1A1', color: '#050A0A' }}
+                style={{ background: ACCENT, color: '#fff' }}
               >
                 Explore
               </button>
@@ -146,29 +148,29 @@ export default function MotorsportsHome() {
               <Link
                 to="/join"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200 hover:brightness-110"
-                style={{ background: '#1DA1A1', color: '#050A0A' }}
+                style={{ background: '#fff', color: 'hsl(var(--foreground))' }}
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
+                <ShieldCheck className="w-3.5 h-3.5" style={{ color: ACCENT }} />
                 Claim Your Profile
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               {isAuthenticated ? null : (
                 <button
                   onClick={() => base44.auth.redirectToLogin('/join/sign-up')}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200 hover:brightness-110"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black tracking-[0.18em] uppercase transition-all duration-200"
+                  style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.22)', color: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
                 >
                   Sign Up
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               )}
-              <span className="text-[10px] font-mono tracking-[0.3em] uppercase" style={{ color: 'rgba(255,255,255,0.35)' }}>
+              <span className="text-[10px] font-mono tracking-[0.3em] uppercase" style={{ color: 'rgba(255,255,255,0.55)' }}>
                 Drivers · Teams · Tracks · Series
               </span>
             </div>
           </div>
 
-          {/* RIGHT: Live stat cards — hidden on smallest screens, shown as horizontal row on sm */}
+          {/* RIGHT: Live stat cards — light surface cards over the dark hero */}
           <div className="lg:col-span-2 hidden sm:flex sm:flex-row lg:flex-col gap-2 lg:max-w-[220px] w-full lg:ml-auto">
             {stats.map((s, i) => (
               <StatCard
