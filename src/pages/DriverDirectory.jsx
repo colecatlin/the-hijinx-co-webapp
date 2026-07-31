@@ -182,40 +182,29 @@ export default function DriverDirectory() {
     <PageShell className="bg-[#FFF8F5]">
       <PullToRefresh onRefresh={refetchDrivers}>
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-black text-[#232323] mb-1 sm:mb-2 hidden">Drivers</h1>
-              <p className="text-base sm:text-lg text-gray-600 hidden">Competitors across disciplines and series</p>
-            </div>
-            <div className="flex items-center gap-3">
-              {compareMode && selectedDrivers.length === 2 &&
-                <Button onClick={handleCompare} className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm">
-                  Compare Selected
-                </Button>
-                }
-              <Button
-                  variant={compareMode ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => {
-                    setCompareMode(!compareMode);
-                    setSelectedDrivers([]);
-                  }}>
-                  
-                <GitCompare className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">{compareMode ? 'Cancel' : 'Compare Drivers'}</span>
-                <span className="sm:hidden">{compareMode ? 'Cancel' : 'Compare'}</span>
-              </Button>
-            </div>
-          </div>
-          {compareMode &&
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-900">
-                Select 2 drivers to compare ({selectedDrivers.length}/2 selected)
-              </p>
-            </div>
-            }
+        <div className="flex items-center justify-end gap-3 mb-3">
+          {compareMode && selectedDrivers.length === 2 &&
+            <Button onClick={handleCompare} className="bg-green-600 hover:bg-green-700 text-xs sm:text-sm">
+              Compare Selected
+            </Button>
+          }
+          <Button
+            variant={compareMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => { setCompareMode(!compareMode); setSelectedDrivers([]); }}
+          >
+            <GitCompare className="w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">{compareMode ? 'Cancel' : 'Compare Drivers'}</span>
+            <span className="sm:hidden">{compareMode ? 'Cancel' : 'Compare'}</span>
+          </Button>
         </div>
+        {compareMode &&
+          <div className="mb-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-900">
+              Select 2 drivers to compare ({selectedDrivers.length}/2 selected)
+            </p>
+          </div>
+        }
 
         <DirectoryFilters
             searchQuery={searchQuery}
