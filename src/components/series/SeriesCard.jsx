@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { buildProfileUrl } from '@/components/utils/routingContract';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
 import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
+import { showComingSoon } from '@/components/shared/comingSoonToast';
 
 const disciplineColors = {
   'Asphalt Oval': 'bg-blue-100 text-blue-800',
@@ -19,11 +20,13 @@ export default function SeriesCard({ series, nonClickable = false }) {
   const isOverride = !!series.override_competition_level;
 
   const Wrapper = nonClickable ? 'div' : Link;
-  const wrapperProps = nonClickable ? {} : { to: series.canonical_slug || series.slug ? buildProfileUrl('Series', series.canonical_slug || series.slug) : `/SeriesDetail?slug=${series.id}` };
+  const wrapperProps = nonClickable
+    ? { onClick: () => showComingSoon('series'), role: 'button', tabIndex: 0 }
+    : { to: series.canonical_slug || series.slug ? buildProfileUrl('Series', series.canonical_slug || series.slug) : `/SeriesDetail?slug=${series.id}` };
   return (
     <Wrapper
       {...wrapperProps}
-      className="group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col relative"
+      className={`group bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col relative${nonClickable ? ' cursor-pointer' : ''}`}
     >
       {displayLevel && (
         <div className="absolute top-4 right-4">

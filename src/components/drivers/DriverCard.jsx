@@ -6,6 +6,7 @@ import { getDriverProfileUrl } from '@/lib/driverUrl';
 import { MapPin } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getSecondaryDisciplines } from '@/components/utils/disciplineUtils';
+import { showComingSoon } from '@/components/shared/comingSoonToast';
 
 // Series priority order (lower rank = higher tier)
 const SERIES_PRIORITY = {
@@ -65,13 +66,16 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
 
   return (
     <div 
-      className={`relative h-[480px] ${nonClickable ? '' : 'cursor-pointer'}`}
+      className="relative h-[480px] cursor-pointer"
       style={{ perspective: '1000px' }}
-      onClick={nonClickable ? undefined : (e) => {
-        if (!e.target.closest('button')) {
-          handleFlip();
-        }
-      }}
+      onClick={nonClickable
+        ? () => showComingSoon('driver')
+        : (e) => {
+            if (!e.target.closest('button')) {
+              handleFlip();
+            }
+          }
+      }
     >
       <motion.div
         className="relative w-full h-full"

@@ -6,8 +6,8 @@ import DirectoryFilters from '@/components/shared/DirectoryFilters';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Trophy, Medal, Flag, Layers, Map } from 'lucide-react';
 import EventMapTab from '@/components/events/EventMapTab';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
+import { useSearchParams } from 'react-router-dom';
+import { showComingSoon } from '@/components/shared/comingSoonToast';
 import { format, differenceInCalendarDays, parseISO, differenceInCalendarDays as diffDays } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isEventPublic } from '@/components/system/publishHelpers';
@@ -282,7 +282,8 @@ export default function EventDirectory() {
 
     return (
       <div
-        className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6"
+        onClick={() => showComingSoon('event')}
+        className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 cursor-pointer"
       >
         <div className="flex items-start justify-between mb-4">
           <h3 className="font-bold text-lg leading-tight text-[#232323]">{getDisplayName(event)}</h3>
@@ -415,7 +416,8 @@ export default function EventDirectory() {
                   return (
                     <div
                       key={event.id}
-                      className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 relative overflow-hidden"
+                      onClick={() => showComingSoon('event')}
+                      className="bg-[#ffffff] border border-[#e5e7eb] rounded-lg p-6 relative overflow-hidden cursor-pointer"
                     >
                       {cls.disciplineColor && (
                         <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: cls.disciplineColor }} />

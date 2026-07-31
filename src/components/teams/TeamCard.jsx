@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import CountryFlag from '@/components/shared/CountryFlag';
 import { buildProfileUrl } from '@/components/utils/routingContract';
+import { showComingSoon } from '@/components/shared/comingSoonToast';
 
 export default function TeamCard({ team, programs = [], drivers = [], media, series = [], nonClickable = false }) {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -54,13 +55,16 @@ export default function TeamCard({ team, programs = [], drivers = [], media, ser
 
   return (
     <div 
-      className={`relative aspect-square ${nonClickable ? '' : 'cursor-pointer'}`}
+      className="relative aspect-square cursor-pointer"
       style={{ perspective: '1000px' }}
-      onClick={nonClickable ? undefined : (e) => {
-        if (!e.target.closest('button') && !e.target.closest('a')) {
-          handleFlip();
-        }
-      }}
+      onClick={nonClickable
+        ? () => showComingSoon('team')
+        : (e) => {
+            if (!e.target.closest('button') && !e.target.closest('a')) {
+              handleFlip();
+            }
+          }
+      }
     >
       <motion.div
         className="relative w-full h-full"

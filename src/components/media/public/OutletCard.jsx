@@ -3,14 +3,17 @@ import { Link } from 'react-router-dom';
 import { CheckCircle2, Building2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { OUTLET_TYPE_LABELS } from './mediaPublicHelpers';
+import { showComingSoon } from '@/components/shared/comingSoonToast';
 
 export default function OutletCard({ outlet, nonClickable = false }) {
   const Wrapper = nonClickable ? 'div' : Link;
-  const wrapperProps = nonClickable ? {} : { to: `/media-outlets/${outlet.slug}` };
+  const wrapperProps = nonClickable
+    ? { onClick: () => showComingSoon('outlet'), role: 'button', tabIndex: 0 }
+    : { to: `/media-outlets/${outlet.slug}` };
   return (
     <Wrapper
       {...wrapperProps}
-      className="group block bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5"
+      className={`group block bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5${nonClickable ? ' cursor-pointer' : ''}`}
     >
       {/* Cover */}
       <div className="h-20 bg-gradient-to-br from-gray-700 to-gray-500 relative overflow-hidden">

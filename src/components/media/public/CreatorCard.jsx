@@ -3,14 +3,17 @@ import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ROLE_LABELS } from './mediaPublicHelpers';
+import { showComingSoon } from '@/components/shared/comingSoonToast';
 
 export default function CreatorCard({ profile, nonClickable = false }) {
   const Wrapper = nonClickable ? 'div' : Link;
-  const wrapperProps = nonClickable ? {} : { to: `/creators/${profile.slug}` };
+  const wrapperProps = nonClickable
+    ? { onClick: () => showComingSoon('creator'), role: 'button', tabIndex: 0 }
+    : { to: `/creators/${profile.slug}` };
   return (
     <Wrapper
       {...wrapperProps}
-      className="group block bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5"
+      className={`group block bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition-all hover:-translate-y-0.5${nonClickable ? ' cursor-pointer' : ''}`}
     >
       {/* Cover / avatar area */}
       <div className="h-24 bg-gradient-to-br from-gray-800 to-gray-600 relative overflow-hidden">

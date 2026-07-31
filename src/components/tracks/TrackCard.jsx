@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { buildProfileUrl } from '@/components/utils/routingContract';
+import { showComingSoon } from '@/components/shared/comingSoonToast';
 
 function getTrackUrl(track) {
   const slug = track.canonical_slug || track.slug;
@@ -12,11 +13,13 @@ function getTrackUrl(track) {
 
 export default function TrackCard({ track, disciplines = [], media, nonClickable = false }) {
   const Wrapper = nonClickable ? 'div' : Link;
-  const wrapperProps = nonClickable ? {} : { to: getTrackUrl(track) };
+  const wrapperProps = nonClickable
+    ? { onClick: () => showComingSoon('track'), role: 'button', tabIndex: 0 }
+    : { to: getTrackUrl(track) };
   return (
     <Wrapper
       {...wrapperProps}
-      className="block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group relative overflow-hidden"
+      className={`block bg-white border border-gray-200 hover:border-[#00FFDA] transition-all duration-300 group relative overflow-hidden${nonClickable ? ' cursor-pointer' : ''}`}
     >
       <div className="p-5">
         <div className="flex items-start justify-between mb-3">
