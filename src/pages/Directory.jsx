@@ -100,13 +100,11 @@ export default function Directory() {
         </div>
       </div>
 
-      {/* ── CATEGORY SWITCHER (sticky) ── */}
+      {/* ── CATEGORY SWITCHER (in-flow, above search/filters) ── */}
       <div
-        className="sticky top-16 z-30 mx-3 sm:mx-4 rounded-2xl"
+        className="mx-3 sm:mx-4 mb-2 rounded-2xl"
         style={{
-          background: 'hsl(var(--surface-elevated) / 0.92)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          background: 'hsl(var(--surface-elevated))',
           border: `1px solid ${DIV}`,
           boxShadow: '0 8px 28px hsl(0 0% 0% / 0.10)',
         }}
