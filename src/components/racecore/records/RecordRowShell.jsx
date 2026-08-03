@@ -76,9 +76,8 @@ export default function RecordRowShell({
         >
           <Checkbox
             checked={isSelected}
-            onCheckedChange={() => onSelect?.(id)}
             aria-label={label ? `Select ${label}` : 'Select record'}
-            className="border-divider data-[state=checked]:bg-motion data-[state=checked]:border-motion focus-visible:ring-1 focus-visible:ring-motion"
+            className="border-divider data-[state=checked]:bg-motion data-[state=checked]:border-motion focus-visible:ring-1 focus-visible:ring-motion pointer-events-none"
           />
         </div>
       )}
