@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   MapPin, ExternalLink, Calendar, Home,
   AlertCircle, CheckCircle, AlertTriangle, Globe,
-  Instagram, User
+  Instagram, User, ArrowLeft
 } from 'lucide-react';
 import CareerStatusTag from '@/components/competition/CareerStatusTag';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
@@ -343,10 +343,15 @@ export default function DriverProfile() {
 
       <div className="max-w-7xl mx-auto px-6">
         {/* ── ACTION ROW ─────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2 pt-4 pb-2">
-          <Link to={createPageUrl('DriverDirectory')} className="text-xs text-gray-400 hover:text-[#232323] mr-2">← Drivers</Link>
-          <FollowDriverButton driverId={driver?.id} />
-          <SocialShareButtons url={window.location.href} title={`${fullName} - Driver Profile`} description="" />
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-4 pb-2">
+          <Link to={createPageUrl('DriverDirectory')} className="text-xs text-gray-400 hover:text-[#232323] flex items-center gap-1">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Drivers</span>
+          </Link>
+          <div className="flex items-center gap-2 ml-auto">
+            <FollowDriverButton driverId={driver?.id} />
+            <SocialShareButtons url={window.location.href} title={`${fullName} - Driver Profile`} description="" />
+          </div>
         </div>
 
         {/* ── TAB NAV ────────────────────────────────────── */}
