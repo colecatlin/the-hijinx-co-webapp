@@ -50,25 +50,24 @@ export default function RecordDrawerShell({
           WIDTH_CLASSES[width] || WIDTH_CLASSES.wide,
           'w-full'
         )}
-        // Override SheetContent close button positioning
-        style={{ maxHeight: '100dvh', background: '#0B0D0D', borderColor: 'rgba(255,255,255,0.07)' }}
+        style={{ maxHeight: '100dvh', background: 'hsl(var(--surface))', borderColor: 'hsl(var(--divider))' }}
       >
         {/* ── Header ── */}
-        <SheetHeader className="shrink-0 px-6 pt-5 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+        <SheetHeader className="shrink-0 px-6 pt-5 pb-4 border-b border-divider">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-mono text-teal-500/60 tracking-[0.35em] uppercase mb-1">
+              <p className="text-[10px] font-mono text-motion/60 tracking-[0.35em] uppercase mb-1">
                   {entityType ? `${entityType} Record` : 'Record'}
                 </p>
-              <h2 className="text-base font-semibold text-white truncate leading-tight">
+              <h2 className="text-base font-semibold text-foreground truncate leading-tight">
                 {isLoading ? (
-                  <span className="text-gray-600">Loading…</span>
+                  <span className="text-foreground-quiet">Loading…</span>
                 ) : (
                   title || 'Untitled'
                 )}
               </h2>
               {subtitle && (
-                <p className="text-xs text-gray-500 mt-0.5 truncate">{subtitle}</p>
+                <p className="text-xs text-foreground-quiet mt-0.5 truncate">{subtitle}</p>
               )}
             </div>
             {actions && (
@@ -80,12 +79,12 @@ export default function RecordDrawerShell({
         {/* ── Body ── */}
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="w-7 h-7 animate-spin text-gray-600" />
+            <Loader2 className="w-7 h-7 animate-spin text-foreground-quiet" />
           </div>
         ) : (
           <Tabs defaultValue={firstTab} className="flex-1 flex flex-col overflow-hidden">
             {/* Tab list */}
-            <div className="shrink-0 px-6 pt-3 pb-0 border-b overflow-x-auto scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+            <div className="shrink-0 px-6 pt-3 pb-0 border-b border-divider overflow-x-auto scrollbar-hide">
               <TabsList className="flex h-auto gap-0.5 bg-transparent p-0 rounded-none w-max">
                 {visibleTabs.map(tab => (
                   <TabsTrigger
@@ -94,8 +93,8 @@ export default function RecordDrawerShell({
                     disabled={tab.disabled}
                     className={cn(
                       'text-[11px] font-mono px-3 py-2 rounded-none border-b-2 border-transparent',
-                      'text-gray-500 hover:text-gray-300 data-[state=active]:text-white',
-                      'data-[state=active]:border-teal-500',
+                      'text-foreground-quiet hover:text-foreground data-[state=active]:text-foreground',
+                      'data-[state=active]:border-motion',
                       'transition-all bg-transparent disabled:opacity-30'
                     )}
                   >
