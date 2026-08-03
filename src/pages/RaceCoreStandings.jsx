@@ -26,7 +26,7 @@ import RaceCorePageHeader from '@/components/racecore/RaceCorePageHeader';
 // ─── Minimal dark shell (no ManagementLayout — this is a focused canonical surface)
 function StandingsShell({ children }) {
   return (
-    <div className="text-gray-100 flex flex-col min-h-screen" style={{ background: '#0a0a0a' }}>
+    <div className="text-foreground flex flex-col min-h-screen bg-surface">
       {children}
     </div>
   );
@@ -43,8 +43,8 @@ function SeriesSelector({ seriesList, selectedId, onSelect }) {
           onClick={() => onSelect(s.id)}
           className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-widest uppercase transition-colors border ${
             selectedId === s.id
-              ? 'bg-teal-600/20 border-teal-600/50 text-teal-300'
-              : 'bg-gray-900 border-gray-800 text-gray-500 hover:text-gray-300 hover:border-gray-600'
+              ? 'bg-motion/10 border-motion/40 text-motion'
+              : 'bg-surface border-divider text-foreground-quiet hover:text-foreground hover:border-motion/30'
           }`}
         >
           {s.name}
@@ -59,12 +59,12 @@ function SeasonSelector({ seasons, selectedYear, onSelect }) {
   if (!seasons.length) return null;
   return (
     <Select value={selectedYear || ''} onValueChange={onSelect}>
-      <SelectTrigger className="w-28 bg-[#111] border-gray-800 text-gray-200 text-xs h-8">
+      <SelectTrigger className="w-28 bg-surface border-divider text-foreground text-xs h-8">
         <SelectValue placeholder="Season" />
       </SelectTrigger>
-      <SelectContent className="bg-[#1a1a1a] border-gray-800">
+      <SelectContent className="bg-popover border-divider">
         {seasons.map(y => (
-          <SelectItem key={y} value={y} className="text-gray-200 text-xs">{y}</SelectItem>
+          <SelectItem key={y} value={y} className="text-foreground text-xs">{y}</SelectItem>
         ))}
       </SelectContent>
     </Select>
@@ -76,13 +76,13 @@ function ClassSelector({ classes, selectedId, onSelect }) {
   if (!classes.length) return null;
   return (
     <Select value={selectedId || 'all'} onValueChange={v => onSelect(v === 'all' ? null : v)}>
-      <SelectTrigger className="w-36 bg-[#111] border-gray-800 text-gray-200 text-xs h-8">
+      <SelectTrigger className="w-36 bg-surface border-divider text-foreground text-xs h-8">
         <SelectValue placeholder="All Classes" />
       </SelectTrigger>
-      <SelectContent className="bg-[#1a1a1a] border-gray-800">
-        <SelectItem value="all" className="text-gray-200 text-xs">All Classes</SelectItem>
+      <SelectContent className="bg-popover border-divider">
+        <SelectItem value="all" className="text-foreground text-xs">All Classes</SelectItem>
         {classes.map(c => (
-          <SelectItem key={c.id} value={c.id} className="text-gray-200 text-xs">{c.class_name}</SelectItem>
+          <SelectItem key={c.id} value={c.id} className="text-foreground text-xs">{c.class_name}</SelectItem>
         ))}
       </SelectContent>
     </Select>
@@ -229,7 +229,7 @@ export default function RaceCoreStandings() {
               <Button
                 variant="outline"
                 size="sm"
-                className="border-gray-700 text-gray-400 hover:text-teal-400 hover:border-teal-700 gap-1.5 text-xs shrink-0"
+                className="border-divider text-foreground-quiet hover:text-motion hover:border-motion gap-1.5 text-xs shrink-0"
               >
                 <ExternalLink className="w-3 h-3" />
                 Recalculate in EventFile
@@ -244,7 +244,7 @@ export default function RaceCoreStandings() {
 
       {/* Series selector */}
       <div className="mb-4">
-        <p className="text-[9px] font-mono text-gray-700 uppercase tracking-widest mb-2">Series</p>
+        <p className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest mb-2">Series</p>
         <SeriesSelector
           seriesList={seriesList}
           selectedId={resolvedSeriesId}
@@ -255,7 +255,7 @@ export default function RaceCoreStandings() {
       {/* Controls row: Season + Class */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
         <div>
-          <p className="text-[9px] font-mono text-gray-700 uppercase tracking-widest mb-1.5">Season</p>
+          <p className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest mb-1.5">Season</p>
           <SeasonSelector
             seasons={availableSeasons.length ? availableSeasons : [currentYear]}
             selectedYear={resolvedSeason}
@@ -264,7 +264,7 @@ export default function RaceCoreStandings() {
         </div>
         {seriesClasses.length > 0 && (
           <div>
-            <p className="text-[9px] font-mono text-gray-700 uppercase tracking-widest mb-1.5">Class</p>
+            <p className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest mb-1.5">Class</p>
             <ClassSelector
               classes={seriesClasses}
               selectedId={selectedClassId}
@@ -276,7 +276,7 @@ export default function RaceCoreStandings() {
 
       {/* Standings grid */}
       {resolvedSeriesId ? (
-        <div className="bg-[#0e0e0e] border border-gray-800 rounded-lg overflow-hidden">
+        <div className="bg-surface-elevated border border-divider rounded-lg overflow-hidden">
           <StandingsRecordGrid
             standings={standings}
             drivers={drivers}
@@ -289,18 +289,18 @@ export default function RaceCoreStandings() {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 gap-3 border border-gray-800 rounded-lg bg-[#0e0e0e]">
-          <Trophy className="w-8 h-8 text-gray-800" />
-          <p className="text-xs font-mono text-gray-700 uppercase tracking-widest">Select a series to view standings</p>
+        <div className="flex flex-col items-center justify-center py-20 gap-3 border border-divider rounded-lg bg-surface-elevated">
+          <Trophy className="w-8 h-8 text-foreground-quiet" />
+          <p className="text-xs font-mono text-foreground-quiet uppercase tracking-widest">Select a series to view standings</p>
         </div>
       )}
 
       {/* Authority notice */}
-      <div className="mt-5 flex items-start gap-2 px-4 py-3 rounded-lg border border-gray-800 bg-gray-900/30">
-        <span className="text-[9px] font-mono text-gray-700 uppercase tracking-widest leading-5">Authority:</span>
-        <p className="text-[10px] text-gray-600">
+      <div className="mt-5 flex items-start gap-2 px-4 py-3 rounded-lg border border-divider bg-surface-interactive/30">
+        <span className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest leading-5">Authority:</span>
+        <p className="text-[10px] text-foreground-secondary">
           Standings are computed snapshots derived from Results.
-          To rebuild: <span className="font-mono text-gray-500">EventFile → Standings tab → Recalculate</span>.
+          To rebuild: <span className="font-mono text-foreground-quiet">EventFile → Standings tab → Recalculate</span>.
           This page is a read-only inspection surface only.
         </p>
       </div>

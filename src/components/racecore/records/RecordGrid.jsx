@@ -45,7 +45,7 @@ export default function RecordGrid({
       {columns.length > 0 && (
         <div
           className="hidden sm:flex items-center gap-3 px-4 py-1.5 sticky top-0 z-10 border-b"
-          style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}
+          style={{ background: 'hsl(var(--surface-elevated))', borderColor: 'hsl(var(--divider))' }}
         >
           {showSelectAll && (
             <div className="shrink-0 w-4">
@@ -53,7 +53,7 @@ export default function RecordGrid({
                 checked={allSelected}
                 onCheckedChange={onSelectAll}
                 aria-label="Select all records"
-                className="border-gray-700 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600 w-3.5 h-3.5"
+                className="border-divider data-[state=checked]:bg-motion data-[state=checked]:border-motion w-3.5 h-3.5"
               />
             </div>
           )}
@@ -61,7 +61,7 @@ export default function RecordGrid({
             <div
               key={col.label}
               className={cn(
-                'text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-gray-500',
+                'text-[9px] font-mono font-bold uppercase tracking-[0.2em] text-foreground-quiet',
                 col.className
               )}
             >
@@ -77,7 +77,7 @@ export default function RecordGrid({
       {isLoading && (
         <div className="p-3 sm:p-4 space-y-1.5">
           {[...Array(skeletonCount)].map((_, i) => (
-            <Skeleton key={`skel-${i}`} className="h-14 sm:h-11 w-full rounded" style={{ background: '#1a1a1a' }} />
+            <Skeleton key={`skel-${i}`} className="h-14 sm:h-11 w-full rounded" />
           ))}
         </div>
       )}
@@ -85,8 +85,8 @@ export default function RecordGrid({
       {/* Empty state */}
       {!isLoading && isEmpty && (
         <div className="flex flex-col items-center justify-center py-20 sm:py-24 gap-3">
-          {EmptyIcon && <EmptyIcon className="w-8 h-8 text-gray-800" />}
-          <p className="text-xs font-mono text-gray-700 uppercase tracking-widest">{emptyMessage}</p>
+          {EmptyIcon && <EmptyIcon className="w-8 h-8 text-foreground-quiet" />}
+          <p className="text-xs font-mono text-foreground-quiet uppercase tracking-widest">{emptyMessage}</p>
           {emptyAction}
         </div>
       )}

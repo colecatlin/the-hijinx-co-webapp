@@ -43,7 +43,7 @@ export default function StandingRecordRow({ standing, driver, index }) {
       onClick={e => e.stopPropagation()}
       title={`View ${fullName} profile`}
       aria-label={`View ${fullName} profile`}
-      className="p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded transition-colors text-gray-500 hover:text-teal-400 hover:bg-teal-400/10"
+      className="p-2 sm:p-1.5 min-w-[40px] min-h-[40px] sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded transition-colors text-foreground-quiet hover:text-motion hover:bg-motion/10"
     >
       <ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
     </Link>
@@ -59,44 +59,44 @@ export default function StandingRecordRow({ standing, driver, index }) {
     >
       {/* Rank */}
       <div className="w-8 sm:w-10 shrink-0 text-center">
-        <span className="text-sm font-black font-mono text-gray-100 tabular-nums">{displayRank}</span>
+        <span className="text-sm font-black font-mono text-foreground tabular-nums">{displayRank}</span>
       </div>
 
       {/* Identity */}
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-gray-100 truncate">{fullName}</div>
+        <div className="text-sm font-semibold text-foreground truncate">{fullName}</div>
         {hometown && (
-          <div className="text-[10px] text-gray-600 truncate mt-0.5">{hometown}</div>
+          <div className="text-[10px] text-foreground-quiet truncate mt-0.5">{hometown}</div>
         )}
       </div>
 
       {/* Points — always visible */}
       <div className="shrink-0 w-16 text-right">
-        <span className="text-sm font-black font-mono text-gray-100 tabular-nums">
+        <span className="text-sm font-black font-mono text-foreground tabular-nums">
           {standing.points_total ?? 0}
         </span>
-        <div className="text-[9px] font-mono text-gray-700 uppercase tracking-wider">pts</div>
+        <div className="text-[9px] font-mono text-foreground-quiet uppercase tracking-wider">pts</div>
       </div>
 
       {/* Wins / Podiums / Starts — hidden on mobile */}
       <div className="hidden sm:flex shrink-0 gap-3">
         <div className="w-8 text-center">
-          <span className="text-xs font-mono text-gray-400 tabular-nums">{standing.wins ?? 0}</span>
-          <div className="text-[8px] font-mono text-gray-700 uppercase tracking-wider">W</div>
+          <span className="text-xs font-mono text-foreground-secondary tabular-nums">{standing.wins ?? 0}</span>
+          <div className="text-[8px] font-mono text-foreground-quiet uppercase tracking-wider">W</div>
         </div>
         <div className="hidden md:block w-8 text-center">
-          <span className="text-xs font-mono text-gray-400 tabular-nums">{standing.podiums ?? 0}</span>
-          <div className="text-[8px] font-mono text-gray-700 uppercase tracking-wider">Pod</div>
+          <span className="text-xs font-mono text-foreground-secondary tabular-nums">{standing.podiums ?? 0}</span>
+          <div className="text-[8px] font-mono text-foreground-quiet uppercase tracking-wider">Pod</div>
         </div>
         <div className="hidden md:block w-8 text-center">
-          <span className="text-xs font-mono text-gray-400 tabular-nums">{standing.starts ?? 0}</span>
-          <div className="text-[8px] font-mono text-gray-700 uppercase tracking-wider">Sts</div>
+          <span className="text-xs font-mono text-foreground-secondary tabular-nums">{standing.starts ?? 0}</span>
+          <div className="text-[8px] font-mono text-foreground-quiet uppercase tracking-wider">Sts</div>
         </div>
       </div>
 
       {/* Updated — large screens only */}
       <div className="hidden lg:block w-20 shrink-0 text-right">
-        <span className="text-[10px] font-mono text-gray-700">{updatedDisplay}</span>
+        <span className="text-[10px] font-mono text-foreground-quiet">{updatedDisplay}</span>
       </div>
     </RecordRowShell>
   );

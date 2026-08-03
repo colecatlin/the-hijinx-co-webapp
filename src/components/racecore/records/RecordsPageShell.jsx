@@ -38,7 +38,7 @@ export default function RecordsPageShell({
   const [moreOpen, setMoreOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-full min-h-screen" style={{ background: '#0B0D0D' }}>
+    <div className="flex flex-col h-full min-h-screen bg-surface">
 
       {/* Alert strip (duplicate warnings, system notices) */}
       {alert && (
@@ -48,12 +48,12 @@ export default function RecordsPageShell({
       )}
 
       {/* Header strip */}
-      <div className="flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-white/[0.06] shrink-0 min-w-0">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-5 py-2.5 sm:py-3 border-b border-divider shrink-0 min-w-0">
         {/* Left: identity + stats */}
         <div className="flex items-center gap-2 sm:gap-5 min-w-0 flex-1">
           <div className="flex items-center gap-2 shrink-0">
-            {Icon && <Icon className="w-3.5 h-3.5 text-teal-500 shrink-0" />}
-            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-gray-300 whitespace-nowrap">
+            {Icon && <Icon className="w-3.5 h-3.5 text-motion shrink-0" />}
+            <span className="text-[11px] font-mono font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em] text-foreground whitespace-nowrap">
               {title}
             </span>
           </div>
@@ -79,8 +79,8 @@ export default function RecordsPageShell({
                 className={cn(
                   'h-9 w-9 flex items-center justify-center rounded border transition-colors',
                   moreOpen
-                    ? 'bg-gray-800 border-gray-600 text-gray-200'
-                    : 'border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
+                    ? 'bg-surface-interactive border-motion/40 text-motion'
+                    : 'border-divider text-foreground-quiet hover:border-motion/30 hover:text-foreground'
                 )}
               >
                 <MoreHorizontal className="w-3.5 h-3.5" />
@@ -101,8 +101,7 @@ export default function RecordsPageShell({
                   aria-hidden="true"
                 />
                 <div
-                  className="md:hidden absolute top-full right-0 mt-1.5 z-40 rounded-lg border border-gray-700/80 shadow-2xl flex flex-col gap-1 p-2 min-w-[160px]"
-                  style={{ background: '#181818' }}
+                  className="md:hidden absolute top-full right-0 mt-1.5 z-40 rounded-lg border border-divider shadow-2xl flex flex-col gap-1 p-2 min-w-[160px] bg-popover"
                 >
                   {/* All secondary actions rendered as tray items */}
                   <div className="flex flex-col gap-1 [&>*:last-child]:hidden [&>*]:w-full [&>*]:justify-start [&>*]:text-left">
@@ -137,8 +136,7 @@ export default function RecordsPageShell({
             {bulkBar}
           </div>
           {/* Mobile: sticky bottom tray */}
-          <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 shadow-2xl border-t border-red-900/50"
-            style={{ background: '#100808' }}
+          <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 shadow-2xl border-t border-danger/30 bg-popover"
           >
             {bulkBar}
           </div>

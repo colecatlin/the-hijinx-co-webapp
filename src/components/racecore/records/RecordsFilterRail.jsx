@@ -33,11 +33,11 @@ function CompactSelect({ value, onChange, options, placeholder }) {
         aria-label={`Filter by ${placeholder}`}
         className={cn(
           'appearance-none h-9 md:h-7 pl-2.5 pr-6 text-[11px] font-mono rounded border transition-colors outline-none cursor-pointer w-full md:w-auto',
-          'text-gray-300',
-          'hover:border-white/[0.18] focus:border-teal-500',
-          value ? 'text-teal-300 border-teal-700/50' : 'border-white/[0.10]'
+          'text-foreground',
+          'hover:border-motion/40 focus:border-motion',
+          value ? 'text-motion border-motion/40' : 'border-divider'
         )}
-        style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.10)' }}
+        style={{ background: 'hsl(var(--surface-elevated))' }}
       >
         <option value="">{placeholder}</option>
         {options.map(o => (
@@ -46,7 +46,7 @@ function CompactSelect({ value, onChange, options, placeholder }) {
           </option>
         ))}
       </select>
-      <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-gray-500 pointer-events-none" aria-hidden="true" />
+      <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-foreground-quiet pointer-events-none" aria-hidden="true" />
     </div>
   );
 }
@@ -67,14 +67,14 @@ export default function RecordsFilterRail({
   const activeFilterCount = filters.filter(f => f.value).length;
 
   return (
-    <div className="border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
+    <div className="border-b border-divider">
 
       {/* Primary row — always visible */}
       <div className="flex items-center gap-2 px-4 md:px-5 py-2">
 
         {/* Search */}
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-600 pointer-events-none" aria-hidden="true" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-foreground-quiet pointer-events-none" aria-hidden="true" />
           <label htmlFor="records-search" className="sr-only">{searchPlaceholder}</label>
           <input
             id="records-search"
@@ -83,14 +83,13 @@ export default function RecordsFilterRail({
             value={search}
             onChange={e => onSearch(e.target.value)}
             aria-label={searchPlaceholder}
-            className="w-full h-9 md:h-7 pl-7 pr-7 text-[11px] font-mono rounded border text-gray-300 placeholder-gray-600 outline-none hover:border-white/[0.18] focus:border-teal-500 transition-colors"
-          style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.12)' }}
+            className="w-full h-9 md:h-7 pl-7 pr-7 text-[11px] font-mono rounded border text-foreground placeholder-foreground-quiet outline-none hover:border-motion/40 focus:border-motion transition-colors bg-surface-elevated border-divider"
           />
           {search && (
             <button
               onClick={() => onSearch('')}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-gray-600 hover:text-gray-400"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-foreground-quiet hover:text-foreground"
             >
               <X className="w-3 h-3" aria-hidden="true" />
             </button>
@@ -113,7 +112,7 @@ export default function RecordsFilterRail({
             <button
               onClick={onClearAll}
               aria-label="Clear all filters"
-              className="h-7 px-2.5 text-[10px] font-mono rounded border border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors flex items-center gap-1 shrink-0"
+              className="h-7 px-2.5 text-[10px] font-mono rounded border border-divider text-foreground-quiet hover:text-foreground hover:border-motion/30 transition-colors flex items-center gap-1 shrink-0"
             >
               <X className="w-2.5 h-2.5" aria-hidden="true" /> Clear
             </button>
@@ -129,14 +128,14 @@ export default function RecordsFilterRail({
             className={cn(
               'md:hidden flex items-center gap-1.5 h-9 px-3 rounded border text-[11px] font-mono transition-colors shrink-0',
               filtersOpen || activeFilterCount > 0
-                ? 'border-teal-700/50 bg-teal-900/20 text-teal-300'
-                : 'border-gray-700 text-gray-500 hover:border-gray-600 hover:text-gray-300'
+                ? 'border-motion/40 bg-motion/10 text-motion'
+                : 'border-divider text-foreground-quiet hover:border-motion/30 hover:text-foreground'
             )}
           >
             <SlidersHorizontal className="w-3 h-3" aria-hidden="true" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-teal-600 text-white text-[9px] font-bold">
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-motion text-white text-[9px] font-bold">
                 {activeFilterCount}
               </span>
             )}
@@ -148,7 +147,7 @@ export default function RecordsFilterRail({
 
         {/* Result count */}
         {(resultCount !== undefined && totalCount !== undefined) && (
-          <div className="ml-auto text-[10px] font-mono text-gray-700 shrink-0 whitespace-nowrap">
+          <div className="ml-auto text-[10px] font-mono text-foreground-quiet shrink-0 whitespace-nowrap">
             {resultCount} / {totalCount}
           </div>
         )}
@@ -156,10 +155,10 @@ export default function RecordsFilterRail({
 
       {/* Mobile expanded filter panel */}
       {filtersOpen && (
-        <div className="md:hidden px-4 pb-3 flex flex-col gap-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="md:hidden px-4 pb-3 flex flex-col gap-2 pt-2 border-t border-divider">
           {filters.map(f => (
             <div key={f.key} className="flex flex-col gap-0.5">
-              <span className="text-[9px] font-mono uppercase tracking-widest text-gray-600">{f.placeholder}</span>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-foreground-quiet">{f.placeholder}</span>
               <CompactSelect
                 value={f.value}
                 onChange={f.onChange}
@@ -172,7 +171,7 @@ export default function RecordsFilterRail({
             <button
               onClick={() => { onClearAll(); setFiltersOpen(false); }}
               aria-label="Clear all filters"
-              className="mt-1 h-9 px-3 text-[11px] font-mono rounded border border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600 transition-colors flex items-center gap-1.5 self-start"
+              className="mt-1 h-9 px-3 text-[11px] font-mono rounded border border-divider text-foreground-quiet hover:text-foreground hover:border-motion/30 transition-colors flex items-center gap-1.5 self-start"
             >
               <X className="w-3 h-3" aria-hidden="true" /> Clear all filters
             </button>

@@ -53,9 +53,9 @@ export default function RecordRowShell({
       className={cn(
         'group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 border-b transition-colors cursor-pointer',
         compact ? 'py-1.5 sm:py-1' : 'py-3 sm:py-2.5',
-        'hover:bg-white/[0.03]',
-        'focus:outline-none focus-visible:bg-white/[0.05] focus-visible:ring-inset focus-visible:ring-1 focus-visible:ring-teal-500/60',
-        isSelected && 'bg-white/[0.05]'
+        'hover:bg-surface-interactive/50',
+        'focus:outline-none focus-visible:bg-surface-interactive focus-visible:ring-inset focus-visible:ring-1 focus-visible:ring-motion/60',
+        isSelected && 'bg-surface-interactive/60'
       )}
       onClick={onClick}
       onKeyDown={handleKeyDown}
@@ -78,7 +78,7 @@ export default function RecordRowShell({
             checked={isSelected}
             onCheckedChange={() => onSelect?.(id)}
             aria-label={label ? `Select ${label}` : 'Select record'}
-            className="border-gray-600 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600 focus-visible:ring-1 focus-visible:ring-teal-500"
+            className="border-divider data-[state=checked]:bg-motion data-[state=checked]:border-motion focus-visible:ring-1 focus-visible:ring-motion"
           />
         </div>
       )}

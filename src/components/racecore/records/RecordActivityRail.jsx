@@ -33,17 +33,17 @@ export default function RecordActivityRail({ entityName, onClose, overlayOnMobil
           ? 'w-full max-w-[320px] lg:w-72'
           : 'w-72'
       )}
-      style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.07)' }}
+      style={{ background: 'hsl(var(--surface-elevated))', borderColor: 'hsl(var(--divider))' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b shrink-0" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-600">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-divider shrink-0">
+        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-foreground-quiet">
           Activity Log
         </span>
         <button
           onClick={onClose}
           aria-label="Close activity log"
-          className="w-8 h-8 flex items-center justify-center text-gray-700 hover:text-gray-400 focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded transition-colors"
+          className="w-8 h-8 flex items-center justify-center text-foreground-quiet hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-motion rounded transition-colors"
         >
           <X className="w-3.5 h-3.5" />
         </button>

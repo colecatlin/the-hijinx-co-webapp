@@ -16,10 +16,10 @@ import { cn } from '@/lib/utils';
 function StatPill({ label, value, accent }) {
   return (
     <div className="flex items-baseline gap-1 shrink-0">
-      <span className={cn('text-base sm:text-lg font-black font-mono tabular-nums leading-none', accent || 'text-gray-100')}>
+      <span className={cn('text-base sm:text-lg font-black font-mono tabular-nums leading-none', accent || 'text-foreground')}>
         {value}
       </span>
-      <span className="text-[9px] sm:text-[10px] font-mono tracking-widest text-gray-600 uppercase">{label}</span>
+      <span className="text-[9px] sm:text-[10px] font-mono tracking-widest text-foreground-quiet uppercase">{label}</span>
     </div>
   );
 }
@@ -30,7 +30,7 @@ export default function TacticalStatStrip({ stats = [], isLoading = false, class
   return (
     <div
       className={cn(
-        'flex items-center gap-3 sm:gap-5 pl-2 sm:pl-3 border-l border-gray-800 overflow-x-auto scrollbar-hide',
+        'flex items-center gap-3 sm:gap-5 pl-2 sm:pl-3 border-l border-divider overflow-x-auto scrollbar-hide',
         className
       )}
     >

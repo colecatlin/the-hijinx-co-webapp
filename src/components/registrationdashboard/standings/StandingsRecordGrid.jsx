@@ -47,10 +47,10 @@ export default function StandingsRecordGrid({ standings = [], drivers = [], isLo
       : '—';
 
     return [
-      { label: 'Drivers', value: standings.length, accent: 'text-gray-100' },
-      { label: 'Leader', value: leader ? (leader.points_total ?? 0) + ' pts' : '—', accent: 'text-teal-400' },
-      ...(gap !== null ? [{ label: 'Gap', value: '+' + gap, accent: 'text-amber-400' }] : []),
-      { label: 'Updated', value: latestDisplay, accent: 'text-gray-500' },
+      { label: 'Drivers', value: standings.length, accent: 'text-foreground' },
+      { label: 'Leader', value: leader ? (leader.points_total ?? 0) + ' pts' : '—', accent: 'text-motion' },
+      ...(gap !== null ? [{ label: 'Gap', value: '+' + gap, accent: 'text-warning' }] : []),
+      { label: 'Updated', value: latestDisplay, accent: 'text-foreground-quiet' },
     ];
   }, [standings, sorted]);
 
