@@ -109,18 +109,19 @@ export function OnboardingWizardProvider({ children }) {
       // B1: store the broad CAPABILITY the role maps to on User.profile_types
       // (schema-valid enum), NOT the granular registry id. Granular identity
       // stays in session state + EntityCollaborator.role_key.
-      const primaryCfg = getRole(primaryRole);
-      if (!primaryCfg) throw new Error('Please choose a valid primary role.');
-      if (!primaryCfg.capability) {
+      // Primary role is optional — a user who skips stays a pure Fan.
+      const cleanExtras = (additionalRoles || []).filter((r) => r !== primaryRole && r !== 'fan');
+      const primaryCfg = primaryRole ? getRole(primaryRole) : null;
+      if (primaryRole && !primaryCfg) throw new Error('Please choose a valid primary role.');
+      if (primaryCfg && !primaryCfg.capability) {
         throw new Error('Selected role is missing a capability mapping.');
       }
-      const cleanExtras = (additionalRoles || []).filter((r) => r !== primaryRole && r !== 'fan');
-      const profileTypes = buildProfileTypesFromRoles(primaryRole, cleanExtras);
-      setSessionSelectedRoleIds([primaryRole, ...cleanExtras]);
+      const profileTypes = buildProfileTypesFromRoles(primaryRole || 'fan', cleanExtras);
+      setSessionSelectedRoleIds(primaryRole ? [primaryRole, ...cleanExtras] : [...cleanExtras]);
       setRolesChosenThisSession(true);
       return advanceTo(
         {
-          primary_profile_type: primaryCfg.capability,
+          primary_profile_type: primaryCfg ? primaryCfg.capability : 'fan',
           profile_types: profileTypes,
         },
         'connections',

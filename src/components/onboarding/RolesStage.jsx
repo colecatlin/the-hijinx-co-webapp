@@ -51,18 +51,14 @@ export default function RolesStage() {
     );
   };
 
-  const canContinue = !!primaryRole && !saving;
+  const canContinue = !saving;
 
   const handleContinue = async (e) => {
     e?.preventDefault?.();
-    if (!primaryRole) {
-      setError('Please select a primary role.');
-      return;
-    }
     setError('');
     setSaving(true);
     try {
-      await saveRoles(primaryRole, additionalRoles.filter((r) => r !== primaryRole));
+      await saveRoles(primaryRole || null, additionalRoles.filter((r) => r !== primaryRole));
     } catch (err) {
       setError(normalizeBackendError(err));
       setSaving(false);
@@ -78,7 +74,7 @@ export default function RolesStage() {
       {error && <StageErrorBanner message={error} />}
 
       <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
-        Pick your <span className="font-bold" style={{ color: TEAL }}>primary role</span> — this sets your default experience.
+        Pick a <span className="font-bold" style={{ color: TEAL }}>primary role</span> to customize your experience — or skip to stay a Fan.
         Add any extra roles you want available. Roles unlock modules; they don't grant management access.
       </p>
 
