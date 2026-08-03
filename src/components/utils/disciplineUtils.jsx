@@ -1,27 +1,34 @@
 // Maps racing series/categories to disciplines
 const seriesDisciplineMap = {
-  // NASCAR series - Asphalt Oval
-  'NASCAR Cup Series': 'Asphalt Oval',
-  "NASCAR O'Reilly Auto Parts Series": 'Asphalt Oval',
-  'NASCAR Xfinity Series': 'Asphalt Oval',
-  'NASCAR Craftsman Truck Series': 'Asphalt Oval',
-  'ARCA': 'Asphalt Oval',
-  'IndyCar': 'Asphalt Oval',
-  'Formula 1': 'Road Racing',
-  'Indy Pro 2000': 'Asphalt Oval',
-  'Indy Lights': 'Asphalt Oval',
-  'Formula E': 'Road Racing',
-  'World Endurance Championship': 'Road Racing',
-  'IMSA': 'Road Racing',
-  'MotoGP': 'Road Racing',
-  'WRC': 'Rallycross',
-  'Rally': 'Rallycross',
+  // NASCAR series — Stock Car
+  'NASCAR Cup Series': 'Stock Car',
+  "NASCAR O'Reilly Auto Parts Series": 'Stock Car',
+  'NASCAR Xfinity Series': 'Stock Car',
+  'NASCAR Craftsman Truck Series': 'Stock Car',
+  'ARCA': 'Stock Car',
+  // Open Wheel
+  'IndyCar': 'Open Wheel',
+  'Indy Pro 2000': 'Open Wheel',
+  'Indy Lights': 'Open Wheel',
+  'Formula 1': 'Open Wheel',
+  'Formula E': 'Open Wheel',
+  // Sports Car
+  'World Endurance Championship': 'Sports Car',
+  'IMSA': 'Sports Car',
+  // Motorcycle
+  'MotoGP': 'Motorcycle',
+  // Rally / Rallycross
+  'WRC': 'Rally',
+  'Rally': 'Rally',
+  // Drag Racing
   'NHRA': 'Drag Racing',
   'Drag': 'Drag Racing',
+  // Off Road
   'Motocross': 'Off Road',
   'ATV': 'Off Road',
   'UTV': 'Off Road',
   'Desert Off-Road': 'Off Road',
+  // Snowmobile
   'Snowmobile': 'Snowmobile',
   'Sled': 'Snowmobile',
 };

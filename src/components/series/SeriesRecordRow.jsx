@@ -7,18 +7,20 @@ import RecordStatusBadge from '@/components/racecore/records/RecordStatusBadge';
 
 const DISCIPLINE_ABBREV = {
   'Stock Car':    'STK',
-  'Off Road':     'OFF',
-  'Dirt Oval':    'DO',
-  'Snowmobile':   'SNO',
-  'Dirt Bike':    'DB',
   'Open Wheel':   'OW',
   'Sports Car':   'SC',
   'Touring Car':  'TC',
+  'Off Road':     'OFF',
+  'Dirt Oval':    'DO',
   'Rally':        'RLY',
-  'Drag':         'DRG',
+  'Rallycross':   'RX',
+  'Drift':        'DFT',
+  'Drag Racing':  'DRG',
   'Motorcycle':   'MTO',
   'Karting':      'KRT',
-  'Water':        'WTR',
+  'Snowmobile':   'SNO',
+  'Watercraft':   'WTR',
+  'Aviation':     'AVI',
   'Alternative':  'ALT',
 };
 
