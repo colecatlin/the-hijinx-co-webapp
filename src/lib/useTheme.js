@@ -26,7 +26,9 @@ export function useTheme() {
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
-    setTheme(readTheme());
+    const initial = readTheme();
+    setTheme(initial);
+    applyTheme(initial);
   }, []);
 
   const toggle = useCallback(() => {
