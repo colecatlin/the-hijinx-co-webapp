@@ -102,6 +102,35 @@ Deno.serve(async (req) => {
       if (grp.length > 1) addGroup('normalized_name_location', key, grp);
     }
 
+    // 4. Fuzzy substring match — catches variants like "Springfield International Raceway" vs "Springfield Raceway"
+    //    Guard: shorter name must be ≥15 chars and ≥3 words to avoid false positives.
+    const fuzzyCandidates = candidates.filter(t => !processedIds.has(t.id));
+    const parent = new Map();
+    const find = (id) => { let c = id; while (parent.get(c) !== c) { parent.set(c, parent.get(parent.get(c))); c = parent.get(c); } return c; };
+    const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
+    for (let i = 0; i < fuzzyCandidates.length; i++) {
+      const normI = fuzzyCandidates[i].normalized_name || normalizeName(fuzzyCandidates[i].name || '');
+      if (!normI || normI.length < 15 || normI.split(' ').length < 3) continue;
+      if (!parent.has(fuzzyCandidates[i].id)) parent.set(fuzzyCandidates[i].id, fuzzyCandidates[i].id);
+      for (let j = i + 1; j < fuzzyCandidates.length; j++) {
+        const normJ = fuzzyCandidates[j].normalized_name || normalizeName(fuzzyCandidates[j].name || '');
+        if (!normJ || normJ.length < 15 || normJ.split(' ').length < 3) continue;
+        const shorter = normI.length <= normJ.length ? normI : normJ;
+        const longer  = normI.length <= normJ.length ? normJ : normI;
+        if (longer.includes(shorter)) {
+          if (!parent.has(fuzzyCandidates[j].id)) parent.set(fuzzyCandidates[j].id, fuzzyCandidates[j].id);
+          union(fuzzyCandidates[i].id, fuzzyCandidates[j].id);
+        }
+      }
+    }
+    const fuzzyComponents = new Map();
+    for (const id of parent.keys()) { const root = find(id); const arr = fuzzyComponents.get(root) || []; arr.push(id); fuzzyComponents.set(root, arr); }
+    for (const [, ids] of fuzzyComponents) {
+      if (ids.length < 2) continue;
+      const records = candidates.filter(t => ids.includes(t.id) && !processedIds.has(t.id));
+      if (records.length >= 2) addGroup('fuzzy_substring', records.map(t => t.normalized_name || t.name || '').join(' / '), records);
+    }
+
     return Response.json({
       success: true,
       total_tracks: allTracks.length,

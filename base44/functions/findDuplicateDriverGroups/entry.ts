@@ -100,6 +100,36 @@ Deno.serve(async (req) => {
     for (const [key, grp] of byNormNum)      if (grp.length > 1) addGroup('normalized_name_number', key, grp);
     for (const [key, grp] of byNormName)     if (grp.length > 1) addGroup('normalized_name', key, grp);
 
+    // 6. Fuzzy substring match — catches name variants like "John Smith Jr." vs "John Smith"
+    //    where the shorter normalized name is a contiguous substring of the longer one.
+    //    Guard: shorter name must be ≥10 chars and ≥2 words to avoid false positives.
+    const fuzzyCandidates = candidates.filter(d => !processedIds.has(d.id));
+    const parent = new Map();
+    const find = (id) => { let c = id; while (parent.get(c) !== c) { parent.set(c, parent.get(parent.get(c))); c = parent.get(c); } return c; };
+    const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
+    for (let i = 0; i < fuzzyCandidates.length; i++) {
+      const normI = fuzzyCandidates[i].normalized_name || normalizeName(driverFullName(fuzzyCandidates[i]));
+      if (!normI || normI.length < 10 || normI.split(' ').length < 2) continue;
+      if (!parent.has(fuzzyCandidates[i].id)) parent.set(fuzzyCandidates[i].id, fuzzyCandidates[i].id);
+      for (let j = i + 1; j < fuzzyCandidates.length; j++) {
+        const normJ = fuzzyCandidates[j].normalized_name || normalizeName(driverFullName(fuzzyCandidates[j]));
+        if (!normJ || normJ.length < 10 || normJ.split(' ').length < 2) continue;
+        const shorter = normI.length <= normJ.length ? normI : normJ;
+        const longer  = normI.length <= normJ.length ? normJ : normI;
+        if (longer.includes(shorter)) {
+          if (!parent.has(fuzzyCandidates[j].id)) parent.set(fuzzyCandidates[j].id, fuzzyCandidates[j].id);
+          union(fuzzyCandidates[i].id, fuzzyCandidates[j].id);
+        }
+      }
+    }
+    const fuzzyComponents = new Map();
+    for (const id of parent.keys()) { const root = find(id); const arr = fuzzyComponents.get(root) || []; arr.push(id); fuzzyComponents.set(root, arr); }
+    for (const [, ids] of fuzzyComponents) {
+      if (ids.length < 2) continue;
+      const records = candidates.filter(d => ids.includes(d.id) && !processedIds.has(d.id));
+      if (records.length >= 2) addGroup('fuzzy_substring', records.map(d => d.normalized_name || driverFullName(d)).join(' / '), records);
+    }
+
     return Response.json({
       success: true,
       total_drivers: allDrivers.length,
