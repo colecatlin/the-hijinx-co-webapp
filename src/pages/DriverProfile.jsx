@@ -215,6 +215,8 @@ export default function DriverProfile() {
   const profileImg = driver.profile_image_url || media?.headshot_url || null;
   const driverDesc = [driver.career_status ? `${driver.career_status} driver` : 'Racing driver', driver.primary_discipline, hometown ? `from ${hometown}` : ''].filter(Boolean).join(' · ');
 
+  const isAdmin = user?.role === 'admin';
+
   const driverSeriesList = programs
     .map(p => allSeries.find(s => s.id === p.series_id))
     .filter(Boolean)
@@ -262,6 +264,13 @@ export default function DriverProfile() {
       />
 
       <MobileBackHeader tone="light" title={fullName} to={createPageUrl('DriverDirectory')} />
+
+      {/* Admin preview banner */}
+      {isAdmin && driver.visibility_status === 'draft' && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 text-center">
+          <span className="text-xs font-semibold text-yellow-800 tracking-wide">ADMIN PREVIEW — This profile is in draft mode and not visible to the public.</span>
+        </div>
+      )}
 
       {/* ── HERO ─────────────────────────────────────────── */}
       <div className="relative w-full h-[380px] bg-[#0A0A0A] overflow-hidden">
@@ -362,11 +371,13 @@ export default function DriverProfile() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
             <div className="lg:col-span-2 space-y-8">
               {/* Bio */}
-              {(driver.bio || driver.tagline || hometown || racingBase || yearsLabel || driver.primary_discipline) && (
+              {(driver.bio || driver.tagline || hometown || racingBase || yearsLabel || driver.primary_discipline || isAdmin) && (
                 <div>
                   <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">About</h2>
-                  {driver.bio && (
+                  {driver.bio ? (
                     <p className="text-gray-700 leading-relaxed mb-4">{driver.bio}</p>
+                  ) : isAdmin && (
+                    <p className="text-gray-300 italic leading-relaxed mb-4 border-l-2 border-gray-200 pl-3 text-sm">No bio added yet. Add a biography in the RaceCore driver editor.</p>
                   )}
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {hometown && (
@@ -405,21 +416,33 @@ export default function DriverProfile() {
               )}
 
               {/* Stats */}
-              {results.length > 0 && (
+              {results.length > 0 ? (
                 <div>
                   <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Performance</h2>
                   <StatsSection driver={driver} results={results} sessions={sessions} events={eventsForEntries} />
                 </div>
+              ) : isAdmin && (
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Performance</h2>
+                  <div className="border border-dashed border-gray-200 rounded-lg p-6 text-center text-sm text-gray-400">No results data yet.</div>
+                </div>
               )}
 
               {/* Programs timeline preview */}
-              {programs.length > 0 && (
+              {programs.length > 0 ? (
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Racing Programs</h2>
                     <button onClick={() => setActiveTab('career')} className="text-xs text-gray-400 hover:text-[#232323] underline">View full career →</button>
                   </div>
                   <ProgramsTimeline programs={programs} teams={driverTeam ? [driverTeam] : []} allSeries={allSeries} allClasses={allClasses} />
+                </div>
+              ) : isAdmin && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Racing Programs</h2>
+                  </div>
+                  <div className="border border-dashed border-gray-200 rounded-lg p-6 text-center text-sm text-gray-400">No racing programs added yet.</div>
                 </div>
               )}
 
@@ -440,14 +463,16 @@ export default function DriverProfile() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Profile image */}
-              {profileImg && (
+              {profileImg ? (
                 <div className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
                   <img src={profileImg} alt={fullName} className="w-full object-cover max-h-[360px]" />
                 </div>
+              ) : isAdmin && (
+                <div className="rounded-xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-400">No profile image uploaded.</div>
               )}
 
               {/* Team & series */}
-              {(driverTeam || driverSeriesList.length > 0) && (
+              {(driverTeam || driverSeriesList.length > 0) ? (
                 <div className="border border-gray-200 rounded-xl p-4 space-y-4">
                   {driverTeam && (
                     <div>
@@ -472,10 +497,12 @@ export default function DriverProfile() {
                     </div>
                   )}
                 </div>
+              ) : isAdmin && (
+                <div className="border border-dashed border-gray-200 rounded-xl p-4 text-center text-sm text-gray-400">No team or series linked yet.</div>
               )}
 
               {/* Links */}
-              {(driver.website_url || driver.instagram_url) && (
+              {(driver.website_url || driver.instagram_url) ? (
                 <div className="border border-gray-200 rounded-xl p-4">
                   <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-3">Links</div>
                   <div className="space-y-2">
@@ -487,10 +514,12 @@ export default function DriverProfile() {
                     )}
                   </div>
                 </div>
+              ) : isAdmin && (
+                <div className="border border-dashed border-gray-200 rounded-xl p-4 text-center text-sm text-gray-400">No links added yet.</div>
               )}
 
               {/* Upcoming events quick view */}
-              {upcomingEntries.length > 0 && (
+              {upcomingEntries.length > 0 ? (
                 <div className="border border-gray-200 rounded-xl p-4">
                   <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
                     <Calendar className="w-3 h-3" /> Next Up
@@ -509,6 +538,8 @@ export default function DriverProfile() {
                     </button>
                   )}
                 </div>
+              ) : isAdmin && (
+                <div className="border border-dashed border-gray-200 rounded-xl p-4 text-center text-sm text-gray-400">No upcoming entries.</div>
               )}
             </div>
           </div>
@@ -518,7 +549,13 @@ export default function DriverProfile() {
         {activeTab === 'career' && (
           <div className="pb-12">
             <h2 className="text-2xl font-black text-[#232323] mb-6">Career History</h2>
-            <DriverCareerTab driverId={driver.id} initialEntries={careerEntries} />
+            {careerEntries.length > 0 ? (
+              <DriverCareerTab driverId={driver.id} initialEntries={careerEntries} />
+            ) : isAdmin ? (
+              <div className="border border-dashed border-gray-200 rounded-lg p-8 text-center text-sm text-gray-400">No career entries added yet. Use the RaceCore driver editor to add career history.</div>
+            ) : (
+              <p className="text-gray-400 text-sm">No career history available.</p>
+            )}
           </div>
         )}
 
@@ -621,7 +658,13 @@ export default function DriverProfile() {
         {activeTab === 'sponsors' && (
           <div className="pb-12">
             <h2 className="text-2xl font-black text-[#232323] mb-6">Sponsors</h2>
-            <DriverSponsorsTab driverId={driver.id} initialSponsors={sponsors} />
+            {sponsors.length > 0 ? (
+              <DriverSponsorsTab driverId={driver.id} initialSponsors={sponsors} />
+            ) : isAdmin ? (
+              <div className="border border-dashed border-gray-200 rounded-lg p-8 text-center text-sm text-gray-400">No sponsors added yet. Use the RaceCore driver editor to add sponsor relationships.</div>
+            ) : (
+              <p className="text-gray-400 text-sm">No sponsor information available.</p>
+            )}
           </div>
         )}
 
