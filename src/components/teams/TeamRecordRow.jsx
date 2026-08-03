@@ -78,7 +78,7 @@ export default function TeamRecordRow({ team, isAdmin, isSelected, onSelect, onD
       {/* Identity block */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-100 truncate">{team.name}</span>
+          <span className="text-sm font-semibold text-foreground truncate">{team.name}</span>
           <RecordStatusBadge status={team.racing_status} />
           {team.visibility_status && (
             <RecordStatusBadge status={team.visibility_status} />

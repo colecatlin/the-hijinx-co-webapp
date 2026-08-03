@@ -81,7 +81,7 @@ export default function TrackRecordRow({ track, isAdmin, isSelected, onSelect, o
       {/* Identity block */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-100 truncate">{track.name}</span>
+          <span className="text-sm font-semibold text-foreground truncate">{track.name}</span>
           <RecordStatusBadge status={track.operational_status} />
         </div>
         <div className="text-xs text-gray-500 truncate mt-0.5">{locationParts || '—'}</div>

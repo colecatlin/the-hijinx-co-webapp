@@ -78,7 +78,7 @@ export default function SeriesRecordRow({ series, isAdmin, isSelected, onSelect,
       {/* Identity block */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-100 truncate">{series.name}</span>
+          <span className="text-sm font-semibold text-foreground truncate">{series.name}</span>
           <RecordStatusBadge status={series.operational_status} />
           {series.visibility_status && (
             <RecordStatusBadge status={series.visibility_status} />

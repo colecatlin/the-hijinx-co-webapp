@@ -135,7 +135,7 @@ export default function DriverRecordRow({
       {/* Identity block */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-gray-100 truncate">{fullName}</span>
+          <span className="text-sm font-semibold text-foreground truncate">{fullName}</span>
           {driver.primary_number && (
             <span className="text-[9px] font-mono text-gray-600">#{driver.primary_number}</span>
           )}
