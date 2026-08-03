@@ -17,6 +17,7 @@ import EventRecordRow     from '@/components/events/EventRecordRow';
 
 // Bulk scheduler (preserved, moved to header-action panel)
 import EventSchedulerForm from '@/components/management/EventScheduler/EventSchedulerForm';
+import QuickAddEntityDialog from '@/components/management/QuickAddEntityDialog';
 
 // ── Filter option sets (client-side only, preserved logic) ────────────────────
 const STATUS_OPTIONS   = ['upcoming', 'finished'];
@@ -49,6 +50,7 @@ export default function ManageEvents() {
   const [selectedEvents,   setSelectedEvents]   = useState([]);
   const [showActivity,     setShowActivity]     = useState(false);
   const [showScheduler,    setShowScheduler]    = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [selectedSeriesForScheduler, setSelectedSeriesForScheduler] = useState(null);
 
   // ── Delete confirm state ──────────────────────────────────────────────────────
@@ -218,7 +220,7 @@ export default function ManageEvents() {
 
       {/* Add Event */}
       <button
-        onClick={() => navigate('/racecore/events/new')}
+        onClick={() => setQuickAddOpen(true)}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -406,6 +408,13 @@ export default function ManageEvents() {
           <RecordActivityRail entityName="Event" onClose={() => setShowActivity(false)} overlayOnMobile />
         )}
       </RecordsPageShell>
+
+      {/* Quick-add dialog */}
+      <QuickAddEntityDialog
+        entityType="Event"
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+      />
 
       {/* Single delete confirm (AlertDialog) */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>

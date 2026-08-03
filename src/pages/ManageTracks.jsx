@@ -16,6 +16,7 @@ import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import TrackRecordRow     from '@/components/tracks/TrackRecordRow';
 import TrackDrawer        from '@/components/racecore/records/TrackDrawer';
+import QuickAddEntityDialog from '@/components/management/QuickAddEntityDialog';
 
 const SURFACE_OPTIONS = ['Asphalt', 'Concrete', 'Dirt', 'Clay', 'Mixed'];
 const STATUS_OPTIONS  = ['Active', 'Seasonal', 'Inactive'];
@@ -48,6 +49,8 @@ export default function ManageTracks() {
 
   const openTrackDrawer  = (id) => { setDrawerTrackId(id); setDrawerOpen(true); };
   const closeTrackDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerTrackId(null), 300); };
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const handleQuickAddCreated = (id) => { openTrackDrawer(id); };
 
   const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
@@ -153,7 +156,7 @@ export default function ManageTracks() {
         Activity
       </button>
       <button
-        onClick={() => openTrackDrawer('new')}
+        onClick={() => setQuickAddOpen(true)}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -264,8 +267,15 @@ export default function ManageTracks() {
       )}
     </RecordsPageShell>
 
+    <QuickAddEntityDialog
+      entityType="Track"
+      open={quickAddOpen}
+      onOpenChange={setQuickAddOpen}
+      onCreated={handleQuickAddCreated}
+    />
+
     <TrackDrawer
-      trackId={drawerTrackId}
+        trackId={drawerTrackId}
       open={drawerOpen}
       onOpenChange={(v) => { if (!v) closeTrackDrawer(); else setDrawerOpen(true); }}
       onSaveSuccess={() => queryClient.invalidateQueries({ queryKey: ['tracks'] })}

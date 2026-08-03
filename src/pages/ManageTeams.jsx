@@ -16,6 +16,7 @@ import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import TeamRecordRow      from '@/components/teams/TeamRecordRow';
 import TeamDrawer         from '@/components/racecore/records/TeamDrawer';
+import QuickAddEntityDialog from '@/components/management/QuickAddEntityDialog';
 
 const STATUS_OPTIONS     = ['Active', 'Part Time', 'Historic', 'Inactive'];
 const DISCIPLINE_OPTIONS = ['Off Road', 'Snowmobile', 'Asphalt Oval', 'Road Racing', 'Rallycross', 'Drag Racing', 'Mixed'];
@@ -47,6 +48,8 @@ export default function ManageTeams() {
 
   const openTeamDrawer  = (id) => { setDrawerTeamId(id); setDrawerOpen(true); };
   const closeTeamDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerTeamId(null), 300); };
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const handleQuickAddCreated = (id) => { openTeamDrawer(id); };
 
   const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
@@ -149,7 +152,7 @@ export default function ManageTeams() {
         Activity
       </button>
       <button
-        onClick={() => openTeamDrawer('new')}
+        onClick={() => setQuickAddOpen(true)}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -245,6 +248,14 @@ export default function ManageTeams() {
           <RecordActivityRail entityName="Team" onClose={() => setShowActivity(false)} overlayOnMobile />
         )}
       </RecordsPageShell>
+
+      {/* Quick-add dialog */}
+      <QuickAddEntityDialog
+        entityType="Team"
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        onCreated={handleQuickAddCreated}
+      />
 
       {/* Team drawer */}
       <TeamDrawer

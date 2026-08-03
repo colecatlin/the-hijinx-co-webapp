@@ -17,6 +17,7 @@ import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import SeriesRecordRow    from '@/components/series/SeriesRecordRow';
 import SeriesDrawer       from '@/components/racecore/records/SeriesDrawer';
+import QuickAddEntityDialog from '@/components/management/QuickAddEntityDialog';
 
 const STATUS_OPTIONS     = ['Active', 'Inactive', 'Upcoming'];
 const DISCIPLINE_OPTIONS = [
@@ -52,6 +53,8 @@ export default function ManageSeries() {
 
   const openSeriesDrawer  = (id) => { setDrawerSeriesId(id); setDrawerOpen(true); };
   const closeSeriesDrawer = () => { setDrawerOpen(false); setTimeout(() => setDrawerSeriesId(null), 300); };
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const handleQuickAddCreated = (id) => { openSeriesDrawer(id); };
 
   const { data: user, isLoading: userLoading } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const isAdmin = user?.role === 'admin';
@@ -234,7 +237,7 @@ export default function ManageSeries() {
         Activity
       </button>
       <button
-        onClick={() => openSeriesDrawer('new')}
+        onClick={() => setQuickAddOpen(true)}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
@@ -332,8 +335,15 @@ export default function ManageSeries() {
       )}
     </RecordsPageShell>
 
+    <QuickAddEntityDialog
+      entityType="Series"
+      open={quickAddOpen}
+      onOpenChange={setQuickAddOpen}
+      onCreated={handleQuickAddCreated}
+    />
+
     <SeriesDrawer
-      seriesId={drawerSeriesId}
+        seriesId={drawerSeriesId}
       open={drawerOpen}
       onOpenChange={(v) => { if (!v) closeSeriesDrawer(); else setDrawerOpen(true); }}
       onSaveSuccess={() => queryClient.invalidateQueries({ queryKey: ['series'] })}
