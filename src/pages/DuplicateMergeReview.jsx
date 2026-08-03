@@ -12,7 +12,6 @@ const ENTITY_CONFIG = {
     repairFunction: 'repairDuplicateSeriesRecords',
     referenceFunction: 'repairSeriesReferences',
     entityModel: 'Series',
-    mode: 'auto',
     getName: (r) => r.name || '',
     getStatus: (r) => r.operational_status || r.racing_status || '—',
     countFunction: async (id) => (await base44.entities.Event.filter({ series_id: id }, '-created_date', 5000)).length,
@@ -24,7 +23,6 @@ const ENTITY_CONFIG = {
     repairFunction: 'repairDuplicateDriverRecords',
     referenceFunction: 'repairDriverReferences',
     entityModel: 'Driver',
-    mode: 'auto',
     getName: (r) => `${r.first_name || ''} ${r.last_name || ''}`.trim(),
     getStatus: (r) => r.racing_status || '—',
     countFunction: async (id) => (await base44.entities.Results.filter({ driver_id: id }, '-created_date', 5000)).length,
@@ -36,7 +34,6 @@ const ENTITY_CONFIG = {
     repairFunction: 'repairDuplicateTeamRecords',
     referenceFunction: null,
     entityModel: 'Team',
-    mode: 'manual',
     getName: (r) => r.name || '',
     getStatus: (r) => r.racing_status || '—',
     countFunction: async (id) => (await base44.entities.Driver.filter({ team_id: id }, '-created_date', 5000)).length,
@@ -48,7 +45,6 @@ const ENTITY_CONFIG = {
     repairFunction: 'repairDuplicateTrackRecords',
     referenceFunction: 'repairTrackReferences',
     entityModel: 'Track',
-    mode: 'auto',
     getName: (r) => r.name || '',
     getStatus: (r) => r.operational_status || r.racing_status || '—',
     countFunction: async (id) => (await base44.entities.Event.filter({ track_id: id }, '-created_date', 5000)).length,
@@ -60,7 +56,6 @@ const ENTITY_CONFIG = {
     repairFunction: 'repairDuplicateEventRecords',
     referenceFunction: 'repairEventReferences',
     entityModel: 'Event',
-    mode: 'auto',
     getName: (r) => r.name || '',
     getStatus: (r) => r.status || '—',
     countFunction: async (id) => (await base44.entities.Session.filter({ event_id: id }, '-created_date', 5000)).length,
@@ -122,39 +117,8 @@ export default function DuplicateMergeReview() {
     }
   }, [config]);
 
-  // ── Auto mode: preview merge (dry run) ──────────────────────────────────────
-  const handlePreviewGroup = useCallback(async (groupIndex) => {
-    setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'previewing' } }));
-    try {
-      const res = await base44.functions.invoke(config.repairFunction, { dry_run: true });
-      const data = res?.data || res;
-      setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'previewed', preview: data } }));
-    } catch (err) {
-      setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'error', error: err.message } }));
-    }
-  }, [config]);
-
-  // ── Auto mode: execute merge ───────────────────────────────────────────────
-  const handleMergeGroupAuto = useCallback(async (groupIndex) => {
-    setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'running' } }));
-    try {
-      const repairRes = await base44.functions.invoke(config.repairFunction, { dry_run: false });
-      const repairData = repairRes?.data || repairRes;
-      const repairs = repairData?.repairs || [];
-      let refData = null;
-      if (repairs.length > 0 && config.referenceFunction) {
-        const refRes = await base44.functions.invoke(config.referenceFunction, { repairs, dry_run: false });
-        refData = refRes?.data || refRes;
-      }
-      setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'done', repair: repairData, references: refData } }));
-      queryClient.invalidateQueries({ queryKey: [selectedEntity] });
-    } catch (err) {
-      setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'error', error: err.message } }));
-    }
-  }, [config, queryClient, selectedEntity]);
-
-  // ── Manual mode (Team): execute merge with selected survivor ───────────────
-  const handleMergeGroupManual = useCallback(async (groupIndex) => {
+  // ── Unified merge handler — requires explicit survivor selection ───────────
+  const handleMergeGroup = useCallback(async (groupIndex) => {
     const survivorId = selectedSurvivors[groupIndex];
     const records = groupRecords[groupIndex] || [];
     if (!survivorId) return;
@@ -163,14 +127,32 @@ export default function DuplicateMergeReview() {
 
     setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'running' } }));
     try {
-      const res = await base44.functions.invoke(config.repairFunction, {
-        survivor_team_id: survivorId,
-        duplicate_team_ids: duplicateIds,
-        reason: mergeReason || 'Duplicate consolidation via Duplicate Merge Review',
-        dry_run: false,
-      });
-      const data = res?.data || res;
-      setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'done', repair: data } }));
+      let repairData, refData = null;
+
+      if (config.referenceFunction) {
+        // Auto-mode entities (Series, Driver, Track, Event): pass forced_survivor_id
+        const repairRes = await base44.functions.invoke(config.repairFunction, {
+          forced_survivor_id: survivorId,
+          dry_run: false,
+        });
+        repairData = repairRes?.data || repairRes;
+        const repairs = repairData?.repairs || [];
+        if (repairs.length > 0) {
+          const refRes = await base44.functions.invoke(config.referenceFunction, { repairs, dry_run: false });
+          refData = refRes?.data || refRes;
+        }
+      } else {
+        // Team: explicit survivor_team_id + duplicate_team_ids
+        const repairRes = await base44.functions.invoke(config.repairFunction, {
+          survivor_team_id: survivorId,
+          duplicate_team_ids: duplicateIds,
+          reason: mergeReason || 'Duplicate consolidation via Duplicate Merge Review',
+          dry_run: false,
+        });
+        repairData = repairRes?.data || repairRes;
+      }
+
+      setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'done', repair: repairData, references: refData } }));
       queryClient.invalidateQueries({ queryKey: [selectedEntity] });
     } catch (err) {
       setMergeStatus(prev => ({ ...prev, [groupIndex]: { state: 'error', error: err.message } }));
@@ -219,15 +201,15 @@ export default function DuplicateMergeReview() {
           })}
         </div>
 
-        {/* Manual mode reason input (Team only) */}
-        {config.mode === 'manual' && totalGroups > 0 && (
+        {/* Merge reason input (used for all entities) */}
+        {totalGroups > 0 && (
           <div className="mb-4 flex items-center gap-2">
             <span className="text-[10px] font-mono uppercase tracking-widest text-foreground-quiet">Merge reason:</span>
             <input
               type="text"
               value={mergeReason}
               onChange={e => setMergeReason(e.target.value)}
-              placeholder="e.g. Same team, sponsor-prefix variant"
+              placeholder="e.g. Same record, sponsor-prefix variant"
               className="flex-1 max-w-xs px-2 py-1 text-xs rounded border border-divider bg-surface-elevated text-foreground outline-none focus:border-motion/50"
             />
           </div>
@@ -240,9 +222,10 @@ export default function DuplicateMergeReview() {
             <p className="text-sm text-foreground-secondary mb-1">No scan run yet for {config.label}</p>
             <p className="text-xs text-foreground-quiet max-w-md">
               Click <span className="text-motion font-semibold">Scan for Duplicates</span> to detect
-              duplicate {config.label.toLowerCase()} records. Matching uses exact keys, normalized names,
-              and fuzzy substring matching to catch sponsor-prefix variants. Duplicates are marked
-              Inactive (not deleted) and all linked data is automatically redirected to the survivor.
+              duplicate {config.label.toLowerCase()} records. For each group, you'll choose which record
+              is the <span className="text-success font-semibold">primary (survivor)</span> and which are
+              <span className="text-foreground-quiet font-semibold"> secondary (merged away)</span>. Duplicates
+              are marked Inactive (not deleted) and all linked data is redirected to the survivor.
             </p>
           </div>
         )}
@@ -324,16 +307,22 @@ export default function DuplicateMergeReview() {
                   {/* Expanded content */}
                   {isExpanded && (
                     <div className="border-t border-divider p-4">
+                      {/* Instruction */}
+                      {status.state !== 'done' && (
+                        <div className="mb-3 text-[10px] font-mono uppercase tracking-widest text-foreground-quiet">
+                          Select which record should be the <span className="text-success">primary (survivor)</span> — the others will be marked secondary and redirected.
+                        </div>
+                      )}
+
                       {/* Side-by-side records */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                         {records.map((rec) => {
                           const count = linkCounts[rec.id] ?? 0;
-                          const isRecommended = status.preview?.survivors?.some(s => s.id === rec.id);
                           const isSurvivor = status.repair?.survivors?.some(s => s.id === rec.id) ||
                             status.repair?.report?.survivor_team_id === rec.id;
                           const isMergedDup = status.repair?.duplicates_marked_inactive?.some(d => d.id === rec.id) ||
                             status.repair?.report?.duplicates_marked_inactive?.some(d => d.id === rec.id);
-                          const isSelectedSurvivor = config.mode === 'manual' && survivorId === rec.id;
+                          const isSelectedSurvivor = survivorId === rec.id;
 
                           return (
                             <div
@@ -343,8 +332,6 @@ export default function DuplicateMergeReview() {
                                   ? 'border-success/40 bg-success/5'
                                   : isMergedDup
                                   ? 'border-foreground-quiet/30 bg-surface-interactive/30 opacity-60'
-                                  : isRecommended
-                                  ? 'border-motion/40 bg-motion/5'
                                   : 'border-divider bg-surface-elevated'
                               }`}
                             >
@@ -353,14 +340,14 @@ export default function DuplicateMergeReview() {
                                   {config.getName(rec)}
                                 </span>
                                 <div className="flex items-center gap-1 shrink-0">
-                                  {(isRecommended || isSurvivor) && (
+                                  {isSurvivor && (
                                     <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-success bg-success/10 px-1.5 py-0.5 rounded">
-                                      {isSurvivor ? 'Survivor' : 'Recommended'}
+                                      Primary
                                     </span>
                                   )}
                                   {isMergedDup && (
                                     <span className="text-[8px] font-mono font-bold uppercase tracking-widest text-foreground-quiet bg-surface-interactive px-1.5 py-0.5 rounded">
-                                      Merged
+                                      Secondary
                                     </span>
                                   )}
                                 </div>
@@ -393,8 +380,8 @@ export default function DuplicateMergeReview() {
                                   <span className="text-foreground-secondary truncate ml-2 max-w-[140px]">{rec.normalized_name || '—'}</span>
                                 </div>
                               </div>
-                              {/* Manual mode: survivor selection radio */}
-                              {config.mode === 'manual' && status.state !== 'done' && (
+                              {/* Survivor selection radio */}
+                              {status.state !== 'done' && (
                                 <label className="flex items-center gap-2 mt-2 pt-2 border-t border-divider cursor-pointer">
                                   <input
                                     type="radio"
@@ -404,7 +391,7 @@ export default function DuplicateMergeReview() {
                                     className="w-3.5 h-3.5 accent-motion"
                                   />
                                   <span className="text-[10px] font-mono uppercase tracking-widest text-foreground-quiet">
-                                    {isSelectedSurvivor ? 'Survivor' : 'Set as survivor'}
+                                    {isSelectedSurvivor ? 'Primary (survivor)' : 'Set as primary'}
                                   </span>
                                 </label>
                               )}
@@ -417,24 +404,6 @@ export default function DuplicateMergeReview() {
                       <div className="text-[10px] font-mono text-foreground-quiet mb-3">
                         Matched on <span className="text-motion">{group.match_type}</span>: <span className="text-foreground-secondary">{group.key}</span>
                       </div>
-
-                      {/* Preview result (auto mode) */}
-                      {status.state === 'previewed' && status.preview && (
-                        <div className="mb-3 p-3 rounded-lg border border-motion/20 bg-motion/5">
-                          <p className="text-[10px] font-mono uppercase tracking-widest text-motion mb-2">Preview — what will happen</p>
-                          {status.preview.survivors?.map(s => (
-                            <div key={s.id} className="text-xs text-foreground-secondary mb-1">
-                              <span className="text-success font-semibold">Survivor:</span> {s.name} ({s.event_count || s.result_count || 0} linked)
-                            </div>
-                          ))}
-                          {status.preview.duplicates_marked_inactive?.map(d => (
-                            <div key={d.id} className="text-xs text-foreground-quiet">
-                              <ArrowRight className="w-3 h-3 inline mr-1" />
-                              {d.name} → marked Inactive, redirected to {d.survivor_name}
-                            </div>
-                          ))}
-                        </div>
-                      )}
 
                       {/* Merge result */}
                       {status.state === 'done' && (
@@ -477,30 +446,20 @@ export default function DuplicateMergeReview() {
                       {/* Action buttons */}
                       {status.state !== 'done' && (
                         <div className="flex items-center gap-2 flex-wrap">
-                          {config.mode === 'auto' && status.state !== 'previewed' && (
-                            <button
-                              onClick={() => handlePreviewGroup(gi)}
-                              disabled={status.state === 'previewing' || status.state === 'running'}
-                              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest rounded border border-divider text-foreground-secondary hover:bg-surface-interactive transition-colors disabled:opacity-50"
-                            >
-                              {status.state === 'previewing' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-                              Preview Merge
-                            </button>
-                          )}
                           <button
-                            onClick={() => config.mode === 'auto' ? handleMergeGroupAuto(gi) : handleMergeGroupManual(gi)}
-                            disabled={status.state === 'running' || (config.mode === 'manual' && !survivorId)}
+                            onClick={() => handleMergeGroup(gi)}
+                            disabled={status.state === 'running' || !survivorId}
                             className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest rounded border border-motion/30 bg-motion/10 text-motion hover:bg-motion/20 transition-colors disabled:opacity-50"
                           >
                             {status.state === 'running' ? <Loader2 className="w-3 h-3 animate-spin" /> : <GitMerge className="w-3 h-3" />}
                             Execute Merge
                           </button>
-                          {config.mode === 'manual' && !survivorId && (
-                            <span className="text-[10px] text-foreground-quiet">Select a survivor first</span>
+                          {!survivorId && (
+                            <span className="text-[10px] text-foreground-quiet">Select a primary record first</span>
                           )}
-                          {config.mode === 'auto' && (
+                          {survivorId && (
                             <span className="text-[10px] text-foreground-quiet ml-1">
-                              Duplicates are marked Inactive (not deleted). All linked data is redirected.
+                              Duplicates are marked Inactive (not deleted). All linked data is redirected to the primary.
                             </span>
                           )}
                         </div>

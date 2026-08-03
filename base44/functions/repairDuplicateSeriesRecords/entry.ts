@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const dry_run = body.dry_run === true; // default false — actually runs
+    const forced_survivor_id = body.forced_survivor_id || null;
 
     // ── 1. Fetch all series ────────────────────────────────────────────────
     const allSeries = await base44.asServiceRole.entities.Series.list('-created_date', 3000);
@@ -159,6 +160,9 @@ Deno.serve(async (req) => {
     };
 
     for (const { match_type, key, records } of groups) {
+      // When a forced survivor is specified, only process the group containing it
+      if (forced_survivor_id && !records.some(r => r.id === forced_survivor_id)) continue;
+
       // Skip if all records are already inactive (or only one active)
       const active = records.filter(r => r.status !== 'Inactive');
       if (active.length <= 1) {
@@ -166,7 +170,9 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const survivor = pickSurvivor(active, eventCountsById);
+      const survivor = forced_survivor_id
+        ? active.find(r => r.id === forced_survivor_id)
+        : pickSurvivor(active, eventCountsById);
       const duplicates = active.filter(r => r.id !== survivor.id);
 
       report.groups_processed++;
