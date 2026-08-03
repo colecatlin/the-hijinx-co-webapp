@@ -193,6 +193,19 @@ export default function DriverProfile() {
   }
 
   if (!driver) return <EntityNotFound entityType="Driver" />;
+  // Admin preview: wait for user data before access check so admins aren't
+  // incorrectly blocked by a timing race (user query still in flight).
+  if (driver.visibility_status === 'draft' && isAuthenticated && !user) {
+    return (
+      <PageShell className="bg-white">
+        <Skeleton className="w-full h-[360px]" />
+        <div className="max-w-7xl mx-auto px-6 py-8 space-y-4">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-48 w-full" />
+        </div>
+      </PageShell>
+    );
+  }
   if (driver.visibility_status === 'draft' && user?.role !== 'admin') return <EntityUnavailable entityType="Driver" />;
 
   const fullName = `${driver.first_name} ${driver.last_name}`;
