@@ -81,6 +81,7 @@ import { RaceControlProvider } from './components/racecontrol/RaceControlProvide
 import RaceCoreDashboard from './pages/RaceCoreDashboard';
 import RaceCoreArchive from './pages/RaceCoreArchive';
 import RaceCoreHealth from './pages/RaceCoreHealth';
+import SeriesMergeReview from './pages/SeriesMergeReview';
 import RaceCoreGovernance from './pages/RaceCoreGovernance';
 import ManageDrivers from './pages/ManageDrivers';
 import ManageTeams from './pages/ManageTeams';
@@ -368,6 +369,7 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/data/imports"         element={<ManageCSVImportExport embedded={true} />} />
         <Route path="/racecore/data/calendar-sync"   element={<ManageCalendarSync embedded={true} />} />
         <Route path="/racecore/data/results-repair"  element={<ResultsRepairPage />} />
+      <Route path="/racecore/data/series-merge"     element={<SeriesMergeReview />} />
         <Route path="/racecore/identity-review"      element={<IdentityReviewPage />} />
         <Route path="/racecore/data/quality"         element={<DataQualityDashboard />} />
         <Route path="/racecore/data/diagnostics"     element={<Diagnostics embedded={true} />} />
