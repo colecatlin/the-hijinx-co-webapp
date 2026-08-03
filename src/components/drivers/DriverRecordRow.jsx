@@ -148,8 +148,8 @@ export default function DriverRecordRow({
           {driver.primary_number && (
             <span className="text-[9px] font-mono text-gray-600">#{driver.primary_number}</span>
           )}
-          <RecordStatusBadge status={driver.racing_status} />
-          <RecordStatusBadge status={driver.visibility_status} />
+          <RecordStatusBadge status={driver.racing_status} variant="operational" />
+          <RecordStatusBadge status={driver.visibility_status} variant="visibility" />
         </div>
         <div className="text-xs text-gray-500 truncate mt-0.5">{locationParts || '—'}</div>
       </div>

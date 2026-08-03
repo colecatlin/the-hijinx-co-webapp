@@ -136,19 +136,38 @@ export const STATUS_ACCENT = {
   Locked:          'bg-violet-500',
 };
 
+// ── Variant styling ───────────────────────────────────────────────────────────
+// operational = solid badge (lifecycle: Active, Upcoming, Inactive, …)
+// visibility = ghost/dashed badge (public access: Draft, Live)
+const VARIANT_BORDER = {
+  operational: 'border',
+  visibility:  'border border-dashed',
+};
+
+const VARIANT_TOOLTIP = {
+  operational: 'Operational lifecycle — whether this entity is actively running sessions.',
+  visibility:  'Public access — whether this profile is visible on the public directory.',
+};
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function RecordStatusBadge({ status, className }) {
+export default function RecordStatusBadge({ status, className, variant = 'operational' }) {
   const canonical = normalizeStatus(status);
   const style = STATUS_STYLES[canonical] || STATUS_STYLES.Draft;
   const label = STATUS_LABELS[canonical] || (canonical ? canonical.toUpperCase() : 'UNKNOWN');
+  const borderClass = VARIANT_BORDER[variant] || VARIANT_BORDER.operational;
+  const tooltip = VARIANT_TOOLTIP[variant];
 
   return (
-    <span className={cn(
-      'shrink-0 inline-flex items-center px-1.5 py-px text-[9px] font-mono font-bold tracking-widest rounded border',
-      style,
-      className
-    )}>
+    <span
+      title={tooltip}
+      className={cn(
+        'shrink-0 inline-flex items-center px-1.5 py-px text-[9px] font-mono font-bold tracking-widest rounded',
+        borderClass,
+        style,
+        className
+      )}
+    >
       {label}
     </span>
   );

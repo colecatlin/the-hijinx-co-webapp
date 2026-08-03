@@ -88,9 +88,9 @@ export default function TeamRecordRow({ team, isAdmin, isSelected, onSelect, onD
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-foreground truncate">{team.name}</span>
-          <RecordStatusBadge status={team.racing_status} />
+          <RecordStatusBadge status={team.racing_status} variant="operational" />
           {team.visibility_status && (
-            <RecordStatusBadge status={team.visibility_status} />
+            <RecordStatusBadge status={team.visibility_status} variant="visibility" />
           )}
         </div>
         <div className="text-xs text-gray-500 truncate mt-0.5">{locationParts || '—'}</div>
