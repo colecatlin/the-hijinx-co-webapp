@@ -25,7 +25,7 @@ export const QUICK_ADD_CONFIGS = {
       { key: 'headquarters_city', label: 'City', type: 'text', placeholder: 'City', aliases: ['city', 'headquarterscity', 'hqcity'] },
       { key: 'headquarters_state', label: 'State', type: 'text', placeholder: 'State', aliases: ['state', 'headquartersstate', 'hqstate'] },
       { key: 'country', label: 'Country', type: 'text', placeholder: 'Country', aliases: ['country'] },
-      { key: 'primary_discipline', label: 'Discipline', type: 'select', options: ['Off Road', 'Snowmobile', 'Asphalt Oval', 'Road Racing', 'Rallycross', 'Drag Racing', 'Mixed'], aliases: ['discipline', 'primarydiscipline'] },
+      { key: 'primary_discipline', label: 'Discipline', type: 'discipline-select', aliases: ['discipline', 'primarydiscipline'] },
       { key: 'team_level', label: 'Level', type: 'select', options: ['Local', 'Regional', 'National', 'International'], aliases: ['level', 'teamlevel'] },
     ],
   },
@@ -56,7 +56,7 @@ export const QUICK_ADD_CONFIGS = {
       'Add as many series as you want — Name and Discipline are required.',
     fields: [
       { key: 'name', label: 'Name *', type: 'text', required: true, placeholder: 'Series name', aliases: ['name', 'series', 'seriesname'] },
-      { key: 'discipline', label: 'Discipline *', type: 'select', required: true, options: ['Stock Car', 'Off Road', 'Dirt Oval', 'Snowmobile', 'Dirt Bike', 'Open Wheel', 'Sports Car', 'Touring Car', 'Rally', 'Drag', 'Motorcycle', 'Karting', 'Water', 'Alternative'], aliases: ['discipline'] },
+      { key: 'discipline', label: 'Discipline *', type: 'discipline-select', required: true, aliases: ['discipline'] },
       { key: 'geographic_scope', label: 'Scope', type: 'select', options: ['Local', 'Regional', 'National', 'International', 'Global'], aliases: ['scope', 'geographicscope'] },
       { key: 'sanctioning_body', label: 'Sanctioning', type: 'text', placeholder: 'Sanctioning body', aliases: ['sanctioningbody', 'sanctioning'] },
       { key: 'season_year', label: 'Season', type: 'text', placeholder: '2026', aliases: ['season', 'seasonyear', 'year'] },

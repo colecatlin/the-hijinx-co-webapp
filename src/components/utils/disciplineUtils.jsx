@@ -31,6 +31,27 @@ const seriesDisciplineMap = {
   // Snowmobile
   'Snowmobile': 'Snowmobile',
   'Sled': 'Snowmobile',
+  // Drift
+  'Drift': 'Drift',
+  'Formula Drift': 'Drift',
+  // Karting
+  'Karting': 'Karting',
+  'Rotax Max': 'Karting',
+  // Watercraft
+  'Water': 'Watercraft',
+  'P1': 'Watercraft',
+  // Aviation
+  'Air Race': 'Aviation',
+  'Red Bull Air Race': 'Aviation',
+  // Touring Car
+  'BTCC': 'Touring Car',
+  'WTCC': 'Touring Car',
+  'TCR': 'Touring Car',
+  // Dirt Oval
+  'Dirt Track': 'Dirt Oval',
+  // Rallycross
+  'Rallycross': 'Rallycross',
+  'FIA World Rallycross': 'Rallycross',
 };
 
 /**

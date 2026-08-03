@@ -138,7 +138,7 @@ export default function SeriesForm({ series, onClose, onSeriesCreated }) {
               <Select value={formData.discipline} onValueChange={(val) => handleChange('discipline', val)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {['Stock Car','Off Road','Dirt Oval','Snowmobile','Dirt Bike','Open Wheel','Sports Car','Touring Car','Rally','Drag','Motorcycle','Karting','Water','Alternative'].map(d => (
+                  {['Stock Car','Open Wheel','Sports Car','Touring Car','Off Road','Dirt Oval','Rally','Rallycross','Drift','Drag Racing','Motorcycle','Karting','Snowmobile','Watercraft','Aviation','Alternative'].map(d => (
                     <SelectItem key={d} value={d}>{d}</SelectItem>
                   ))}
                 </SelectContent>

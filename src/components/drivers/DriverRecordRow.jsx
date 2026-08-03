@@ -7,13 +7,22 @@ import RecordStatusBadge from '@/components/racecore/records/RecordStatusBadge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const DISCIPLINE_ABBREV = {
-  'Off Road':     'OFF RD',
-  'Snowmobile':   'SNOW',
-  'Asphalt Oval': 'OVL',
-  'Road Racing':  'RD RC',
-  'Rallycross':   'RLX',
-  'Drag Racing':  'DRAG',
-  'Mixed':        'MIX',
+  'Stock Car':    'STK',
+  'Open Wheel':   'OW',
+  'Sports Car':   'SC',
+  'Touring Car':  'TC',
+  'Off Road':     'OFF',
+  'Dirt Oval':    'DO',
+  'Rally':        'RLY',
+  'Rallycross':   'RX',
+  'Drift':        'DFT',
+  'Drag Racing':  'DRG',
+  'Motorcycle':   'MTO',
+  'Karting':      'KRT',
+  'Snowmobile':   'SNO',
+  'Watercraft':   'WTR',
+  'Aviation':     'AVI',
+  'Alternative':  'ALT',
 };
 
 /**

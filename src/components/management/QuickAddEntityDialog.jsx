@@ -13,6 +13,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { QUICK_ADD_CONFIGS } from './quickAddRegistry';
+import { useDisciplines } from '@/hooks/useDisciplines';
 
 // ── CSV helpers ──────────────────────────────────────────────────────────────
 const normHeader = (h) => String(h || '').toLowerCase().trim().replace(/[\s_-]+/g, '');
@@ -90,6 +91,8 @@ export default function QuickAddEntityDialog({ entityType, open, onOpenChange, o
     queryFn: () => base44.entities.Series.list('-created_date', 500),
     enabled: open && needsSeries,
   });
+
+  const { disciplines: disciplinesList = [] } = useDisciplines();
 
   const entityDataMap = useMemo(() => ({
     Track: tracksList,
@@ -259,6 +262,25 @@ export default function QuickAddEntityDialog({ entityType, open, onOpenChange, o
             <SelectItem value="__none">None</SelectItem>
             {field.options.map((opt) => (
               <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+
+    if (field.type === 'discipline-select') {
+      return (
+        <Select
+          value={value || '__none'}
+          onValueChange={(v) => setRow(idx, field.key, v === '__none' ? '' : v)}
+        >
+          <SelectTrigger className={baseClass}>
+            <SelectValue placeholder="—" />
+          </SelectTrigger>
+          <SelectContent className="bg-surface-elevated border-divider max-h-[260px]">
+            <SelectItem value="__none">None</SelectItem>
+            {disciplinesList.map((d) => (
+              <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>

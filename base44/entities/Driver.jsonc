@@ -73,13 +73,22 @@
     "primary_discipline": {
       "type": "string",
       "enum": [
+        "Stock Car",
+        "Open Wheel",
+        "Sports Car",
+        "Touring Car",
         "Off Road",
-        "Snowmobile",
-        "Asphalt Oval",
-        "Road Racing",
+        "Dirt Oval",
+        "Rally",
         "Rallycross",
+        "Drift",
         "Drag Racing",
-        "Mixed"
+        "Motorcycle",
+        "Karting",
+        "Snowmobile",
+        "Watercraft",
+        "Aviation",
+        "Alternative"
       ],
       "description": "Primary racing discipline (user-selected)"
     },

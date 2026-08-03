@@ -9,8 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft } from 'lucide-react';
 import DateInput from '@/components/shared/DateInput';
 import LocationFields from '@/components/shared/LocationFields';
+import { useDisciplines } from '@/hooks/useDisciplines';
 
 export default function DriverForm({ driver, onClose }) {
+  const { disciplines: disciplineList = [] } = useDisciplines();
+
   const [formData, setFormData] = useState(driver || {
     first_name: '',
     last_name: '',
@@ -226,20 +229,14 @@ export default function DriverForm({ driver, onClose }) {
                 <SelectValue placeholder="Select discipline" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Stock Car">Stock Car</SelectItem>
-                <SelectItem value="Off Road">Off Road</SelectItem>
-                <SelectItem value="Dirt Oval">Dirt Oval</SelectItem>
-                <SelectItem value="Snowmobile">Snowmobile</SelectItem>
-                <SelectItem value="Dirt Bike">Dirt Bike</SelectItem>
-                <SelectItem value="Open Wheel">Open Wheel</SelectItem>
-                <SelectItem value="Sports Car">Sports Car</SelectItem>
-                <SelectItem value="Touring Car">Touring Car</SelectItem>
-                <SelectItem value="Rally">Rally</SelectItem>
-                <SelectItem value="Drag">Drag</SelectItem>
-                <SelectItem value="Motorcycle">Motorcycle</SelectItem>
-                <SelectItem value="Karting">Karting</SelectItem>
-                <SelectItem value="Water">Water</SelectItem>
-                <SelectItem value="Alternative">Alternative</SelectItem>
+                {disciplineList.map((d) => (
+                  <SelectItem key={d.id} value={d.name}>
+                    <span className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: d.color_code }} />
+                      {d.name}
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
