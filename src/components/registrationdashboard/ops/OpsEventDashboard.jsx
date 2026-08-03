@@ -109,10 +109,10 @@ export default function OpsEventDashboard({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to begin operations</p>
+          <AlertCircle className="w-8 h-8 text-warning mx-auto mb-3" />
+          <p className="text-foreground-secondary">Select an event to begin operations</p>
         </CardContent>
       </Card>
     );
@@ -158,31 +158,31 @@ export default function OpsEventDashboard({
 
           {/* Inline Results Manager — shown when a session is selected */}
           {selectedSession && (
-            <div className="border border-gray-800 rounded-lg bg-[#111] overflow-hidden">
+            <div className="border border-divider rounded-lg bg-surface-elevated overflow-hidden">
               {/* Panel header — Part 2 + 7: scheduled time and scoring pill */}
-              <div className="flex items-center gap-3 px-4 py-2.5 bg-[#171717] border-b border-gray-800">
+              <div className="flex items-center gap-3 px-4 py-2.5 bg-surface-interactive/40 border-b border-divider">
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-7 w-7 p-0 text-gray-400 hover:text-white"
+                  className="h-7 w-7 p-0 text-foreground-secondary hover:text-foreground"
                   onClick={() => setSelectedSessionId('')}
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-sm font-semibold text-white">{selectedSession.name}</span>
+                <span className="text-sm font-semibold text-foreground">{selectedSession.name}</span>
                 {selectedSession.scheduled_time && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-foreground-quiet">
                     {new Date(selectedSession.scheduled_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     {' '}
                     {new Date(selectedSession.scheduled_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                   </span>
                 )}
                 {isScoringSession(selectedSession) ? (
-                  <span className="ml-auto flex items-center gap-1 text-xs text-amber-400 font-medium">
+                  <span className="ml-auto flex items-center gap-1 text-xs text-warning font-medium">
                     <Trophy className="w-3 h-3" /> Scoring session
                   </span>
                 ) : (
-                  <span className="ml-auto text-xs text-gray-600">⚪ Non-scoring</span>
+                  <span className="ml-auto text-xs text-foreground-quiet">⚪ Non-scoring</span>
                 )}
               </div>
 

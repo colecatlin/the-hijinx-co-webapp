@@ -101,21 +101,18 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
 
   return (
     <div
-      className={`${isCompact ? 'w-12' : 'w-44'} flex-shrink-0 border-r overflow-y-auto transition-all`}
-      style={{
-        background: '#0F1212',
-        borderColor: 'rgba(255,255,255,0.07)',
-      }}
+      className={`${isCompact ? 'w-12' : 'w-44'} flex-shrink-0 border-r border-divider overflow-y-auto transition-all`}
+      style={{ background: 'hsl(var(--surface))' }}
     >
       <div className={`${isCompact ? 'p-1.5' : 'p-3'} space-y-1`}>
         {/* Collapse toggle — reclaims workspace width */}
         <button
           onClick={toggleCollapsed}
           title={isCompact ? 'Expand event menu' : 'Collapse event menu'}
-          className={`w-full flex items-center ${isCompact ? 'justify-center p-2' : 'justify-between px-2 py-1'} mb-1 rounded text-gray-500 hover:text-gray-200 hover:bg-white/[0.04] transition-colors`}
+          className={`w-full flex items-center ${isCompact ? 'justify-center p-2' : 'justify-between px-2 py-1'} mb-1 rounded text-foreground-quiet hover:text-foreground hover:bg-surface-interactive transition-colors`}
         >
           {!isCompact && (
-            <span className="text-[9px] uppercase tracking-widest font-bold text-gray-600">Event Operations</span>
+            <span className="text-[9px] uppercase tracking-widest font-bold text-foreground-quiet">Event Operations</span>
           )}
           {isCompact
             ? <PanelLeftOpen className="w-3.5 h-3.5 flex-shrink-0" />
@@ -126,8 +123,8 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
           <div key={group.section}>
             {/* Section divider + label */}
             {groupIdx > 0 && !isCompact && (
-              <div className="my-2 pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                <p className="text-[9px] uppercase tracking-widest font-bold text-gray-600 px-2 mb-1">{group.section}</p>
+              <div className="my-2 pt-2 border-t border-divider">
+                <p className="text-[9px] uppercase tracking-widest font-bold text-foreground-quiet px-2 mb-1">{group.section}</p>
               </div>
             )}
 
@@ -145,11 +142,11 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
                       title={mod.label}
                       className={`relative w-full flex items-center justify-center p-2 rounded transition-all ${
                         isActive
-                          ? 'bg-white/[0.06] text-white'
-                          : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]'
+                          ? 'bg-surface-interactive text-foreground'
+                          : 'text-foreground-secondary hover:text-foreground hover:bg-surface-interactive/60'
                       }`}
                     >
-                      {isActive && <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-teal-500" />}
+                      {isActive && <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-motion" />}
                       <Icon className="w-4 h-4 flex-shrink-0" />
                     </button>
                   );
@@ -162,11 +159,11 @@ export default function EventWorkspaceNav({ activePanel, onPanelChange, compact 
                     title={mod.description}
                     className={`relative w-full flex items-center gap-2.5 px-3 py-1.5 rounded text-[11px] font-mono font-semibold uppercase tracking-wider transition-all ${
                       isActive
-                        ? 'bg-white/[0.06] text-white'
-                        : 'text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]'
+                        ? 'bg-surface-interactive text-foreground'
+                        : 'text-foreground-quiet hover:text-foreground-secondary hover:bg-surface-interactive/60'
                     }`}
                   >
-                    {isActive && <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-teal-500" />}
+                    {isActive && <span className="absolute left-0 top-0.5 bottom-0.5 w-0.5 rounded-full bg-motion" />}
                     <Icon className="w-4 h-4 flex-shrink-0" />
                     <span className="line-clamp-1">{mod.label}</span>
                   </button>

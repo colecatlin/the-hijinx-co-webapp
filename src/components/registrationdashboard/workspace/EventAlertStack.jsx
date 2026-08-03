@@ -5,28 +5,27 @@
  */
 import React from 'react';
 import { AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
-// Icon is rendered via style.Icon destructuring inside the map — no additional import needed
 
 const SEVERITY_STYLES = {
   CRITICAL: {
-    bar: 'border-red-800/60 bg-red-950/40',
-    icon: 'text-red-400',
-    text: 'text-red-200',
-    label: 'text-red-400',
+    bar: 'border-danger/40 bg-danger/10',
+    icon: 'text-danger',
+    text: 'text-danger',
+    label: 'text-danger',
     Icon: AlertCircle,
   },
   WARNING: {
-    bar: 'border-amber-800/50 bg-amber-950/30',
-    icon: 'text-amber-400',
-    text: 'text-amber-200',
-    label: 'text-amber-400',
+    bar: 'border-warning/40 bg-warning/10',
+    icon: 'text-warning',
+    text: 'text-warning',
+    label: 'text-warning',
     Icon: AlertTriangle,
   },
   INFO: {
-    bar: 'border-teal-800/40 bg-teal-950/20',
-    icon: 'text-teal-400',
-    text: 'text-teal-200',
-    label: 'text-teal-400',
+    bar: 'border-motion/40 bg-motion/10',
+    icon: 'text-motion',
+    text: 'text-motion',
+    label: 'text-motion',
     Icon: Info,
   },
 };

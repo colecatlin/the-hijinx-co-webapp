@@ -20,19 +20,19 @@ function TimelineSession({ session, results, entries, isActive, isNext, index })
   };
 
   const getStatusColor = () => {
-    if (session.locked || session.status === 'Locked') return 'text-green-400 bg-green-900/20';
-    if (session.status === 'Completed') return 'text-green-400 bg-green-900/20';
-    if (isActive) return 'text-red-400 bg-red-900/20 animate-pulse';
-    if (isNext) return 'text-teal-400 bg-teal-900/20';
-    if (!readiness.ready) return 'text-amber-400 bg-amber-900/20';
-    return 'text-gray-400 bg-gray-800/20';
+    if (session.locked || session.status === 'Locked') return 'text-success bg-success/10';
+    if (session.status === 'Completed') return 'text-success bg-success/10';
+    if (isActive) return 'text-danger bg-danger/10 animate-pulse';
+    if (isNext) return 'text-motion bg-motion/10';
+    if (!readiness.ready) return 'text-warning bg-warning/10';
+    return 'text-foreground-quiet bg-surface-interactive/60';
   };
 
   const getLineColor = () => {
-    if (isActive) return 'bg-red-500';
-    if (session.locked || session.status === 'Locked') return 'bg-green-500';
-    if (isNext) return 'bg-teal-500';
-    return 'bg-gray-700';
+    if (isActive) return 'bg-danger';
+    if (session.locked || session.status === 'Locked') return 'bg-success';
+    if (isNext) return 'bg-motion';
+    return 'bg-divider';
   };
 
   return (
@@ -42,7 +42,7 @@ function TimelineSession({ session, results, entries, isActive, isNext, index })
         <div className={`rounded-full p-2 border border-current ${getStatusColor()}`}>
           {getStatusIcon()}
         </div>
-        {index < 10 && ( // Don't show line after last item (arbitrary)
+        {index < 10 && (
           <div className={`w-0.5 h-12 ${getLineColor()}`} />
         )}
       </div>
@@ -50,11 +50,11 @@ function TimelineSession({ session, results, entries, isActive, isNext, index })
       {/* Session content */}
       <div className="flex-1 pt-1">
         <div className="flex items-baseline gap-2">
-          <p className="font-semibold text-sm text-gray-100">{session.name}</p>
-          {isActive && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-900/40 text-red-300 uppercase tracking-wider font-bold">Live</span>}
-          {isNext && <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-900/40 text-teal-300 uppercase tracking-wider font-bold">Next</span>}
+          <p className="font-semibold text-sm text-foreground">{session.name}</p>
+          {isActive && <span className="text-[10px] px-1.5 py-0.5 rounded bg-danger/10 text-danger uppercase tracking-wider font-bold">Live</span>}
+          {isNext && <span className="text-[10px] px-1.5 py-0.5 rounded bg-motion/10 text-motion uppercase tracking-wider font-bold">Next</span>}
         </div>
-        <div className="text-xs text-gray-500 mt-0.5">
+        <div className="text-xs text-foreground-quiet mt-0.5">
           {session.session_type}
           {session.scheduled_time && (
             <>
@@ -68,10 +68,10 @@ function TimelineSession({ session, results, entries, isActive, isNext, index })
           )}
         </div>
         {!readiness.ready && (
-          <p className="text-xs text-amber-400 mt-1">{readiness.state}</p>
+          <p className="text-xs text-warning mt-1">{readiness.state}</p>
         )}
         {readiness.ready && (
-          <p className="text-xs text-green-400 mt-1">Ready</p>
+          <p className="text-xs text-success mt-1">Ready</p>
         )}
       </div>
     </div>
@@ -91,8 +91,8 @@ export default function SessionTimelinePolished({ sessions = [], results = [], e
 
   if (sessions.length === 0) {
     return (
-      <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4 text-center">
-        <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">No sessions scheduled</p>
+      <div className="bg-surface-elevated border border-divider rounded-lg p-4 text-center">
+        <p className="text-xs text-foreground-quiet uppercase tracking-wider font-bold">No sessions scheduled</p>
       </div>
     );
   }
@@ -115,24 +115,24 @@ export default function SessionTimelinePolished({ sessions = [], results = [], e
 
           // EventDay status badge style
           const STATUS_STYLES = {
-            Active:    'text-blue-400 border-blue-800',
-            Completed: 'text-green-400 border-green-800',
-            Cancelled: 'text-red-400 border-red-800',
+            Active:    'text-motion border-motion/40',
+            Completed: 'text-success border-success/40',
+            Cancelled: 'text-danger border-danger/40',
           };
           const statusStyle = eventDay?.status ? STATUS_STYLES[eventDay.status] : null;
 
           return (
-            <div key={dayLabel} className="bg-gray-900/40 border border-gray-800/50 rounded-lg overflow-hidden">
+            <div key={dayLabel} className="bg-surface-elevated border border-divider rounded-lg overflow-hidden">
               {/* Day header */}
-              <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-800/60" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                <CalendarDays className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />
-                <p className="text-[11px] uppercase tracking-widest font-bold text-gray-400 flex-1">{headerLabel}</p>
+              <div className="flex items-center gap-2 px-4 py-2 border-b border-divider" style={{ background: 'hsl(var(--surface-interactive) / 0.3)' }}>
+                <CalendarDays className="w-3.5 h-3.5 text-motion flex-shrink-0" />
+                <p className="text-[11px] uppercase tracking-widest font-bold text-foreground-secondary flex-1">{headerLabel}</p>
                 {statusStyle && (
                   <span className={`text-[10px] font-mono px-1.5 py-px rounded border ${statusStyle}`}>
                     {eventDay.status}
                   </span>
                 )}
-                <span className="text-[10px] font-mono text-gray-600">{daySessions.length} sessions</span>
+                <span className="text-[10px] font-mono text-foreground-quiet">{daySessions.length} sessions</span>
               </div>
               {/* Sessions */}
               <div className="p-4 space-y-3">
@@ -157,8 +157,8 @@ export default function SessionTimelinePolished({ sessions = [], results = [], e
 
   // Flat rendering (no EventDay data)
   return (
-    <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4 space-y-6">
-      <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">Weekend Progression</p>
+    <div className="bg-surface-elevated border border-divider rounded-lg p-4 space-y-6">
+      <p className="text-[10px] uppercase tracking-widest font-bold text-foreground-quiet">Weekend Progression</p>
       <div className="space-y-3">
         {sessions.map((session, i) => (
           <TimelineSession

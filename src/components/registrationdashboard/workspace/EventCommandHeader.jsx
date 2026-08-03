@@ -15,12 +15,12 @@ import { toast } from 'sonner';
 
 function StatChip({ label, value, variant = 'default', onClick, title }) {
   const styles = {
-    default: 'bg-white/[0.04] text-gray-400 border-white/[0.06]',
-    warning: 'bg-amber-900/25 text-amber-300 border-amber-700/40',
-    success: 'bg-green-900/25 text-green-300 border-green-700/40',
-    critical: 'bg-red-900/25 text-red-300 border-red-700/40',
-    active:   'bg-teal-900/25 text-teal-300 border-teal-700/40',
-    muted:    'bg-white/[0.02] text-gray-600 border-white/[0.04]',
+    default: 'bg-surface-interactive/60 text-foreground-secondary border-divider',
+    warning: 'bg-warning/10 text-warning border-warning/30',
+    success: 'bg-success/10 text-success border-success/30',
+    critical: 'bg-danger/10 text-danger border-danger/30',
+    active:   'bg-motion/10 text-motion border-motion/30',
+    muted:    'bg-surface-interactive/30 text-foreground-quiet border-divider/60',
   };
   return (
     <div
@@ -36,10 +36,10 @@ function StatChip({ label, value, variant = 'default', onClick, title }) {
 
 function LifecycleButton({ label, onClick, loading, variant = 'default' }) {
   const styles = {
-    default: 'border-white/[0.08] text-gray-400 hover:text-gray-200 hover:bg-white/[0.05]',
-    active:  'border-teal-600/40 text-teal-300 bg-teal-900/20 hover:bg-teal-900/40',
-    live:    'border-red-600/40 text-red-300 bg-red-900/20 hover:bg-red-900/40',
-    success: 'border-green-600/40 text-green-300 bg-green-900/20 hover:bg-green-900/40',
+    default: 'border-divider text-foreground-secondary hover:text-foreground hover:bg-surface-interactive',
+    active:  'border-motion/40 text-motion bg-motion/10 hover:bg-motion/20',
+    live:    'border-danger/40 text-danger bg-danger/10 hover:bg-danger/20',
+    success: 'border-success/40 text-success bg-success/10 hover:bg-success/20',
   };
   return (
     <button
@@ -148,18 +148,18 @@ export default function EventCommandHeader({
 
   return (
     <div
-      className="border-b flex-shrink-0"
-      style={{ background: '#0B0D0D', borderColor: 'rgba(255,255,255,0.07)' }}
+      className="border-b border-divider flex-shrink-0"
+      style={{ background: 'hsl(var(--surface))' }}
     >
       {/* Confirmation Dialog */}
       {confirmAction && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-[#141818] border border-white/[0.12] rounded-lg p-5 max-w-sm w-full mx-4 shadow-2xl">
-            <p className="text-sm font-semibold text-white mb-1">Confirm: {confirmAction.label}</p>
-            <p className="text-[11px] text-gray-400 mb-4">This will update the event status. Are you sure?</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-surface-elevated border border-divider rounded-lg p-5 max-w-sm w-full mx-4 shadow-2xl">
+            <p className="text-sm font-semibold text-foreground mb-1">Confirm: {confirmAction.label}</p>
+            <p className="text-[11px] text-foreground-quiet mb-4">This will update the event status. Are you sure?</p>
             <div className="flex gap-2">
-              <button onClick={() => setConfirmAction(null)} className="flex-1 py-2 rounded border border-white/[0.08] text-[11px] text-gray-400 hover:text-white transition-colors">Cancel</button>
-              <button onClick={confirmLifecycle} className="flex-1 py-2 rounded bg-teal-700/70 hover:bg-teal-600/80 border border-teal-600/40 text-[11px] font-semibold text-white transition-colors">Confirm</button>
+              <button onClick={() => setConfirmAction(null)} className="flex-1 py-2 rounded border border-divider text-[11px] text-foreground-secondary hover:text-foreground transition-colors">Cancel</button>
+              <button onClick={confirmLifecycle} className="flex-1 py-2 rounded bg-motion hover:bg-motion-hover border border-motion/40 text-[11px] font-semibold text-white transition-colors">Confirm</button>
             </div>
           </div>
         </div>
@@ -168,19 +168,19 @@ export default function EventCommandHeader({
       <div className="px-5 py-2 space-y-1.5">
         {/* Row 1: Identity + status + lifecycle */}
         <div className="flex items-center gap-3 flex-wrap">
-          <h1 className="text-sm font-bold text-white truncate">{selectedEvent.name}</h1>
+          <h1 className="text-sm font-bold text-foreground truncate">{selectedEvent.name}</h1>
           <StatChip label="Status" value={eventStatus} variant={statusVariant} />
           {selectedTrack && (
-            <span className="text-[10px] text-gray-600">{selectedTrack.name}</span>
+            <span className="text-[10px] text-foreground-quiet">{selectedTrack.name}</span>
           )}
           {selectedSeries && (
-            <span className="text-[10px] text-gray-600">{selectedSeries.name}</span>
+            <span className="text-[10px] text-foreground-quiet">{selectedSeries.name}</span>
           )}
           {selectedEvent.season && (
-            <span className="text-[10px] text-gray-700">S{selectedEvent.season}</span>
+            <span className="text-[10px] text-foreground-quiet">S{selectedEvent.season}</span>
           )}
           {selectedEvent.round_number && (
-            <span className="text-[10px] text-gray-700">R{selectedEvent.round_number}</span>
+            <span className="text-[10px] text-foreground-quiet">R{selectedEvent.round_number}</span>
           )}
 
           <div className="flex-1" />
@@ -241,7 +241,7 @@ export default function EventCommandHeader({
             <StatChip label="Tech Pend" value={techPending} variant="default" onClick={() => onNavigate?.('compliance')} title="Pending tech → Compliance" />
           )}
 
-          <span className="text-gray-800 text-xs">|</span>
+          <span className="text-foreground-quiet/40 text-xs">|</span>
 
           {sessions.length > 0 && (
             <StatChip label="Sessions" value={`${sessionsReady}/${sessions.length}`} variant={sessionsReady === sessions.length ? 'success' : 'default'} onClick={() => onNavigate?.('sessions')} title="Go to Sessions" />
@@ -260,7 +260,7 @@ export default function EventCommandHeader({
           )}
 
           {(activeIncidents > 0 || pendingPenalties > 0 || activeProtests > 0) && (
-            <span className="text-gray-800 text-xs">|</span>
+            <span className="text-foreground-quiet/40 text-xs">|</span>
           )}
 
           {activeIncidents > 0 && (

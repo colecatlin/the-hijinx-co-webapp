@@ -130,9 +130,9 @@ export default function EventQuickActions({
   ];
 
   const variantClasses = {
-    default: 'bg-white/[0.05] hover:bg-white/[0.09] border-white/[0.07] text-gray-300',
-    active: 'bg-teal-900/40 hover:bg-teal-900/60 border-teal-700/50 text-teal-300',
-    warning: 'bg-amber-900/30 hover:bg-amber-900/50 border-amber-700/50 text-amber-300',
+    default: 'bg-surface-interactive/60 hover:bg-surface-interactive border-divider text-foreground-secondary',
+    active: 'bg-motion/10 hover:bg-motion/20 border-motion/30 text-motion',
+    warning: 'bg-warning/10 hover:bg-warning/20 border-warning/30 text-warning',
   };
 
   return (

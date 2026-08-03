@@ -10,15 +10,15 @@ import { buildOperationalAlerts } from '../ops/sessionReadinessCalculator';
 
 function AlertItem({ alert }) {
   const severityStyles = {
-    critical: 'bg-red-900/20 border-red-800/50 text-red-300',
-    warning: 'bg-amber-900/20 border-amber-800/50 text-amber-300',
-    info: 'bg-teal-900/20 border-teal-800/50 text-teal-300',
+    critical: 'bg-danger/10 border-danger/30 text-danger',
+    warning: 'bg-warning/10 border-warning/30 text-warning',
+    info: 'bg-motion/10 border-motion/30 text-motion',
   };
 
   const iconMap = {
-    critical: <AlertTriangle className="w-3.5 h-3.5 text-red-400" />,
-    warning: <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />,
-    info: <Clock className="w-3.5 h-3.5 text-teal-400" />,
+    critical: <AlertTriangle className="w-3.5 h-3.5 text-danger" />,
+    warning: <AlertTriangle className="w-3.5 h-3.5 text-warning" />,
+    info: <Clock className="w-3.5 h-3.5 text-motion" />,
   };
 
   return (
@@ -41,10 +41,10 @@ export default function OperationalAlertStack({
 
   if (alerts.length === 0) {
     return (
-      <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-3">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-2">Alerts</p>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <CheckCircle2 className="w-3 h-3 text-green-600" />
+      <div className="bg-surface-elevated border border-divider rounded-lg p-3">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-foreground-quiet mb-2">Alerts</p>
+        <div className="flex items-center gap-2 text-xs text-foreground-quiet">
+          <CheckCircle2 className="w-3 h-3 text-success" />
           All clear
         </div>
       </div>
@@ -52,14 +52,14 @@ export default function OperationalAlertStack({
   }
 
   return (
-    <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-3 space-y-2">
-      <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500">{alerts.length} Alert{alerts.length !== 1 ? 's' : ''}</p>
+    <div className="bg-surface-elevated border border-divider rounded-lg p-3 space-y-2">
+      <p className="text-[10px] uppercase tracking-widest font-bold text-foreground-quiet">{alerts.length} Alert{alerts.length !== 1 ? 's' : ''}</p>
       <div className="space-y-1.5">
         {alerts.slice(0, 4).map(alert => (
           <AlertItem key={alert.id} alert={alert} />
         ))}
         {alerts.length > 4 && (
-          <p className="text-[10px] text-gray-600 px-2 py-1">
+          <p className="text-[10px] text-foreground-quiet px-2 py-1">
             +{alerts.length - 4} more alert{alerts.length - 4 !== 1 ? 's' : ''}
           </p>
         )}

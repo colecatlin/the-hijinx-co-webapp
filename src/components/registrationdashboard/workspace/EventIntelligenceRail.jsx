@@ -12,15 +12,15 @@ import OperationalAlertStack from './OperationalAlertStack';
 
 function IntelligenceWidget({ title, items, isEmpty }) {
   return (
-    <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-3">
-      <p className="text-[10px] uppercase tracking-widest font-bold text-gray-500 mb-2">{title}</p>
+    <div className="bg-surface-elevated border border-divider rounded-lg p-3">
+      <p className="text-[10px] uppercase tracking-widest font-bold text-foreground-quiet mb-2">{title}</p>
       <div className="space-y-1.5">
         {isEmpty ? (
-          <p className="text-xs text-gray-500">No updates</p>
+          <p className="text-xs text-foreground-quiet">No updates</p>
         ) : (
           items.map((item, i) => (
-            <div key={i} className="text-xs text-gray-400 flex items-start gap-2">
-              {item.icon && <item.icon className="w-3 h-3 flex-shrink-0 mt-0.5 text-gray-600" />}
+            <div key={i} className="text-xs text-foreground-secondary flex items-start gap-2">
+              {item.icon && <item.icon className="w-3 h-3 flex-shrink-0 mt-0.5 text-foreground-quiet" />}
               <span className="line-clamp-1">{item.label}</span>
             </div>
           ))
@@ -74,7 +74,7 @@ export default function EventIntelligenceRail({
   }, [operationLogs]);
 
   return (
-    <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto p-3" style={{ background: '#0F1212' }}>
+    <div className="w-72 flex-shrink-0 space-y-3 overflow-y-auto p-3" style={{ background: 'hsl(var(--surface))' }}>
       {/* Event Readiness Score */}
       <EventReadinessScore
         selectedEvent={selectedEvent}

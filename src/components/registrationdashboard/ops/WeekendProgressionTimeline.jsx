@@ -71,9 +71,9 @@ export default function WeekendProgressionTimeline({
 
   if (sessions.length === 0) {
     return (
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-6 text-center">
-        <Calendar className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-        <p className="text-gray-400 text-sm">No sessions yet. Add sessions to build the weekend structure.</p>
+      <div className="bg-surface-elevated border border-divider rounded-lg p-6 text-center">
+        <Calendar className="w-8 h-8 text-foreground-quiet mx-auto mb-2" />
+        <p className="text-foreground-secondary text-sm">No sessions yet. Add sessions to build the weekend structure.</p>
       </div>
     );
   }
@@ -82,22 +82,22 @@ export default function WeekendProgressionTimeline({
     <div className="space-y-4">
       {/* Event-level derived status + view mode toggle + Collapse All */}
       <div className="flex items-center gap-2 mb-2 flex-wrap">
-        <span className="text-xs text-gray-500 uppercase tracking-wide">Weekend Status</span>
+        <span className="text-xs text-foreground-quiet uppercase tracking-wide">Weekend Status</span>
         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold border ${eventStatusConfig.badge}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${eventStatusConfig.dot}`} />
           {eventStatusConfig.label}
         </span>
 
         {/* Part 4 — View mode toggle */}
-        <div className="flex items-center gap-0.5 ml-2 rounded-lg border border-gray-800 overflow-hidden">
+        <div className="flex items-center gap-0.5 ml-2 rounded-lg border border-divider overflow-hidden">
           {VIEW_MODES.map(mode => (
             <button
               key={mode.value}
               onClick={() => setViewMode(mode.value)}
               className={`px-2.5 py-1 text-xs font-medium transition-colors ${
                 viewMode === mode.value
-                  ? 'bg-gray-700 text-white'
-                  : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800/50'
+                  ? 'bg-surface-interactive text-foreground'
+                  : 'text-foreground-quiet hover:text-foreground-secondary hover:bg-surface-interactive/50'
               }`}
             >
               {mode.label}
@@ -108,7 +108,7 @@ export default function WeekendProgressionTimeline({
         {viewMode === 'day' && (
           <button
             onClick={toggleAllDays}
-            className="ml-auto text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded border border-gray-800 hover:border-gray-600"
+            className="ml-auto text-xs text-foreground-quiet hover:text-foreground-secondary transition-colors px-2 py-0.5 rounded border border-divider hover:border-foreground-quiet"
           >
             {allCollapsed ? 'Expand All' : 'Collapse All'}
           </button>
@@ -139,7 +139,7 @@ export default function WeekendProgressionTimeline({
         const anyDayActive = dayStates.some(st => st !== 'pending' && st !== 'missing_results');
 
         return (
-          <div key={dayLabel} className="rounded-lg border border-gray-800 overflow-hidden">
+          <div key={dayLabel} className="rounded-lg border border-divider overflow-hidden">
             {/* R8AH: EventDayGroupHeader handles both EventDay-aware and fallback display */}
             <EventDayGroupHeader
               eventDay={eventDay ?? null}
@@ -153,16 +153,16 @@ export default function WeekendProgressionTimeline({
 
             {/* Day content */}
             {!isCollapsed && (
-              <div className="bg-[#111111] px-4 py-3 space-y-4">
+              <div className="bg-surface-elevated px-4 py-3 space-y-4">
                 {typeGroups.map(({ sessionType, sessions: typeSessions }) => (
                   <div key={sessionType}>
                     {/* Session type label */}
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                      <span className="text-xs font-bold text-foreground-secondary uppercase tracking-widest">
                         {sessionType}
                       </span>
-                      <div className="flex-1 h-px bg-gray-800" />
-                      <span className="text-xs text-gray-600">{typeSessions.length}</span>
+                      <div className="flex-1 h-px bg-divider" />
+                      <span className="text-xs text-foreground-quiet">{typeSessions.length}</span>
                     </div>
 
                     {/* Session cards */}

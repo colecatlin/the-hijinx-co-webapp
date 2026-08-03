@@ -10,9 +10,9 @@ import { calculateEventReadiness } from '../ops/sessionReadinessCalculator';
 
 function ReadinessGauge({ score }) {
   const getColor = (s) => {
-    if (s >= 80) return '#16a34a'; // green
-    if (s >= 60) return '#ea580c'; // orange
-    return '#dc2626'; // red
+    if (s >= 80) return 'hsl(var(--success))';
+    if (s >= 60) return 'hsl(var(--warning))';
+    return 'hsl(var(--danger))';
   };
 
   const circumference = 2 * Math.PI * 45;
@@ -28,7 +28,7 @@ function ReadinessGauge({ score }) {
             cy="60"
             r="45"
             fill="none"
-            stroke="rgba(255,255,255,0.1)"
+            stroke="hsl(var(--divider))"
             strokeWidth="8"
           />
           {/* Progress circle */}
@@ -46,12 +46,12 @@ function ReadinessGauge({ score }) {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-lg font-bold text-white">{score}%</span>
+          <span className="text-lg font-bold text-foreground">{score}%</span>
         </div>
       </div>
       <div className="text-xs">
-        <p className="uppercase tracking-widest font-bold text-gray-500">Weekend Readiness</p>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="uppercase tracking-widest font-bold text-foreground-quiet">Weekend Readiness</p>
+        <p className="text-xs text-foreground-secondary mt-1">
           {score >= 80 && 'Fully operational'}
           {score >= 60 && score < 80 && 'Nearly ready'}
           {score < 60 && 'Action needed'}
@@ -74,7 +74,7 @@ export default function EventReadinessScore({
   );
 
   return (
-    <div className="bg-gray-900/40 border border-gray-800/50 rounded-lg p-4">
+    <div className="bg-surface-elevated border border-divider rounded-lg p-4">
       <ReadinessGauge score={score} />
     </div>
   );

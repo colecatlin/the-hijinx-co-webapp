@@ -32,48 +32,48 @@ export function deriveSessionOperationalState(session, sessionResults) {
 /**
  * Config map: state → label, color classes, indicator dot color.
  *
- * Part 7 — Standardized badge palette:
+ * Part 7 — Standardized badge palette (light theme semantic tokens):
  *   GREEN   = official, healthy, standings applied
  *   YELLOW  = advisory (draft with results, duplicate warning)
  *   RED     = blocking (missing results, invalid rows)
- *   BLUE    = informational (provisional, non-scoring)
- *   PURPLE  = locked
+ *   TEAL    = informational (provisional, non-scoring)
+ *   MUTED   = locked / pending
  */
 export const SESSION_STATE_CONFIG = {
   locked: {
     label: 'Locked',
-    badge: 'bg-purple-900/40 text-purple-300 border border-purple-800',
-    dot: 'bg-purple-400',
+    badge: 'bg-surface-interactive text-foreground-secondary border border-divider',
+    dot: 'bg-foreground-quiet',
     icon: '🔒',
   },
   official: {
     label: 'Official',
-    badge: 'bg-green-900/40 text-green-300 border border-green-800',
-    dot: 'bg-green-400',
+    badge: 'bg-success/10 text-success border border-success/30',
+    dot: 'bg-success',
     icon: '✓',
   },
   provisional: {
     label: 'Provisional',
-    badge: 'bg-blue-900/40 text-blue-300 border border-blue-800',
-    dot: 'bg-blue-400',
+    badge: 'bg-motion/10 text-motion border border-motion/30',
+    dot: 'bg-motion',
     icon: '◎',
   },
   draft_results: {
     label: 'Draft Results',
-    badge: 'bg-yellow-900/40 text-yellow-300 border border-yellow-800',
-    dot: 'bg-yellow-400',
+    badge: 'bg-warning/10 text-warning border border-warning/30',
+    dot: 'bg-warning',
     icon: '△',
   },
   missing_results: {
     label: 'No Results',
-    badge: 'bg-red-900/30 text-red-300 border border-red-800/50',
-    dot: 'bg-red-400',
+    badge: 'bg-danger/10 text-danger border border-danger/30',
+    dot: 'bg-danger',
     icon: '!',
   },
   pending: {
     label: 'Pending',
-    badge: 'bg-gray-800/40 text-gray-400 border border-gray-700',
-    dot: 'bg-gray-600',
+    badge: 'bg-surface-interactive/60 text-foreground-quiet border border-divider',
+    dot: 'bg-foreground-quiet',
     icon: '○',
   },
 };
@@ -114,11 +114,11 @@ export function deriveStandingsTag(session, sessionResults) {
 
 // Part 7 — standardized standings tag badges
 export const STANDINGS_TAG_CONFIG = {
-  counted: { label: 'Standings: Applied', color: 'text-green-400' },     // GREEN — applied
-  pending_results: { label: 'Standings: Pending', color: 'text-yellow-400' }, // YELLOW — advisory
-  scoring: { label: 'Scoring Session', color: 'text-blue-400' },          // BLUE — informational
-  non_scoring: { label: 'Non-Scoring', color: 'text-gray-500' },          // BLUE/GRAY — informational
-  skipped: { label: 'Skipped', color: 'text-gray-600' },
+  counted: { label: 'Standings: Applied', color: 'text-success' },
+  pending_results: { label: 'Standings: Pending', color: 'text-warning' },
+  scoring: { label: 'Scoring Session', color: 'text-motion' },
+  non_scoring: { label: 'Non-Scoring', color: 'text-foreground-quiet' },
+  skipped: { label: 'Skipped', color: 'text-foreground-quiet' },
 };
 
 /**
@@ -151,10 +151,10 @@ export function deriveEventOperationalStatus(sessions, results) {
 }
 
 export const EVENT_STATUS_CONFIG = {
-  upcoming: { label: 'Upcoming', badge: 'bg-gray-800 text-gray-400 border-gray-700', dot: 'bg-gray-600' },
-  in_progress: { label: 'In Progress', badge: 'bg-blue-900/40 text-blue-300 border-blue-800', dot: 'bg-blue-400 animate-pulse' },
-  results_pending: { label: 'Results Pending', badge: 'bg-yellow-900/40 text-yellow-300 border-yellow-800', dot: 'bg-yellow-400' },
-  partially_official: { label: 'Partially Official', badge: 'bg-teal-900/40 text-teal-300 border-teal-800', dot: 'bg-teal-400' },
-  official_complete: { label: 'Official Complete', badge: 'bg-green-900/40 text-green-300 border-green-800', dot: 'bg-green-400' },
-  locked_complete: { label: 'Locked Complete', badge: 'bg-purple-900/40 text-purple-300 border-purple-800', dot: 'bg-purple-400' },
+  upcoming: { label: 'Upcoming', badge: 'bg-surface-interactive/60 text-foreground-quiet border-divider', dot: 'bg-foreground-quiet' },
+  in_progress: { label: 'In Progress', badge: 'bg-motion/10 text-motion border-motion/30', dot: 'bg-motion animate-pulse' },
+  results_pending: { label: 'Results Pending', badge: 'bg-warning/10 text-warning border-warning/30', dot: 'bg-warning' },
+  partially_official: { label: 'Partially Official', badge: 'bg-motion/10 text-motion border-motion/30', dot: 'bg-motion' },
+  official_complete: { label: 'Official Complete', badge: 'bg-success/10 text-success border-success/30', dot: 'bg-success' },
+  locked_complete: { label: 'Locked Complete', badge: 'bg-surface-interactive text-foreground-secondary border-divider', dot: 'bg-foreground-quiet' },
 };

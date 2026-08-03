@@ -61,7 +61,7 @@ export default function SessionControlCenter({
       {/* Control center header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wide">
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">
             Weekend Schedule
           </h2>
           <Badge className={`${statusConfig.badge} text-xs`}>
@@ -72,11 +72,11 @@ export default function SessionControlCenter({
         <div className="flex items-center gap-2">
           {/* Part 7: compact selected session indicator */}
           {selectedSession && (
-            <span className="text-xs text-green-400 font-medium bg-green-900/20 border border-green-800/40 px-2 py-0.5 rounded truncate max-w-[160px]">
+            <span className="text-xs text-success font-medium bg-success/10 border border-success/30 px-2 py-0.5 rounded truncate max-w-[160px]">
               ↓ {selectedSession.name}
             </span>
           )}
-          <span className="text-xs text-gray-500 font-mono">{sessions.length} sessions</span>
+          <span className="text-xs text-foreground-quiet font-mono">{sessions.length} sessions</span>
         </div>
       </div>
 

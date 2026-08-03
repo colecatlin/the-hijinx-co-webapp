@@ -17,8 +17,8 @@ export default function OpsRightSidebar({ selectedSession, sessions, results, se
   if (!selectedSession) {
     return (
       <div className="hidden xl:block w-72 flex-shrink-0">
-        <Card className="bg-[#171717] border-gray-800 p-4 sticky top-[200px]">
-          <p className="text-xs text-gray-500 text-center">Select a session to view health &amp; activity</p>
+        <Card className="bg-surface-elevated border-divider p-4 sticky top-[200px]">
+          <p className="text-xs text-foreground-quiet text-center">Select a session to view health &amp; activity</p>
         </Card>
       </div>
     );
@@ -42,17 +42,17 @@ export default function OpsRightSidebar({ selectedSession, sessions, results, se
         animate={{ opacity: 1, x: 0 }}
         className="sticky top-[200px] max-h-[calc(100vh-220px)] overflow-y-auto"
       >
-        <Card className="bg-[#171717] border-gray-800 rounded-lg overflow-hidden">
+        <Card className="bg-surface-elevated border-divider rounded-lg overflow-hidden">
           {/* Tab bar */}
-          <div className="flex border-b border-gray-800 bg-[#1a1a1a]">
+          <div className="flex border-b border-divider bg-surface-interactive/40">
             {tabs.map(({ id, label, Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveSection(id)}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold transition-colors ${
                   activeSection === id
-                    ? 'text-white border-b-2 border-blue-500 bg-[#171717]'
-                    : 'text-gray-500 hover:text-gray-300'
+                    ? 'text-foreground border-b-2 border-motion bg-surface-elevated'
+                    : 'text-foreground-quiet hover:text-foreground-secondary'
                 }`}
               >
                 <Icon className="w-3 h-3" />
@@ -74,35 +74,35 @@ export default function OpsRightSidebar({ selectedSession, sessions, results, se
                   className="space-y-3"
                 >
                   {/* Quick summary */}
-                  <div className="bg-[#1a1a1a] rounded p-2.5 space-y-1.5 border border-gray-800">
-                    <p className="text-xs font-bold text-white uppercase tracking-wide">
+                  <div className="bg-surface-interactive/40 rounded p-2.5 space-y-1.5 border border-divider">
+                    <p className="text-xs font-bold text-foreground uppercase tracking-wide">
                       {selectedSession.name}
                     </p>
-                    <div className="space-y-1 text-xs text-gray-400">
+                    <div className="space-y-1 text-xs text-foreground-secondary">
                       <div className="flex justify-between">
                         <span>Results:</span>
-                        <span className="text-white font-semibold">{sessionResults.length}</span>
+                        <span className="text-foreground font-semibold">{sessionResults.length}</span>
                       </div>
                       {hasMissingDriver && (
-                        <div className="flex items-center gap-1 text-orange-400">
+                        <div className="flex items-center gap-1 text-warning">
                           <AlertTriangle className="w-3 h-3" />
                           <span>Missing driver ID</span>
                         </div>
                       )}
                       {hasDuplicatePos && (
-                        <div className="flex items-center gap-1 text-yellow-400">
+                        <div className="flex items-center gap-1 text-warning">
                           <AlertCircle className="w-3 h-3" />
                           <span>Duplicate positions</span>
                         </div>
                       )}
                       {/* Part 4: include Feature as scoring session */}
                       {isScoringSession(selectedSession) ? (
-                        <div className="flex items-center gap-1 text-green-400 pt-1 border-t border-gray-800 mt-1">
+                        <div className="flex items-center gap-1 text-success pt-1 border-t border-divider mt-1">
                           <CheckCircle2 className="w-3 h-3" />
                           <span>Scoring session — standings recalc on Official</span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 text-gray-600 pt-1 border-t border-gray-800 mt-1">
+                        <div className="flex items-center gap-1 text-foreground-quiet pt-1 border-t border-divider mt-1">
                           <span>Non-scoring — no standings impact</span>
                         </div>
                       )}

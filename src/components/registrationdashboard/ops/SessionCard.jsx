@@ -45,8 +45,8 @@ export default function SessionCard({
     <div
       className={`rounded-lg border transition-all cursor-pointer ${
         isSelected
-          ? 'bg-[#1e2a1e] border-green-700'
-          : 'bg-[#1a1a1a] border-gray-700 hover:border-gray-500'
+          ? 'bg-success/5 border-success/40'
+          : 'bg-surface-interactive/40 border-divider hover:border-foreground-quiet'
       }`}
       onClick={() => onSelectSession && onSelectSession(session.id)}
     >
@@ -57,19 +57,19 @@ export default function SessionCard({
           <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${stateConfig.dot}`} />
 
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white leading-tight truncate">{displayLabel}</p>
+            <p className="text-sm font-semibold text-foreground leading-tight truncate">{displayLabel}</p>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              {timeStr && <span className="text-xs text-gray-500">{timeStr}</span>}
+              {timeStr && <span className="text-xs text-foreground-quiet">{timeStr}</span>}
               {/* Part 5 + 7 — scoring indicator */}
               {scoring ? (
-                <span className="flex items-center gap-0.5 text-xs text-amber-400 font-medium">
+                <span className="flex items-center gap-0.5 text-xs text-warning font-medium">
                   <Trophy className="w-2.5 h-2.5" /> Scores
                 </span>
               ) : (
-                <span className="text-xs text-gray-600">⚪ Non-scoring</span>
+                <span className="text-xs text-foreground-quiet">⚪ Non-scoring</span>
               )}
               {session.round_number && (
-                <span className="text-xs text-gray-400 font-mono">R{session.round_number}</span>
+                <span className="text-xs text-foreground-secondary font-mono">R{session.round_number}</span>
               )}
             </div>
           </div>
@@ -81,11 +81,11 @@ export default function SessionCard({
         </div>
 
         {/* Stats row */}
-        <div className="flex items-center gap-3 text-xs text-gray-500 pl-4">
+        <div className="flex items-center gap-3 text-xs text-foreground-quiet pl-4">
           <span>{sessionResults.length} results</span>
           <span className={standingsConfig.color}>{standingsConfig.label}</span>
           <button
-            className="ml-auto text-gray-600 hover:text-gray-300 transition-colors"
+            className="ml-auto text-foreground-quiet hover:text-foreground-secondary transition-colors"
             onClick={e => { e.stopPropagation(); setExpanded(v => !v); }}
           >
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -96,7 +96,7 @@ export default function SessionCard({
         {warnings.length > 0 && (
           <div className="pl-4 space-y-0.5">
             {warnings.map((w, i) => (
-              <div key={i} className="flex items-center gap-1 text-xs text-orange-400">
+              <div key={i} className="flex items-center gap-1 text-xs text-warning">
                 <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                 <span>{w}</span>
               </div>
@@ -107,20 +107,20 @@ export default function SessionCard({
         {/* Expanded quick actions */}
         {expanded && (
           <div
-            className="border-t border-gray-800 pt-2 flex gap-1 flex-wrap pl-4"
+            className="border-t border-divider pt-2 flex gap-1 flex-wrap pl-4"
             onClick={e => e.stopPropagation()}
           >
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800"
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface-interactive"
               onClick={() => onSelectSession && onSelectSession(session.id)}>
               <Plus className="w-3 h-3 mr-1" /> Enter Results
             </Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800">
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface-interactive">
               <Upload className="w-3 h-3 mr-1" /> CSV
             </Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800">
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface-interactive">
               <Copy className="w-3 h-3 mr-1" /> Paste
             </Button>
-            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-gray-400 hover:text-white hover:bg-gray-800">
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface-interactive">
               <History className="w-3 h-3 mr-1" /> Log
             </Button>
           </div>

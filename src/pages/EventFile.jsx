@@ -37,32 +37,32 @@ function toSafePanel(raw) {
 function EventFileBreadcrumb({ eventName, onBack }) {
   return (
     <div
-      className="flex items-center gap-2 px-4 py-2 text-xs border-b border-gray-800/60 flex-shrink-0"
-      style={{ background: 'rgba(8,10,12,0.95)' }}
+      className="flex items-center gap-2 px-4 py-2 text-xs border-b border-divider flex-shrink-0"
+      style={{ background: 'hsl(var(--surface))' }}
     >
-      <Flag className="w-3 h-3 text-teal-500 flex-shrink-0" />
+      <Flag className="w-3 h-3 text-motion flex-shrink-0" />
       <button
         onClick={onBack}
-        className="text-gray-500 hover:text-gray-300 transition-colors font-medium"
+        className="text-foreground-quiet hover:text-foreground-secondary transition-colors font-medium"
       >
         RaceCore
       </button>
-      <ChevronRight className="w-3 h-3 text-gray-700 flex-shrink-0" />
+      <ChevronRight className="w-3 h-3 text-foreground-quiet flex-shrink-0" />
       <button
         onClick={onBack}
-        className="text-gray-500 hover:text-gray-300 transition-colors"
+        className="text-foreground-quiet hover:text-foreground-secondary transition-colors"
         title="/race-control/events"
       >
         Events
       </button>
-      <ChevronRight className="w-3 h-3 text-gray-700 flex-shrink-0" />
-      <span className="text-gray-200 font-semibold truncate max-w-xs">
+      <ChevronRight className="w-3 h-3 text-foreground-quiet flex-shrink-0" />
+      <span className="text-foreground font-semibold truncate max-w-xs">
         {eventName || '—'}
       </span>
       <div className="flex-1" />
       <button
         onClick={onBack}
-        className="flex items-center gap-1 px-2.5 py-1 rounded border border-gray-800 text-gray-500 hover:text-gray-300 hover:border-gray-700 transition-colors"
+        className="flex items-center gap-1 px-2.5 py-1 rounded border border-divider text-foreground-quiet hover:text-foreground-secondary hover:border-divider transition-colors"
       >
         <ArrowLeft className="w-3 h-3" />
         <span>Back</span>
@@ -74,7 +74,7 @@ function EventFileBreadcrumb({ eventName, onBack }) {
 // ── Error / auth states — minimal, no PageShell ─────────────────────────────
 function FullscreenCard({ children }) {
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-canvas flex items-center justify-center p-6">
       {children}
     </div>
   );
@@ -236,7 +236,7 @@ export default function EventFile() {
   // ── Loading ───────────────────────────────────────────────────────────────
   if (providerLoading || eventLoading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
         <BurnoutSpinner />
       </div>
     );
@@ -246,17 +246,17 @@ export default function EventFile() {
   if (!isAuthenticated) {
     return (
       <FullscreenCard>
-        <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+        <Card className="bg-surface-elevated border-divider w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400" /> Login Required
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-danger" /> Login Required
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-gray-300 text-sm">You must be logged in to access event operations.</p>
+            <p className="text-foreground-secondary text-sm">You must be logged in to access event operations.</p>
             <Button
               onClick={() => base44.auth.redirectToLogin(window.location.href)}
-              className="w-full bg-teal-600 hover:bg-teal-700"
+              className="w-full bg-motion hover:bg-motion-hover"
             >
               Log In
             </Button>
@@ -270,21 +270,21 @@ export default function EventFile() {
   if (eventError || (!eventLoading && !selectedEvent)) {
     return (
       <FullscreenCard>
-        <Card className="bg-[#171717] border-gray-800 w-full max-w-md">
+        <Card className="bg-surface-elevated border-divider w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-400" /> Event Not Found
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-danger" /> Event Not Found
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-gray-300 text-sm">This event doesn't exist or you don't have access to it.</p>
+            <p className="text-foreground-secondary text-sm">This event doesn't exist or you don't have access to it.</p>
             <div className="flex gap-2">
               <Button variant="outline" onClick={handleBack} className="flex-1 gap-2">
                 <ArrowLeft className="w-4 h-4" /> Go Back
               </Button>
               <Button
                   onClick={() => navigate('/race-control/events')}
-                  className="flex-1 bg-teal-600 hover:bg-teal-700"
+                  className="flex-1 bg-motion hover:bg-motion-hover"
                 >
                   Events List
                 </Button>
@@ -299,7 +299,7 @@ export default function EventFile() {
   // L1 fix: use h-full + overflow-hidden instead of height:100vh to work
   // correctly inside global Layout's <main className="flex-1"> wrapper.
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#050505] text-white overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 bg-canvas text-foreground overflow-hidden">
       {/* R8F Part 3: Admin override confirmation dialog */}
       <OverrideDialog />
 

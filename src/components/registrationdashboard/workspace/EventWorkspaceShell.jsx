@@ -152,7 +152,7 @@ export default function EventWorkspaceShell() {
 
   return (
     <EventWorkspaceProvider value={enrichedCtxValue}>
-    <div className="flex flex-col h-full overflow-hidden" style={{ background: '#0B0D0D' }}>
+    <div className="flex flex-col h-full overflow-hidden" style={{ background: 'hsl(var(--canvas))' }}>
       {/* ZONE 1: Command Header */}
       <EventCommandHeader
         selectedEvent={selectedEvent}
@@ -188,10 +188,10 @@ export default function EventWorkspaceShell() {
         <EventWorkspaceNav activePanel={eventWorkspacePanel} onPanelChange={setEventWorkspacePanel} compact={false} />
 
         {/* Center: Panel Content */}
-        <div className="flex-1 overflow-y-auto p-5" style={{ borderRight: '1px solid rgba(255,255,255,0.07)' }}>
+        <div className="flex-1 overflow-y-auto p-5" style={{ borderRight: '1px solid hsl(var(--divider))' }}>
           {!isPanelPermitted && (
             <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
-              <p className="text-gray-400 text-sm">Your access does not include the requested module.</p>
+              <p className="text-foreground-secondary text-sm">Your access does not include the requested module.</p>
             </div>
           )}
 

@@ -9,11 +9,11 @@ import { calculateSessionReadiness, getNextSession, getCountdownToNext, formatCo
 
 function StatusPill({ icon: IconComponent, label, value, variant = 'default', pulse = false, onClick }) {
   const styles = {
-    default:  'bg-gray-800/40 border-gray-700/60 text-gray-400',
-    success:  'bg-green-900/30 border-green-800/50 text-green-300',
-    warning:  'bg-amber-900/30 border-amber-800/50 text-amber-300',
-    critical: 'bg-red-900/30 border-red-800/50 text-red-300',
-    active:   'bg-teal-900/30 border-teal-800/50 text-teal-300',
+    default:  'bg-surface-interactive/60 border-divider text-foreground-secondary',
+    success:  'bg-success/10 border-success/30 text-success',
+    warning:  'bg-warning/10 border-warning/30 text-warning',
+    critical: 'bg-danger/10 border-danger/30 text-danger',
+    active:   'bg-motion/10 border-motion/30 text-motion',
   };
 
   return (
@@ -63,8 +63,8 @@ export default function LiveStatusBar({ sessions = [], results = [], entries = [
 
   return (
     <div
-      className="px-5 py-1.5 flex items-center gap-1.5 flex-wrap overflow-x-auto scrollbar-hide border-b"
-      style={{ background: '#0B0D0D', borderColor: 'rgba(255,255,255,0.07)' }}
+      className="px-5 py-1.5 flex items-center gap-1.5 flex-wrap overflow-x-auto scrollbar-hide border-b border-divider"
+      style={{ background: 'hsl(var(--surface))' }}
     >
       {/* Active session */}
       {stats.activeSession && (
