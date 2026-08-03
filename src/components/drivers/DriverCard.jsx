@@ -119,6 +119,13 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
                   </div>
                 </div>
               )}
+
+              {/* Draft badge (admin-only view) */}
+              {driver.visibility_status === 'draft' && (
+                <div className="absolute top-4 left-4 bg-yellow-400 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-yellow-900">
+                  Draft
+                </div>
+              )}
             </div>
 
             {/* Name Bar */}

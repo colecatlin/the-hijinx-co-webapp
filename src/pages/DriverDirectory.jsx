@@ -11,6 +11,7 @@ import { GitCompare } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import { isDriverPublic } from '@/components/system/publishHelpers';
 import PullToRefresh from '@/components/shared/PullToRefresh';
+import { useQuery as useAuthQuery } from '@tanstack/react-query';
 
 export default function DriverDirectory() {
   const navigate = useNavigate();
@@ -57,7 +58,21 @@ export default function DriverDirectory() {
     staleTime: 5 * 60 * 1000
   });
 
-  const drivers = allDrivers.filter(isDriverPublic);
+  // Admins see all drivers (including drafts); everyone else sees only public.
+  const { data: isAuthenticated } = useAuthQuery({
+    queryKey: ['auth-status'],
+    queryFn: () => base44.auth.isAuthenticated(),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: currentUser } = useAuthQuery({
+    queryKey: ['current-user'],
+    queryFn: () => base44.auth.me(),
+    enabled: !!isAuthenticated,
+    staleTime: 5 * 60 * 1000,
+  });
+  const isAdmin = currentUser?.role === 'admin';
+
+  const drivers = allDrivers.filter(d => isAdmin || isDriverPublic(d));
 
   const { data: allPrograms = [] } = useQuery({
     queryKey: ['driverPrograms'],
