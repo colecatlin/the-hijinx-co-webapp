@@ -220,16 +220,18 @@ export default function EventDirectory() {
     const matchesFormat = resolvedFormatFilter === 'all' || cls?.formatId === resolvedFormatFilter;
     return matchesSearch && matchesStatus && matchesDiscipline && matchesFormat;
   }).sort((a, b) => {
+    // Always closest to today first — soonest upcoming event at the top.
     const da = a.event_date || '';
     const db = b.event_date || '';
-    return sortBy === 'oldest' ? da.localeCompare(db) : db.localeCompare(da);
+    return da.localeCompare(db);
   });
 
   const filteredCompletedEvents = [...completedEvents]
     .sort((a, b) => {
+      // Always most recent first — closest past date to today at the top.
       const da = a.event_date || '';
       const db = b.event_date || '';
-      return sortBy === 'oldest' ? da.localeCompare(db) : db.localeCompare(da);
+      return db.localeCompare(da);
     })
     .filter(event => {
       const cls = classificationByEventId[event.id];
