@@ -238,6 +238,18 @@
     "import_run_id": {
       "type": "string",
       "description": "R9EA: ImportSourceRun.id that created this result"
+    },
+    "racecore_id": {
+      "type": "string",
+      "description": "Immutable RaceCore ID (RSLT + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
+    },
+    "entry_id": {
+      "type": "string",
+      "description": "Reference to Entry. Nullable in Phase 1 \u2014 populated during backfill. Links this result to the event-specific entry record."
+    },
+    "participation_id": {
+      "type": "string",
+      "description": "Reference to SeasonParticipation. Nullable in Phase 1 \u2014 populated during backfill. Derived through Entry."
     }
   },
   "required": [

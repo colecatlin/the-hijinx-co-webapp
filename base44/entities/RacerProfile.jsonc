@@ -1,0 +1,139 @@
+{
+  "name": "RacerProfile",
+  "type": "object",
+  "description": "Public racing identity attached to a PersonIdentity. Default: one RacerProfile per PersonIdentity. Multiple profiles require explicit admin action for a deliberately separate public competition identity.",
+  "properties": {
+    "racecore_id": {
+      "type": "string",
+      "description": "Immutable RaceCore ID (RACR + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
+    },
+    "person_identity_id": {
+      "type": "string",
+      "description": "Reference to PersonIdentity (required after backfill)"
+    },
+    "legacy_driver_id": {
+      "type": "string",
+      "description": "Transitional link to legacy Driver record. Nullable. Removed after full migration."
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name for this racing persona"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly unique identifier for public profile routing. Uses same safe uniqueness conventions as current public profile slugs."
+    },
+    "bio": {
+      "type": "string",
+      "description": "Full public biography"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short headline or identity statement"
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "Primary profile image"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Hero image for profile page"
+    },
+    "career_status": {
+      "type": "string",
+      "enum": [
+        "Novice",
+        "Amateur",
+        "Semi-Professional",
+        "Professional"
+      ],
+      "description": "Career advancement level"
+    },
+    "primary_discipline": {
+      "type": "string",
+      "description": "Primary racing discipline"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "live"
+      ],
+      "default": "draft",
+      "description": "Public visibility control"
+    },
+    "is_claimed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this profile is actively managed by a User"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archive flag"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Personal or team website"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "facebook_url": {
+      "type": "string"
+    },
+    "tiktok_url": {
+      "type": "string"
+    },
+    "x_url": {
+      "type": "string"
+    },
+    "youtube_url": {
+      "type": "string"
+    },
+    "nicknames": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Known nicknames or aliases"
+    },
+    "years_active_start": {
+      "type": "number",
+      "description": "Year racing began"
+    },
+    "years_active_end": {
+      "type": "number",
+      "description": "Optional end year if inactive"
+    },
+    "hometown_city": {
+      "type": "string",
+      "description": "Hometown city (birthplace)"
+    },
+    "hometown_state": {
+      "type": "string",
+      "description": "Hometown state or region (birthplace)"
+    },
+    "hometown_country": {
+      "type": "string",
+      "description": "Hometown country (birthplace/nationality)"
+    },
+    "racing_base_city": {
+      "type": "string",
+      "description": "Current racing base city"
+    },
+    "racing_base_state": {
+      "type": "string",
+      "description": "Current racing base state or region"
+    },
+    "racing_base_country": {
+      "type": "string",
+      "description": "Current racing base country"
+    }
+  },
+  "required": [
+    "person_identity_id",
+    "display_name"
+  ]
+}

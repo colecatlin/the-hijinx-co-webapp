@@ -246,6 +246,10 @@
     "archive_reason": {
       "type": "string",
       "description": "R9CS: Reason for archiving"
+    },
+    "racecore_id": {
+      "type": "string",
+      "description": "Immutable RaceCore ID (DRVR + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
     }
   },
   "required": [

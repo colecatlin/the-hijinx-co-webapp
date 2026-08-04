@@ -201,6 +201,14 @@
     "archive_reason": {
       "type": "string",
       "description": "R9CS: Reason for archiving"
+    },
+    "racecore_id": {
+      "type": "string",
+      "description": "Immutable RaceCore ID (ENTR + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
+    },
+    "participation_id": {
+      "type": "string",
+      "description": "Reference to SeasonParticipation. Nullable in Phase 1 \u2014 populated during backfill. Permanent target competitor-context relationship."
     }
   },
   "required": [

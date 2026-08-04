@@ -1,0 +1,70 @@
+{
+  "name": "SeasonParticipation",
+  "type": "object",
+  "description": "One RacerProfile's relationship to one Series during one season year and racer type. Thin model \u2014 no event-specific context. Intended resolver uniqueness key: racer_profile_id + series_id + season_year + racer_type. Compound unique constraints are not supported in Base44 entity schemas; uniqueness enforcement is deferred to the future resolver function.",
+  "properties": {
+    "racecore_id": {
+      "type": "string",
+      "description": "Immutable RaceCore ID (PART + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
+    },
+    "racer_profile_id": {
+      "type": "string",
+      "description": "Reference to RacerProfile (required after backfill)"
+    },
+    "person_identity_id": {
+      "type": "string",
+      "description": "Denormalized derived reference to PersonIdentity. Must match the PersonIdentity linked through RacerProfile. Justified for query performance on career stats and INDEX46 profile queries."
+    },
+    "legacy_driver_id": {
+      "type": "string",
+      "description": "Transitional link to legacy Driver record. Nullable. Removed after full migration."
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Reference to Series"
+    },
+    "season_year": {
+      "type": "string",
+      "description": "Normalized season year string such as '2026'. Not a reference to a Season entity \u2014 no Season entity exists in Phase 1."
+    },
+    "racer_type": {
+      "type": "string",
+      "enum": [
+        "Driver",
+        "Rider",
+        "Pilot",
+        "Co-driver",
+        "Navigator",
+        "Other"
+      ],
+      "default": "Driver",
+      "description": "The competitor role for this participation"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Inactive",
+        "Archived"
+      ],
+      "default": "Active",
+      "description": "Participation lifecycle status"
+    },
+    "is_primary": {
+      "type": "boolean",
+      "default": false,
+      "description": "Indicates primary participation when a racer has multiple in one season"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archive flag"
+    }
+  },
+  "required": [
+    "racer_profile_id",
+    "series_id",
+    "season_year",
+    "racer_type"
+  ]
+}
