@@ -1,0 +1,30 @@
+{
+  "name": "RaceCoreIdCounter",
+  "type": "object",
+  "description": "Persistent counter for RaceCore ID generation. One record per ID prefix (PERS, RACR, PART). Stores the last successfully reserved sequence number. Backend-only \u2014 never created or modified by frontend code.",
+  "properties": {
+    "prefix": {
+      "type": "string",
+      "description": "Four uppercase letters identifying the ID family (e.g. PERS, RACR, PART). One record per prefix."
+    },
+    "last_issued_number": {
+      "type": "number",
+      "default": 0,
+      "description": "The last successfully reserved sequence number. Next ID will use last_issued_number + 1."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this counter is active and accepting new reservations."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional human-readable description of this counter."
+    }
+  },
+  "required": [
+    "prefix",
+    "last_issued_number",
+    "is_active"
+  ]
+}
