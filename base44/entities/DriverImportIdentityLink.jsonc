@@ -1,0 +1,84 @@
+{
+  "name": "DriverImportIdentityLink",
+  "type": "object",
+  "description": "Stable link between one normalized bulk-driver import source row and the records created or resolved from that row. Used for import idempotency only \u2014 not human identity proof. Not exposed in INDEX46 or public routes.",
+  "properties": {
+    "source_key": {
+      "type": "string",
+      "description": "Deterministic key for repeated-row detection. Backend-generated from source_type, normalized names, resolved Series ID, season_year, resolved Class ID, and normalized number. Must not be treated as human identity proof."
+    },
+    "source_type": {
+      "type": "string",
+      "description": "Source type identifier. Phase 3B value: bulk_driver_csv"
+    },
+    "season_year": {
+      "type": "string",
+      "description": "Normalized four-digit season year string"
+    },
+    "first_name_normalized": {
+      "type": "string",
+      "description": "Normalized first name from the source row"
+    },
+    "last_name_normalized": {
+      "type": "string",
+      "description": "Normalized last name from the source row"
+    },
+    "number_normalized": {
+      "type": "string",
+      "description": "Normalized number from the source row. Blank is an explicit empty value, not null. Preserves leading zeroes and letters."
+    },
+    "series_id": {
+      "type": "string",
+      "description": "Resolved Series internal ID"
+    },
+    "class_id": {
+      "type": "string",
+      "description": "Resolved SeriesClass internal ID"
+    },
+    "person_identity_id": {
+      "type": "string",
+      "description": "Resolved PersonIdentity internal ID. Required only after a successful committed row."
+    },
+    "racer_profile_id": {
+      "type": "string",
+      "description": "Resolved RacerProfile internal ID. Required only after a successful committed row."
+    },
+    "season_participation_id": {
+      "type": "string",
+      "description": "Resolved SeasonParticipation internal ID. Required only after a successful committed row."
+    },
+    "legacy_driver_id": {
+      "type": "string",
+      "description": "Resolved legacy Driver internal ID. Required only after a successful committed row."
+    },
+    "import_run_id": {
+      "type": "string",
+      "description": "Import run identifier if available from the existing import-run architecture."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "resolved",
+        "partial",
+        "review",
+        "blocked",
+        "error"
+      ],
+      "description": "Outcome status of this source row. resolved = all four records created/resolved; partial = some records created before failure; review = requires admin review; blocked = could not process; error = unexpected failure."
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archive flag for source links that are no longer active."
+    }
+  },
+  "required": [
+    "source_key",
+    "source_type",
+    "season_year",
+    "first_name_normalized",
+    "last_name_normalized",
+    "series_id",
+    "class_id"
+  ]
+}

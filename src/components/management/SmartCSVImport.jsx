@@ -524,6 +524,12 @@ export default function SmartCSVImport({ onImportComplete }) {
                   {row.warnings.map((w, i) => <div key={i}>⚠ {w.message}</div>)}
                 </div>
               )}
+              {row.source_link_id && (
+                <div className="mt-1 text-[10px] text-blue-600 font-mono">↻ Source link reused: {row.source_link_id.slice(-8)}</div>
+              )}
+              {row.failed_step && (
+                <div className="mt-1 text-[10px] text-red-600 font-mono">Failed at: {row.failed_step}</div>
+              )}
               <div className="mt-1 flex gap-3 text-[10px] opacity-70">
                 {row.created_records?.person_identity && <span>+PersonIdentity</span>}
                 {row.created_records?.racer_profile && <span>+RacerProfile</span>}
@@ -534,6 +540,18 @@ export default function SmartCSVImport({ onImportComplete }) {
                 {row.reused_records?.season_participation && <span>↻Participation</span>}
                 {row.reused_records?.legacy_driver && <span>↻Driver</span>}
               </div>
+              {row.source_key && (
+                <details className="mt-1">
+                  <summary className="text-[10px] text-gray-500 cursor-pointer hover:text-gray-700">Technical details</summary>
+                  <div className="mt-1 text-[10px] font-mono text-gray-500 break-all">
+                    <div>source_key: {row.source_key}</div>
+                    {row.records_created_before_failure?.person_identity_id && <div>Created PI: {row.records_created_before_failure.person_identity_id}</div>}
+                    {row.records_created_before_failure?.racer_profile_id && <div>Created RP: {row.records_created_before_failure.racer_profile_id}</div>}
+                    {row.records_created_before_failure?.season_participation_id && <div>Created SP: {row.records_created_before_failure.season_participation_id}</div>}
+                    {row.records_created_before_failure?.legacy_driver_id && <div>Created DR: {row.records_created_before_failure.legacy_driver_id}</div>}
+                  </div>
+                </details>
+              )}
             </div>
           ))}
         </div>
@@ -617,6 +635,12 @@ export default function SmartCSVImport({ onImportComplete }) {
               {row.cleanup_required && (
                 <div className="mt-1 text-xs text-red-700 font-bold">⚠ Cleanup required — partial records created before failure</div>
               )}
+              {row.failed_step && (
+                <div className="mt-1 text-[10px] text-red-600 font-mono">Failed at: {row.failed_step}</div>
+              )}
+              {row.source_link_id && (
+                <div className="mt-1 text-[10px] text-blue-600 font-mono">Source link: {row.source_link_id.slice(-8)}</div>
+              )}
               {/* RaceCore IDs (read-only) */}
               {row.resolved_ids && (row.resolved_ids.person_racecore_id || row.resolved_ids.racer_racecore_id || row.resolved_ids.participation_racecore_id || row.resolved_ids.driver_racecore_id) && (
                 <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-2 gap-1 text-[10px] font-mono">
@@ -625,6 +649,23 @@ export default function SmartCSVImport({ onImportComplete }) {
                   {row.resolved_ids.participation_racecore_id && <div>PART: {row.resolved_ids.participation_racecore_id}</div>}
                   {row.resolved_ids.driver_racecore_id && <div>DRVR: {row.resolved_ids.driver_racecore_id}</div>}
                 </div>
+              )}
+              {/* Phase 3B: Technical details (expandable) */}
+              {row.source_key && (
+                <details className="mt-1">
+                  <summary className="text-[10px] text-gray-500 cursor-pointer hover:text-gray-700">Technical details</summary>
+                  <div className="mt-1 text-[10px] font-mono text-gray-500 break-all space-y-0.5">
+                    <div>source_key: {row.source_key}</div>
+                    {row.source_link_id && <div>source_link_id: {row.source_link_id}</div>}
+                    {row.records_created_before_failure?.person_identity_id && <div className="text-red-600">Created PI: {row.records_created_before_failure.person_identity_id}</div>}
+                    {row.records_created_before_failure?.racer_profile_id && <div className="text-red-600">Created RP: {row.records_created_before_failure.racer_profile_id}</div>}
+                    {row.records_created_before_failure?.season_participation_id && <div className="text-red-600">Created SP: {row.records_created_before_failure.season_participation_id}</div>}
+                    {row.records_created_before_failure?.legacy_driver_id && <div className="text-red-600">Created DR: {row.records_created_before_failure.legacy_driver_id}</div>}
+                    {row.records_modified_before_failure?.person_identity_id && <div className="text-amber-600">Modified PI: {row.records_modified_before_failure.person_identity_id}</div>}
+                    {row.records_modified_before_failure?.racer_profile_id && <div className="text-amber-600">Modified RP: {row.records_modified_before_failure.racer_profile_id}</div>}
+                    {row.records_modified_before_failure?.season_participation_id && <div className="text-amber-600">Modified SP: {row.records_modified_before_failure.season_participation_id}</div>}
+                  </div>
+                </details>
               )}
             </div>
           ))}
