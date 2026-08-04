@@ -2,10 +2,11 @@
  * racecoreId.ts — Shared RaceCore ID generation and assignment logic.
  *
  * Used by:
- *   - base44/functions/generateRaceCoreId/entry.ts  (HTTP handler)
+ *   - base44/functions/generateRaceCoreId/entry.ts  (HTTP handler — restricted)
  *   - base44/functions/ensureRaceCoreId/entry.ts   (HTTP handler)
  *   - base44/functions/resolveRacerProfile/entry.ts (direct import)
  *   - base44/functions/resolveSeasonParticipation/entry.ts (direct import)
+ *   - base44/functions/auditRaceCoreIdIntegrity/entry.ts (direct import)
  *
  * CONCURRENCY NOTE:
  *   Base44 does not expose true atomic increment, transactions, or
@@ -26,9 +27,10 @@
  *   neither has written the ID to an entity yet). Both would return
  *   the same RaceCore ID. This is a narrow window and unlikely in
  *   practice (admin-only, infrequent calls). The duplicate check
- *   catches sequential re-use. True elimination requires platform-
- *   level atomic increment with return value, which Base44 does not
- *   currently support.
+ *   in ensureRaceCoreId (post-assignment) catches this after the
+ *   fact and returns a hard error. True elimination requires
+ *   platform-level atomic increment with return value, which
+ *   Base44 does not currently support.
  */
 
 const SUPPORTED_PREFIXES = ['PERS', 'RACR', 'PART'];
@@ -55,6 +57,9 @@ function formatId(prefix, num) {
 /**
  * Generate a unique RaceCore ID for the given prefix.
  * Returns { success, prefix, sequence_number, racecore_id } or { success: false, error }.
+ *
+ * This is an INTERNAL helper. Normal application code must use ensureRaceCoreId
+ * to assign IDs to specific records. The standalone HTTP handler is restricted.
  */
 export async function generateRaceCoreId(base44, prefix) {
   if (!prefix || typeof prefix !== 'string') {
@@ -76,10 +81,9 @@ export async function generateRaceCoreId(base44, prefix) {
     // ── Load or initialize counter ──────────────────────────────────────
     let counters = await sr.entities.RaceCoreIdCounter
       .filter({ prefix: upperPrefix })
-      .catch(() => []);
+      .catch(function() { return []; });
 
     if (!counters || counters.length === 0) {
-      // Try to create — another concurrent call might beat us
       try {
         await sr.entities.RaceCoreIdCounter.create({
           prefix: upperPrefix,
@@ -92,7 +96,7 @@ export async function generateRaceCoreId(base44, prefix) {
       }
       counters = await sr.entities.RaceCoreIdCounter
         .filter({ prefix: upperPrefix })
-        .catch(() => []);
+        .catch(function() { return []; });
       if (!counters || counters.length === 0) {
         return {
           success: false,
@@ -119,21 +123,20 @@ export async function generateRaceCoreId(base44, prefix) {
         { $set: { last_issued_number: nextVal } }
       );
     } catch (e) {
-      continue; // retry
+      continue;
     }
 
     // ── Re-read to verify ────────────────────────────────────────────────
     const recheck = await sr.entities.RaceCoreIdCounter
       .filter({ prefix: upperPrefix })
-      .catch(() => []);
+      .catch(function() { return []; });
     if (!recheck || recheck.length === 0) {
-      continue; // counter disappeared — retry
+      continue;
     }
 
     const confirmedVal = recheck[0].last_issued_number;
 
     if (confirmedVal !== nextVal) {
-      // Someone else changed the counter before our update landed — retry
       continue;
     }
 
@@ -145,13 +148,11 @@ export async function generateRaceCoreId(base44, prefix) {
     try {
       existing = await sr.entities[entityName].filter({ racecore_id: racecoreId });
     } catch (e) {
-      // Entity might not have any records yet — treat as no duplicates
       existing = [];
     }
 
     if (existing && existing.length > 0) {
-      // ID already assigned to a record — another call got here first
-      continue; // retry with next sequence
+      continue;
     }
 
     return {
@@ -168,10 +169,64 @@ export async function generateRaceCoreId(base44, prefix) {
   };
 }
 
+// ── Helper: load a single record by ID ──────────────────────────────────────
+
+async function loadRecord(sr, entityType, entityId) {
+  try {
+    return await sr.entities[entityType].get(entityId);
+  } catch (e) {
+    return null;
+  }
+}
+
+// ── Helper: check uniqueness of a racecore_id across the entity family ──────
+
+async function checkUniqueness(sr, entityType, racecoreId, targetEntityId) {
+  let records = [];
+  try {
+    records = await sr.entities[entityType].filter({ racecore_id: racecoreId });
+  } catch (e) {
+    records = [];
+  }
+
+  if (!records || records.length <= 1) {
+    return { verified_unique: true, duplicate_detected: false, conflicting_entity_ids: [] };
+  }
+
+  // More than one record has this ID — duplicate detected
+  // Return ALL IDs that share this racecore_id (including the target)
+  var allIds = [];
+  for (var i = 0; i < records.length; i++) {
+    allIds.push(records[i].id);
+  }
+
+  return {
+    verified_unique: false,
+    duplicate_detected: true,
+    conflicting_entity_ids: allIds,
+  };
+}
+
 /**
  * Ensure an existing record has a racecore_id. If it already has one, return it.
- * If not, generate a new one and assign it. Idempotent.
- * Returns { success, entity_type, entity_id, racecore_id, generated } or { success: false, error }.
+ * If not, generate a new one, assign it, verify the assignment, and check
+ * uniqueness across the entity family. Idempotent.
+ *
+ * This is the AUTHORITATIVE assignment operation. Normal application code
+ * must use this function, not generateRaceCoreId directly.
+ *
+ * Returns:
+ *   { success, entity_type, entity_id, racecore_id, generated, assigned,
+ *     verified_unique, duplicate_detected, conflicting_entity_ids, attempts }
+ *
+ * CONCURRENCY LIMITATION:
+ *   Base44 cannot mathematically guarantee sequence uniqueness under perfect
+ *   simultaneous concurrency. Two concurrent ensureRaceCoreId calls for
+ *   different records could both generate the same candidate ID, both assign
+ *   it, and both pass the pre-assignment duplicate check. The post-assignment
+ *   uniqueness check catches this and returns a hard error, but cannot
+ *   prevent it. True elimination requires platform-level atomic increment
+ *   with return value, which Base44 does not currently support.
  */
 export async function ensureRaceCoreId(base44, entityType, entityId) {
   if (!entityType || typeof entityType !== 'string') {
@@ -192,65 +247,180 @@ export async function ensureRaceCoreId(base44, entityType, entityId) {
   const sr = base44.asServiceRole;
 
   // ── Load the record ───────────────────────────────────────────────────
-  let record = null;
-  try {
-    record = await sr.entities[entityType].get(entityId);
-  } catch (e) {
-    return {
-      success: false,
-      error: 'Record not found: ' + entityType + ' with id ' + entityId,
-    };
-  }
-
+  let record = await loadRecord(sr, entityType, entityId);
   if (!record) {
     return {
       success: false,
       error: 'Record not found: ' + entityType + ' with id ' + entityId,
+      entity_type: entityType,
+      entity_id: entityId,
+      racecore_id: null,
+      generated: false,
+      assigned: false,
+      verified_unique: false,
+      duplicate_detected: false,
+      conflicting_entity_ids: [],
+      attempts: 0,
     };
   }
 
-  // ── If already has racecore_id, return it (idempotent) ─────────────────
+  // ── If already has racecore_id, return it without advancing the counter ──
   if (record.racecore_id) {
+    const uniquenessCheck = await checkUniqueness(sr, entityType, record.racecore_id, entityId);
     return {
       success: true,
       entity_type: entityType,
       entity_id: entityId,
       racecore_id: record.racecore_id,
       generated: false,
+      assigned: false,
+      verified_unique: uniquenessCheck.verified_unique,
+      duplicate_detected: uniquenessCheck.duplicate_detected,
+      conflicting_entity_ids: uniquenessCheck.conflicting_entity_ids,
+      attempts: 0,
     };
   }
 
-  // ── Generate new ID ───────────────────────────────────────────────────
-  const genResult = await generateRaceCoreId(base44, prefix);
-  if (!genResult.success) {
-    return { success: false, error: genResult.error };
-  }
+  // ── If empty, loop to assign a new ID ──────────────────────────────────
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    // Re-read record to check if another call already set racecore_id
+    let currentRecord = await loadRecord(sr, entityType, entityId);
+    if (!currentRecord) {
+      return {
+        success: false,
+        error: 'Record not found during assignment: ' + entityType + ' with id ' + entityId,
+        entity_type: entityType,
+        entity_id: entityId,
+        racecore_id: null,
+        generated: false,
+        assigned: false,
+        verified_unique: false,
+        duplicate_detected: false,
+        conflicting_entity_ids: [],
+        attempts: attempt,
+      };
+    }
 
-  // ── Update only the racecore_id field ──────────────────────────────────
-  try {
-    await sr.entities[entityType].update(entityId, {
-      racecore_id: genResult.racecore_id,
-    });
-  } catch (e) {
+    // If another call already set racecore_id, return it (don't overwrite)
+    if (currentRecord.racecore_id) {
+      const uniquenessCheck = await checkUniqueness(sr, entityType, currentRecord.racecore_id, entityId);
+      return {
+        success: true,
+        entity_type: entityType,
+        entity_id: entityId,
+        racecore_id: currentRecord.racecore_id,
+        generated: false,
+        assigned: false,
+        verified_unique: uniquenessCheck.verified_unique,
+        duplicate_detected: uniquenessCheck.duplicate_detected,
+        conflicting_entity_ids: uniquenessCheck.conflicting_entity_ids,
+        attempts: attempt,
+      };
+    }
+
+    // ── Reserve a candidate sequence ────────────────────────────────────
+    const genResult = await generateRaceCoreId(base44, prefix);
+    if (!genResult.success) {
+      return {
+        success: false,
+        error: genResult.error,
+        entity_type: entityType,
+        entity_id: entityId,
+        racecore_id: null,
+        generated: false,
+        assigned: false,
+        verified_unique: false,
+        duplicate_detected: false,
+        conflicting_entity_ids: [],
+        attempts: attempt,
+      };
+    }
+
+    // ── Assign the candidate directly to the target entity ──────────────
+    try {
+      await sr.entities[entityType].update(entityId, {
+        racecore_id: genResult.racecore_id,
+      });
+    } catch (e) {
+      continue; // retry with new sequence
+    }
+
+    // ── Re-read the target entity ───────────────────────────────────────
+    let updatedRecord = await loadRecord(sr, entityType, entityId);
+    if (!updatedRecord) {
+      continue; // retry
+    }
+
+    // ── If target does not contain the assigned candidate, retry ────────
+    if (updatedRecord.racecore_id !== genResult.racecore_id) {
+      // Another call set a different ID, or update failed
+      if (updatedRecord.racecore_id) {
+        // Another call set a different ID — return it (don't overwrite)
+        const uniquenessCheck = await checkUniqueness(sr, entityType, updatedRecord.racecore_id, entityId);
+        return {
+          success: true,
+          entity_type: entityType,
+          entity_id: entityId,
+          racecore_id: updatedRecord.racecore_id,
+          generated: false,
+          assigned: false,
+          verified_unique: uniquenessCheck.verified_unique,
+          duplicate_detected: uniquenessCheck.duplicate_detected,
+          conflicting_entity_ids: uniquenessCheck.conflicting_entity_ids,
+          attempts: attempt,
+        };
+      }
+      // Still empty — update failed silently, retry with new sequence
+      continue;
+    }
+
+    // ── Query the complete target entity family for that racecore_id ────
+    const uniquenessCheck = await checkUniqueness(sr, entityType, genResult.racecore_id, entityId);
+
+    // ── If more than one record has the same ID, return a hard error ─────
+    if (uniquenessCheck.duplicate_detected) {
+      return {
+        success: false,
+        error: 'Duplicate RaceCore ID detected: ' + genResult.racecore_id + ' is assigned to multiple ' + entityType + ' records. Conflicting IDs: ' + uniquenessCheck.conflicting_entity_ids.join(', '),
+        entity_type: entityType,
+        entity_id: entityId,
+        racecore_id: genResult.racecore_id,
+        generated: true,
+        assigned: true,
+        verified_unique: false,
+        duplicate_detected: true,
+        conflicting_entity_ids: uniquenessCheck.conflicting_entity_ids,
+        attempts: attempt,
+      };
+    }
+
+    // ── Success: exactly one record has the ID ──────────────────────────
     return {
-      success: false,
-      error: 'Failed to assign racecore_id to ' + entityType + ' ' + entityId + ': ' + e.message,
+      success: true,
+      entity_type: entityType,
+      entity_id: entityId,
+      racecore_id: genResult.racecore_id,
+      generated: true,
+      assigned: true,
+      verified_unique: true,
+      duplicate_detected: false,
+      conflicting_entity_ids: [],
+      attempts: attempt,
     };
   }
 
-  // ── Re-read to confirm ────────────────────────────────────────────────
-  let updated = null;
-  try {
-    updated = await sr.entities[entityType].get(entityId);
-  } catch (e) {
-    // Update succeeded but re-read failed — return the generated ID
-  }
-
+  // ── Failed after MAX_RETRIES ──────────────────────────────────────────
   return {
-    success: true,
+    success: false,
+    error: 'Failed to assign RaceCore ID to ' + entityType + ' ' + entityId + ' after ' + MAX_RETRIES + ' attempts',
     entity_type: entityType,
     entity_id: entityId,
-    racecore_id: (updated && updated.racecore_id) ? updated.racecore_id : genResult.racecore_id,
-    generated: true,
+    racecore_id: null,
+    generated: false,
+    assigned: false,
+    verified_unique: false,
+    duplicate_detected: false,
+    conflicting_entity_ids: [],
+    attempts: MAX_RETRIES,
   };
 }
