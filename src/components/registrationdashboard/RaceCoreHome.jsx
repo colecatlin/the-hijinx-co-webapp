@@ -25,7 +25,7 @@ const DQ = applyDefaultQueryOptions();
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
-  Live:            { label: 'LIVE',      color: 'text-danger',        bg: 'bg-danger/10 border-danger/40',      dot: 'bg-danger animate-pulse' },
+  Live:            { label: 'ACTIVE',     color: 'text-motion',        bg: 'bg-motion/10 border-motion/40',      dot: 'bg-motion' },
   Published:       { label: 'PUBLISHED', color: 'text-motion',        bg: 'bg-motion/10 border-motion/40',      dot: 'bg-motion' },
   Completed:       { label: 'DONE',      color: 'text-foreground-quiet', bg: 'bg-surface-interactive border-divider', dot: 'bg-foreground-quiet' },
   Cancelled:       { label: 'CANCLD',    color: 'text-foreground-quiet', bg: 'bg-surface-interactive/60 border-divider', dot: 'bg-foreground-quiet' },
@@ -164,7 +164,7 @@ export default function RaceCoreHome({
         <div className="px-3 py-1.5 border-r border-divider">
           <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-foreground-quiet">TELEMETRY</span>
         </div>
-        <TelCell value={telemetry.live} label="LIVE" hot />
+        <TelCell value={telemetry.live} label="ACTIVE" hot />
         <TelCell value={telemetry.upcoming} label="UPCOMING" />
         <TelCell value={telemetry.total} label="TOTAL" />
         <TelCell value={telemetry.imports24h} label="IMPORTS 24H" />
@@ -212,17 +212,17 @@ export default function RaceCoreHome({
                   className={`
                     flex items-center gap-3 px-3 py-2 cursor-pointer transition-all border-b border-divider last:border-b-0 group
                     ${isLive
-                      ? 'bg-danger/10 hover:bg-danger/15'
+                      ? 'bg-motion/10 hover:bg-motion/15'
                       : isCompleted
                       ? 'opacity-55 hover:opacity-75'
                       : 'hover:bg-surface-interactive'
                     }
                   `}
-                >
-                  {/* Live indicator or index */}
+                  >
+                  {/* Active indicator or index */}
                   <div className="w-4 flex-shrink-0 flex items-center justify-center">
                     {isLive
-                      ? <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
+                      ? <span className="w-1.5 h-1.5 rounded-full bg-motion" />
                       : <span className="text-[9px] font-mono text-foreground-quiet tabular-nums">{String(idx + 1).padStart(2, '0')}</span>
                     }
                   </div>
@@ -253,7 +253,7 @@ export default function RaceCoreHome({
                        <div className="text-[10px] font-mono text-foreground-quiet">{format(eventDate, 'yyyy')}</div>
                      </div>
                     )}
-                    <ChevronRight className={`w-3 h-3 flex-shrink-0 transition-colors ${isLive ? 'text-danger group-hover:text-danger' : 'text-foreground-quiet group-hover:text-foreground'}`} />
+                    <ChevronRight className={`w-3 h-3 flex-shrink-0 transition-colors ${isLive ? 'text-motion group-hover:text-motion' : 'text-foreground-quiet group-hover:text-foreground'}`} />
                   </div>
                 </div>
               );

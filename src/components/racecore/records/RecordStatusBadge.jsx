@@ -87,7 +87,7 @@ export const STATUS_STYLES = {
 };
 
 export const STATUS_LABELS = {
-  Live:      'LIVE',
+  Live:      'ACTIVE',
   Draft:     'DRAFT',
   Active:    'ACTIVE',
   Inactive:  'INACTIVE',
@@ -154,7 +154,9 @@ const VARIANT_TOOLTIP = {
 export default function RecordStatusBadge({ status, className, variant = 'operational' }) {
   const canonical = normalizeStatus(status);
   const style = STATUS_STYLES[canonical] || STATUS_STYLES.Draft;
-  const label = STATUS_LABELS[canonical] || (canonical ? canonical.toUpperCase() : 'UNKNOWN');
+  // Operational 'Live' = event happening now → 'LIVE'. Visibility 'Live' = live on site → 'ACTIVE'.
+  const defaultLabel = STATUS_LABELS[canonical] || (canonical ? canonical.toUpperCase() : 'UNKNOWN');
+  const label = (canonical === 'Live' && variant === 'operational') ? 'LIVE' : defaultLabel;
   const borderClass = VARIANT_BORDER[variant] || VARIANT_BORDER.operational;
   const tooltip = VARIANT_TOOLTIP[variant];
 

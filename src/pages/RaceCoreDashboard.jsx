@@ -301,9 +301,9 @@ export default function RaceCoreDashboard() {
       {/* Archive warning dialog */}
       <AlertDialog open={showArchiveWarning} onOpenChange={setShowArchiveWarning}>
         <AlertDialogContent className="bg-popover border-divider">
-          <AlertDialogTitle className="text-foreground">Event Currently Live</AlertDialogTitle>
+          <AlertDialogTitle className="text-foreground">Event Currently Active</AlertDialogTitle>
           <AlertDialogDescription className="text-foreground-quiet">
-            This event is currently marked as Live. Are you sure you want to archive it?
+            This event is currently marked as Active. Are you sure you want to archive it?
           </AlertDialogDescription>
           <div className="flex gap-2 justify-end">
             <AlertDialogCancel className="border-divider text-foreground-secondary">Cancel</AlertDialogCancel>

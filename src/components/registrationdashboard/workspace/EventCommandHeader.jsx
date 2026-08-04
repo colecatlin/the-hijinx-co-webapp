@@ -139,7 +139,7 @@ export default function EventCommandHeader({
   const pendingMedia = mediaApplications.filter(a => ['Pending', 'Submitted', 'Applied'].includes(a.status)).length;
 
   const statusVariant =
-    isLive ? 'critical' :
+    isLive ? 'active' :
     isCompleted ? 'success' :
     eventStatus === 'Published' ? 'active' :
     'default';
@@ -169,7 +169,7 @@ export default function EventCommandHeader({
         {/* Row 1: Identity + status + lifecycle */}
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-sm font-bold text-foreground truncate">{selectedEvent.name}</h1>
-          <StatChip label="Status" value={eventStatus} variant={statusVariant} />
+          <StatChip label="Status" value={isLive ? 'Active' : eventStatus} variant={statusVariant} />
           {selectedTrack && (
             <span className="text-[10px] text-foreground-quiet">{selectedTrack.name}</span>
           )}
@@ -188,10 +188,10 @@ export default function EventCommandHeader({
           {/* Lifecycle controls */}
           {isAdmin && !isLive && !isCompleted && (
             <LifecycleButton
-              label="Set Live"
-              onClick={() => handleLifecycle('Live', 'Set Event Live')}
+              label="Set Active"
+              onClick={() => handleLifecycle('Live', 'Set Event Active')}
               loading={lifecycleLoading}
-              variant="live"
+              variant="active"
             />
           )}
           {isAdmin && isLive && !isCompleted && (
