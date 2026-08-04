@@ -38,7 +38,14 @@ export default function SmartCSVImport({ onImportComplete }) {
   const [showMapping, setShowMapping] = useState(false);
   const [columnMapping, setColumnMapping] = useState({});
 
+  // Phase 3: Identity-first driver import state
+  const [seasonYear, setSeasonYear] = useState('');
+  const [driverPreview, setDriverPreview] = useState(null);
+  const [driverCommitResult, setDriverCommitResult] = useState(null);
+  const [committing, setCommitting] = useState(false);
+
   const effectiveEntity = overrideEntity || detection?.entity;
+  const isDriverImport = effectiveEntity === 'Driver';
 
   // Parse CSV and validate on mount
   useEffect(() => {
@@ -103,7 +110,69 @@ export default function SmartCSVImport({ onImportComplete }) {
     setStep('confirm');
   };
 
+  // Phase 3: Parse CSV rows into importDriversBulk format
+  const parseDriverRows = () => {
+    const headers = csvHeaders.map(h => h.toLowerCase().trim());
+    return csvRows.map(cols => {
+      const row = {};
+      headers.forEach((h, i) => { row[h] = cols[i] || ''; });
+      return {
+        first_name: row.first_name || '',
+        last_name: row.last_name || '',
+        number: row.number || row.primary_number || row.car_number || '',
+        series: row.series || row.series_name || '',
+        class: row.class || row.class_name || '',
+      };
+    });
+  };
+
+  const seasonYearValid = () => /^\d{4}$/.test((seasonYear || '').trim());
+
+  // Phase 3: Driver dry-run preview
+  const handleDriverPreview = async () => {
+    setImporting(true);
+    try {
+      const rows = parseDriverRows();
+      const res = await base44.functions.invoke('importDriversBulk', {
+        season_year: seasonYear.trim(),
+        rows,
+        dry_run: true,
+      });
+      setDriverPreview(res.data);
+      setStep('driverPreview');
+    } catch (err) {
+      setResult({ error: err.message });
+      setStep('done');
+    }
+    setImporting(false);
+  };
+
+  // Phase 3: Driver commit
+  const handleDriverCommit = async () => {
+    setCommitting(true);
+    try {
+      const rows = parseDriverRows();
+      const res = await base44.functions.invoke('importDriversBulk', {
+        season_year: seasonYear.trim(),
+        rows,
+        dry_run: false,
+      });
+      setDriverCommitResult(res.data);
+      setStep('driverDone');
+      onImportComplete?.();
+    } catch (err) {
+      setResult({ error: err.message });
+      setStep('done');
+    }
+    setCommitting(false);
+  };
+
   const handleImport = async () => {
+    // Phase 3: Route Driver imports through importDriversBulk
+    if (isDriverImport) {
+      return handleDriverPreview();
+    }
+
     setImporting(true);
     const startTime = Date.now();
     try {
@@ -174,6 +243,10 @@ export default function SmartCSVImport({ onImportComplete }) {
     setValidationErrors([]);
     setColumnMapping({});
     setShowMapping(false);
+    setSeasonYear('');
+    setDriverPreview(null);
+    setDriverCommitResult(null);
+    setCommitting(false);
   };
 
   if (step === 'upload') {
@@ -331,16 +404,46 @@ export default function SmartCSVImport({ onImportComplete }) {
               </Card>
             )}
 
+            {/* Phase 3: Season year input for Driver imports */}
+            {isDriverImport && (
+              <Card className="border-blue-300 bg-blue-50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2 text-blue-900">
+                    <Info className="w-4 h-4" />
+                    Season Year (Required)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-blue-700 mb-2">
+                    Identity-first driver import requires an import-level season year. This applies to every row in the import. Drivers are resolved through PersonIdentity → RacerProfile → SeasonParticipation → legacy Driver.
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="e.g. 2026"
+                    value={seasonYear}
+                    onChange={(e) => setSeasonYear(e.target.value)}
+                    className="w-full px-3 py-2 border rounded bg-white text-gray-800 text-sm"
+                    maxLength={4}
+                  />
+                  {seasonYear && !seasonYearValid() && (
+                    <p className="text-xs text-red-600 mt-1">Season year must be exactly 4 digits (e.g. 2026).</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Actions */}
             <div className="flex gap-2 justify-between pt-2 border-t">
               <Button variant="outline" onClick={reset}>Back</Button>
               <Button
                 className="bg-gray-900 text-white"
                 onClick={handleImport}
-                disabled={importing || detecting || validationErrors.length > 0}
+                disabled={importing || detecting || validationErrors.length > 0 || (isDriverImport && !seasonYearValid())}
               >
                 {importing ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Importing…</>
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Previewing…</>
+                ) : isDriverImport ? (
+                  <><Upload className="w-4 h-4 mr-2" />Preview Import</>
                 ) : (
                   <><Upload className="w-4 h-4 mr-2" />Import as {effectiveEntity}</>
                 )}
@@ -348,6 +451,188 @@ export default function SmartCSVImport({ onImportComplete }) {
             </div>
           </>
         )}
+      </div>
+    );
+  }
+
+  // Phase 3: Driver dry-run preview step
+  if (step === 'driverPreview') {
+    const preview = driverPreview;
+    const summary = preview?.summary || {};
+    const rows = preview?.rows || [];
+    const statusColor = (s) => {
+      if (s === 'created') return 'text-green-700 bg-green-50 border-green-200';
+      if (s === 'resolved') return 'text-blue-700 bg-blue-50 border-blue-200';
+      if (s === 'ready') return 'text-gray-700 bg-gray-50 border-gray-200';
+      if (s === 'review') return 'text-amber-700 bg-amber-50 border-amber-200';
+      if (s === 'blocked') return 'text-red-700 bg-red-50 border-red-200';
+      return 'text-red-700 bg-red-50 border-red-200';
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <FileSpreadsheet className="w-4 h-4" />
+          <span className="font-medium">{fileName}</span>
+          <span className="text-gray-400">·</span>
+          <span>Season {preview?.season_year}</span>
+          <span className="text-gray-400">·</span>
+          <span className="font-medium text-blue-700">DRY RUN (Projected)</span>
+        </div>
+
+        {/* Summary grid */}
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+          {[
+            { label: 'Total', val: summary.total_rows, color: 'bg-gray-50' },
+            { label: 'Created', val: summary.created_rows, color: 'bg-green-50' },
+            { label: 'Resolved', val: summary.resolved_rows, color: 'bg-blue-50' },
+            { label: 'Review', val: summary.review_rows, color: 'bg-amber-50' },
+            { label: 'Blocked', val: summary.blocked_rows, color: 'bg-red-50' },
+            { label: 'Errors', val: summary.error_rows, color: 'bg-red-50' },
+          ].map(item => (
+            <div key={item.label} className={`${item.color} rounded-lg p-2`}>
+              <p className="text-xl font-bold">{item.val}</p>
+              <p className="text-[10px] text-gray-500">{item.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
+          <Info className="w-4 h-4 inline mr-1" />
+          These are <strong>projected</strong> outcomes from read-only matching. Commit results may differ if concurrent changes occur.
+        </div>
+
+        {/* Row-level results */}
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {rows.map((row) => (
+            <div key={row.row_number} className={`border rounded-lg p-3 ${statusColor(row.resolution_status)}`}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold">Row {row.row_number}: {row.normalized_input?.first_name} {row.normalized_input?.last_name}</span>
+                <span className="text-xs font-bold uppercase">{row.resolution_status}</span>
+              </div>
+              <div className="text-xs opacity-80">
+                {row.normalized_input?.series} · {row.normalized_input?.class}
+                {row.normalized_input?.number && ` · #${row.normalized_input.number}`}
+              </div>
+              {row.errors?.length > 0 && (
+                <div className="mt-1 text-xs text-red-700">
+                  {row.errors.map((e, i) => <div key={i}>⚠ {e.message}</div>)}
+                </div>
+              )}
+              {row.warnings?.length > 0 && (
+                <div className="mt-1 text-xs text-amber-700">
+                  {row.warnings.map((w, i) => <div key={i}>⚠ {w.message}</div>)}
+                </div>
+              )}
+              <div className="mt-1 flex gap-3 text-[10px] opacity-70">
+                {row.created_records?.person_identity && <span>+PersonIdentity</span>}
+                {row.created_records?.racer_profile && <span>+RacerProfile</span>}
+                {row.created_records?.season_participation && <span>+Participation</span>}
+                {row.created_records?.legacy_driver && <span>+Driver</span>}
+                {row.reused_records?.person_identity && <span>↻PersonIdentity</span>}
+                {row.reused_records?.racer_profile && <span>↻RacerProfile</span>}
+                {row.reused_records?.season_participation && <span>↻Participation</span>}
+                {row.reused_records?.legacy_driver && <span>↻Driver</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2 justify-between pt-2 border-t">
+          <Button variant="outline" onClick={() => setStep('confirm')}>Back</Button>
+          <Button
+            className="bg-gray-900 text-white"
+            onClick={handleDriverCommit}
+            disabled={committing}
+          >
+            {committing ? (
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Committing…</>
+            ) : (
+              <><Upload className="w-4 h-4 mr-2" />Commit Import</>
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Phase 3: Driver commit done step
+  if (step === 'driverDone') {
+    const commit = driverCommitResult;
+    const summary = commit?.summary || {};
+    const rows = commit?.rows || [];
+    const statusColor = (s) => {
+      if (s === 'created') return 'text-green-700 bg-green-50 border-green-200';
+      if (s === 'resolved') return 'text-blue-700 bg-blue-50 border-blue-200';
+      if (s === 'review') return 'text-amber-700 bg-amber-50 border-amber-200';
+      if (s === 'blocked') return 'text-red-700 bg-red-50 border-red-200';
+      return 'text-red-700 bg-red-50 border-red-200';
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="text-center py-3">
+          <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2" />
+          <p className="font-semibold text-lg">Driver Import Complete</p>
+          <p className="text-sm text-gray-500">Season {commit?.season_year} · {summary.total_rows} rows processed</p>
+        </div>
+
+        {/* Summary grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+          <div className="bg-green-50 rounded-lg p-3"><p className="text-2xl font-bold">{summary.created_rows}</p><p className="text-xs text-gray-500">Created</p></div>
+          <div className="bg-blue-50 rounded-lg p-3"><p className="text-2xl font-bold">{summary.resolved_rows}</p><p className="text-xs text-gray-500">Resolved</p></div>
+          <div className="bg-amber-50 rounded-lg p-3"><p className="text-2xl font-bold">{summary.review_rows}</p><p className="text-xs text-gray-500">Review</p></div>
+          <div className="bg-red-50 rounded-lg p-3"><p className="text-2xl font-bold">{summary.blocked_rows + (summary.error_rows || 0)}</p><p className="text-xs text-gray-500">Blocked/Errors</p></div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+          <div className="bg-gray-50 rounded p-2"><p className="font-bold">{summary.person_identities_created}</p><p className="text-gray-500">PersonIdentities</p></div>
+          <div className="bg-gray-50 rounded p-2"><p className="font-bold">{summary.racer_profiles_created}</p><p className="text-gray-500">RacerProfiles</p></div>
+          <div className="bg-gray-50 rounded p-2"><p className="font-bold">{summary.season_participations_created}</p><p className="text-gray-500">Participations</p></div>
+          <div className="bg-gray-50 rounded p-2"><p className="font-bold">{summary.drivers_created}</p><p className="text-gray-500">Drivers</p></div>
+        </div>
+
+        {/* Row-level results with RaceCore IDs */}
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {rows.map((row) => (
+            <div key={row.row_number} className={`border rounded-lg p-3 ${statusColor(row.resolution_status)}`}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold">Row {row.row_number}: {row.normalized_input?.first_name} {row.normalized_input?.last_name}</span>
+                <span className="text-xs font-bold uppercase">{row.resolution_status}</span>
+              </div>
+              <div className="text-xs opacity-80">
+                {row.normalized_input?.series} · {row.normalized_input?.class}
+                {row.normalized_input?.number && ` · #${row.normalized_input.number}`}
+              </div>
+              {row.errors?.length > 0 && (
+                <div className="mt-1 text-xs text-red-700">
+                  {row.errors.map((e, i) => <div key={i}>⚠ {e.message}</div>)}
+                </div>
+              )}
+              {row.warnings?.length > 0 && (
+                <div className="mt-1 text-xs text-amber-700">
+                  {row.warnings.map((w, i) => <div key={i}>⚠ {w.message}</div>)}
+                </div>
+              )}
+              {row.cleanup_required && (
+                <div className="mt-1 text-xs text-red-700 font-bold">⚠ Cleanup required — partial records created before failure</div>
+              )}
+              {/* RaceCore IDs (read-only) */}
+              {row.resolved_ids && (row.resolved_ids.person_racecore_id || row.resolved_ids.racer_racecore_id || row.resolved_ids.participation_racecore_id || row.resolved_ids.driver_racecore_id) && (
+                <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-2 gap-1 text-[10px] font-mono">
+                  {row.resolved_ids.person_racecore_id && <div>PERS: {row.resolved_ids.person_racecore_id}</div>}
+                  {row.resolved_ids.racer_racecore_id && <div>RACR: {row.resolved_ids.racer_racecore_id}</div>}
+                  {row.resolved_ids.participation_racecore_id && <div>PART: {row.resolved_ids.participation_racecore_id}</div>}
+                  {row.resolved_ids.driver_racecore_id && <div>DRVR: {row.resolved_ids.driver_racecore_id}</div>}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2 justify-center pt-2 border-t">
+          <Button variant="outline" onClick={reset}>Import Another File</Button>
+        </div>
       </div>
     );
   }
