@@ -28,6 +28,9 @@ import CreatorProfile from './pages/CreatorProfile';
 import MediaOutletProfile from './pages/MediaOutletProfile';
 import OutletStoryPage from './pages/OutletStoryPage';
 import { DriverProfileRouteWrapper } from './pages/DriverProfile';
+import { RacerProfileRouteWrapper } from './pages/RacerProfile';
+import DriverSlugRedirect from '@/components/racerprofile/DriverSlugRedirect';
+import RacerDirectory from './pages/RacerDirectory';
 import { SeriesDetailRouteWrapper } from './pages/SeriesDetail';
 import ClaimsCenter from './pages/ClaimsCenter';
 import RaceCoreDriverEditor from './pages/RaceCoreDriverEditor';
@@ -219,8 +222,11 @@ const AuthenticatedApp = () => {
       <Route path="/media-outlets/:slug" element={<LayoutWrapper currentPageName="media-outlets"><MediaOutletProfile /></LayoutWrapper>} />
       {/* Canonical slug-based story route */}
       <Route path="/story/:slug" element={<LayoutWrapper currentPageName="OutletStoryPage"><OutletStoryPage /></LayoutWrapper>} />
-      {/* Canonical slug-based driver profile route */}
-      <Route path="/drivers/:slug" element={<LayoutWrapper currentPageName="DriverProfile"><DriverProfileRouteWrapper /></LayoutWrapper>} />
+      {/* Phase 7: Canonical racer profile route — /racers/:slug (RacerProfile-based) */}
+      <Route path="/racers" element={<LayoutWrapper currentPageName="RacerDirectory"><RacerDirectory /></LayoutWrapper>} />
+      <Route path="/racers/:slug" element={<LayoutWrapper currentPageName="RacerProfile"><RacerProfileRouteWrapper /></LayoutWrapper>} />
+      {/* Legacy /drivers/:slug → permanent redirect to /racers/:slug via DriverSlugRedirect */}
+      <Route path="/drivers/:slug" element={<LayoutWrapper currentPageName="DriverProfile"><DriverSlugRedirect /></LayoutWrapper>} />
       <Route path="/series/:slug" element={<LayoutWrapper currentPageName="SeriesDetail"><SeriesDetailRouteWrapper /></LayoutWrapper>} />
       <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />

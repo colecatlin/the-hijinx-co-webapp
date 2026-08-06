@@ -7,7 +7,7 @@ import SeoMeta from '@/components/system/seoMeta';
 import {
   Users, Building2, MapPin, Trophy, CalendarDays, Database, ArrowRight, Camera, Newspaper,
 } from 'lucide-react';
-import DriverDirectory from './DriverDirectory';
+import RacerDirectory from './RacerDirectory';
 import TeamDirectory from './TeamDirectory';
 import TrackDirectory from './TrackDirectory';
 import SeriesHome from './SeriesHome';
@@ -26,7 +26,7 @@ const SURF = 'hsl(var(--surface-elevated))';
 
 // Category registry — order = display order in the switcher
 const CATEGORIES = [
-  { key: 'drivers', label: 'Drivers', icon: Users,        Component: DriverDirectory },
+  { key: 'drivers', label: 'Racers',  icon: Users,        Component: RacerDirectory },
   { key: 'teams',   label: 'Teams',   icon: Building2,    Component: TeamDirectory },
   { key: 'tracks',  label: 'Tracks',  icon: MapPin,       Component: TrackDirectory },
   { key: 'series',  label: 'Series',  icon: Trophy,       Component: SeriesHome },
@@ -52,7 +52,7 @@ export default function Directory() {
   const [active, setActive] = useState(VALID_KEYS.has(rawCat) ? rawCat : 'drivers');
 
   // Live counts for the switcher pills (+ monthly nuance skipped for simplicity here)
-  const drivers   = useCount('Driver');
+  const drivers   = useCount('RacerProfile');
   const teams     = useCount('Team');
   const tracks    = useCount('Track');
   const series    = useCount('Series');

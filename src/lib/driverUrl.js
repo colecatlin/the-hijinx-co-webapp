@@ -23,8 +23,19 @@
  * @returns {string}
  */
 export function getDriverProfileUrl(driver) {
-  if (!driver) return '/DriverDirectory';
+  if (!driver) return '/Directory?cat=drivers';
 
+  // Phase 7: If the object has a RacerProfile slug, use /racers/:slug
+  if (driver.slug && driver._racerProfile) {
+    return `/racers/${encodeURIComponent(driver.slug)}`;
+  }
+
+  // Phase 7: If the object has a RacerProfile slug directly, use /racers/:slug
+  if (driver.slug && !driver.first_name && !driver.last_name && driver.display_name) {
+    return `/racers/${encodeURIComponent(driver.slug)}`;
+  }
+
+  // Legacy: Driver-shaped object — use /drivers/:slug (will redirect to /racers/:slug)
   if (driver.canonical_slug) {
     return `/drivers/${encodeURIComponent(driver.canonical_slug)}`;
   }
@@ -37,5 +48,5 @@ export function getDriverProfileUrl(driver) {
     return `/DriverProfile?id=${encodeURIComponent(driver.id)}`;
   }
 
-  return '/DriverDirectory';
+  return '/Directory?cat=drivers';
 }

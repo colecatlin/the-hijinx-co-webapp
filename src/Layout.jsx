@@ -31,7 +31,7 @@ const navItems = [
   { name: 'INDEX46', page: 'MotorsportsHome', sub: [
     { name: '— Directory —', page: null, disabled: true },
     { name: 'All Records', href: '/Directory' },
-    { name: 'Drivers', href: '/Directory?cat=drivers' },
+    { name: 'Racers', href: '/Directory?cat=drivers' },
     { name: 'Teams', href: '/Directory?cat=teams' },
     { name: 'Tracks', href: '/Directory?cat=tracks' },
     { name: 'Series', href: '/Directory?cat=series' },
@@ -120,9 +120,9 @@ export default function Layout({ children, currentPageName }) {
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       const q = searchQuery.toLowerCase();
-      const [allStories, allDrivers, allEvents, allTracks, allSeries, allTeams] = await Promise.all([
+      const [allStories, allRacerProfiles, allEvents, allTracks, allSeries, allTeams] = await Promise.all([
         base44.entities.OutletStory.list('-published_date', 200),
-        base44.entities.Driver.list('-created_date', 200),
+        base44.entities.RacerProfile.list('-created_date', 200),
         base44.entities.Event.list('-event_date', 200),
         base44.entities.Track.list('-created_date', 200),
         base44.entities.Series.list('-created_date', 200),
@@ -135,12 +135,11 @@ export default function Layout({ children, currentPageName }) {
            s.author?.toLowerCase().includes(q) || s.primary_category?.toLowerCase().includes(q) ||
            s.sub_category?.toLowerCase().includes(q) || s.tags?.some(t => t.toLowerCase().includes(q)))
         ).slice(0, 4),
-        drivers: allDrivers.filter(d =>
-          d.visibility_status === 'live' &&
-          (`${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
-           d.primary_number?.toLowerCase().includes(q) ||
-           d.hometown_city?.toLowerCase().includes(q) ||
-           d.nicknames?.some(n => n.toLowerCase().includes(q)))
+        drivers: allRacerProfiles.filter(rp =>
+          rp.visibility === 'live' && !rp.is_archived &&
+          (rp.display_name?.toLowerCase().includes(q) ||
+           rp.hometown_city?.toLowerCase().includes(q) ||
+           rp.nicknames?.some(n => n.toLowerCase().includes(q)))
         ).slice(0, 4),
         events: allEvents.filter(e =>
           e.published_flag &&
@@ -378,16 +377,16 @@ export default function Layout({ children, currentPageName }) {
                           )}
                           {searchResults.drivers.length > 0 && (
                             <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>DRIVERS</p>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>RACERS</p>
                               <div className="space-y-0.5">
-                                {searchResults.drivers.map(driver => (
-                                  <Link key={driver.id} to={driver.slug ? `/drivers/${driver.slug}` : `/DriverProfile?id=${driver.id}`}
+                                {searchResults.drivers.map(rp => (
+                                  <Link key={rp.id} to={rp.slug ? `/racers/${rp.slug}` : `/Directory?cat=racers`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
                                     style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
                                     onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {driver.first_name} {driver.last_name}
+                                    {rp.display_name}
                                   </Link>
                                 ))}
                               </div>
