@@ -103,16 +103,25 @@
     "by_series": {
       "type": "array",
       "default": [],
+      "items": {
+        "type": "object"
+      },
       "description": "Per-series breakdown: [{ series_id, series_name, starts, wins, podiums, points_total, seasons }]"
     },
     "by_class": {
       "type": "array",
       "default": [],
+      "items": {
+        "type": "object"
+      },
       "description": "Per-class breakdown"
     },
     "by_manufacturer": {
       "type": "array",
       "default": [],
+      "items": {
+        "type": "object"
+      },
       "description": "Per-manufacturer breakdown"
     },
     "last_calculated": {
