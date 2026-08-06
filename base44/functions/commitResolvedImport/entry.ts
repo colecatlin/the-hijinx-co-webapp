@@ -31,6 +31,8 @@
  * Admin only.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { ensureRaceCoreId } from '../../shared/racecoreId.ts';
+import { resolveParticipationForEntry } from '../../shared/entryParticipationResolver.ts';
 
 // ── Normalization ──────────────────────────────────────────────────────────────
 function normalizeEntityName(name, type) {
@@ -173,14 +175,39 @@ async function commitOperational(sr, resolvedRow, resolvedIds, user, is_historic
   if (entity_type === 'Entry') {
     const key = `entry:${eventId}:${driverId}:${r.car_number}`;
     const existing = await sr.entities.Entry.filter({ event_id: eventId, driver_id: driverId, car_number: r.car_number }).catch(() => []);
+
+    // Phase 4: Resolve SeasonParticipation for this Entry
+    let participationId = null;
+    if (driverId && eventId) {
+      try {
+        const event = await sr.entities.Event.get(eventId).catch(() => null);
+        if (event?.series_id && event?.season) {
+          const seasonYear = String(event.season).match(/\d{4}/);
+          if (seasonYear) {
+            const partResult = await resolveParticipationForEntry(
+              sr, base44, driverId, event.series_id, seasonYear[0], 'Driver', true, false
+            );
+            if (partResult.status === 'resolved' || partResult.status === 'created') {
+              participationId = partResult.participation_id;
+            }
+          }
+        }
+      } catch (e) {
+        // Participation resolution failed — continue with null (legacy compatibility)
+      }
+    }
+
     const data = {
       event_id: eventId, driver_id: driverId, car_number: r.car_number,
+      participation_id: participationId,
       series_class_id: seriesClassId || null, team_id: resolvedIds.team_id || r.team_id || null,
       entry_status: r.entry_status || 'Registered',
       entry_identity_key: key, normalized_entry_key: key,
     };
     if (existing.length > 0) { await sr.entities.Entry.update(existing[0].id, data); return { action: 'updated', id: existing[0].id }; }
     const record = await sr.entities.Entry.create(data);
+    // Phase 4: Assign ENTR RaceCore ID
+    await ensureRaceCoreId(base44, 'Entry', record.id).catch(() => {});
     return { action: 'created', id: record.id };
   }
 

@@ -18,6 +18,8 @@
  * Post-import: always runs runImportDiagnostics and includes result in response.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { ensureRaceCoreId } from '../../shared/racecoreId.ts';
+import { resolveParticipationForEntry } from '../../shared/entryParticipationResolver.ts';
 
 const SOURCE_ENTITY_TYPES = new Set(['Driver', 'Team', 'Track', 'Series', 'Event']);
 
@@ -315,9 +317,29 @@ async function upsertEntry(sr, row, rowNum, errors) {
   if (!existing?.length && row.car_number) {
     existing = await sr.entities.Entry.filter({ event_id: row.event_id, driver_id: row.driver_id, car_number: row.car_number }).catch(() => []);
   }
+  // Phase 4: Resolve SeasonParticipation for this Entry
+  let participationId = null;
+  if (row.driver_id && row.event_id) {
+    try {
+      const event = await sr.entities.Event.get(row.event_id).catch(() => null);
+      if (event?.series_id && event?.season) {
+        const seasonYear = String(event.season).match(/\d{4}/);
+        if (seasonYear) {
+          const partResult = await resolveParticipationForEntry(
+            sr, base44, row.driver_id, event.series_id, seasonYear[0], 'Driver', true, false
+          );
+          if (partResult.status === 'resolved' || partResult.status === 'created') {
+            participationId = partResult.participation_id;
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
   const data = {
     event_id: row.event_id,
     driver_id: row.driver_id,
+    participation_id: participationId,
     event_class_id: row.event_class_id || null,
     series_class_id: row.series_class_id || null,
     team_id: row.team_id || null,
@@ -333,7 +355,9 @@ async function upsertEntry(sr, row, rowNum, errors) {
     await sr.entities.Entry.update(existing[0].id, data);
     return 'updated';
   }
-  await sr.entities.Entry.create(data);
+  const record = await sr.entities.Entry.create(data);
+  // Phase 4: Assign ENTR RaceCore ID
+  await ensureRaceCoreId(base44, 'Entry', record.id).catch(() => {});
   return 'created';
 }
 

@@ -131,7 +131,14 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
   });
 
   const createEntryMutation = useMutation({
-    mutationFn: (data) => base44.entities.Entry.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('upsertOperationalEntry', {
+        payload: data,
+        source_path: 'driver_registration_panel',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      return res.data?.record;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['entries', selectedEvent?.id] });
       setStep('done');

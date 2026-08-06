@@ -430,9 +430,13 @@ function RegistrationFlow({ user }) {
         transponder_verified: false,
         created_by_user_id: user?.id,
       };
-      const existing = await base44.entities.Entry.filter({ event_id: eventId, driver_id: myDriver.id });
-      if (existing.length) throw new Error('You are already registered for this event');
-      const result = await base44.entities.Entry.create(payload);
+      const res = await base44.functions.invoke('upsertOperationalEntry', {
+        payload,
+        source_path: 'registration_page',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      const result = res.data?.record;
+      if (!result) throw new Error('Entry creation failed — no record returned');
       await writeOperationLog('entry_created', 'Entry', result.id, eventId, myDriver.id, entryFormData.car_number);
       return result;
     },

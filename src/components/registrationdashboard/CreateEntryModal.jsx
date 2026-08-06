@@ -58,7 +58,14 @@ export default function CreateEntryModal({
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Entry.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('upsertOperationalEntry', {
+        payload: data,
+        source_path: 'create_entry_modal',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      return res.data?.record;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['entries', eventId] });
       handleClose();

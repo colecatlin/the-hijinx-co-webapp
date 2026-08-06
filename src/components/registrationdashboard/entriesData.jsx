@@ -24,8 +24,12 @@ export async function listEntriesForEvent({ eventId }) {
 
 export async function createEntry(payload) {
   try {
-    const result = await base44.entities.Entry.create(payload);
-    return result;
+    const res = await base44.functions.invoke('upsertOperationalEntry', {
+      payload,
+      source_path: 'entries_data_helper',
+    });
+    if (res?.data?.error) throw new Error(res.data.error);
+    return res.data?.record;
   } catch (err) {
     console.error('Failed to create entry:', err);
     throw err;

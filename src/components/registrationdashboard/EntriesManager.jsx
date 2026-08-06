@@ -171,7 +171,14 @@ export default function EntriesManager({
 
   const { mutateAsync: createEntry, isPending: creatingEntry } = useDashboardMutation({
     operationType: 'entry_created', entityName: 'Entry',
-    mutationFn: (data) => base44.entities.Entry.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('upsertOperationalEntry', {
+        payload: data,
+        source_path: 'entries_manager',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      return res.data?.record;
+    },
     successMessage: 'Entry created', ...sharedOpts,
   });
 

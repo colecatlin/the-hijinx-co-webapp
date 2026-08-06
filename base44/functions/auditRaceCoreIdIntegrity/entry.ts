@@ -30,6 +30,7 @@ const ENTITY_PREFIX_MAP = {
   RacerProfile: 'RACR',
   SeasonParticipation: 'PART',
   Driver: 'DRVR',
+  Entry: 'ENTR',
 };
 
 const PREFIX_ENTITY_MAP = {
@@ -37,10 +38,11 @@ const PREFIX_ENTITY_MAP = {
   RACR: 'RacerProfile',
   PART: 'SeasonParticipation',
   DRVR: 'Driver',
+  ENTR: 'Entry',
 };
 
-const ENTITY_FAMILIES = ['PersonIdentity', 'RacerProfile', 'SeasonParticipation', 'Driver'];
-const ALL_PREFIXES = ['PERS', 'RACR', 'PART', 'DRVR'];
+const ENTITY_FAMILIES = ['PersonIdentity', 'RacerProfile', 'SeasonParticipation', 'Driver', 'Entry'];
+const ALL_PREFIXES = ['PERS', 'RACR', 'PART', 'DRVR', 'ENTR'];
 
 async function loadAll(sr, entityName, sortField, batchSize) {
   const sort = sortField || '-created_date';
@@ -337,6 +339,7 @@ export default async function(req) {
         RacerProfile: (loadResults.RacerProfile || []).length,
         SeasonParticipation: (loadResults.SeasonParticipation || []).length,
         Driver: (loadResults.Driver || []).length,
+        Entry: (loadResults.Entry || []).length,
         RaceCoreIdCounter: counters.length,
       },
 

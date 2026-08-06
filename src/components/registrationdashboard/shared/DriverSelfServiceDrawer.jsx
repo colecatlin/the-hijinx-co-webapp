@@ -124,7 +124,14 @@ export default function DriverSelfServiceDrawer({
   });
 
   const { mutateAsync: createEntry, isPending: creatingEntry } = useMutation({
-    mutationFn: (data) => base44.entities.Entry.create(data),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('upsertOperationalEntry', {
+        payload: data,
+        source_path: 'driver_self_service_drawer',
+      });
+      if (res?.data?.error) throw new Error(res.data.error);
+      return res.data?.record;
+    },
     onSuccess: () => {
       refetchEntry();
       toast.success('Registered for event!');
