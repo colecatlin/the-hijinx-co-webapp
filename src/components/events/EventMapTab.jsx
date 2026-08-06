@@ -208,47 +208,75 @@ export default function EventMapTab({
   }, [mappableEvents, classificationByEventId]);
 
   // Initialize Google Map
+  // With loading=async in the script URL, core classes (Map, Marker, etc.)
+  // must be loaded via google.maps.importLibrary() before use.
   useEffect(() => {
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
-      if (window.google?.maps && mapRef.current) {
-        clearInterval(interval);
-        googleMapRef.current = new window.google.maps.Map(mapRef.current, {
-          center: { lat: 39.5, lng: -98.35 },
-          zoom: 4,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-          styles: [
-            { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-          ],
+    let cancelled = false;
+    let interval;
+
+    const init = async () => {
+      // Poll until the bootstrap loader is available
+      let attempts = 0;
+      await new Promise((resolve, reject) => {
+        interval = setInterval(() => {
+          attempts++;
+          if (window.google?.maps) {
+            clearInterval(interval);
+            resolve();
+          } else if (attempts > 50) {
+            clearInterval(interval);
+            reject(new Error('Google Maps script not loaded'));
+          }
+        }, 200);
+      });
+
+      if (cancelled || !mapRef.current) return;
+
+      // With loading=async, importLibrary loads the core classes on demand
+      await window.google.maps.importLibrary('maps');
+      await window.google.maps.importLibrary('places');
+      await window.google.maps.importLibrary('geocoding');
+
+      if (cancelled || !mapRef.current) return;
+
+      googleMapRef.current = new window.google.maps.Map(mapRef.current, {
+        center: { lat: 39.5, lng: -98.35 },
+        zoom: 4,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+        styles: [
+          { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+        ],
+      });
+
+      if (searchInputRef.current) {
+        const ac = new window.google.maps.places.Autocomplete(searchInputRef.current, {
+          types: ['geocode'],
         });
-
-        if (searchInputRef.current) {
-          const ac = new window.google.maps.places.Autocomplete(searchInputRef.current, {
-            types: ['geocode'],
-          });
-          autocompleteRef.current = ac;
-          ac.addListener('place_changed', () => {
-            const place = ac.getPlace();
-            if (!place.geometry) return;
-            const lat = place.geometry.location.lat();
-            const lng = place.geometry.location.lng();
-            setUserLocation({ lat, lng });
-            setLocationLabel(place.formatted_address || place.name || '');
-            setLocationError('');
-            googleMapRef.current.setCenter({ lat, lng });
-            googleMapRef.current.setZoom(8);
-          });
-        }
-
-        setMapsReady(true);
-      } else if (attempts > 30) {
-        clearInterval(interval);
+        autocompleteRef.current = ac;
+        ac.addListener('place_changed', () => {
+          const place = ac.getPlace();
+          if (!place.geometry) return;
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          setUserLocation({ lat, lng });
+          setLocationLabel(place.formatted_address || place.name || '');
+          setLocationError('');
+          googleMapRef.current.setCenter({ lat, lng });
+          googleMapRef.current.setZoom(8);
+        });
       }
-    }, 200);
-    return () => clearInterval(interval);
+
+      setMapsReady(true);
+    };
+
+    init().catch((err) => console.error('EventMapTab init failed:', err));
+
+    return () => {
+      cancelled = true;
+      if (interval) clearInterval(interval);
+    };
   }, []);
 
   // Update markers whenever display events, series, or geocoded coords change
