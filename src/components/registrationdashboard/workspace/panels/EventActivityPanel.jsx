@@ -14,20 +14,20 @@ import { Activity, CheckCircle2, AlertCircle, Clock, Upload, Trophy, Lock, Flag,
 const DQ = applyDefaultQueryOptions();
 
 const OP_TYPE_META = {
-  RESULTS_PUBLISHED_OFFICIAL:  { icon: Flag,        color: 'text-green-400',  label: 'Results Published' },
-  RESULTS_PUBLISHED_PROVISIONAL: { icon: Flag,       color: 'text-amber-400',  label: 'Results Provisional' },
-  SESSION_LOCKED:              { icon: Lock,         color: 'text-blue-400',   label: 'Session Locked' },
-  SESSION_STATUS_CHANGED:      { icon: Activity,     color: 'text-teal-400',   label: 'Session Status Changed' },
-  STANDINGS_RECALCULATED:      { icon: Trophy,       color: 'text-yellow-400', label: 'Standings Recalculated' },
-  CSV_IMPORT:                  { icon: Upload,       color: 'text-purple-400', label: 'CSV Import' },
-  ADMIN_OVERRIDE:              { icon: AlertCircle,  color: 'text-red-400',    label: 'Admin Override' },
-  RESULTS_SAVED:               { icon: CheckCircle2, color: 'text-gray-400',   label: 'Results Saved' },
+  RESULTS_PUBLISHED_OFFICIAL:  { icon: Flag,        color: 'text-success',  label: 'Results Published' },
+  RESULTS_PUBLISHED_PROVISIONAL: { icon: Flag,       color: 'text-warning',  label: 'Results Provisional' },
+  SESSION_LOCKED:              { icon: Lock,         color: 'text-motion',   label: 'Session Locked' },
+  SESSION_STATUS_CHANGED:      { icon: Activity,     color: 'text-motion',   label: 'Session Status Changed' },
+  STANDINGS_RECALCULATED:      { icon: Trophy,       color: 'text-warning', label: 'Standings Recalculated' },
+  CSV_IMPORT:                  { icon: Upload,       color: 'text-motion', label: 'CSV Import' },
+  ADMIN_OVERRIDE:              { icon: AlertCircle,  color: 'text-danger',    label: 'Admin Override' },
+  RESULTS_SAVED:               { icon: CheckCircle2, color: 'text-foreground-quiet',   label: 'Results Saved' },
 };
 
 function opMeta(type) {
-  if (!type) return { icon: Activity, color: 'text-gray-600', label: 'Operation' };
+  if (!type) return { icon: Activity, color: 'text-foreground-quiet', label: 'Operation' };
   const key = type.toUpperCase().replace(/ /g, '_');
-  return OP_TYPE_META[key] || { icon: Activity, color: 'text-gray-500', label: type.replace(/_/g, ' ') };
+  return OP_TYPE_META[key] || { icon: Activity, color: 'text-foreground-quiet', label: type.replace(/_/g, ' ') };
 }
 
 function timeAgo(dateStr) {
@@ -70,8 +70,8 @@ export default function EventActivityPanel() {
   if (!selectedEvent) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center gap-2">
-        <Activity className="w-8 h-8 text-gray-700" />
-        <p className="text-sm text-gray-500">No event selected.</p>
+        <Activity className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-sm text-foreground-quiet">No event selected.</p>
       </div>
     );
   }
@@ -80,26 +80,26 @@ export default function EventActivityPanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-1">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">Event Activity Log</p>
-          <p className="text-[11px] text-gray-600 mt-0.5">Operations scoped to this event · {logs.length} records</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-foreground-quiet">Event Activity Log</p>
+          <p className="text-[11px] text-foreground-quiet mt-0.5">Operations scoped to this event · {logs.length} records</p>
         </div>
-        <span className="text-[10px] px-2 py-1 rounded border border-gray-800 text-gray-600 font-mono">READ ONLY</span>
+        <span className="text-[10px] px-2 py-1 rounded border border-divider text-foreground-quiet font-mono">READ ONLY</span>
       </div>
 
       {isLoading && (
-        <div className="py-10 text-center text-xs text-gray-600">Loading activity…</div>
+        <div className="py-10 text-center text-xs text-foreground-quiet">Loading activity…</div>
       )}
 
       {!isLoading && logs.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 gap-2 bg-[#111] rounded-lg border border-gray-800/50">
-          <Activity className="w-7 h-7 text-gray-700" />
-          <p className="text-sm text-gray-600">No activity logged for this event yet.</p>
+        <div className="flex flex-col items-center justify-center py-16 gap-2 bg-surface rounded-lg border border-divider/50">
+          <Activity className="w-7 h-7 text-foreground-quiet" />
+          <p className="text-sm text-foreground-quiet">No activity logged for this event yet.</p>
         </div>
       )}
 
       {!isLoading && grouped.map(([day, dayLogs]) => (
         <div key={day}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-700 mb-1.5 px-1">{day}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground-quiet mb-1.5 px-1">{day}</p>
           <div className="space-y-1">
             {dayLogs.map(log => {
               const meta = opMeta(log.operation_type);
@@ -108,22 +108,22 @@ export default function EventActivityPanel() {
               return (
                 <div
                   key={log.id}
-                  className="flex items-start gap-3 px-3 py-2.5 bg-[#111] border border-gray-800/50 rounded-lg"
+                  className="flex items-start gap-3 px-3 py-2.5 bg-surface border border-divider/50 rounded-lg"
                 >
-                  <Icon className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isError ? 'text-red-500' : meta.color}`} />
+                  <Icon className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isError ? 'text-danger' : meta.color}`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-300 leading-tight">
+                    <p className="text-xs font-medium text-foreground-secondary leading-tight">
                       {meta.label}
                     </p>
                     {log.entity_name && (
-                      <p className="text-[10px] text-gray-600 mt-0.5">{log.entity_name}{log.notes ? ` · ${log.notes.slice(0, 60)}` : ''}</p>
+                      <p className="text-[10px] text-foreground-quiet mt-0.5">{log.entity_name}{log.notes ? ` · ${log.notes.slice(0, 60)}` : ''}</p>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-0.5 shrink-0">
-                    <span className={`text-[10px] font-medium ${isError ? 'text-red-500' : 'text-gray-600'}`}>
+                    <span className={`text-[10px] font-medium ${isError ? 'text-danger' : 'text-foreground-quiet'}`}>
                       {isError ? 'Error' : log.status || '—'}
                     </span>
-                    <span className="text-[10px] text-gray-700">{timeAgo(log.created_date)}</span>
+                    <span className="text-[10px] text-foreground-quiet">{timeAgo(log.created_date)}</span>
                   </div>
                 </div>
               );

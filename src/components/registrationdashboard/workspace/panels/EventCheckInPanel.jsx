@@ -130,8 +130,8 @@ export default function EventCheckInPanel({ wsData }) {
   if (!canEdit && !isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
-        <Shield className="w-8 h-8 text-gray-600" />
-        <p className="text-gray-400 text-sm">Your access does not include Check-In.</p>
+        <Shield className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-foreground-quiet text-sm">Your access does not include Check-In.</p>
       </div>
     );
   }
@@ -163,23 +163,23 @@ export default function EventCheckInPanel({ wsData }) {
       {/* Stats header */}
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-gray-500" />
-          <span className="text-sm font-bold text-white">{checkedIn}</span>
-          <span className="text-xs text-gray-500">/ {entries.length} checked in</span>
+          <Users className="w-4 h-4 text-foreground-quiet" />
+          <span className="text-sm font-bold text-foreground">{checkedIn}</span>
+          <span className="text-xs text-foreground-quiet">/ {entries.length} checked in</span>
         </div>
-        <div className="flex-1 h-1.5 rounded-full bg-white/[0.05] overflow-hidden max-w-[120px]">
+        <div className="flex-1 h-1.5 rounded-full bg-surface-interactive/50 overflow-hidden max-w-[120px]">
           <div
             className="h-full rounded-full transition-all"
-            style={{ width: `${pct}%`, background: pct === 100 ? '#16a34a' : '#0d9488' }}
+            style={{ width: `${pct}%`, background: pct === 100 ? 'hsl(var(--success))' : 'hsl(var(--motion))' }}
           />
         </div>
-        <span className="text-[11px] font-semibold text-gray-400">{pct}%</span>
+        <span className="text-[11px] font-semibold text-foreground-quiet">{pct}%</span>
         {/* Bulk check-in all visible */}
         {canEdit && filtered.length > 0 && filtered.some(e => e.entry_status !== 'Checked In') && (
           <button
             onClick={() => handleBulkCheckIn(filtered.filter(e => e.entry_status !== 'Checked In'))}
             disabled={bulkLoading}
-            className="ml-auto px-2.5 py-1 rounded border border-teal-600/40 bg-teal-900/20 text-teal-300 text-[10px] font-semibold uppercase tracking-wider hover:bg-teal-900/40 transition-colors disabled:opacity-50"
+            className="ml-auto px-2.5 py-1 rounded border border-motion/40 bg-motion/10 text-motion text-[10px] font-semibold uppercase tracking-wider hover:bg-motion/20 transition-colors disabled:opacity-50"
           >
             {bulkLoading ? '…' : `Check In All Visible (${filtered.filter(e => e.entry_status !== 'Checked In').length})`}
           </button>
@@ -188,14 +188,14 @@ export default function EventCheckInPanel({ wsData }) {
 
       {/* Bulk action toolbar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 rounded border border-teal-700/40 bg-teal-950/20">
-          <span className="text-[11px] font-semibold text-teal-300">{selected.size} selected</span>
+        <div className="flex items-center gap-2 px-3 py-2 rounded border border-motion/40 bg-motion/5">
+          <span className="text-[11px] font-semibold text-motion">{selected.size} selected</span>
           <div className="flex-1" />
           {notCheckedInSelected.length > 0 && (
             <button
               onClick={() => handleBulkCheckIn(notCheckedInSelected)}
               disabled={bulkLoading}
-              className="px-2.5 py-1 rounded bg-teal-700/60 hover:bg-teal-600/80 border border-teal-600/40 text-[10px] font-semibold text-white transition-colors disabled:opacity-50"
+              className="px-2.5 py-1 rounded bg-motion/60 hover:bg-motion-hover/80 border border-motion/40 text-[10px] font-semibold text-foreground transition-colors disabled:opacity-50"
             >
               Check In Selected ({notCheckedInSelected.length})
             </button>
@@ -204,12 +204,12 @@ export default function EventCheckInPanel({ wsData }) {
             <button
               onClick={() => handleBulkUndoCheckIn(checkedInSelected)}
               disabled={bulkLoading}
-              className="px-2.5 py-1 rounded bg-amber-800/40 hover:bg-amber-700/60 border border-amber-700/40 text-[10px] font-semibold text-amber-200 transition-colors disabled:opacity-50"
+              className="px-2.5 py-1 rounded bg-warning/20 hover:bg-warning/30 border border-warning/40 text-[10px] font-semibold text-warning transition-colors disabled:opacity-50"
             >
               Undo ({checkedInSelected.length})
             </button>
           )}
-          <button onClick={() => setSelected(new Set())} className="text-[10px] text-gray-500 hover:text-gray-300 transition-colors">Clear</button>
+          <button onClick={() => setSelected(new Set())} className="text-[10px] text-foreground-quiet hover:text-foreground-secondary transition-colors">Clear</button>
         </div>
       )}
 
@@ -227,8 +227,8 @@ export default function EventCheckInPanel({ wsData }) {
             onClick={() => setStatusFilter(opt.value)}
             className={`px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider border transition-colors ${
               statusFilter === opt.value
-                ? 'bg-teal-800/40 border-teal-600/40 text-teal-300'
-                : 'bg-white/[0.03] border-white/[0.06] text-gray-500 hover:text-gray-300'
+                ? 'bg-motion/10 border-motion/40 text-motion'
+                : 'bg-surface-interactive/30 border-divider/60 text-foreground-quiet hover:text-foreground-secondary'
             }`}
           >
             {opt.label}
@@ -238,7 +238,7 @@ export default function EventCheckInPanel({ wsData }) {
           <select
             value={classFilter}
             onChange={e => setClassFilter(e.target.value)}
-            className="bg-white/[0.04] border border-white/[0.08] rounded text-[10px] text-gray-400 px-2 py-1 outline-none"
+            className="bg-surface-interactive border border-divider rounded text-[10px] text-foreground-quiet px-2 py-1 outline-none"
           >
             <option value="all">All Classes</option>
             {uniqueClassIds.map(id => (
@@ -250,7 +250,7 @@ export default function EventCheckInPanel({ wsData }) {
         {filtered.length > 0 && (
           <button
             onClick={toggleSelectAll}
-            className="ml-auto text-[10px] text-gray-500 hover:text-gray-300 transition-colors"
+            className="ml-auto text-[10px] text-foreground-quiet hover:text-foreground-secondary transition-colors"
           >
             {selected.size === filtered.length ? 'Deselect All' : 'Select All'}
           </button>
@@ -260,7 +260,7 @@ export default function EventCheckInPanel({ wsData }) {
       {/* Entry list */}
       <div className="space-y-0.5">
         {filtered.length === 0 ? (
-          <div className="py-8 text-center text-gray-600 text-sm">No entries match filter</div>
+          <div className="py-8 text-center text-foreground-quiet text-sm">No entries match filter</div>
         ) : (
           filtered.map(entry => (
             <div key={entry.id} className="flex items-center gap-1">
@@ -269,7 +269,7 @@ export default function EventCheckInPanel({ wsData }) {
                 type="checkbox"
                 checked={selected.has(entry.id)}
                 onChange={() => toggleSelect(entry.id)}
-                className="w-3 h-3 accent-teal-500 flex-shrink-0 cursor-pointer"
+                className="w-3 h-3 accent-motion flex-shrink-0 cursor-pointer"
               />
               <div className="flex-1 min-w-0">
                 <CompactCheckInRow
@@ -287,7 +287,7 @@ export default function EventCheckInPanel({ wsData }) {
         )}
       </div>
 
-      <p className="text-[10px] text-gray-700">{filtered.length} entries shown</p>
+      <p className="text-[10px] text-foreground-quiet">{filtered.length} entries shown</p>
     </div>
   );
 }

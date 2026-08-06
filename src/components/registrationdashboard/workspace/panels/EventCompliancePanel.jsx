@@ -16,8 +16,8 @@ const TABS = [
 ];
 
 const SEVERITY_STYLES = {
-  clear:   'bg-green-900/30 text-green-300 border-green-800/50',
-  warning: 'bg-yellow-900/30 text-yellow-300 border-yellow-800/50',
+  clear:   'bg-success/10 text-success border-success/50',
+  warning: 'bg-warning/10 text-warning border-warning/50',
 };
 
 export default function EventCompliancePanel({ wsData }) {
@@ -51,8 +51,8 @@ export default function EventCompliancePanel({ wsData }) {
               onClick={() => setActiveTab(tab.id)}
               className={`px-3 py-1.5 rounded text-[10px] font-semibold uppercase tracking-wider border transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-teal-900/30 border-teal-700/40 text-teal-300'
-                  : 'bg-white/[0.03] border-white/[0.06] text-gray-500 hover:text-gray-300'
+                  ? 'bg-motion/10 border-motion/40 text-motion'
+                  : 'bg-surface-interactive/30 border-divider/60 text-foreground-quiet hover:text-foreground-secondary'
               }`}
             >
               {tab.label}

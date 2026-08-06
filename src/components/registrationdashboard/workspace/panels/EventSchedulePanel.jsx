@@ -56,8 +56,8 @@ export default function EventSchedulePanel() {
   if (!selectedEvent) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center gap-2">
-        <Calendar className="w-8 h-8 text-gray-700" />
-        <p className="text-sm text-gray-500">No event selected.</p>
+        <Calendar className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-sm text-foreground-quiet">No event selected.</p>
       </div>
     );
   }
@@ -66,10 +66,10 @@ export default function EventSchedulePanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-1">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">Weekend Schedule</p>
-          <p className="text-[11px] text-gray-600 mt-0.5">Read-only view · {sessions.length} sessions · {results.length} results entered</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-foreground-quiet">Weekend Schedule</p>
+          <p className="text-[11px] text-foreground-quiet mt-0.5">Read-only view · {sessions.length} sessions · {results.length} results entered</p>
         </div>
-        <span className="text-[10px] px-2 py-1 rounded border border-gray-800 text-gray-600 font-mono">READ ONLY</span>
+        <span className="text-[10px] px-2 py-1 rounded border border-divider text-foreground-quiet font-mono">READ ONLY</span>
       </div>
 
       {/* SessionTimelinePolished — enhanced visual progression */}

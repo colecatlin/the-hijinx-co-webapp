@@ -9,9 +9,9 @@ export default function EventReadinessCard({ score, tier, checks, onNavigate }) 
   const [expanded, setExpanded] = useState(false);
 
   const tierColors = {
-    green: { bar: '#16a34a', text: 'text-green-300', bg: 'border-green-700/40 bg-green-950/20' },
-    amber: { bar: '#d97706', text: 'text-amber-300', bg: 'border-amber-700/40 bg-amber-950/15' },
-    red:   { bar: '#dc2626', text: 'text-red-300',   bg: 'border-red-700/40 bg-red-950/15' },
+    green: { bar: 'hsl(var(--success))', text: 'text-success', bg: 'border-success/40 bg-success/10' },
+    amber: { bar: 'hsl(var(--warning))', text: 'text-warning', bg: 'border-warning/40 bg-warning/10' },
+    red:   { bar: 'hsl(var(--danger))', text: 'text-danger',   bg: 'border-danger/40 bg-danger/10' },
   };
   const colors = tierColors[tier] || tierColors.amber;
 
@@ -35,10 +35,10 @@ export default function EventReadinessCard({ score, tier, checks, onNavigate }) 
         className="w-full flex items-center gap-3 px-3 py-2 text-left"
       >
         <div className="flex-1">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-0.5">Event Readiness</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-foreground-quiet mb-0.5">Event Readiness</p>
           <div className="flex items-center gap-2">
             <span className={`text-lg font-black ${colors.text}`}>{score}%</span>
-            <div className="flex-1 h-1.5 rounded-full bg-white/[0.06] overflow-hidden max-w-[80px]">
+            <div className="flex-1 h-1.5 rounded-full bg-surface-interactive/50 overflow-hidden max-w-[80px]">
               <div
                 className="h-full rounded-full transition-all"
                 style={{ width: `${score}%`, background: colors.bar }}
@@ -50,13 +50,13 @@ export default function EventReadinessCard({ score, tier, checks, onNavigate }) 
           </div>
         </div>
         {expanded
-          ? <ChevronUp className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
-          : <ChevronDown className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />}
+          ? <ChevronUp className="w-3.5 h-3.5 text-foreground-quiet flex-shrink-0" />
+          : <ChevronDown className="w-3.5 h-3.5 text-foreground-quiet flex-shrink-0" />}
       </button>
 
       {/* Expanded checklist */}
       {expanded && (
-        <div className="border-t border-white/[0.05] px-3 py-2 space-y-0.5">
+        <div className="border-t border-divider/50 px-3 py-2 space-y-0.5">
           {checks.map(check => (
             <div
               key={check.id}
@@ -69,15 +69,15 @@ export default function EventReadinessCard({ score, tier, checks, onNavigate }) 
                 }
               }}
             >
-              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${check.passed ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className={`text-[10px] flex-1 ${check.passed ? 'text-gray-500 line-through' : 'text-gray-300'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${check.passed ? 'bg-success' : 'bg-danger'}`} />
+              <span className={`text-[10px] flex-1 ${check.passed ? 'text-foreground-quiet line-through' : 'text-foreground-secondary'}`}>
                 {check.label}
               </span>
               {check.detail && !check.passed && (
-                <span className="text-[9px] text-gray-600">{check.detail}</span>
+                <span className="text-[9px] text-foreground-quiet">{check.detail}</span>
               )}
               {!check.passed && NAVIGATE_MAP[check.id] && onNavigate && (
-                <span className="text-[9px] text-teal-500">→</span>
+                <span className="text-[9px] text-motion">→</span>
               )}
             </div>
           ))}

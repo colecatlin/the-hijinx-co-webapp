@@ -27,9 +27,9 @@ export default function EventMediaPortalPanel() {
   if (!canAccess) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
-        <Lock className="w-8 h-8 text-gray-600" />
-        <p className="text-gray-400 text-sm font-medium">Access Denied</p>
-        <p className="text-gray-600 text-xs">You do not have permission to access the Media Portal for this event.</p>
+        <Lock className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-foreground-quiet text-sm font-medium">Access Denied</p>
+        <p className="text-foreground-quiet text-xs">You do not have permission to access the Media Portal for this event.</p>
       </div>
     );
   }

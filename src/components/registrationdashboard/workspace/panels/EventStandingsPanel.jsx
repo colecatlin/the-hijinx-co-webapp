@@ -44,8 +44,8 @@ export default function EventStandingsPanel() {
 
   if (!selectedEvent) {
     return (
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-8 text-center">
-        <p className="text-gray-400">Select an event to view standings</p>
+      <div className="bg-surface border border-divider rounded-lg p-8 text-center">
+        <p className="text-foreground-quiet">Select an event to view standings</p>
       </div>
     );
   }
@@ -55,14 +55,14 @@ export default function EventStandingsPanel() {
       {/* Above-fold: Stale indicator + recalculate */}
       <div className="flex items-center gap-3 flex-wrap">
         {standingsDirty ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-amber-700/40 bg-amber-900/20">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-            <span className="text-[11px] text-amber-300 font-medium">Standings stale — results have changed</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-warning/40 bg-warning/10">
+            <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+            <span className="text-[11px] text-warning font-medium">Standings stale — results have changed</span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-green-800/40 bg-green-900/10">
-            <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-            <span className="text-[11px] text-green-300 font-medium">Standings current</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded border border-success/40 bg-success/10">
+            <CheckCircle2 className="w-3.5 h-3.5 text-success" />
+            <span className="text-[11px] text-success font-medium">Standings current</span>
           </div>
         )}
 
@@ -70,7 +70,7 @@ export default function EventStandingsPanel() {
           <button
             onClick={() => recalcMutation.mutate()}
             disabled={recalcMutation.isPending}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border text-[11px] font-semibold uppercase tracking-wider bg-teal-900/30 border-teal-700/40 text-teal-300 hover:bg-teal-900/50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border text-[11px] font-semibold uppercase tracking-wider bg-motion/10 border-motion/40 text-motion hover:bg-motion/20 transition-colors disabled:opacity-50"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${recalcMutation.isPending ? 'animate-spin' : ''}`} />
             {recalcMutation.isPending ? 'Calculating…' : 'Recalculate Standings'}

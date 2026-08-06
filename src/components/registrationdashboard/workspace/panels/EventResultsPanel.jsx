@@ -33,9 +33,9 @@ export default function EventResultsPanel({ wsData, onResultsProvisional, onResu
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to manage results</p>
+          <p className="text-foreground-quiet">Select an event to manage results</p>
         </CardContent>
       </Card>
     );

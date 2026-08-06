@@ -32,9 +32,9 @@ export default function EventRaceControlPanel() {
   if (!governanceEnabled) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center gap-3 px-6">
-        <PackageX className="w-8 h-8 text-gray-700" />
-        <p className="text-gray-400 text-sm font-semibold">Governance Module Disabled</p>
-        <p className="text-gray-600 text-xs max-w-xs">
+        <PackageX className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-foreground-quiet text-sm font-semibold">Governance Module Disabled</p>
+        <p className="text-foreground-quiet text-xs max-w-xs">
           Race Control, Officials, Incidents, Penalties, and Protests are not enabled for this series.
           Enable the Governance module in Series Settings to use these features.
         </p>
@@ -47,8 +47,8 @@ export default function EventRaceControlPanel() {
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center gap-3">
-        <Radio className="w-8 h-8 text-gray-700" />
-        <p className="text-gray-500 text-sm">Race Control access required.</p>
+        <Radio className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-foreground-quiet text-sm">Race Control access required.</p>
       </div>
     );
   }
@@ -59,15 +59,15 @@ export default function EventRaceControlPanel() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setQuickIncidentOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border text-[11px] font-semibold uppercase tracking-wider bg-red-900/30 border-red-700/40 text-red-300 hover:bg-red-900/50 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border text-[11px] font-semibold uppercase tracking-wider bg-danger/10 border-danger/40 text-danger hover:bg-danger/20 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           Log Incident
         </button>
         {activeSession && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-red-700/40 bg-red-900/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-            <span className="text-[11px] text-red-300 font-semibold">Live: {activeSession.name}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-danger/40 bg-danger/10">
+            <span className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
+            <span className="text-[11px] text-danger font-semibold">Live: {activeSession.name}</span>
           </div>
         )}
       </div>

@@ -45,51 +45,51 @@ export default function EventGridGeneratorModal({ open, onClose, session, allSes
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className="max-w-sm"
-        style={{ background: '#141818', border: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))' }}
       >
         <DialogHeader>
-          <DialogTitle className="text-white text-sm">Generate Grid — {session?.name}</DialogTitle>
+          <DialogTitle className="text-foreground text-sm">Generate Grid — {session?.name}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-1">
           {/* Method selector */}
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-foreground-quiet mb-1.5">
               Generation Method
             </label>
             <Select value={method} onValueChange={setMethod}>
-              <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-gray-200 text-xs">
+              <SelectTrigger className="bg-surface-interactive border-divider text-foreground-secondary text-xs">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1e1e] border-white/[0.08]">
+              <SelectContent className="bg-surface-elevated border-divider">
                 {GENERATION_METHODS.map(m => (
-                  <SelectItem key={m.value} value={m.value} className="text-gray-200 text-xs">
+                  <SelectItem key={m.value} value={m.value} className="text-foreground-secondary text-xs">
                     {m.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {selectedMethod && (
-              <p className="text-[10px] text-gray-600 mt-1">{selectedMethod.description}</p>
+              <p className="text-[10px] text-foreground-quiet mt-1">{selectedMethod.description}</p>
             )}
           </div>
 
           {/* Source session picker — shown for Qualifying Order / Inverted Qualifying */}
           {selectedMethod?.needsSource && (
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">
-                Source Session <span className="text-red-400">*</span>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-foreground-quiet mb-1.5">
+                Source Session <span className="text-danger">*</span>
               </label>
               {sourceSessions.length === 0 ? (
-                <p className="text-[11px] text-amber-400">No qualifying or heat sessions found for this event.</p>
+                <p className="text-[11px] text-warning">No qualifying or heat sessions found for this event.</p>
               ) : (
                 <Select value={sourceSessionId} onValueChange={setSourceSessionId}>
-                  <SelectTrigger className="bg-white/[0.04] border-white/[0.08] text-gray-200 text-xs">
+                  <SelectTrigger className="bg-surface-interactive border-divider text-foreground-secondary text-xs">
                     <SelectValue placeholder="Select source session…" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1e1e] border-white/[0.08]">
+                  <SelectContent className="bg-surface-elevated border-divider">
                     {sourceSessions.map(s => (
-                      <SelectItem key={s.id} value={s.id} className="text-gray-200 text-xs">
+                      <SelectItem key={s.id} value={s.id} className="text-foreground-secondary text-xs">
                         {s.name} ({s.session_type})
                       </SelectItem>
                     ))}
@@ -102,7 +102,7 @@ export default function EventGridGeneratorModal({ open, onClose, session, allSes
           {/* Inversion count — only for Inverted Qualifying */}
           {method === 'Inverted Qualifying' && (
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1.5">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-foreground-quiet mb-1.5">
                 Inversion Count (top N reversed)
               </label>
               <input
@@ -111,7 +111,7 @@ export default function EventGridGeneratorModal({ open, onClose, session, allSes
                 max={20}
                 value={inversionCount}
                 onChange={e => setInversionCount(e.target.value)}
-                className="w-24 bg-white/[0.04] border border-white/[0.08] rounded text-[12px] text-gray-200 px-2 py-1.5 outline-none focus:border-teal-600/50"
+                className="w-24 bg-white/[0.04] border border-divider rounded text-[12px] text-foreground-secondary px-2 py-1.5 outline-none focus:border-motion/50"
               />
             </div>
           )}
@@ -120,14 +120,14 @@ export default function EventGridGeneratorModal({ open, onClose, session, allSes
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-3 py-2 rounded border border-white/[0.08] text-[11px] text-gray-400 hover:text-gray-200 transition-colors"
+              className="flex-1 px-3 py-2 rounded border border-divider text-[11px] text-foreground-quiet hover:text-foreground-secondary transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending || !canSubmit}
-              className="flex-1 px-3 py-2 rounded bg-teal-700/70 hover:bg-teal-600/80 border border-teal-600/40 text-[11px] font-semibold text-white transition-colors disabled:opacity-50"
+              className="flex-1 px-3 py-2 rounded bg-motion/70 hover:bg-motion-hover/80 border border-motion/40 text-[11px] font-semibold text-white transition-colors disabled:opacity-50"
             >
               {isPending ? 'Generating…' : 'Generate Grid'}
             </button>

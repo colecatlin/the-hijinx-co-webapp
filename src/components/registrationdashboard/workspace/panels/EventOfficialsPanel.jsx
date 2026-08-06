@@ -32,10 +32,10 @@ const ROLES = [
 const CRITICAL_ROLES = ['Race Director', 'Chief Steward', 'Steward'];
 
 const STATUS_STYLES = {
-  Invited:   'text-gray-400 border-gray-700/40',
-  Confirmed: 'text-green-300 border-green-700/40',
-  Active:    'text-teal-300 border-teal-700/40',
-  Withdrawn: 'text-red-300 border-red-700/40',
+  Invited:   'text-foreground-quiet border-divider/40',
+  Confirmed: 'text-success border-success/40',
+  Active:    'text-motion border-motion/40',
+  Withdrawn: 'text-danger border-danger/40',
 };
 
 export default function EventOfficialsPanel() {
@@ -100,8 +100,8 @@ export default function EventOfficialsPanel() {
   if (!canEdit && !isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
-        <Shield className="w-8 h-8 text-gray-600" />
-        <p className="text-gray-400 text-sm">Admin access required to manage officials.</p>
+        <Shield className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-foreground-quiet text-sm">Admin access required to manage officials.</p>
       </div>
     );
   }
@@ -114,14 +114,14 @@ export default function EventOfficialsPanel() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-gray-400" />
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Officials</h2>
-          <span className="text-[11px] text-gray-500">{activeOfficials.length} assigned</span>
+          <Users className="w-4 h-4 text-foreground-quiet" />
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Officials</h2>
+          <span className="text-[11px] text-foreground-quiet">{activeOfficials.length} assigned</span>
         </div>
         {canEdit && (
           <button
             onClick={() => setShowForm(p => !p)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-teal-600/40 bg-teal-900/20 text-teal-300 text-[11px] font-semibold uppercase tracking-wider hover:bg-teal-900/40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-motion/40 bg-motion/10 text-motion text-[11px] font-semibold uppercase tracking-wider hover:bg-motion/20 transition-colors"
           >
             <UserPlus className="w-3.5 h-3.5" />
             Assign Official
@@ -136,12 +136,12 @@ export default function EventOfficialsPanel() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="p-4 rounded border border-white/[0.08] bg-white/[0.03] space-y-3"
+          className="p-4 rounded border border-divider bg-surface-interactive/50 space-y-3"
         >
-          <p className="text-[11px] font-bold uppercase tracking-widest text-gray-500">Assign Official</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-foreground-quiet">Assign Official</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">User</label>
+              <label className="block text-[10px] text-foreground-quiet mb-1 uppercase tracking-wider">User</label>
               <UserPickerInput
                 value={form.user_id}
                 onChange={uid => setForm(p => ({ ...p, user_id: uid }))}
@@ -149,40 +149,40 @@ export default function EventOfficialsPanel() {
               />
             </div>
             <div>
-              <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Role</label>
+              <label className="block text-[10px] text-foreground-quiet mb-1 uppercase tracking-wider">Role</label>
               <select
                 value={form.role}
                 onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded text-[12px] text-gray-200 px-2 py-1.5 outline-none focus:border-teal-600/50"
+                className="w-full bg-surface-interactive border border-divider rounded text-[12px] text-foreground-secondary px-2 py-1.5 outline-none focus:border-motion/50"
               >
-                {ROLES.map(r => <option key={r} value={r} className="bg-[#141818]">{r}</option>)}
+                {ROLES.map(r => <option key={r} value={r} className="bg-surface-elevated">{r}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Notes (optional)</label>
+            <label className="block text-[10px] text-foreground-quiet mb-1 uppercase tracking-wider">Notes (optional)</label>
             <input
               type="text"
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
-              className="w-full bg-white/[0.04] border border-white/[0.08] rounded text-[12px] text-gray-200 px-2 py-1.5 outline-none focus:border-teal-600/50"
+              className="w-full bg-surface-interactive border border-divider rounded text-[12px] text-foreground-secondary px-2 py-1.5 outline-none focus:border-motion/50"
             />
           </div>
           {isDuplicateRole && (
-            <p className="text-[10px] text-amber-400">⚠ {form.role} is already assigned. Proceeding will create a second assignment.</p>
+            <p className="text-[10px] text-warning">⚠ {form.role} is already assigned. Proceeding will create a second assignment.</p>
           )}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-3 py-1.5 rounded border border-white/[0.08] text-[11px] text-gray-400 hover:text-gray-200 transition-colors"
+              className="px-3 py-1.5 rounded border border-white/[0.08] text-[11px] text-foreground-quiet hover:text-foreground-secondary transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={createMutation.isPending || !form.user_id}
-              className="px-4 py-1.5 rounded bg-teal-700/60 hover:bg-teal-600/80 border border-teal-600/40 text-[11px] font-semibold text-white transition-colors disabled:opacity-50"
+              className="px-4 py-1.5 rounded bg-motion/60 hover:bg-motion-hover/80 border border-motion/40 text-[11px] font-semibold text-foreground transition-colors disabled:opacity-50"
             >
               {createMutation.isPending ? 'Assigning…' : 'Assign'}
             </button>
@@ -192,24 +192,24 @@ export default function EventOfficialsPanel() {
 
       {/* Officials list */}
       {activeOfficials.length === 0 && !showForm ? (
-        <div className="py-8 text-center text-gray-600 text-sm">No officials assigned yet.</div>
+        <div className="py-8 text-center text-foreground-quiet text-sm">No officials assigned yet.</div>
       ) : (
         <div className="space-y-0.5">
           {activeOfficials.map(official => (
             <div
               key={official.id}
-              className="flex items-center gap-2 px-3 py-1.5 rounded border border-white/[0.06] bg-white/[0.02]"
+              className="flex items-center gap-2 px-3 py-1.5 rounded border border-divider/60 bg-surface-interactive/30"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-semibold text-gray-200">{official.role}</span>
+                  <span className="text-[11px] font-semibold text-foreground-secondary">{official.role}</span>
                   <span className={`text-[9px] font-bold uppercase tracking-widest border rounded px-1.5 py-0.5 ${STATUS_STYLES[official.status] || STATUS_STYLES.Invited}`}>
                     {official.status}
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-300 font-medium truncate">{getUserName(official.user_id)}</p>
+                <p className="text-[11px] text-foreground-secondary font-medium truncate">{getUserName(official.user_id)}</p>
                 {getUser(official.user_id)?.email && (
-                  <p className="text-[10px] text-gray-600 truncate">{getUser(official.user_id).email}</p>
+                  <p className="text-[10px] text-foreground-quiet truncate">{getUser(official.user_id).email}</p>
                 )}
               </div>
               {canEdit && (
@@ -217,7 +217,7 @@ export default function EventOfficialsPanel() {
                   {official.status !== 'Confirmed' && (
                     <button
                       onClick={() => updateMutation.mutate({ id: official.id, status: 'Confirmed' })}
-                      className="p-1 rounded text-green-400 hover:bg-green-900/20 transition-colors"
+                      className="p-1 rounded text-success hover:bg-success/10 transition-colors"
                       title="Confirm"
                     >
                       <Check className="w-3 h-3" />
@@ -225,7 +225,7 @@ export default function EventOfficialsPanel() {
                   )}
                   <button
                     onClick={() => removeMutation.mutate(official.id)}
-                    className="p-1 rounded text-red-400 hover:bg-red-900/20 transition-colors"
+                    className="p-1 rounded text-danger hover:bg-danger/10 transition-colors"
                     title="Remove"
                   >
                     <X className="w-3 h-3" />
@@ -238,7 +238,7 @@ export default function EventOfficialsPanel() {
       )}
 
       {withdrawnOfficials.length > 0 && (
-        <p className="text-[10px] text-gray-700">{withdrawnOfficials.length} withdrawn official(s) hidden.</p>
+        <p className="text-[10px] text-foreground-quiet">{withdrawnOfficials.length} withdrawn official(s) hidden.</p>
       )}
     </div>
   );

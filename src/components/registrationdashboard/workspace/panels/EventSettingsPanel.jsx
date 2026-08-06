@@ -15,7 +15,7 @@ export default function EventSettingsPanel() {
     <div className="space-y-8">
       <EventSettingsEditor />
       {canManageOfficials && (
-        <div className="p-4 bg-[#0d0f11] border border-gray-800/60 rounded-xl max-w-2xl">
+        <div className="p-4 bg-surface-elevated border border-divider/60 rounded-xl max-w-2xl">
           <OfficialsAssignmentSection eventId={eventId} />
         </div>
       )}

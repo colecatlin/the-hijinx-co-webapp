@@ -28,27 +28,27 @@ export default function WorkspaceRedirectCard({
   };
 
   return (
-    <Card className="bg-[#171717] border-gray-800">
+    <Card className="bg-surface border-divider">
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <ExternalLink className="w-5 h-5 text-teal-400" /> 
+        <CardTitle className="text-foreground flex items-center gap-2">
+          <ExternalLink className="w-5 h-5 text-motion" /> 
           {moduleName} — Now in Event Files
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-gray-400 text-sm">
+        <p className="text-foreground-quiet text-sm">
           {description}
         </p>
         <Button
           onClick={handleOpen}
           disabled={!eventId && !onOpenWorkspace}
-          className="bg-teal-700 hover:bg-teal-600 gap-2"
+          className="bg-motion hover:bg-motion-hover gap-2"
         >
           <FolderOpen className="w-4 h-4" />
           {eventId ? `Open Event File — ${moduleName}` : 'Select an event to continue'}
         </Button>
         {!eventId && (
-          <p className="text-gray-600 text-xs">
+          <p className="text-foreground-quiet text-xs">
             Select an event in the context bar above to open this module.
           </p>
         )}

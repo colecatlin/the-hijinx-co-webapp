@@ -31,8 +31,8 @@ export default function EventExportsPanel() {
   if (!canViewExports) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-center">
-        <Download className="w-8 h-8 text-gray-600" />
-        <p className="text-gray-400 text-sm">Your access does not include Exports.</p>
+        <Download className="w-8 h-8 text-foreground-quiet" />
+        <p className="text-foreground-quiet text-sm">Your access does not include Exports.</p>
       </div>
     );
   }

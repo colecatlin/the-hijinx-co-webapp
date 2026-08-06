@@ -184,8 +184,8 @@ export default function EventCloseoutPanel({ onNavigate }) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Event Closeout</h2>
-          <p className="text-[10px] text-gray-500 mt-0.5">
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Event Closeout</h2>
+          <p className="text-[10px] text-foreground-quiet mt-0.5">
             {isCompleted
               ? 'This event has been completed.'
               : 'Complete all items below to close out this event.'}
@@ -193,7 +193,7 @@ export default function EventCloseoutPanel({ onNavigate }) {
         </div>
         <button
           onClick={() => refetch()}
-          className="p-1.5 rounded border border-white/[0.07] text-gray-500 hover:text-gray-300 transition-colors"
+          className="p-1.5 rounded border border-divider text-foreground-quiet hover:text-foreground-secondary transition-colors"
           title="Refresh validation"
         >
           <RefreshCw className="w-3.5 h-3.5" />
@@ -202,11 +202,11 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
       {/* Completed state */}
       {isCompleted && (
-        <div className="flex items-center gap-3 p-4 rounded border border-green-700/40 bg-green-950/30">
-          <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />
+        <div className="flex items-center gap-3 p-4 rounded border border-success/40 bg-success/10">
+          <ShieldCheck className="w-5 h-5 text-success flex-shrink-0" />
           <div>
-            <p className="text-green-200 text-sm font-semibold">Event Completed</p>
-            <p className="text-green-400 text-[11px]">This event has been successfully closed out.</p>
+            <p className="text-success text-sm font-semibold">Event Completed</p>
+            <p className="text-success text-[11px]">This event has been successfully closed out.</p>
           </div>
         </div>
       )}
@@ -218,8 +218,8 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
       {isLoading && (
         <div className="flex items-center gap-2 py-4">
-          <RefreshCw className="w-4 h-4 text-gray-500 animate-spin" />
-          <span className="text-gray-500 text-sm">Validating event state…</span>
+          <RefreshCw className="w-4 h-4 text-foreground-quiet animate-spin" />
+          <span className="text-foreground-quiet text-sm">Validating event state…</span>
         </div>
       )}
 
@@ -230,11 +230,11 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
       {/* Blocker summary */}
       {validation && validation.blockers?.length > 0 && !isCompleted && (
-        <div className="p-3 rounded border border-red-800/40 bg-red-950/20">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-red-400 mb-1">
+        <div className="p-3 rounded border border-danger/40 bg-danger/10">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-danger mb-1">
             {validation.blockers.length} {validation.blockers.length === 1 ? 'Blocker' : 'Blockers'} Remaining
           </p>
-          <p className="text-xs text-red-300">
+          <p className="text-xs text-danger">
             Resolve all blockers before the event can be completed.
           </p>
         </div>
@@ -242,15 +242,15 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
       {/* Export packet — persisted history */}
       {latestPacket && (
-        <div className="p-3 rounded border border-teal-700/40 bg-teal-950/20 space-y-2">
+        <div className="p-3 rounded border border-motion/40 bg-motion/5 space-y-2">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
-            <p className="text-[11px] font-semibold text-teal-300">
+            <CheckCircle2 className="w-3.5 h-3.5 text-motion" />
+            <p className="text-[11px] font-semibold text-motion">
               Export Packet v{latestPacket.packet_version} — {latestPacket.files?.length || 0} files
             </p>
-            <span className="text-[9px] text-teal-600 ml-auto">Persisted ✓</span>
+            <span className="text-[9px] text-motion ml-auto">Persisted ✓</span>
           </div>
-          <p className="text-[10px] text-teal-500">
+          <p className="text-[10px] text-motion">
             Generated {new Date(latestPacket.generated_at).toLocaleString()} · {latestPacket.generated_by_name}
           </p>
           <div className="space-y-1">
@@ -260,7 +260,7 @@ export default function EventCloseoutPanel({ onNavigate }) {
                 href={f.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-[10px] text-teal-300 hover:text-teal-200 transition-colors"
+                className="flex items-center gap-1.5 text-[10px] text-motion hover:text-motion transition-colors"
               >
                 <ExternalLink className="w-2.5 h-2.5" />
                 {f.name} {f.row_count ? `(${f.row_count} rows)` : ''}
@@ -268,7 +268,7 @@ export default function EventCloseoutPanel({ onNavigate }) {
             ))}
           </div>
           {exportPackets.length > 1 && (
-            <p className="text-[10px] text-gray-600">
+            <p className="text-[10px] text-foreground-quiet">
               <History className="w-2.5 h-2.5 inline mr-1" />
               {exportPackets.length} versions in history
             </p>
@@ -277,10 +277,10 @@ export default function EventCloseoutPanel({ onNavigate }) {
       )}
       {/* Fallback — in-session export result before persisted */}
       {exportResult && !latestPacket && (
-        <div className="p-3 rounded border border-teal-700/40 bg-teal-950/20 space-y-2">
+        <div className="p-3 rounded border border-motion/40 bg-motion/5 space-y-2">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
-            <p className="text-[11px] font-semibold text-teal-300">
+            <CheckCircle2 className="w-3.5 h-3.5 text-motion" />
+            <p className="text-[11px] font-semibold text-motion">
               Export Packet Generated — {exportResult.files?.length || 0} files
             </p>
           </div>
@@ -289,11 +289,11 @@ export default function EventCloseoutPanel({ onNavigate }) {
 
       {/* Action buttons */}
       {!isCompleted && (
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/[0.06]">
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-divider/60">
           <button
             onClick={handleExportPacket}
             disabled={exporting}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded border border-white/[0.08] text-[11px] font-semibold uppercase tracking-wider text-gray-300 bg-white/[0.04] hover:bg-white/[0.08] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded border border-divider text-[11px] font-semibold uppercase tracking-wider text-foreground-secondary bg-surface-interactive/50 hover:bg-surface-interactive transition-colors disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5" />
             {exporting ? 'Generating…' : exportResult ? 'Re-generate Export Packet' : 'Generate Export Packet'}
@@ -301,7 +301,7 @@ export default function EventCloseoutPanel({ onNavigate }) {
           <button
             onClick={handleComplete}
             disabled={!canClose || completing}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded border text-[11px] font-semibold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-teal-700/50 border-teal-600/40 text-teal-200 hover:bg-teal-700/70"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded border text-[11px] font-semibold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-motion/50 border-motion/40 text-motion hover:bg-motion/70"
           >
             <Flag className="w-3.5 h-3.5" />
             {completing ? 'Completing…' : 'Complete Event'}
@@ -310,7 +310,7 @@ export default function EventCloseoutPanel({ onNavigate }) {
       )}
 
       {!isAdmin && govBlocked && (
-        <p className="text-[10px] text-gray-600">Governance requirements must be met before this event can be completed.</p>
+        <p className="text-[10px] text-foreground-quiet">Governance requirements must be met before this event can be completed.</p>
       )}
     </div>
   );

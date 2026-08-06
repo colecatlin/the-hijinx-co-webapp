@@ -37,40 +37,40 @@ function getActionLabel(actionName) {
 function OverrideDialogUI({ open, actionName, context, eventName, reason, onReasonChange, onApprove, onCancel }) {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onCancel(); }}>
-      <DialogContent className="bg-[#1a1510] border border-amber-800/50 sm:max-w-md">
+      <DialogContent className="bg-surface-elevated border border-warning/50 sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-amber-400" />
+          <DialogTitle className="text-foreground flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-warning" />
             Admin Override Required
           </DialogTitle>
-          <DialogDescription className="text-gray-400 text-sm mt-1">
+          <DialogDescription className="text-foreground-quiet text-sm mt-1">
             This action affects protected race operations inside this event file.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           {/* Action + Event context */}
-          <div className="bg-amber-950/30 border border-amber-800/40 rounded-lg p-3 space-y-2 text-xs font-mono">
+          <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 space-y-2 text-xs font-mono">
             <div className="flex items-start justify-between gap-3">
-              <span className="text-amber-500/70 uppercase tracking-wider shrink-0">Action</span>
-              <span className="text-amber-200 text-right">{getActionLabel(actionName)}</span>
+              <span className="text-warning/70 uppercase tracking-wider shrink-0">Action</span>
+              <span className="text-warning text-right">{getActionLabel(actionName)}</span>
             </div>
             {eventName && (
               <div className="flex items-start justify-between gap-3">
-                <span className="text-amber-500/70 uppercase tracking-wider shrink-0">Event</span>
-                <span className="text-gray-300 text-right truncate max-w-[60%]">{eventName}</span>
+                <span className="text-warning/70 uppercase tracking-wider shrink-0">Event</span>
+                <span className="text-foreground-secondary text-right truncate max-w-[60%]">{eventName}</span>
               </div>
             )}
             {context?.sessionId && (
               <div className="flex items-start justify-between gap-3">
-                <span className="text-amber-500/70 uppercase tracking-wider shrink-0">Session</span>
-                <span className="text-gray-400 text-right font-mono text-[10px]">{context.sessionId}</span>
+                <span className="text-warning/70 uppercase tracking-wider shrink-0">Session</span>
+                <span className="text-foreground-quiet text-right font-mono text-[10px]">{context.sessionId}</span>
               </div>
             )}
             {context?.beforeStatus && context?.afterStatus && (
               <div className="flex items-start justify-between gap-3">
-                <span className="text-amber-500/70 uppercase tracking-wider shrink-0">Change</span>
-                <span className="text-gray-300 text-right">
+                <span className="text-warning/70 uppercase tracking-wider shrink-0">Change</span>
+                <span className="text-foreground-secondary text-right">
                   {context.beforeStatus} → {context.afterStatus}
                 </span>
               </div>
@@ -79,19 +79,19 @@ function OverrideDialogUI({ open, actionName, context, eventName, reason, onReas
 
           {/* Reason field */}
           <div className="space-y-1.5">
-            <label className="text-xs text-gray-400 uppercase tracking-wider">
-              Reason <span className="text-gray-600">(optional)</span>
+            <label className="text-xs text-foreground-quiet uppercase tracking-wider">
+              Reason <span className="text-foreground-quiet">(optional)</span>
             </label>
             <Textarea
               placeholder="Briefly explain why this override is necessary..."
               value={reason}
               onChange={(e) => onReasonChange(e.target.value)}
-              className="bg-[#0d0f11] border-gray-700 text-white text-sm min-h-[72px] resize-none"
+              className="bg-surface-interactive border-divider text-foreground text-sm min-h-[72px] resize-none"
             />
           </div>
 
           {/* Warning notice */}
-          <div className="flex items-start gap-2 text-[11px] text-amber-600/70">
+          <div className="flex items-start gap-2 text-[11px] text-warning/70">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <span>This action will be recorded in the event operation log.</span>
           </div>
@@ -101,13 +101,13 @@ function OverrideDialogUI({ open, actionName, context, eventName, reason, onReas
           <Button
             variant="outline"
             onClick={onCancel}
-            className="border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800"
+            className="border-divider text-foreground-quiet hover:text-foreground hover:bg-surface-interactive"
           >
             Cancel
           </Button>
           <Button
             onClick={onApprove}
-            className="bg-amber-700 hover:bg-amber-600 text-white gap-2"
+            className="bg-warning hover:bg-warning/80 text-foreground gap-2"
           >
             <ShieldAlert className="w-3.5 h-3.5" />
             Approve Override
