@@ -311,7 +311,7 @@ async function upsertSession(sr, row, rowNum, errors) {
   return 'created';
 }
 
-async function upsertEntry(sr, row, rowNum, errors) {
+async function upsertEntry(sr, base44, row, rowNum, errors) {
   const key = `entry:${row.event_id}:${row.driver_id}:${normalizeName(row.event_class_id || row.car_number)}`;
   let existing = await sr.entities.Entry.filter({ event_id: row.event_id, driver_id: row.driver_id, event_class_id: row.event_class_id || null }).catch(() => []);
   if (!existing?.length && row.car_number) {
@@ -566,7 +566,7 @@ Deno.serve(async (req) => {
           if (action2 === 'created') { created++; } else { updated++; }
 
         } else if (entityName === 'Entry') {
-          const action2 = await upsertEntry(sr, row, rowNum, errors);
+          const action2 = await upsertEntry(sr, base44, row, rowNum, errors);
           if (action2 === 'created') { created++; } else { updated++; }
 
         } else if (entityName === 'Standings') {
