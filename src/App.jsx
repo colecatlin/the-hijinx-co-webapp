@@ -104,6 +104,7 @@ import Diagnostics from './pages/Diagnostics';
 import ResultsRepairPage from './pages/ResultsRepairPage';
 import IdentityReviewPage from './pages/IdentityReviewPage';
 import DataQualityDashboard from './pages/DataQualityDashboard';
+import IdentityOwnershipAudit from './pages/IdentityOwnershipAudit';
 import { Navigate, useParams } from 'react-router-dom';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
@@ -377,6 +378,7 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/data/results-repair"  element={<ResultsRepairPage />} />
       <Route path="/racecore/data/duplicate-merge"  element={<DuplicateMergeReview />} />
         <Route path="/racecore/identity-review"      element={<IdentityReviewPage />} />
+        <Route path="/racecore/identity-ownership"   element={<IdentityOwnershipAudit />} />
         <Route path="/racecore/data/quality"         element={<DataQualityDashboard />} />
         <Route path="/racecore/data/diagnostics"     element={<Diagnostics embedded={true} />} />
         {/* R9CS: Governance routes */}

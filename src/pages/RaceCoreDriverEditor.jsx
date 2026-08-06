@@ -22,6 +22,7 @@ import DriverMediaSection from '@/components/management/DriverEditor/DriverMedia
 import DriverStatsManagement from '@/components/management/DriverManagement/DriverStatsManagement.jsx';
 import DriverAccessSection from '@/components/management/DriverManagement/DriverAccessSection.jsx';
 import DriverClaimsDisplay from '@/components/drivers/DriverClaimsDisplay.jsx';
+import IdentityOwnershipPanel from '@/components/identity/IdentityOwnershipPanel.jsx';
 
 export default function RaceCoreDriverEditor() {
   const { id } = useParams();
@@ -39,6 +40,22 @@ export default function RaceCoreDriverEditor() {
   });
 
   const { canEditManagement } = useEntityEditPermission('Driver', isNew ? null : id, driver);
+
+  // Phase 8: Resolve the PersonIdentity + RacerProfile linked to this legacy Driver
+  // so the admin can manage ownership / claiming from the Driver editor.
+  const { data: identityOwnership } = useQuery({
+    queryKey: ['driverIdentityOwnership', id],
+    queryFn: async () => {
+      if (!id || isNew) return { identity: null, racerProfile: null };
+      const rpList = await base44.entities.RacerProfile.filter({ legacy_driver_id: id }).catch(() => []);
+      const racerProfile = Array.isArray(rpList) && rpList.length > 0 ? rpList[0] : null;
+      if (!racerProfile?.person_identity_id) return { identity: null, racerProfile };
+      const idList = await base44.entities.PersonIdentity.filter({ id: racerProfile.person_identity_id }).catch(() => []);
+      const identity = Array.isArray(idList) && idList.length > 0 ? idList[0] : null;
+      return { identity, racerProfile };
+    },
+    enabled: !isNew && !!id,
+  });
 
   const handleSaveSuccess = (newDriverId) => {
     if (newDriverId && isNew) {
@@ -95,6 +112,7 @@ export default function RaceCoreDriverEditor() {
               <TabsTrigger value="media">Media</TabsTrigger>
               <TabsTrigger value="stats">Stats</TabsTrigger>
               <TabsTrigger value="access">Access</TabsTrigger>
+              {isAdmin && <TabsTrigger value="identity">Identity & Ownership</TabsTrigger>}
               {isAdmin && <TabsTrigger value="override">⚙ Override</TabsTrigger>}
             </>}
           </TabsList>
@@ -136,6 +154,11 @@ export default function RaceCoreDriverEditor() {
             <TabsContent value="access" className="mt-6">
               <DriverAccessSection driverId={id} />
             </TabsContent>
+            {isAdmin && (
+              <TabsContent value="identity" className="mt-6">
+                <IdentityOwnershipPanel identity={identityOwnership?.identity} racerProfile={identityOwnership?.racerProfile} />
+              </TabsContent>
+            )}
             {isAdmin && (
               <TabsContent value="override" className="mt-6">
                 <AdminOverridePanel

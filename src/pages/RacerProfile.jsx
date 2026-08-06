@@ -43,6 +43,7 @@ import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 import DriverCareerTab from '@/components/drivers/DriverCareerTab';
 import DriverSponsorsTab from '@/components/drivers/DriverSponsorsTab';
+import ClaimProfileButton from '@/components/identity/ClaimProfileButton';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -302,6 +303,7 @@ export default function RacerProfile() {
             <ArrowLeft className="w-3.5 h-3.5" /><span>Racers</span>
           </Link>
           <div className="flex items-center gap-2 ml-auto">
+            <ClaimProfileButton identity={identity} racerProfileSlug={racerProfile.slug} />
             <SocialShareButtons url={window.location.href} title={`${fullName} - Racer Profile`} description="" />
           </div>
         </div>

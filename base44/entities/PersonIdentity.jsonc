@@ -1,7 +1,7 @@
 {
   "name": "PersonIdentity",
   "type": "object",
-  "description": "Root identity anchor for a human competitor across all series, seasons, and data sources.",
+  "description": "Root identity anchor for a human competitor across all series, seasons, and data sources. Phase 8: Owns the User \u2192 PersonIdentity \u2192 RacerProfile \u2192 SeasonParticipation ownership chain. Claim status and owner_user_id live here (not on Driver or RacerProfile).",
   "properties": {
     "status": {
       "type": "string",
@@ -108,6 +108,128 @@
     "racecore_id": {
       "type": "string",
       "description": "Immutable RaceCore ID (PERS + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "Phase 8: User ID of the verified owner of this PersonIdentity. Null = unclaimed. Set when a claim is approved. Survives RacerProfile and SeasonParticipation changes. Never attached directly to Driver."
+    },
+    "claim_status": {
+      "type": "string",
+      "enum": [
+        "unclaimed",
+        "pending",
+        "claimed",
+        "rejected"
+      ],
+      "default": "unclaimed",
+      "description": "Phase 8: Claim lifecycle state. unclaimed = no claim submitted; pending = claim submitted awaiting admin review; claimed = owner verified; rejected = claim denied (resubmittable with new evidence)."
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 8: When ownership was granted (claim approved)."
+    },
+    "claimed_by_user_id": {
+      "type": "string",
+      "description": "Phase 8: User ID who submitted the current/most-recent claim. May differ from owner_user_id until approved."
+    },
+    "claim_submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 8: When the current/most-recent claim was submitted."
+    },
+    "claim_evidence": {
+      "type": "object",
+      "description": "Phase 8: Evidence submitted with the claim. Shape: { license_number, date_of_birth, contact_email, notes, attachment_urls }.",
+      "properties": {
+        "license_number": {
+          "type": "string"
+        },
+        "date_of_birth": {
+          "type": "string",
+          "format": "date"
+        },
+        "contact_email": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "attachment_urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "claim_history": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "approved",
+              "rejected",
+              "revoked",
+              "transferred"
+            ]
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "reviewed_by": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence_summary": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Phase 8: Append-only audit trail of all claim lifecycle events."
+    },
+    "claim_reviewed_by": {
+      "type": "string",
+      "description": "Phase 8: Admin user ID who reviewed the most recent claim."
+    },
+    "claim_reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 8: When the most recent claim was reviewed."
+    },
+    "claim_rejection_reason": {
+      "type": "string",
+      "description": "Phase 8: Reason given when a claim was rejected."
+    },
+    "profile_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "RacerProfile",
+          "CrewProfile",
+          "OfficialProfile",
+          "MediaProfile",
+          "PromoterProfile",
+          "TeamRepresentativeProfile"
+        ]
+      },
+      "default": [
+        "RacerProfile"
+      ],
+      "description": "Phase 8: Architecture placeholder for future multi-profile ownership. One PersonIdentity may own multiple profile types. Only RacerProfile is implemented in Phase 8; other values are reserved for future phases."
     }
   },
   "required": [
