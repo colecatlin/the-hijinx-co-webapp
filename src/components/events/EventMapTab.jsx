@@ -279,9 +279,12 @@ export default function EventMapTab({
     };
   }, []);
 
-  // Update markers whenever display events, series, or geocoded coords change
+  // Update markers whenever display events, series, or geocoded coords change.
+  // mapsReady is required in deps because the map initializes asynchronously
+  // (via importLibrary) — without it, this effect runs once before the map
+  // exists and never re-runs when it becomes ready.
   useEffect(() => {
-    if (!googleMapRef.current) return;
+    if (!mapsReady || !googleMapRef.current) return;
 
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
@@ -330,7 +333,7 @@ export default function EventMapTab({
       });
       markersRef.current.push(userMarker);
     }
-  }, [displayEvents, userLocation, seriesMap, geocodedCoords, disciplineById, disciplineByName]);
+  }, [mapsReady, displayEvents, userLocation, seriesMap, geocodedCoords, disciplineById, disciplineByName]);
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
