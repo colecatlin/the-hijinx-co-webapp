@@ -125,7 +125,7 @@ async function commitSourceEntity(sr, modelName, resolvedRow, displayNameFn, cre
   return { skipped: true };
 }
 
-async function commitOperational(sr, resolvedRow, resolvedIds, user, is_historical) {
+async function commitOperational(sr, base44, resolvedRow, resolvedIds, user, is_historical) {
   const { entity_type, normalized_data: r } = resolvedRow;
   const driverId = resolvedIds.driver_id || r.driver_id;
   const eventId = resolvedIds.event_id || r.event_id;
@@ -134,25 +134,42 @@ async function commitOperational(sr, resolvedRow, resolvedIds, user, is_historic
   const seriesClassId = resolvedIds.series_class_id || r.series_class_id;
 
   if (entity_type === 'Results') {
+    // Phase 5: Route ALL Results through upsertOperationalResult (authoritative entry-first orchestrator)
     if (!driverId || !eventId) return { error: 'driver_id and event_id required for Results' };
-    const normKey = `result:${eventId}:${sessionId || 'none'}:${driverId}`;
-    const existing = await sr.entities.Results.filter({ result_identity_key: normKey }).catch(() => []);
-    const data = {
-      driver_id: driverId, event_id: eventId, session_id: sessionId || null,
-      series_id: seriesId || null, series_class_id: seriesClassId || null,
+    if (!sessionId) return { error: 'session_id required for Results — do not create results without a session' };
+
+    const resultPayload = {
+      event_id: eventId,
+      session_id: sessionId,
+      driver_id: driverId,
+      event_class_id: resolvedIds.event_class_id || r.event_class_id || null,
+      series_id: seriesId || null,
+      series_class_id: seriesClassId || null,
       position: r.position ? parseInt(r.position) : null,
       status: r.status || 'Running',
       laps_completed: r.laps_completed ? parseInt(r.laps_completed) : null,
+      best_lap_time_ms: r.best_lap_time_ms ? parseInt(r.best_lap_time_ms) : null,
       points: r.points ? parseFloat(r.points) : null,
       points_enabled: r.points_enabled === 'true',
       is_historical: is_historical || r.is_historical === 'true',
       record_status: r.record_status || (is_historical ? 'historical_verified' : 'official'),
-      source_name: resolvedRow.source_name, source_type: resolvedRow.source_type,
-      import_run_id: resolvedRow.import_run_id, result_identity_key: normKey,
+      source_name: resolvedRow.source_name,
+      source_type: resolvedRow.source_type,
+      import_run_id: resolvedRow.import_run_id,
     };
-    if (existing.length > 0) { await sr.entities.Results.update(existing[0].id, data); return { action: 'updated', id: existing[0].id }; }
-    const record = await sr.entities.Results.create(data);
-    return { action: 'created', id: record.id };
+
+    try {
+      const upsertRes = await base44.functions.invoke('upsertOperationalResult', {
+        payload: resultPayload,
+        source_path: resolvedRow.source_type || 'commit_resolved_import',
+      });
+      if (upsertRes?.data?.record) {
+        return { action: upsertRes.data.action, id: upsertRes.data.record.id };
+      }
+      return { error: upsertRes?.data?.errors?.[0]?.message || 'upsertOperationalResult failed' };
+    } catch (e) {
+      return { error: 'upsertOperationalResult invocation failed: ' + e.message };
+    }
   }
 
   if (entity_type === 'Standings') {
@@ -343,7 +360,7 @@ Deno.serve(async (req) => {
           resolvedIds.session_id = resolvedRow.entity_resolution.session?.entity_id || r.session_id;
           resolvedIds.series_id = resolvedRow.entity_resolution.series?.entity_id || r.series_id;
           resolvedIds.series_class_id = resolvedRow.entity_resolution.series_class?.entity_id || r.series_class_id;
-          const opResult = await commitOperational(sr, resolvedRow, resolvedIds, user, is_historical);
+          const opResult = await commitOperational(sr, base44, resolvedRow, resolvedIds, user, is_historical);
           if (opResult.action === 'created') created_ids.push({ type: resolvedRow.entity_type, id: opResult.id });
           if (opResult.action === 'updated') updated_ids.push({ type: resolvedRow.entity_type, id: opResult.id });
         }

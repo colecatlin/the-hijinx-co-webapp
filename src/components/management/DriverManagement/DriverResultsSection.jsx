@@ -64,12 +64,26 @@ export default function DriverResultsSection({ driverId }) {
   const filteredSessions = sessions.filter(s => s.event_id === form.event_id);
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Results.create({ ...data, driver_id: driverId }),
+    mutationFn: async (data) => {
+      const res = await base44.functions.invoke('upsertOperationalResult', {
+        payload: { ...data, driver_id: driverId },
+        source_path: 'driver_results_section',
+      });
+      if (!res?.data?.record) throw new Error(res?.data?.errors?.[0]?.message || 'Failed to save result');
+      return res.data;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['driverResults', driverId] }),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Results.update(id, data),
+    mutationFn: async ({ id, data }) => {
+      const res = await base44.functions.invoke('upsertOperationalResult', {
+        payload: { ...data, driver_id: driverId },
+        source_path: 'driver_results_section',
+      });
+      if (!res?.data?.record) throw new Error(res?.data?.errors?.[0]?.message || 'Failed to update result');
+      return res.data;
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['driverResults', driverId] }),
   });
 

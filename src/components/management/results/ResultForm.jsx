@@ -45,7 +45,7 @@ export default function ResultForm({ initialData = {}, sessions = [], onSuccess,
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       // Find a matching program_id if possible
       const program = programs.find(p => p.driver_id === data.driver_id);
       const payload = {
@@ -56,8 +56,15 @@ export default function ResultForm({ initialData = {}, sessions = [], onSuccess,
         points: data.points !== '' ? Number(data.points) : null,
         laps_completed: data.laps_completed !== '' ? Number(data.laps_completed) : null,
       };
-      if (initialData.id) return base44.entities.Results.update(initialData.id, payload);
-      return base44.entities.Results.create(payload);
+      // Phase 5: Route through authoritative upsertOperationalResult orchestrator
+      const res = await base44.functions.invoke('upsertOperationalResult', {
+        payload,
+        source_path: 'result_form',
+      });
+      if (!res?.data?.record) {
+        throw new Error(res?.data?.errors?.[0]?.message || 'Failed to save result');
+      }
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results'] });

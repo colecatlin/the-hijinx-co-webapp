@@ -122,9 +122,33 @@ export default function ResultsBulkUpload({ onDone }) {
         return rec;
       }).filter(r => r.driver_id && r.event_id);
 
-      await base44.entities.Results.bulkCreate(records);
+      // Phase 5: Route each record through authoritative upsertOperationalResult orchestrator
+      let successCount = 0;
+      let failCount = 0;
+      const errors = [];
+      for (const rec of records) {
+        try {
+          const res = await base44.functions.invoke('upsertOperationalResult', {
+            payload: rec,
+            source_path: 'results_bulk_upload',
+          });
+          if (res?.data?.record) {
+            successCount++;
+          } else {
+            failCount++;
+            errors.push(res?.data?.errors?.[0]?.message || 'Unknown error');
+          }
+        } catch (e) {
+          failCount++;
+          errors.push(e.message);
+        }
+      }
       queryClient.invalidateQueries({ queryKey: ['results'] });
-      setStatus({ success: true, message: `Imported ${records.length} result(s) successfully.` });
+      if (failCount === 0) {
+        setStatus({ success: true, message: `Imported ${successCount} result(s) successfully.` });
+      } else {
+        setStatus({ success: successCount > 0, message: `Imported ${successCount}, failed ${failCount}. ${errors[0] || ''}` });
+      }
       setStep('done');
     } catch (err) {
       setStatus({ success: false, message: err.message });

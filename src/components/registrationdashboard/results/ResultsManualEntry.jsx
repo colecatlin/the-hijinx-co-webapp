@@ -272,10 +272,16 @@ export default function ResultsManualEntry({
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
-    mutationFn: (resultData) =>
-      base44.entities.Results.update(resultData.id, {
-        ...resultData,
-      }),
+    mutationFn: async (resultData) => {
+      const res = await base44.functions.invoke('upsertOperationalResult', {
+        payload: resultData,
+        source_path: 'results_manual_entry',
+      });
+      if (!res?.data?.record) {
+        throw new Error(res?.data?.errors?.[0]?.message || 'Failed to save result');
+      }
+      return res.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['results'] });
     },

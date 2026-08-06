@@ -119,7 +119,27 @@ export default function IntegrationsManager({
   });
 
   const createResultsMutation = useMutation({
-    mutationFn: (data) => base44.entities.Results.bulkCreate(data),
+    mutationFn: async (data) => {
+      // Phase 5: Route through authoritative upsertOperationalResult orchestrator
+      let successCount = 0;
+      const errors = [];
+      for (const rec of data) {
+        try {
+          const res = await base44.functions.invoke('upsertOperationalResult', {
+            payload: rec,
+            source_path: 'integrations_manager',
+          });
+          if (res?.data?.record) successCount++;
+          else errors.push(res?.data?.errors?.[0]?.message || 'Unknown error');
+        } catch (e) {
+          errors.push(e.message);
+        }
+      }
+      if (errors.length > 0 && successCount === 0) {
+        throw new Error(errors[0]);
+      }
+      return { successCount, errorCount: errors.length };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: REG_QK.results(eventId) });
       invalidateAfterOperation('results_updated');

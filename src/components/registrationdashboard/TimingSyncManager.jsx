@@ -62,13 +62,18 @@ export default function TimingSyncManager({
     ...DQ,
   });
 
-  // Mutations
-  const createResultsMutation = useMutation({
-    mutationFn: (data) => base44.entities.Results.create(data),
-  });
-
-  const updateResultsMutation = useMutation({
-    mutationFn: (data) => base44.entities.Results.update(data.id, data.updates),
+  // Phase 5: Route through authoritative upsertOperationalResult orchestrator
+  const upsertResultMutation = useMutation({
+    mutationFn: async (payload) => {
+      const res = await base44.functions.invoke('upsertOperationalResult', {
+        payload,
+        source_path: 'timing_sync_manager',
+      });
+      if (!res?.data?.record) {
+        throw new Error(res?.data?.errors?.[0]?.message || 'Failed to upsert result');
+      }
+      return res.data;
+    },
   });
 
   const createOpLogMutation = useMutation({
@@ -204,25 +209,14 @@ export default function TimingSyncManager({
           event_id: selectedEvent.id,
           session_id: selectedSession.id,
           entry_id: row.entryId,
+          driver_id: row.driverId,
           position: row.position,
           laps_completed: row.laps,
-          race_time: row.time,
-          best_lap: row.bestLap,
+          best_lap_time_ms: row.bestLap,
         };
 
-        const existingResult = existingResults.find(r => r.entry_id === row.entryId);
-
-        if (existingResult) {
-          if (overwriteMode === 'overwrite') {
-            await updateResultsMutation.mutateAsync({
-              id: existingResult.id,
-              updates: resultData,
-            });
-          }
-        } else {
-          await createResultsMutation.mutateAsync(resultData);
-        }
-
+        // Phase 5: upsertOperationalResult handles both create and update via entry-first resolution
+        await upsertResultMutation.mutateAsync(resultData);
         importedCount++;
       }
 
