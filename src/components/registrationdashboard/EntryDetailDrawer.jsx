@@ -100,12 +100,12 @@ export default function EntryDetailDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="bg-[#262626] border-gray-700 w-full sm:w-[450px] overflow-y-auto">
+      <SheetContent className="bg-[#262626] border-divider w-full sm:w-[450px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-white">
             {driver?.first_name} {driver?.last_name}
           </SheetTitle>
-          <SheetDescription className="text-gray-400">
+          <SheetDescription className="text-foreground-quiet">
             Car #{formData.car_number || 'N/A'}
           </SheetDescription>
         </SheetHeader>
@@ -114,19 +114,19 @@ export default function EntryDetailDrawer({
           {/* Driver and Team Info */}
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                 Driver
               </label>
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-foreground-secondary">
                 {driver?.first_name} {driver?.last_name}
               </p>
             </div>
             {team && (
               <div>
-                <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+                <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                   Team
                 </label>
-                <p className="text-sm text-gray-300">{team.name}</p>
+                <p className="text-sm text-foreground-secondary">{team.name}</p>
               </div>
             )}
           </div>
@@ -136,7 +136,7 @@ export default function EntryDetailDrawer({
           {/* Editable Fields */}
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                 Car Number
               </label>
               <Input
@@ -144,12 +144,12 @@ export default function EntryDetailDrawer({
                 onChange={(e) =>
                   setFormData({ ...formData, car_number: e.target.value })
                 }
-                className="bg-gray-900 border-gray-700 text-white"
+                className="bg-surface-elevated border-divider text-white"
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                 Transponder ID
               </label>
               <Input
@@ -157,12 +157,12 @@ export default function EntryDetailDrawer({
                 onChange={(e) =>
                   setFormData({ ...formData, transponder_id: e.target.value })
                 }
-                className="bg-gray-900 border-gray-700 text-white"
+                className="bg-surface-elevated border-divider text-white"
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                 Entry Status
               </label>
               <Select
@@ -171,10 +171,10 @@ export default function EntryDetailDrawer({
                   setFormData({ ...formData, entry_status: value })
                 }
               >
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   <SelectItem value="Registered" className="text-white">
                     Registered
                   </SelectItem>
@@ -192,7 +192,7 @@ export default function EntryDetailDrawer({
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                 Payment Status
               </label>
               <Select
@@ -201,10 +201,10 @@ export default function EntryDetailDrawer({
                   setFormData({ ...formData, payment_status: value })
                 }
               >
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   <SelectItem value="Unpaid" className="text-white">
                     Unpaid
                   </SelectItem>
@@ -222,7 +222,7 @@ export default function EntryDetailDrawer({
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                 Tech Status
               </label>
               <Select
@@ -231,10 +231,10 @@ export default function EntryDetailDrawer({
                   setFormData({ ...formData, tech_status: value })
                 }
               >
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   <SelectItem value="Not Inspected" className="text-white">
                     Not Inspected
                   </SelectItem>
@@ -252,7 +252,7 @@ export default function EntryDetailDrawer({
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide mb-2 block">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide mb-2 block">
                 Notes
               </label>
               <Textarea
@@ -260,7 +260,7 @@ export default function EntryDetailDrawer({
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                className="bg-gray-900 border-gray-700 text-white h-24"
+                className="bg-surface-elevated border-divider text-white h-24"
               />
             </div>
           </div>
@@ -283,7 +283,7 @@ export default function EntryDetailDrawer({
                 onClick={() => onOpenChange(false)}
                 variant="outline"
                 size="sm"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="border-divider text-foreground-secondary hover:bg-surface-interactive"
               >
                 Cancel
               </Button>

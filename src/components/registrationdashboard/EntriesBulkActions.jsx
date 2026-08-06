@@ -128,13 +128,13 @@ export default function EntriesBulkActions({
               </Button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#171717] border border-gray-700 rounded-lg shadow-lg z-10">
+                <div className="absolute right-0 mt-2 w-48 bg-surface-elevated border border-divider rounded-lg shadow-lg z-10">
                   <button
                     onClick={() => {
                       setAction('withdraw');
                       setShowDialog(true);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 border-b border-gray-700"
+                    className="w-full text-left px-4 py-2 text-sm text-foreground-secondary hover:bg-surface-interactive border-b border-divider"
                   >
                     Withdraw Entries
                   </button>
@@ -143,7 +143,7 @@ export default function EntriesBulkActions({
                       setAction('changeClass');
                       setShowDialog(true);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 border-b border-gray-700"
+                    className="w-full text-left px-4 py-2 text-sm text-foreground-secondary hover:bg-surface-interactive border-b border-divider"
                   >
                     Change Class
                   </button>
@@ -152,13 +152,13 @@ export default function EntriesBulkActions({
                       setAction('assignTransponders');
                       setShowDialog(true);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 border-b border-gray-700"
+                    className="w-full text-left px-4 py-2 text-sm text-foreground-secondary hover:bg-surface-interactive border-b border-divider"
                   >
                     Assign Transponders
                   </button>
                   <button
                     onClick={handleExportSelected}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm text-foreground-secondary hover:bg-surface-interactive flex items-center gap-2"
                   >
                     <Download className="w-4 h-4" /> Export Selected
                   </button>
@@ -172,14 +172,14 @@ export default function EntriesBulkActions({
       {/* Dialogs for bulk actions */}
       {action === 'withdraw' && (
         <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-          <AlertDialogContent className="bg-[#171717] border-gray-700">
+          <AlertDialogContent className="bg-surface-elevated border-divider">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">Withdraw Entries</AlertDialogTitle>
               <AlertDialogDescription>
                 This will mark {selectedEntries.size} entries as Withdrawn. This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogCancel className="border-gray-700">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-divider">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleWithdraw}
               className="bg-red-600 hover:bg-red-700"
@@ -192,7 +192,7 @@ export default function EntriesBulkActions({
 
       {action === 'changeClass' && (
         <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-          <AlertDialogContent className="bg-[#171717] border-gray-700">
+          <AlertDialogContent className="bg-surface-elevated border-divider">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">Change Class</AlertDialogTitle>
               <AlertDialogDescription>
@@ -201,7 +201,7 @@ export default function EntriesBulkActions({
             </AlertDialogHeader>
             <div className="py-4">
               <Select value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger className="bg-gray-900 border-gray-700">
+                <SelectTrigger className="bg-surface-elevated border-divider">
                   <SelectValue placeholder="Select new class" />
                 </SelectTrigger>
                 <SelectContent>
@@ -213,7 +213,7 @@ export default function EntriesBulkActions({
                 </SelectContent>
               </Select>
             </div>
-            <AlertDialogCancel className="border-gray-700">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-divider">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleChangeClass}
               disabled={!selectedClass}
@@ -227,7 +227,7 @@ export default function EntriesBulkActions({
 
       {action === 'assignTransponders' && (
         <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
-          <AlertDialogContent className="bg-[#171717] border-gray-700">
+          <AlertDialogContent className="bg-surface-elevated border-divider">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-white">Assign Transponders</AlertDialogTitle>
               <AlertDialogDescription>
@@ -240,10 +240,10 @@ export default function EntriesBulkActions({
                 value={transponderList}
                 onChange={(e) => setTransponderList(e.target.value)}
                 placeholder={`Enter transponder IDs (one per line):\nTPDR001\nTPDR002\nTPDR003`}
-                className="bg-gray-900 border-gray-700 min-h-32"
+                className="bg-surface-elevated border-divider min-h-32"
               />
             </div>
-            <AlertDialogCancel className="border-gray-700">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-divider">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleAssignTransponders}
               className="bg-blue-600 hover:bg-blue-700"

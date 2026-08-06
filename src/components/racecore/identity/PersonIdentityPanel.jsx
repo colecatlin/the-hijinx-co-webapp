@@ -14,7 +14,7 @@ const CONFIDENCE_COLORS = {
   high:       'bg-teal-900/60 text-teal-300 border-teal-700',
   medium:     'bg-yellow-900/60 text-yellow-300 border-yellow-700',
   low:        'bg-orange-900/60 text-orange-300 border-orange-700',
-  unverified: 'bg-slate-800 text-slate-400 border-slate-600',
+  unverified: 'bg-surface-interactive text-foreground-quiet border-divider',
 };
 
 export default function PersonIdentityPanel({ identityId }) {
@@ -113,7 +113,7 @@ export default function PersonIdentityPanel({ identityId }) {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <Card className="bg-slate-900/80 border-slate-700">
+      <Card className="bg-surface-elevated/80 border-divider">
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -131,7 +131,7 @@ export default function PersonIdentityPanel({ identityId }) {
               <Badge className={`text-xs border ${CONFIDENCE_COLORS[identity.confidence_level]}`}>
                 {identity.confidence_level} · {identity.confidence_score ?? '—'}
               </Badge>
-              <Badge className="bg-slate-800 text-slate-400 border-slate-600 text-xs capitalize">
+              <Badge className="bg-surface-interactive text-foreground-quiet border-divider text-xs capitalize">
                 {identity.status}
               </Badge>
               {identity.confidence_level !== 'verified' && (
@@ -167,8 +167,8 @@ export default function PersonIdentityPanel({ identityId }) {
             </div>
           </div>
           {driver && (
-            <div className="mt-4 pt-4 border-t border-slate-700 flex items-center justify-between">
-              <div className="text-xs text-slate-400">
+            <div className="mt-4 pt-4 border-t border-divider flex items-center justify-between">
+              <div className="text-xs text-foreground-quiet">
                 Canonical Driver: <span className="text-teal-400 font-medium">{driver.first_name} {driver.last_name}</span>
               </div>
               <div className="flex gap-2 text-xs text-slate-500">
@@ -184,7 +184,7 @@ export default function PersonIdentityPanel({ identityId }) {
 
       {/* Tabs */}
       <Tabs defaultValue="aliases">
-        <TabsList className="bg-slate-800 border border-slate-700">
+        <TabsList className="bg-surface-interactive border border-divider">
           <TabsTrigger value="aliases">
             <Tag className="w-3.5 h-3.5 mr-1.5" /> Aliases ({aliases.length})
           </TabsTrigger>
@@ -207,13 +207,13 @@ export default function PersonIdentityPanel({ identityId }) {
               value={newAlias}
               onChange={e => setNewAlias(e.target.value)}
               placeholder="Add alias name…"
-              className="bg-slate-900 border-slate-700 text-white text-sm h-8"
+              className="bg-surface-elevated border-divider text-white text-sm h-8"
               onKeyDown={e => e.key === 'Enter' && addAliasMutation.mutate()}
             />
             <select
               value={newAliasType}
               onChange={e => setNewAliasType(e.target.value)}
-              className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-md px-2 h-8"
+              className="bg-surface-elevated border border-divider text-slate-300 text-xs rounded-md px-2 h-8"
             >
               {['nickname', 'abbreviation', 'informal', 'surname_first', 'legal', 'source_variant', 'manual'].map(t => (
                 <option key={t} value={t}>{t}</option>
@@ -226,12 +226,12 @@ export default function PersonIdentityPanel({ identityId }) {
 
           <div className="space-y-2">
             {aliases.map(alias => (
-              <div key={alias.id} className="flex items-center justify-between bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2">
+              <div key={alias.id} className="flex items-center justify-between bg-surface-elevated/60 border border-divider rounded-lg px-3 py-2">
                 <div className="flex items-center gap-3">
                   <span className={`text-sm font-medium ${alias.is_primary ? 'text-teal-300' : 'text-slate-200'}`}>
                     {alias.alias_name}
                   </span>
-                  <Badge className="text-[9px] bg-slate-800 text-slate-400 border-slate-600">{alias.alias_type}</Badge>
+                  <Badge className="text-[9px] bg-surface-interactive text-foreground-quiet border-divider">{alias.alias_type}</Badge>
                   {alias.is_primary && <Badge className="text-[9px] bg-teal-900/50 text-teal-300 border-teal-700">primary</Badge>}
                   {!alias.active && <Badge className="text-[9px] bg-red-900/50 text-red-300 border-red-700">inactive</Badge>}
                   <span className="text-[10px] text-slate-600 font-mono">{alias.alias_normalized}</span>
@@ -255,15 +255,15 @@ export default function PersonIdentityPanel({ identityId }) {
         {/* Evidence Tab */}
         <TabsContent value="evidence" className="mt-3 space-y-2">
           {evidence.map(ev => (
-            <div key={ev.id} className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <div key={ev.id} className="bg-surface-elevated/60 border border-divider rounded-lg px-3 py-2 text-sm">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-slate-300 font-medium">{ev.source_name}</span>
-                <Badge className={`text-[9px] ${ev.status === 'attached' ? 'bg-green-900/50 text-green-300 border-green-700' : ev.status === 'rejected' ? 'bg-red-900/50 text-red-300 border-red-700' : 'bg-slate-800 text-slate-400 border-slate-600'}`}>
+                <Badge className={`text-[9px] ${ev.status === 'attached' ? 'bg-green-900/50 text-green-300 border-green-700' : ev.status === 'rejected' ? 'bg-red-900/50 text-red-300 border-red-700' : 'bg-surface-interactive text-foreground-quiet border-divider'}`}>
                   {ev.status}
                 </Badge>
               </div>
               <div className="text-xs text-slate-500">
-                Raw name: <span className="text-slate-400">{ev.raw_driver_name}</span>
+                Raw name: <span className="text-foreground-quiet">{ev.raw_driver_name}</span>
                 {ev.raw_season && <> · Season: {ev.raw_season}</>}
                 {ev.raw_series_name && <> · {ev.raw_series_name}</>}
                 {ev.confidence_weight != null && <> · Weight: {ev.confidence_weight}</>}
@@ -271,7 +271,7 @@ export default function PersonIdentityPanel({ identityId }) {
               {ev.confidence_signals?.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {ev.confidence_signals.map((s, i) => (
-                    <span key={i} className="text-[9px] font-mono bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded">{s}</span>
+                    <span key={i} className="text-[9px] font-mono bg-surface-interactive text-slate-500 px-1.5 py-0.5 rounded">{s}</span>
                   ))}
                 </div>
               )}
@@ -284,7 +284,7 @@ export default function PersonIdentityPanel({ identityId }) {
           {mergeLedger.length === 0 ? (
             <div className="text-slate-500 text-sm py-4 text-center">No merges recorded for this identity.</div>
           ) : mergeLedger.map(ledger => (
-            <div key={ledger.id} className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <div key={ledger.id} className="bg-surface-elevated/60 border border-divider rounded-lg px-3 py-2 text-sm">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-slate-300">
                   Absorbed: <span className="text-white font-medium">{ledger.merged_name}</span>
@@ -306,12 +306,12 @@ export default function PersonIdentityPanel({ identityId }) {
           {programs.length === 0 ? (
             <div className="text-slate-500 text-sm py-4 text-center">No programs linked to this identity's driver.</div>
           ) : programs.map(prog => (
-            <div key={prog.id} className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+            <div key={prog.id} className="bg-surface-elevated/60 border border-divider rounded-lg px-3 py-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-slate-300 font-medium">
                   {prog.season_year || prog.start_date?.slice(0, 4) || '?'} — #{prog.car_number || '?'}
                 </span>
-                <Badge className="text-[9px] bg-slate-800 text-slate-400 border-slate-600 capitalize">
+                <Badge className="text-[9px] bg-surface-interactive text-foreground-quiet border-divider capitalize">
                   {prog.status || 'active'}
                 </Badge>
               </div>

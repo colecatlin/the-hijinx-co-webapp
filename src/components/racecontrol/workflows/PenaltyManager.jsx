@@ -28,7 +28,7 @@ const STATUS_COLOR = {
   Approved: 'bg-green-900/60 text-green-300',
   Applied: 'bg-blue-900/60 text-blue-300',
   'Under Appeal': 'bg-purple-900/60 text-purple-300',
-  Overturned: 'bg-gray-700 text-gray-400',
+  Overturned: 'bg-gray-700 text-foreground-quiet',
   Upheld: 'bg-teal-900/60 text-teal-300',
 };
 
@@ -48,7 +48,7 @@ async function logOp(eventId, action, entityId, detail) {
 
 function StatusBadge({ status }) {
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STATUS_COLOR[status] || 'bg-gray-700 text-gray-300'}`}>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STATUS_COLOR[status] || 'bg-gray-700 text-foreground-secondary'}`}>
       {status}
     </span>
   );
@@ -133,7 +133,7 @@ function ApplyConfirmModal({ open, onClose, penalty, eventId, onApplied }) {
   if (!penalty) return null;
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-md">
+      <DialogContent className="bg-gray-950 border-divider text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Zap className="w-4 h-4 text-blue-400" /> Apply Penalty
@@ -141,7 +141,7 @@ function ApplyConfirmModal({ open, onClose, penalty, eventId, onApplied }) {
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-foreground-quiet">
               <span className="font-semibold text-white">{penalty.penalty_number}</span> — {penalty.penalty_type}
             </p>
             {penalty.reason && <p className="text-xs text-gray-500 mt-1">{penalty.reason}</p>}
@@ -149,14 +149,14 @@ function ApplyConfirmModal({ open, onClose, penalty, eventId, onApplied }) {
 
           <ImpactPreview penalty={penalty} />
 
-          <div className="p-2 bg-gray-900/60 border border-gray-800 rounded-lg">
+          <div className="p-2 bg-surface-elevated/60 border border-divider rounded-lg">
             <p className="text-[10px] text-gray-500">
               This action will mutate Results and/or Standings. It cannot be automatically undone — use "Reverse Penalty" if the decision is appealed.
             </p>
           </div>
 
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400">Cancel</Button>
+            <Button type="button" variant="ghost" onClick={onClose} className="text-foreground-quiet">Cancel</Button>
             <Button onClick={handleApply} disabled={applying}
               className="bg-blue-800 hover:bg-blue-700 text-white gap-1.5">
               <Zap className="w-3.5 h-3.5" />
@@ -208,7 +208,7 @@ function ReversalModal({ open, onClose, penalty, eventId, onReversed }) {
   if (!penalty) return null;
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-md">
+      <DialogContent className="bg-gray-950 border-divider text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <RotateCcw className="w-4 h-4 text-orange-400" /> Reverse / Overturn Penalty
@@ -216,7 +216,7 @@ function ReversalModal({ open, onClose, penalty, eventId, onReversed }) {
         </DialogHeader>
         <div className="space-y-4 mt-2">
           <div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-foreground-quiet">
               <span className="font-semibold text-white">{penalty.penalty_number}</span> — {penalty.penalty_type}
             </p>
             <p className="text-xs text-gray-500 mt-0.5">Current status: <StatusBadge status={penalty.status} /></p>
@@ -228,13 +228,13 @@ function ReversalModal({ open, onClose, penalty, eventId, onReversed }) {
             <p className="text-xs text-orange-300">• Standings recalculated (if no hold)</p>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Reversal Reason *</Label>
+            <Label className="text-foreground-quiet text-xs">Reversal Reason *</Label>
             <Textarea value={reason} onChange={e => setReason(e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white h-20 resize-none"
+              className="bg-surface-elevated border-divider text-white h-20 resize-none"
               placeholder="Reason for reversing / appeal decision…" />
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400">Cancel</Button>
+            <Button type="button" variant="ghost" onClick={onClose} className="text-foreground-quiet">Cancel</Button>
             <Button onClick={handleReverse} disabled={reversing || !reason.trim()}
               className="bg-orange-800 hover:bg-orange-700 text-white gap-1.5">
               <RotateCcw className="w-3.5 h-3.5" />
@@ -286,7 +286,7 @@ function ProposePenaltyModal({ open, onClose, eventId, sessions = [] }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-gray-950 border-divider text-white max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Gavel className="w-4 h-4 text-red-400" /> Propose Penalty
@@ -294,25 +294,25 @@ function ProposePenaltyModal({ open, onClose, eventId, sessions = [] }) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Penalty Type *</Label>
+            <Label className="text-foreground-quiet text-xs">Penalty Type *</Label>
             <Select value={form.penalty_type} onValueChange={v => set('penalty_type', v)} required>
-              <SelectTrigger className="bg-gray-900 border-gray-700 text-white"><SelectValue placeholder="Select type…" /></SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
+              <SelectTrigger className="bg-surface-elevated border-divider text-white"><SelectValue placeholder="Select type…" /></SelectTrigger>
+              <SelectContent className="bg-surface-elevated border-divider">
                 {PENALTY_TYPES.map(t => <SelectItem key={t} value={t} className="text-gray-200">{t}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Driver ID *</Label>
+            <Label className="text-foreground-quiet text-xs">Driver ID *</Label>
             <Input value={form.driver_id} onChange={e => set('driver_id', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white" placeholder="Driver record ID…" required />
+              className="bg-surface-elevated border-divider text-white" placeholder="Driver record ID…" required />
           </div>
           {sessions.length > 0 && (
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Session (optional)</Label>
+              <Label className="text-foreground-quiet text-xs">Session (optional)</Label>
               <Select value={form.session_id} onValueChange={v => set('session_id', v)}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white"><SelectValue placeholder="No session" /></SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white"><SelectValue placeholder="No session" /></SelectTrigger>
+                <SelectContent className="bg-surface-elevated border-divider">
                   {sessions.map(s => <SelectItem key={s.id} value={s.id} className="text-gray-200">{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -320,33 +320,33 @@ function ProposePenaltyModal({ open, onClose, eventId, sessions = [] }) {
           )}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Position Delta</Label>
+              <Label className="text-foreground-quiet text-xs">Position Delta</Label>
               <Input type="number" value={form.position_delta} onChange={e => set('position_delta', e.target.value)}
-                className="bg-gray-900 border-gray-700 text-white" placeholder="e.g. 3" />
+                className="bg-surface-elevated border-divider text-white" placeholder="e.g. 3" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Time (seconds)</Label>
+              <Label className="text-foreground-quiet text-xs">Time (seconds)</Label>
               <Input type="number" step="0.001" value={form.time_seconds} onChange={e => set('time_seconds', e.target.value)}
-                className="bg-gray-900 border-gray-700 text-white" placeholder="e.g. 5.0" />
+                className="bg-surface-elevated border-divider text-white" placeholder="e.g. 5.0" />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Rule Reference</Label>
+            <Label className="text-foreground-quiet text-xs">Rule Reference</Label>
             <Input value={form.rule_reference} onChange={e => set('rule_reference', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white" placeholder="e.g. 10.4.2" />
+              className="bg-surface-elevated border-divider text-white" placeholder="e.g. 10.4.2" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Reason *</Label>
+            <Label className="text-foreground-quiet text-xs">Reason *</Label>
             <Textarea required value={form.reason} onChange={e => set('reason', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white h-20 resize-none" placeholder="Reason for penalty…" />
+              className="bg-surface-elevated border-divider text-white h-20 resize-none" placeholder="Reason for penalty…" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Public Note (optional)</Label>
+            <Label className="text-foreground-quiet text-xs">Public Note (optional)</Label>
             <Input value={form.public_note} onChange={e => set('public_note', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white" placeholder="Optional public-facing note…" />
+              className="bg-surface-elevated border-divider text-white" placeholder="Optional public-facing note…" />
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400">Cancel</Button>
+            <Button type="button" variant="ghost" onClick={onClose} className="text-foreground-quiet">Cancel</Button>
             <Button type="submit" disabled={saving || !form.penalty_type || !form.driver_id || !form.reason}
               className="bg-red-800 hover:bg-red-700 text-white">
               {saving ? 'Proposing…' : 'Propose Penalty'}
@@ -399,12 +399,12 @@ function PenaltyRow({ penalty, eventId, canApprove, canApply, canReverse, onUpda
 
   return (
     <>
-      <div className="rounded-lg border border-gray-800 bg-gray-900/40 p-3 space-y-2">
+      <div className="rounded-lg border border-divider bg-surface-elevated/40 p-3 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Gavel className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
             <span className="text-xs font-semibold text-gray-200">{penalty.penalty_number || '—'}</span>
-            <span className="text-xs text-gray-400 truncate">{penalty.penalty_type}</span>
+            <span className="text-xs text-foreground-quiet truncate">{penalty.penalty_type}</span>
           </div>
           <StatusBadge status={penalty.status} />
         </div>
@@ -419,7 +419,7 @@ function PenaltyRow({ penalty, eventId, canApprove, canApply, canReverse, onUpda
 
         {/* Approval actions */}
         {canApprove && penalty.status === 'Proposed' && (
-          <div className="flex gap-2 pt-1 border-t border-gray-800/60">
+          <div className="flex gap-2 pt-1 border-t border-divider/60">
             <Button size="sm" disabled={acting} onClick={handleApprove}
               className="bg-green-800 hover:bg-green-700 text-white text-xs h-7 gap-1 flex-1">
               <CheckCircle className="w-3 h-3" /> Approve
@@ -433,7 +433,7 @@ function PenaltyRow({ penalty, eventId, canApprove, canApply, canReverse, onUpda
 
         {/* Apply action — only for Approved penalties */}
         {canApply && penalty.status === 'Approved' && (
-          <div className="flex gap-2 pt-1 border-t border-gray-800/60">
+          <div className="flex gap-2 pt-1 border-t border-divider/60">
             <Button size="sm" disabled={acting} onClick={() => setShowApply(true)}
               className="bg-blue-800 hover:bg-blue-700 text-white text-xs h-7 gap-1 flex-1">
               <Zap className="w-3 h-3" /> Apply Penalty
@@ -443,7 +443,7 @@ function PenaltyRow({ penalty, eventId, canApprove, canApply, canReverse, onUpda
 
         {/* Reversal action */}
         {isReversible && (
-          <div className="flex gap-2 pt-1 border-t border-gray-800/60">
+          <div className="flex gap-2 pt-1 border-t border-divider/60">
             <Button size="sm" disabled={acting} onClick={() => setShowReverse(true)}
               className="bg-orange-900/60 hover:bg-orange-800 text-white text-xs h-7 gap-1">
               <RotateCcw className="w-3 h-3" /> Reverse / Overturn
@@ -516,7 +516,7 @@ export default function PenaltyManager({ eventId, sessions = [] }) {
             <button key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`text-[10px] px-2.5 py-1 rounded font-semibold transition-colors ${
-                activeTab === tab.key ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
+                activeTab === tab.key ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-foreground-secondary'
               }`}>
               {tab.label}
             </button>

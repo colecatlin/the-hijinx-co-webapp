@@ -220,9 +220,9 @@ export default function AnnouncerFeed({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to view announcer feed</p>
+          <p className="text-foreground-quiet">Select an event to view announcer feed</p>
         </CardContent>
       </Card>
     );
@@ -240,23 +240,23 @@ export default function AnnouncerFeed({
       className="space-y-6"
     >
       {/* Header */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <div className="space-y-3">
             <div>
               <CardTitle className="text-white text-lg">{selectedEvent.name}</CardTitle>
-              <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+              <div className="flex items-center gap-4 mt-2 text-xs text-foreground-quiet">
                 {selectedTrack && <span>{selectedTrack.name}</span>}
                 {selectedEvent.event_date && <span>{new Date(selectedEvent.event_date).toLocaleDateString()}</span>}
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-400 block mb-2">Select Session</label>
+              <label className="text-xs text-foreground-quiet block mb-2">Select Session</label>
               <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-                <SelectTrigger className="bg-gray-900 border-gray-800 text-white w-full">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-800">
+                <SelectContent className="bg-surface-elevated border-divider">
                   {Array.from(sessionsByClass.entries()).map(([className, classSessions]) => (
                     <div key={className}>
                       {classSessions.map(s => (
@@ -275,14 +275,14 @@ export default function AnnouncerFeed({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sessions list */}
-        <Card className="bg-[#171717] border-gray-800 lg:col-span-1">
+        <Card className="bg-surface-elevated border-divider lg:col-span-1">
           <CardHeader>
             <CardTitle className="text-white text-sm">Sessions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {Array.from(sessionsByClass.entries()).map(([className, classSessions]) => (
               <div key={className}>
-                <p className="text-xs font-semibold text-gray-400 mb-2">{className}</p>
+                <p className="text-xs font-semibold text-foreground-quiet mb-2">{className}</p>
                 <div className="space-y-1">
                   {classSessions.map(s => {
                     const sessionResults = results.filter(r => r.session_id === s.id);
@@ -293,12 +293,12 @@ export default function AnnouncerFeed({
                         className={`w-full text-left p-2 rounded text-xs transition-colors ${
                           selectedSessionId === s.id
                             ? 'bg-indigo-900/50 border border-indigo-700 text-white'
-                            : 'bg-gray-900/50 hover:bg-gray-800 text-gray-400'
+                            : 'bg-surface-elevated/50 hover:bg-surface-interactive text-foreground-quiet'
                         }`}
                       >
                         <div className="flex justify-between items-center">
                           <span>{s.name}</span>
-                          <Badge className="bg-gray-700 text-gray-300 text-xs">
+                          <Badge className="bg-gray-700 text-foreground-secondary text-xs">
                             {sessionResults.length}
                           </Badge>
                         </div>
@@ -315,7 +315,7 @@ export default function AnnouncerFeed({
         <div className="lg:col-span-2 space-y-4">
           {/* Top 3 */}
           {top3.length > 0 && (
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CardHeader>
                 <CardTitle className="text-white text-sm">Top 3</CardTitle>
               </CardHeader>
@@ -324,17 +324,17 @@ export default function AnnouncerFeed({
                   <div
                     key={idx}
                     onClick={() => result.driver && setSpotlightDriverId(result.driver.id)}
-                    className="flex items-center justify-between p-3 bg-gray-900/50 rounded cursor-pointer hover:bg-gray-900 transition-colors"
+                    className="flex items-center justify-between p-3 bg-surface-elevated/50 rounded cursor-pointer hover:bg-surface-elevated transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-xl font-bold text-yellow-400">{result.position}</div>
                       <div>
                         <p className="text-sm font-semibold text-white">{result.driver?.first_name} {result.driver?.last_name}</p>
-                        <p className="text-xs text-gray-400">#{result.entry?.car_number}</p>
+                        <p className="text-xs text-foreground-quiet">#{result.entry?.car_number}</p>
                       </div>
                     </div>
                     {result.team && (
-                      <p className="text-xs text-gray-400">{result.team.name}</p>
+                      <p className="text-xs text-foreground-quiet">{result.team.name}</p>
                     )}
                   </div>
                 ))}
@@ -344,7 +344,7 @@ export default function AnnouncerFeed({
 
           {/* Movers */}
           {movers.length > 0 && (
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CardHeader>
                 <CardTitle className="text-white text-sm flex items-center gap-2">
                   <TrendingUp className="w-4 h-4" /> Notable Movers
@@ -355,11 +355,11 @@ export default function AnnouncerFeed({
                   <div
                     key={idx}
                     onClick={() => mover.driver && setSpotlightDriverId(mover.driver.id)}
-                    className="flex items-center justify-between p-2 bg-gray-900/50 rounded cursor-pointer hover:bg-gray-900 text-xs"
+                    className="flex items-center justify-between p-2 bg-surface-elevated/50 rounded cursor-pointer hover:bg-surface-elevated text-xs"
                   >
                     <span className="text-white font-semibold">{mover.driver?.first_name} {mover.driver?.last_name}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-400">#{mover.number}</span>
+                      <span className="text-foreground-quiet">#{mover.number}</span>
                       <span className={mover.delta > 0 ? 'text-green-400' : 'text-red-400'}>
                         {mover.delta > 0 ? '+' : ''}{mover.delta} ({mover.qualPos}→{mover.finalPos})
                       </span>
@@ -372,7 +372,7 @@ export default function AnnouncerFeed({
 
           {/* Running order table */}
           {runningOrder.length > 0 && (
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-white text-sm">Running Order</CardTitle>
@@ -390,13 +390,13 @@ export default function AnnouncerFeed({
               <CardContent>
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader className="bg-gray-900/30">
+                    <TableHeader className="bg-surface-elevated/30">
                       <TableRow>
-                        <TableHead className="text-gray-400 text-xs">Pos</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Num</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Driver</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Team</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Time</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Pos</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Num</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Driver</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Team</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Time</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -404,13 +404,13 @@ export default function AnnouncerFeed({
                         <TableRow
                           key={result.id}
                           onClick={() => result.driver && setSpotlightDriverId(result.driver.id)}
-                          className="border-gray-800 cursor-pointer hover:bg-gray-900/50"
+                          className="border-divider cursor-pointer hover:bg-surface-elevated/50"
                         >
                           <TableCell className="text-sm font-semibold text-white">{result.position}</TableCell>
-                          <TableCell className="text-sm text-gray-400">{result.entry?.car_number}</TableCell>
+                          <TableCell className="text-sm text-foreground-quiet">{result.entry?.car_number}</TableCell>
                           <TableCell className="text-sm text-white">{result.driver?.first_name} {result.driver?.last_name}</TableCell>
-                          <TableCell className="text-xs text-gray-400">{result.team?.name || '-'}</TableCell>
-                          <TableCell className="text-sm text-gray-400">{result.race_time || '-'}</TableCell>
+                          <TableCell className="text-xs text-foreground-quiet">{result.team?.name || '-'}</TableCell>
+                          <TableCell className="text-sm text-foreground-quiet">{result.race_time || '-'}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -421,9 +421,9 @@ export default function AnnouncerFeed({
           )}
 
           {runningOrder.length === 0 && (
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CardContent className="py-12 text-center">
-                <p className="text-gray-400">No results yet for this session</p>
+                <p className="text-foreground-quiet">No results yet for this session</p>
               </CardContent>
             </Card>
           )}
@@ -432,7 +432,7 @@ export default function AnnouncerFeed({
 
       {/* Spotlight Drawer */}
       <Drawer open={!!spotlightDriverId} onOpenChange={(open) => !open && setSpotlightDriverId(null)}>
-        <DrawerContent className="bg-gray-900 border-gray-800">
+        <DrawerContent className="bg-surface-elevated border-divider">
           <DrawerHeader>
             <DrawerTitle className="text-white">
               {spotlightDriver?.first_name} {spotlightDriver?.last_name}
@@ -442,22 +442,22 @@ export default function AnnouncerFeed({
             <div className="px-6 pb-6 space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">Hometown</p>
+                  <p className="text-foreground-quiet text-xs mb-1">Hometown</p>
                   <p className="text-white font-semibold">{spotlightDriver.hometown_city}, {spotlightDriver.hometown_state}</p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">Discipline</p>
+                  <p className="text-foreground-quiet text-xs mb-1">Discipline</p>
                   <p className="text-white font-semibold">{spotlightDriver.primary_discipline}</p>
                 </div>
                 {spotlightTeam && (
                   <div>
-                    <p className="text-gray-400 text-xs mb-1">Team</p>
+                    <p className="text-foreground-quiet text-xs mb-1">Team</p>
                     <p className="text-white font-semibold">{spotlightTeam.name}</p>
                   </div>
                 )}
                 {spotlightEntry && (
                   <div>
-                    <p className="text-gray-400 text-xs mb-1">Car Number</p>
+                    <p className="text-foreground-quiet text-xs mb-1">Car Number</p>
                     <p className="text-white font-semibold">#{spotlightEntry.car_number}</p>
                   </div>
                 )}
@@ -465,9 +465,9 @@ export default function AnnouncerFeed({
 
               {spotlightEntry?.notes && (
                 <>
-                  <Separator className="bg-gray-800" />
+                  <Separator className="bg-surface-interactive" />
                   <div>
-                    <p className="text-gray-400 text-xs mb-2">Notes</p>
+                    <p className="text-foreground-quiet text-xs mb-2">Notes</p>
                     <p className="text-white text-sm">{spotlightEntry.notes}</p>
                   </div>
                 </>
@@ -475,14 +475,14 @@ export default function AnnouncerFeed({
 
               {spotlightResults.length > 0 && (
                 <>
-                  <Separator className="bg-gray-800" />
+                  <Separator className="bg-surface-interactive" />
                   <div>
-                    <p className="text-gray-400 text-xs mb-2">Results</p>
+                    <p className="text-foreground-quiet text-xs mb-2">Results</p>
                     <div className="space-y-1 text-xs">
                       {spotlightResults.map((r, idx) => {
                         const session = sessions.find(s => s.id === r.session_id);
                         return (
-                          <div key={idx} className="flex justify-between text-gray-400">
+                          <div key={idx} className="flex justify-between text-foreground-quiet">
                             <span>{session?.name}</span>
                             <span className="text-white font-semibold">#{r.position}</span>
                           </div>

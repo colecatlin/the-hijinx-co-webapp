@@ -45,9 +45,9 @@ function entryStatusBadge(status) {
     case 'Pending Approval': return 'bg-orange-500/20 text-orange-400';
     case 'Checked In':  return 'bg-green-500/20 text-green-400';
     case 'Teched':      return 'bg-purple-500/20 text-purple-400';
-    case 'Tech Failed': return 'bg-red-500/20 text-red-400';
+    case 'Tech Failed': return 'bg-red-500/20 text-danger';
     case 'Tech Hold':   return 'bg-amber-500/20 text-amber-400';
-    case 'Withdrawn':   return 'bg-gray-500/20 text-gray-400';
+    case 'Withdrawn':   return 'bg-gray-500/20 text-foreground-quiet';
     default:            return 'bg-blue-500/20 text-blue-400';
   }
 }
@@ -56,12 +56,12 @@ function paymentBadge(status) {
   if (status === 'Refunded') return 'bg-yellow-500/20 text-yellow-400';
   if (status === 'Comped') return 'bg-purple-500/20 text-purple-400';
   if (status === 'Pending Registration') return 'bg-amber-500/20 text-amber-400';
-  return 'bg-red-500/20 text-red-400';
+  return 'bg-red-500/20 text-danger';
 }
 function techBadge(status) {
   if (status === 'Passed') return 'bg-green-500/20 text-green-400';
-  if (status === 'Failed' || status === 'Recheck Required') return 'bg-red-500/20 text-red-400';
-  return 'bg-gray-500/20 text-gray-400';
+  if (status === 'Failed' || status === 'Recheck Required') return 'bg-red-500/20 text-danger';
+  return 'bg-gray-500/20 text-foreground-quiet';
 }
 
 // ── CSV export ─────────────────────────────────────────────────────────────────
@@ -317,9 +317,9 @@ export default function EntriesManager({
 
   if (!eventId) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select a Track or Series, Season, and Event to manage entries</p>
+          <p className="text-foreground-quiet">Select a Track or Series, Season, and Event to manage entries</p>
         </CardContent>
       </Card>
     );
@@ -328,16 +328,16 @@ export default function EntriesManager({
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {[...Array(6)].map((_, i) => <div key={i} className="h-10 bg-gray-800/40 rounded animate-pulse" />)}
+        {[...Array(6)].map((_, i) => <div key={i} className="h-10 bg-surface-interactive/40 rounded animate-pulse" />)}
       </div>
     );
   }
 
   if (entryEntityError) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-red-400 text-sm">{entryEntityError}</p>
+          <p className="text-danger text-sm">{entryEntityError}</p>
         </CardContent>
       </Card>
     );
@@ -352,7 +352,7 @@ export default function EntriesManager({
         <div className="bg-red-950/40 border border-red-700/60 rounded-lg px-4 py-3 space-y-1.5">
           <p className="text-xs font-bold text-red-300">⚠ Duplicate Car Numbers Detected ({allDuplicateGroups.length} conflict{allDuplicateGroups.length !== 1 ? 's' : ''})</p>
           {allDuplicateGroups.map(({ car_number, entries: dupes }) => (
-            <div key={car_number} className="text-[11px] text-red-400">
+            <div key={car_number} className="text-[11px] text-danger">
               <span className="font-mono font-bold">#{car_number}</span>
               {' — '}
               {dupes.map(e => driversMap[e.driver_id] ? `${driversMap[e.driver_id].first_name} ${driversMap[e.driver_id].last_name}` : `Entry ${e.id.slice(0,6)}`).join(', ')}
@@ -362,7 +362,7 @@ export default function EntriesManager({
       )}
 
       {/* Summary stats */}
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-3 grid grid-cols-2 md:grid-cols-6 gap-2">
+      <div className="bg-surface-elevated border border-divider rounded-lg p-3 grid grid-cols-2 md:grid-cols-6 gap-2">
         {[
           { label: 'Total', value: stats.total, color: 'text-white' },
           { label: 'Pending', value: stats.pending, color: 'text-orange-400' },
@@ -370,10 +370,10 @@ export default function EntriesManager({
           { label: 'Checked In', value: stats.checkedIn, color: 'text-green-400' },
           { label: 'Teched', value: stats.teched, color: 'text-purple-400' },
           { label: 'Unpaid', value: stats.unpaid, color: 'text-yellow-400' },
-          { label: 'No Transponder', value: stats.noTransponder, color: 'text-red-400' },
+          { label: 'No Transponder', value: stats.noTransponder, color: 'text-danger' },
         ].map(s => (
           <div key={s.label} className="text-center">
-            <p className="text-xs text-gray-400">{s.label}</p>
+            <p className="text-xs text-foreground-quiet">{s.label}</p>
             <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
           </div>
         ))}
@@ -386,7 +386,7 @@ export default function EntriesManager({
           <p className="text-xs text-gray-500 mt-0.5">
             {filteredEntries.length} of {entries.length} entr{entries.length === 1 ? 'y' : 'ies'}
             {stats.unpaid > 0 && <span className="text-amber-400 ml-2">· {stats.unpaid} unpaid</span>}
-            {stats.noTransponder > 0 && <span className="text-red-400 ml-2">· {stats.noTransponder} missing transponder</span>}
+            {stats.noTransponder > 0 && <span className="text-danger ml-2">· {stats.noTransponder} missing transponder</span>}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
@@ -401,17 +401,17 @@ export default function EntriesManager({
               <Plus className="w-4 h-4 mr-1" /> Add Entry
             </Button>
           )}
-          <Button onClick={handleExportCSV} variant="outline" size="sm" className="border-gray-700 text-gray-300">
+          <Button onClick={handleExportCSV} variant="outline" size="sm" className="border-gray-700 text-foreground-secondary">
             <Download className="w-4 h-4 mr-1" /> Export CSV
           </Button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
+      <div className="bg-surface-elevated border border-divider rounded-lg p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Class</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Class</label>
             <Select value={filters.classId} onValueChange={(v) => updateFilters({ classId: v })}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
@@ -421,7 +421,7 @@ export default function EntriesManager({
             </Select>
           </div>
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Status</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Status</label>
             <Select value={filters.status} onValueChange={(v) => updateFilters({ status: v })}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
@@ -437,7 +437,7 @@ export default function EntriesManager({
             </Select>
           </div>
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Payment</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Payment</label>
             <Select value={filters.payment} onValueChange={(v) => updateFilters({ payment: v })}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
@@ -449,7 +449,7 @@ export default function EntriesManager({
             </Select>
           </div>
           <div className="col-span-2 md:col-span-1 lg:col-span-2">
-            <label className="text-xs text-gray-400 block mb-1">Search</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Search</label>
             <Input
               placeholder="Driver, car #, transponder…"
               value={filters.search}
@@ -470,8 +470,8 @@ export default function EntriesManager({
             {seriesClasses.length > 0 && (
               <Button onClick={() => setShowBulkClassModal(true)} size="sm" className="bg-indigo-700 hover:bg-indigo-600 text-white">Change Class</Button>
             )}
-            <Button onClick={handleBulkWithdraw} size="sm" variant="outline" className="border-red-700 text-red-400 hover:bg-red-900/20">Withdraw</Button>
-            <Button onClick={handleExportCSV} size="sm" variant="outline" className="border-gray-600 text-gray-300">
+            <Button onClick={handleBulkWithdraw} size="sm" variant="outline" className="border-red-700 text-danger hover:bg-red-900/20">Withdraw</Button>
+            <Button onClick={handleExportCSV} size="sm" variant="outline" className="border-gray-600 text-foreground-secondary">
               <Download className="w-4 h-4 mr-1" /> Export Selected
             </Button>
             <Button onClick={() => setSelectedEntries(new Set())} size="sm" variant="ghost" className="text-gray-500">Clear</Button>
@@ -481,9 +481,9 @@ export default function EntriesManager({
 
       {/* Table */}
       {filteredEntries.length === 0 ? (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="py-12 text-center">
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-foreground-quiet text-sm mb-4">
               {entries.length === 0 ? 'No entries yet for this event.' : 'No entries match the current filters.'}
             </p>
             {entries.length === 0 && (
@@ -494,10 +494,10 @@ export default function EntriesManager({
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-[#171717] border-gray-800 overflow-hidden">
+        <Card className="bg-surface-elevated border-divider overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-900/60 border-b border-gray-800">
+              <thead className="bg-gray-900/60 border-b border-divider">
                 <tr>
                   <th className="px-3 py-2 text-left w-8">
                     <input
@@ -509,15 +509,15 @@ export default function EntriesManager({
                       className="w-4 h-4 accent-blue-500"
                     />
                   </th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Car #</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Driver</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Class</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Transponder</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Entry</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Payment</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Tech</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Flags</th>
-                  {canEdit && <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Action</th>}
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Car #</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Driver</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Class</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Transponder</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Entry</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Payment</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Tech</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Flags</th>
+                  {canEdit && <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Action</th>}
                   </tr>
               </thead>
               <tbody>
@@ -525,8 +525,8 @@ export default function EntriesManager({
                   <tr
                     key={entry.id}
                     onClick={() => setEditingEntry(entry)}
-                    className={`border-b border-gray-800 cursor-pointer transition-colors ${
-                      rowNeedsAttention(entry) ? 'bg-amber-950/20 hover:bg-amber-950/30' : 'hover:bg-gray-800/40'
+                    className={`border-b border-divider cursor-pointer transition-colors ${
+                      rowNeedsAttention(entry) ? 'bg-amber-950/20 hover:bg-amber-950/30' : 'hover:bg-surface-interactive/40'
                     }`}
                   >
                     <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
@@ -543,8 +543,8 @@ export default function EntriesManager({
                     </td>
                     <td className="px-3 py-2 text-white font-mono text-xs">{entry.car_number || '—'}</td>
                     <td className="px-3 py-2 text-white text-xs">{getDriverName(entry.driver_id)}</td>
-                    <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
-                    <td className={`px-3 py-2 font-mono text-xs ${!entry.transponder_id ? 'text-red-400' : 'text-gray-300'}`}>
+                    <td className="px-3 py-2 text-foreground-secondary text-xs">{getClassName(entry)}</td>
+                    <td className={`px-3 py-2 font-mono text-xs ${!entry.transponder_id ? 'text-danger' : 'text-foreground-secondary'}`}>
                       {entry.transponder_id || '⚠ missing'}
                     </td>
                     <td className="px-3 py-2">
@@ -615,7 +615,7 @@ export default function EntriesManager({
         <DialogContent className="bg-[#262626] border-gray-700">
           <DialogHeader><DialogTitle className="text-white">Assign Transponders ({selectedEntries.size} entries)</DialogTitle></DialogHeader>
           <div className="space-y-2">
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-foreground-quiet">
               Paste one transponder ID per line. Assigned sequentially to selected entries sorted by car number.
             </p>
             <Textarea
@@ -627,7 +627,7 @@ export default function EntriesManager({
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBulkTransponderModal(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+            <Button variant="outline" onClick={() => setShowBulkTransponderModal(false)} className="border-gray-700 text-foreground-secondary">Cancel</Button>
             <Button onClick={handleBulkTransponders} disabled={bulkUpdating} className="bg-cyan-700 hover:bg-cyan-600">
               {bulkUpdating ? 'Assigning…' : 'Assign'}
             </Button>
@@ -640,7 +640,7 @@ export default function EntriesManager({
         <DialogContent className="bg-[#262626] border-gray-700">
           <DialogHeader><DialogTitle className="text-white">Change Class ({selectedEntries.size} entries)</DialogTitle></DialogHeader>
           <div>
-            <label className="text-xs text-gray-400 block mb-2">Select new class</label>
+            <label className="text-xs text-foreground-quiet block mb-2">Select new class</label>
             <Select value={bulkClassId} onValueChange={setBulkClassId}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
@@ -649,7 +649,7 @@ export default function EntriesManager({
             </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBulkClassModal(false)} className="border-gray-700 text-gray-300">Cancel</Button>
+            <Button variant="outline" onClick={() => setShowBulkClassModal(false)} className="border-gray-700 text-foreground-secondary">Cancel</Button>
             <Button onClick={handleBulkClass} disabled={bulkUpdating || !seriesClasses.length} className="bg-indigo-700 hover:bg-indigo-600">
               {bulkUpdating ? 'Applying…' : 'Apply'}
             </Button>
@@ -672,11 +672,11 @@ export default function EntriesManager({
           <AlertDialogTitle className="text-white flex items-center gap-2">
             <Archive className="w-4 h-4 text-amber-400" /> Archive Entry
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-400">
+          <AlertDialogDescription className="text-foreground-quiet">
             This entry will be archived (not permanently deleted). It can be restored from the Archive Browser. Results linked to this entry will remain.
           </AlertDialogDescription>
           <div className="mt-2">
-            <label className="text-xs text-gray-400 block mb-1">Archive reason (required)</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Archive reason (required)</label>
             <input
               type="text"
               value={archiveReason}
@@ -686,7 +686,7 @@ export default function EntriesManager({
             />
           </div>
           <div className="flex justify-end gap-2 mt-2">
-            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-gray-700 text-foreground-secondary">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleArchiveEntry(showDeleteConfirm, archiveReason)}
               disabled={!archiveReason.trim()}

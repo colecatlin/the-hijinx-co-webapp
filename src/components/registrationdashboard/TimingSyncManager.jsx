@@ -251,9 +251,9 @@ export default function TimingSyncManager({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to access Timing Sync</p>
+          <p className="text-foreground-quiet">Select an event to access Timing Sync</p>
         </CardContent>
       </Card>
     );
@@ -266,18 +266,18 @@ export default function TimingSyncManager({
       className="space-y-6"
     >
       {/* Session Selection */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <CardTitle className="text-white text-sm">Session Selection</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-gray-400 mb-2 block">Class</label>
+            <label className="text-xs text-foreground-quiet mb-2 block">Class</label>
             <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+              <SelectTrigger className="bg-surface-elevated border-divider text-white">
                 <SelectValue placeholder="All Classes" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-800">
+              <SelectContent className="bg-surface-elevated border-divider">
                 <SelectItem value={null}>All Classes</SelectItem>
                 {classOptions.map(cls => (
                   <SelectItem key={cls} value={cls}>{cls}</SelectItem>
@@ -286,12 +286,12 @@ export default function TimingSyncManager({
             </Select>
           </div>
           <div>
-            <label className="text-xs text-gray-400 mb-2 block">Session</label>
+            <label className="text-xs text-foreground-quiet mb-2 block">Session</label>
             <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-              <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+              <SelectTrigger className="bg-surface-elevated border-divider text-white">
                 <SelectValue placeholder="Select session" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-800">
+              <SelectContent className="bg-surface-elevated border-divider">
                 {filteredSessions.map(s => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
@@ -313,7 +313,7 @@ export default function TimingSyncManager({
       )}
 
       {selectedSession && !selectedSession.locked && (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader>
             <CardTitle className="text-white text-sm flex items-center gap-2">
               <Clock className="w-4 h-4" /> Import Timing Data
@@ -321,7 +321,7 @@ export default function TimingSyncManager({
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="manual" className="space-y-4">
-              <TabsList className="bg-gray-900 border-gray-800">
+              <TabsList className="bg-surface-elevated border-divider">
                 <TabsTrigger value="manual" className="data-[state=active]:bg-indigo-600">
                   Manual Paste
                 </TabsTrigger>
@@ -331,17 +331,17 @@ export default function TimingSyncManager({
               </TabsList>
 
               <TabsContent value="manual" className="space-y-3">
-                <div className="text-xs text-gray-400 bg-gray-900/50 p-3 rounded border border-gray-800">
+                <div className="text-xs text-foreground-quiet bg-surface-elevated/50 p-3 rounded border border-divider">
                   <p className="font-semibold mb-2">Expected format:</p>
-                  <code className="text-gray-300">position,driver_number,laps,time,best_lap</code>
+                  <code className="text-foreground-secondary">position,driver_number,laps,time,best_lap</code>
                   <p className="mt-2">Example:</p>
-                  <code className="text-gray-300 block">1,23,15,10:32.125,41.332</code>
+                  <code className="text-foreground-secondary block">1,23,15,10:32.125,41.332</code>
                 </div>
                 <Textarea
                   placeholder="Paste timing data..."
                   value={manualInput}
                   onChange={(e) => setManualInput(e.target.value)}
-                  className="bg-gray-900 border-gray-800 text-white font-mono text-xs h-32"
+                  className="bg-surface-elevated border-divider text-white font-mono text-xs h-32"
                 />
                 <Button
                   onClick={handleManualParse}
@@ -353,15 +353,15 @@ export default function TimingSyncManager({
               </TabsContent>
 
               <TabsContent value="csv" className="space-y-3">
-                <div className="text-xs text-gray-400 bg-gray-900/50 p-3 rounded border border-gray-800">
+                <div className="text-xs text-foreground-quiet bg-surface-elevated/50 p-3 rounded border border-divider">
                   <p className="font-semibold mb-2">CSV headers:</p>
-                  <code className="text-gray-300">position, driver_number, laps, time, best_lap</code>
+                  <code className="text-foreground-secondary">position, driver_number, laps, time, best_lap</code>
                 </div>
                 <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-800 border-dashed rounded-lg cursor-pointer bg-gray-900/50 hover:bg-gray-900/70 transition-colors">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-divider border-dashed rounded-lg cursor-pointer bg-surface-elevated/50 hover:bg-surface-elevated/70 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                      <p className="text-xs text-gray-400">Click to upload CSV</p>
+                      <Upload className="w-8 h-8 text-foreground-quiet mb-2" />
+                      <p className="text-xs text-foreground-quiet">Click to upload CSV</p>
                     </div>
                     <input
                       type="file"
@@ -380,7 +380,7 @@ export default function TimingSyncManager({
 
       {/* Preview */}
       {previewData && (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader>
             <CardTitle className="text-white text-sm">Preview ({previewData.length} rows)</CardTitle>
           </CardHeader>
@@ -396,24 +396,24 @@ export default function TimingSyncManager({
 
             <div className="overflow-x-auto">
               <Table>
-                <TableHeader className="bg-gray-900/30">
+                <TableHeader className="bg-surface-elevated/30">
                   <TableRow>
-                    <TableHead className="text-gray-400 text-xs">Pos</TableHead>
-                    <TableHead className="text-gray-400 text-xs">Number</TableHead>
-                    <TableHead className="text-gray-400 text-xs">Laps</TableHead>
-                    <TableHead className="text-gray-400 text-xs">Time</TableHead>
-                    <TableHead className="text-gray-400 text-xs">Best Lap</TableHead>
-                    <TableHead className="text-gray-400 text-xs">Match</TableHead>
+                    <TableHead className="text-foreground-quiet text-xs">Pos</TableHead>
+                    <TableHead className="text-foreground-quiet text-xs">Number</TableHead>
+                    <TableHead className="text-foreground-quiet text-xs">Laps</TableHead>
+                    <TableHead className="text-foreground-quiet text-xs">Time</TableHead>
+                    <TableHead className="text-foreground-quiet text-xs">Best Lap</TableHead>
+                    <TableHead className="text-foreground-quiet text-xs">Match</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {previewData.map((row, idx) => (
                     <TableRow key={idx} className={row.matched ? '' : 'opacity-50'}>
                       <TableCell className="text-sm text-white">{row.position}</TableCell>
-                      <TableCell className="text-sm text-gray-400">{row.driverNumber}</TableCell>
-                      <TableCell className="text-sm text-gray-400">{row.laps}</TableCell>
-                      <TableCell className="text-sm text-gray-400">{row.time}</TableCell>
-                      <TableCell className="text-sm text-gray-400">{row.bestLap}</TableCell>
+                      <TableCell className="text-sm text-foreground-quiet">{row.driverNumber}</TableCell>
+                      <TableCell className="text-sm text-foreground-quiet">{row.laps}</TableCell>
+                      <TableCell className="text-sm text-foreground-quiet">{row.time}</TableCell>
+                      <TableCell className="text-sm text-foreground-quiet">{row.bestLap}</TableCell>
                       <TableCell>
                         {row.matched ? (
                           <Badge className="bg-green-900/40 text-green-300 text-xs">
@@ -433,7 +433,7 @@ export default function TimingSyncManager({
 
             <div className="space-y-2">
               <div>
-                <label className="text-xs text-gray-400 block mb-2">
+                <label className="text-xs text-foreground-quiet block mb-2">
                   If results exist:
                 </label>
                 <div className="flex gap-2">
@@ -442,7 +442,7 @@ export default function TimingSyncManager({
                     className={`flex-1 h-8 text-xs ${
                       overwriteMode === 'overwrite'
                         ? 'bg-red-600 text-white'
-                        : 'bg-gray-900 border border-gray-800 text-gray-300'
+                        : 'bg-surface-elevated border border-divider text-foreground-secondary'
                     }`}
                   >
                     Overwrite
@@ -452,7 +452,7 @@ export default function TimingSyncManager({
                     className={`flex-1 h-8 text-xs ${
                       overwriteMode === 'merge'
                         ? 'bg-blue-600 text-white'
-                        : 'bg-gray-900 border border-gray-800 text-gray-300'
+                        : 'bg-surface-elevated border border-divider text-foreground-secondary'
                     }`}
                   >
                     Merge
@@ -478,10 +478,10 @@ export default function TimingSyncManager({
 
       {/* Confirm Dialog */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
-        <AlertDialogContent className="bg-gray-900 border-gray-800">
+        <AlertDialogContent className="bg-surface-elevated border-divider">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Confirm Timing Import</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+            <AlertDialogDescription className="text-foreground-quiet">
               Import {previewData?.length} timing results to {selectedSession?.name}?
               {overwriteMode === 'overwrite' && existingResults.length > 0 && (
                 <p className="mt-2 text-yellow-400 text-xs">
@@ -491,7 +491,7 @@ export default function TimingSyncManager({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-3">
-            <AlertDialogCancel className="bg-gray-800 text-white border-gray-700">
+            <AlertDialogCancel className="bg-surface-interactive text-white border-divider">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

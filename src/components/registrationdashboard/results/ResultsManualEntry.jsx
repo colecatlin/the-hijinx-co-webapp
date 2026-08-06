@@ -59,37 +59,37 @@ const ResultRow = ({
   return (
     <>
       <TableRow className="hover:bg-[#262626]">
-        <TableCell className="text-gray-300 text-sm">
+        <TableCell className="text-foreground-secondary text-sm">
           {formData.car_number || '-'}
         </TableCell>
-        <TableCell className="text-gray-300 text-sm">
+        <TableCell className="text-foreground-secondary text-sm">
           {driver ? `${driver.first_name} ${driver.last_name}` : '-'}
         </TableCell>
-        <TableCell className="text-gray-300 text-sm">
+        <TableCell className="text-foreground-secondary text-sm">
           {result.team_id ? 'Team' : '-'}
         </TableCell>
         <TableCell
-          className={`text-sm ${positionDuplicate ? 'bg-red-900/30 text-red-400' : 'text-gray-300'}`}
+          className={`text-sm ${positionDuplicate ? 'bg-red-900/30 text-red-400' : 'text-foreground-secondary'}`}
         >
           {formData.position || '-'}
         </TableCell>
-        <TableCell className="text-gray-300 text-sm">
+        <TableCell className="text-foreground-secondary text-sm">
           {formData.status || '-'}
         </TableCell>
         <TableCell
-          className={`text-sm ${invalidLaps ? 'bg-red-900/30 text-red-400' : 'text-gray-300'}`}
+          className={`text-sm ${invalidLaps ? 'bg-red-900/30 text-red-400' : 'text-foreground-secondary'}`}
         >
           {formData.laps_completed || '-'}
         </TableCell>
-        <TableCell className="text-gray-300 text-sm">
+        <TableCell className="text-foreground-secondary text-sm">
           {formData.best_lap_time_ms
             ? `${(formData.best_lap_time_ms / 1000).toFixed(3)}s`
             : '-'}
         </TableCell>
-        <TableCell className="text-gray-300 text-sm">
+        <TableCell className="text-foreground-secondary text-sm">
           {formData.points || '-'}
         </TableCell>
-        <TableCell className="text-gray-300 text-sm truncate max-w-xs">
+        <TableCell className="text-foreground-secondary text-sm truncate max-w-xs">
           {formData.notes || '-'}
         </TableCell>
         <TableCell className="text-right">
@@ -105,13 +105,13 @@ const ResultRow = ({
       </TableRow>
 
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
-        <DialogContent className="bg-[#262626] border-gray-700 text-white">
+        <DialogContent className="bg-[#262626] border-divider text-white">
           <DialogHeader>
             <DialogTitle>Edit Result</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide">
                 Driver
               </label>
               <Select
@@ -120,10 +120,10 @@ const ResultRow = ({
                   setFormData({ ...formData, driver_id: value })
                 }
               >
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white mt-1">
                   <SelectValue placeholder="Select driver..." />
                 </SelectTrigger>
-                <SelectContent className="bg-[#171717] border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   {drivers.map((d) => (
                     <SelectItem key={d.id} value={d.id} className="text-white">
                       {d.first_name} {d.last_name}
@@ -134,7 +134,7 @@ const ResultRow = ({
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide">
                 Position
               </label>
               <Input
@@ -144,12 +144,12 @@ const ResultRow = ({
                 onChange={(e) =>
                   setFormData({ ...formData, position: parseInt(e.target.value) || 0 })
                 }
-                className="bg-[#171717] border-gray-700 text-white mt-1"
+                className="bg-surface-elevated border-divider text-white mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide">
                 Status
               </label>
               <Select
@@ -158,10 +158,10 @@ const ResultRow = ({
                   setFormData({ ...formData, status: value })
                 }
               >
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white mt-1">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white mt-1">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#171717] border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   <SelectItem value="Running" className="text-white">
                     Running
                   </SelectItem>
@@ -182,7 +182,7 @@ const ResultRow = ({
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide">
                 Laps Completed
               </label>
               <Input
@@ -192,12 +192,12 @@ const ResultRow = ({
                 onChange={(e) =>
                   setFormData({ ...formData, laps_completed: parseInt(e.target.value) || 0 })
                 }
-                className="bg-[#171717] border-gray-700 text-white mt-1"
+                className="bg-surface-elevated border-divider text-white mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide">
                 Best Lap Time (ms)
               </label>
               <Input
@@ -207,12 +207,12 @@ const ResultRow = ({
                 onChange={(e) =>
                   setFormData({ ...formData, best_lap_time_ms: parseInt(e.target.value) || 0 })
                 }
-                className="bg-[#171717] border-gray-700 text-white mt-1"
+                className="bg-surface-elevated border-divider text-white mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide">
                 Points
               </label>
               <Input
@@ -222,12 +222,12 @@ const ResultRow = ({
                 onChange={(e) =>
                   setFormData({ ...formData, points: parseInt(e.target.value) || 0 })
                 }
-                className="bg-[#171717] border-gray-700 text-white mt-1"
+                className="bg-surface-elevated border-divider text-white mt-1"
               />
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide">
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide">
                 Notes
               </label>
               <Input
@@ -236,7 +236,7 @@ const ResultRow = ({
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                className="bg-[#171717] border-gray-700 text-white mt-1"
+                className="bg-surface-elevated border-divider text-white mt-1"
               />
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function ResultsManualEntry({
   };
 
   const statusColors = {
-    Draft: 'bg-gray-900/40 text-gray-300',
+    Draft: 'bg-surface-elevated/40 text-foreground-secondary',
     Provisional: 'bg-yellow-900/40 text-yellow-300',
     Official: 'bg-green-900/40 text-green-300',
     Locked: 'bg-red-900/40 text-red-300',
@@ -347,9 +347,9 @@ export default function ResultsManualEntry({
   return (
     <div className="space-y-4">
       {/* Status and Session Info */}
-      <div className="flex items-center justify-between p-3 bg-[#262626] rounded-lg border border-gray-700">
+      <div className="flex items-center justify-between p-3 bg-[#262626] rounded-lg border border-divider">
         <div className="flex items-center gap-4">
-          <span className="text-xs text-gray-400">Status:</span>
+          <span className="text-xs text-foreground-quiet">Status:</span>
           <span
             className={`px-2 py-1 rounded text-xs font-medium ${
               statusColors[session.status] || statusColors['Draft']
@@ -367,7 +367,7 @@ export default function ResultsManualEntry({
 
       {/* Results Table */}
       <div 
-        className="border border-gray-700 rounded-lg overflow-hidden"
+        className="border border-divider rounded-lg overflow-hidden"
         ref={tableScrollRef}
         onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
         style={shouldWindow ? { height: `${WINDOW_HEIGHT}px`, overflowY: 'auto' } : {}}
@@ -375,22 +375,22 @@ export default function ResultsManualEntry({
         <Table>
           <TableHeader className={`bg-[#262626] ${shouldWindow ? 'sticky top-0 z-10' : ''}`}>
             <TableRow>
-              <TableHead className="text-gray-400">Car #</TableHead>
-              <TableHead className="text-gray-400">Driver</TableHead>
-              <TableHead className="text-gray-400">Team</TableHead>
-              <TableHead className="text-gray-400">Position</TableHead>
-              <TableHead className="text-gray-400">Status</TableHead>
-              <TableHead className="text-gray-400">Laps</TableHead>
-              <TableHead className="text-gray-400">Best Lap</TableHead>
-              <TableHead className="text-gray-400">Points</TableHead>
-              <TableHead className="text-gray-400">Notes</TableHead>
-              <TableHead className="text-gray-400">Action</TableHead>
+              <TableHead className="text-foreground-quiet">Car #</TableHead>
+              <TableHead className="text-foreground-quiet">Driver</TableHead>
+              <TableHead className="text-foreground-quiet">Team</TableHead>
+              <TableHead className="text-foreground-quiet">Position</TableHead>
+              <TableHead className="text-foreground-quiet">Status</TableHead>
+              <TableHead className="text-foreground-quiet">Laps</TableHead>
+              <TableHead className="text-foreground-quiet">Best Lap</TableHead>
+              <TableHead className="text-foreground-quiet">Points</TableHead>
+              <TableHead className="text-foreground-quiet">Notes</TableHead>
+              <TableHead className="text-foreground-quiet">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sessionResults.length === 0 ? (
               <TableRow>
-                <TableCell colSpan="10" className="text-center py-8 text-gray-400">
+                <TableCell colSpan="10" className="text-center py-8 text-foreground-quiet">
                   No results entered yet
                 </TableCell>
               </TableRow>
@@ -429,7 +429,7 @@ export default function ResultsManualEntry({
           variant="outline"
           onClick={handleSaveDraft}
           disabled={session.locked}
-          className="border-gray-700 text-gray-300 hover:bg-gray-800"
+          className="border-divider text-foreground-secondary hover:bg-surface-interactive"
         >
           Save Draft
         </Button>

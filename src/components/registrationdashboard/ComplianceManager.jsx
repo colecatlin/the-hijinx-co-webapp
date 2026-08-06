@@ -363,24 +363,24 @@ export default function ComplianceManager({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-          <p className="text-gray-400">Select an event to view compliance</p>
+          <p className="text-foreground-quiet">Select an event to view compliance</p>
         </CardContent>
       </Card>
     );
   }
 
   if (entriesLoading) {
-    return <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-gray-800/50 rounded animate-pulse" />)}</div>;
+    return <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-12 bg-surface-interactive/50 rounded animate-pulse" />)}</div>;
   }
 
   if (entries.length === 0) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">No entries found for this event.</p>
+          <p className="text-foreground-quiet">No entries found for this event.</p>
         </CardContent>
       </Card>
     );
@@ -406,15 +406,15 @@ export default function ComplianceManager({
               </div>
               <div className="bg-blue-900/30 rounded p-2">
                 <p className="text-blue-300 font-medium">License</p>
-                <p className="text-gray-300">{myEntry.license_number ? '✓' : '—'}</p>
+                <p className="text-foreground-secondary">{myEntry.license_number ? '✓' : '—'}</p>
               </div>
               <div className="bg-blue-900/30 rounded p-2">
                 <p className="text-blue-300 font-medium">Transponder</p>
-                <p className="text-gray-300">{myEntry.transponder_id ? '✓' : '—'}</p>
+                <p className="text-foreground-secondary">{myEntry.transponder_id ? '✓' : '—'}</p>
               </div>
               <div className="bg-blue-900/30 rounded p-2">
                 <p className="text-blue-300 font-medium">Flags</p>
-                <p className="text-gray-300">{myComplianceStatus.flags.length > 0 ? myComplianceStatus.flags.length : '0'}</p>
+                <p className="text-foreground-secondary">{myComplianceStatus.flags.length > 0 ? myComplianceStatus.flags.length : '0'}</p>
               </div>
             </div>
           </CardContent>
@@ -431,9 +431,9 @@ export default function ComplianceManager({
             { label: 'No Xpndr', value: flags.transponders, color: 'text-purple-400' },
             { label: 'Dup Car #', value: flags.duplicates, color: 'text-red-400' },
           ].map(({ label, value, color }) => (
-            <Card key={label} className="bg-[#171717] border-gray-800">
+            <Card key={label} className="bg-surface-elevated border-divider">
               <CardContent className="py-3 px-4">
-                <p className="text-xs text-gray-400 mb-1">{label}</p>
+                <p className="text-xs text-foreground-quiet mb-1">{label}</p>
                 <p className={`text-2xl font-bold ${color}`}>{value}</p>
               </CardContent>
             </Card>
@@ -451,27 +451,27 @@ export default function ComplianceManager({
         </div>
 
         {/* Filters */}
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4">
+      <div className="bg-surface-elevated border border-divider rounded-lg p-4">
         <div className="flex gap-3 flex-wrap">
           <div className="flex-1 min-w-[120px]">
-            <label className="text-xs font-medium text-gray-400 block mb-1">Class</label>
+            <label className="text-xs font-medium text-foreground-quiet block mb-1">Class</label>
             <Select value={classFilter} onValueChange={setClassFilter}>
-              <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+              <SelectTrigger className="bg-[#262626] border-divider text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#262626] border-gray-700">
+              <SelectContent className="bg-[#262626] border-divider">
                 <SelectItem value="all">All Classes</SelectItem>
                 {classNames.map(cls => <SelectItem key={cls} value={cls}>{cls}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div className="flex-1 min-w-[120px]">
-            <label className="text-xs font-medium text-gray-400 block mb-1">Flag Type</label>
+            <label className="text-xs font-medium text-foreground-quiet block mb-1">Flag Type</label>
             <Select value={flagTypeFilter} onValueChange={setFlagTypeFilter}>
-              <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+              <SelectTrigger className="bg-[#262626] border-divider text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#262626] border-gray-700">
+              <SelectContent className="bg-[#262626] border-divider">
                 <SelectItem value="all">All Flags</SelectItem>
                 <SelectItem value="waivers">Missing Waiver</SelectItem>
                 <SelectItem value="licenses">License Unverified</SelectItem>
@@ -482,44 +482,44 @@ export default function ComplianceManager({
             </Select>
           </div>
           <div className="flex-1 min-w-[150px]">
-            <label className="text-xs font-medium text-gray-400 block mb-1">Search</label>
+            <label className="text-xs font-medium text-foreground-quiet block mb-1">Search</label>
             <Input
               placeholder="Driver, car #, transponder..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="bg-[#262626] border-gray-700 text-white"
+              className="bg-[#262626] border-divider text-white"
             />
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
-          <CardTitle className="text-sm font-medium text-gray-300">Entries ({filteredEntries.length})</CardTitle>
+          <CardTitle className="text-sm font-medium text-foreground-secondary">Entries ({filteredEntries.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Car #</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Driver</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Class</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Waiver</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">License</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Expires</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Verified</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-400">Flags</th>
-                  <th className="text-center py-2 px-3 font-medium text-gray-400">Action</th>
+                <tr className="border-b border-divider">
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">Car #</th>
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">Driver</th>
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">Class</th>
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">Waiver</th>
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">License</th>
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">Expires</th>
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">Verified</th>
+                  <th className="text-left py-2 px-3 font-medium text-foreground-quiet">Flags</th>
+                  <th className="text-center py-2 px-3 font-medium text-foreground-quiet">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredEntries.map(entry => (
-                    <tr key={entry.id} className={`border-b border-gray-800 ${entry.flags.length > 0 ? 'bg-gray-900/30' : ''}`}>
+                    <tr key={entry.id} className={`border-b border-divider ${entry.flags.length > 0 ? 'bg-surface-elevated/30' : ''}`}>
                       <td className="py-2 px-3 text-white font-semibold">#{entry.car_number || '—'}</td>
-                      <td className="py-2 px-3 text-gray-300">{entry.driverName}</td>
-                      <td className="py-2 px-3 text-gray-400">{entry.className}</td>
+                      <td className="py-2 px-3 text-foreground-secondary">{entry.driverName}</td>
+                      <td className="py-2 px-3 text-foreground-quiet">{entry.className}</td>
                       <td className="py-2 px-3">
                         {entry.waiver_status === 'Verified'
                           ? <span className="text-green-400">✓ Verified</span>
@@ -530,16 +530,16 @@ export default function ComplianceManager({
                           ? <span className="text-green-400">✓ Valid</span>
                           : entry.license_status === 'Expired'
                           ? <span className="text-red-400">✗ Expired</span>
-                          : <span className="text-gray-400">Unknown</span>}
+                          : <span className="text-foreground-quiet">Unknown</span>}
                       </td>
-                      <td className="py-2 px-3 text-xs text-gray-400">—</td>
-                      <td className="py-2 px-3 text-xs text-gray-400">—</td>
+                      <td className="py-2 px-3 text-xs text-foreground-quiet">—</td>
+                      <td className="py-2 px-3 text-xs text-foreground-quiet">—</td>
                       <td className="py-2 px-3">
                         <div className="flex flex-wrap gap-1">
                           {entry.flags.slice(0, 2).map((f, i) => (
                             <Badge key={i} variant="secondary" className={`text-xs ${f.color}`}>{f.label}</Badge>
                           ))}
-                          {entry.flags.length > 2 && <Badge variant="secondary" className="text-xs bg-gray-700 text-gray-300">+{entry.flags.length - 2}</Badge>}
+                          {entry.flags.length > 2 && <Badge variant="secondary" className="text-xs bg-gray-700 text-foreground-secondary">+{entry.flags.length - 2}</Badge>}
                         </div>
                       </td>
                       <td className="py-2 px-3 text-center">
@@ -549,7 +549,7 @@ export default function ComplianceManager({
                             setEditingNotes(false);
                             setTransponderInput(entry.transponder_id || '');
                             setAssigningTransponder(false);
-                        }} className="border-gray-700 text-gray-300 hover:bg-gray-800">
+                        }} className="border-divider text-foreground-secondary hover:bg-surface-interactive">
                           {isAdmin ? 'Edit' : 'View'}
                         </Button>
                       </td>
@@ -564,8 +564,8 @@ export default function ComplianceManager({
       {/* Detail Drawer */}
       {selectedEntry && (
         <Drawer open={true} onOpenChange={open => !open && setSelectedEntry(null)}>
-          <DrawerContent className="bg-[#171717] border-t border-gray-800">
-            <DrawerHeader className="border-b border-gray-800">
+          <DrawerContent className="bg-surface-elevated border-t border-divider">
+            <DrawerHeader className="border-b border-divider">
               <DrawerTitle className="text-white">
                 {selectedEntry.driverName} • #{selectedEntry.car_number || '—'}
               </DrawerTitle>
@@ -575,43 +575,43 @@ export default function ComplianceManager({
             <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
               {/* Status grid */}
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">Class</p>
+                <div className="bg-surface-elevated/50 rounded p-3">
+                  <p className="text-xs text-foreground-quiet mb-1">Class</p>
                   <p className="text-white font-medium">{selectedEntry.className}</p>
                 </div>
-                <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">Entry Status</p>
+                <div className="bg-surface-elevated/50 rounded p-3">
+                  <p className="text-xs text-foreground-quiet mb-1">Entry Status</p>
                   <p className="text-white font-medium">{selectedEntry.entry_status || '—'}</p>
                 </div>
-                <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">Payment</p>
+                <div className="bg-surface-elevated/50 rounded p-3">
+                  <p className="text-xs text-foreground-quiet mb-1">Payment</p>
                   <p className="text-white font-medium">{selectedEntry.payment_status || '—'}</p>
                 </div>
-                <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">Tech Status</p>
+                <div className="bg-surface-elevated/50 rounded p-3">
+                  <p className="text-xs text-foreground-quiet mb-1">Tech Status</p>
                   <p className="text-white font-medium">{selectedEntry.tech_status || '—'}</p>
                 </div>
-                <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">License Status</p>
+                <div className="bg-surface-elevated/50 rounded p-3">
+                  <p className="text-xs text-foreground-quiet mb-1">License Status</p>
                   <p className="text-white font-medium">{selectedEntry.license_status || 'Unknown'}</p>
                 </div>
-                <div className="bg-gray-900/50 rounded p-3">
-                  <p className="text-xs text-gray-400 mb-1">Transponder</p>
+                <div className="bg-surface-elevated/50 rounded p-3">
+                  <p className="text-xs text-foreground-quiet mb-1">Transponder</p>
                   <p className="text-white font-medium">{selectedEntry.transponder_id || '—'}</p>
                 </div>
               </div>
 
               {/* Action buttons (admin only) */}
               {isAdmin && (
-                <div className="border-t border-gray-700 pt-4 space-y-3">
-                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</p>
+                <div className="border-t border-divider pt-4 space-y-3">
+                  <p className="text-xs font-medium text-foreground-quiet uppercase tracking-wider">Actions</p>
 
                   {/* Verify Waiver */}
                   <Button
                     onClick={() => handleToggleWaiver(selectedEntry)}
                     disabled={updatePending}
                     variant="outline"
-                    className={`w-full border-gray-700 ${selectedEntry.waiver_status === 'Verified' ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700 hover:bg-yellow-900/20'}`}
+                    className={`w-full border-divider ${selectedEntry.waiver_status === 'Verified' ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-yellow-300 border-yellow-700 hover:bg-yellow-900/20'}`}
                   >
                     <Shield className="w-4 h-4 mr-2" />
                     {selectedEntry.waiver_status === 'Verified' ? 'Waiver Verified ✓' : 'Verify Waiver'}
@@ -619,10 +619,10 @@ export default function ComplianceManager({
 
                   {/* Update License Status */}
                   <Select value={selectedEntry.license_status || 'Unknown'} onValueChange={(val) => handleUpdateLicenseStatus(selectedEntry, val)}>
-                    <SelectTrigger className={`w-full border-gray-700 ${selectedEntry.license_status === 'Expired' ? 'border-red-700' : selectedEntry.license_status === 'Valid' ? 'border-green-700' : 'border-gray-700'}`}>
+                    <SelectTrigger className={`w-full border-divider ${selectedEntry.license_status === 'Expired' ? 'border-red-700' : selectedEntry.license_status === 'Valid' ? 'border-green-700' : 'border-divider'}`}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#262626] border-gray-700">
+                    <SelectContent className="bg-[#262626] border-divider">
                       <SelectItem value="Unknown">Unknown</SelectItem>
                       <SelectItem value="Valid">Valid</SelectItem>
                       <SelectItem value="Expired">Expired</SelectItem>
@@ -634,7 +634,7 @@ export default function ComplianceManager({
                     <Button
                       onClick={() => setAssigningTransponder(true)}
                       variant="outline"
-                      className={`w-full border-gray-700 ${selectedEntry.transponder_verified && selectedEntry.transponder_id ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-purple-300 border-purple-700 hover:bg-purple-900/20'}`}
+                      className={`w-full border-divider ${selectedEntry.transponder_verified && selectedEntry.transponder_id ? 'bg-green-900/20 text-green-300 border-green-700' : 'text-purple-300 border-purple-700 hover:bg-purple-900/20'}`}
                     >
                       {selectedEntry.transponder_id
                         ? `Transponder: ${selectedEntry.transponder_id}${selectedEntry.transponder_verified ? ' ✓' : ' (unverified)'}`
@@ -646,11 +646,11 @@ export default function ComplianceManager({
                         placeholder="Transponder ID"
                         value={transponderInput}
                         onChange={e => setTransponderInput(e.target.value)}
-                        className="bg-[#262626] border-gray-700 text-white"
+                        className="bg-[#262626] border-divider text-white"
                         autoFocus
                       />
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setAssigningTransponder(false)} className="flex-1 border-gray-700 text-gray-300">Cancel</Button>
+                        <Button size="sm" variant="outline" onClick={() => setAssigningTransponder(false)} className="flex-1 border-divider text-foreground-secondary">Cancel</Button>
                         <Button size="sm" onClick={handleAssignTransponder} disabled={updatePending || !transponderInput.trim()} className="flex-1 bg-purple-700 hover:bg-purple-600 text-white">Assign</Button>
                       </div>
                     </div>
@@ -661,7 +661,7 @@ export default function ComplianceManager({
               {/* Flags */}
               {selectedEntry.flags.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-400 uppercase">Flags</p>
+                  <p className="text-xs font-medium text-foreground-quiet uppercase">Flags</p>
                   <div className="flex flex-wrap gap-2">
                     {selectedEntry.flags.map((f, i) => (
                       <Badge key={i} variant="secondary" className={`${f.color}`}>{f.label}</Badge>
@@ -671,15 +671,15 @@ export default function ComplianceManager({
               )}
 
               {/* Notes */}
-              <div className="border-t border-gray-700 pt-4 space-y-2">
-                <p className="text-xs font-medium text-gray-400 uppercase">Notes</p>
+              <div className="border-t border-divider pt-4 space-y-2">
+                <p className="text-xs font-medium text-foreground-quiet uppercase">Notes</p>
                 {!editingNotes ? (
                   <>
                     {selectedEntry.notes
-                      ? <p className="text-sm text-gray-300 whitespace-pre-line">{selectedEntry.notes}</p>
+                      ? <p className="text-sm text-foreground-secondary whitespace-pre-line">{selectedEntry.notes}</p>
                       : <p className="text-xs text-gray-500">No notes</p>}
                     {isAdmin && (
-                      <Button size="sm" variant="outline" onClick={() => { setNotesValue(selectedEntry.notes || ''); setEditingNotes(true); }} className="border-gray-700 text-gray-300">
+                      <Button size="sm" variant="outline" onClick={() => { setNotesValue(selectedEntry.notes || ''); setEditingNotes(true); }} className="border-divider text-foreground-secondary">
                         <FileText className="w-3.5 h-3.5 mr-1.5" /> Edit Notes
                       </Button>
                     )}
@@ -690,11 +690,11 @@ export default function ComplianceManager({
                       value={notesValue}
                       onChange={e => setNotesValue(e.target.value)}
                       rows={3}
-                      className="bg-[#262626] border-gray-700 text-white text-sm"
+                      className="bg-[#262626] border-divider text-white text-sm"
                       placeholder="Notes..."
                     />
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setEditingNotes(false)} className="flex-1 border-gray-700">Cancel</Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingNotes(false)} className="flex-1 border-divider">Cancel</Button>
                       <Button size="sm" onClick={handleSaveNotes} disabled={updatePending} className="flex-1 bg-blue-600 hover:bg-blue-700">Save</Button>
                     </div>
                   </div>

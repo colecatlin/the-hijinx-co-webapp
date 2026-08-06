@@ -223,9 +223,9 @@ export default function AnnouncerManager({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to access Announcer</p>
+          <p className="text-foreground-quiet">Select an event to access Announcer</p>
         </CardContent>
       </Card>
     );
@@ -252,7 +252,7 @@ export default function AnnouncerManager({
               <Button
                 onClick={() => setShowPackView(false)}
                 variant="outline"
-                className="border-gray-700 text-white"
+                className="border-divider text-white"
               >
                 Back
               </Button>
@@ -392,12 +392,12 @@ export default function AnnouncerManager({
         // MAIN ANNOUNCER VIEW
         <div className="space-y-6">
           {/* Header */}
-          <Card className="bg-[#171717] border-gray-800">
+          <Card className="bg-surface-elevated border-divider">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-white text-lg">{selectedEvent.name}</CardTitle>
-                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-4 mt-2 text-xs text-foreground-quiet">
                     {selectedTrack && <span>{selectedTrack.name}</span>}
                     {selectedEvent.event_date && <span>{new Date(selectedEvent.event_date).toLocaleDateString()}</span>}
                   </div>
@@ -414,18 +414,18 @@ export default function AnnouncerManager({
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Left: Session & Class selectors */}
-            <Card className="bg-[#171717] border-gray-800 lg:col-span-1">
+            <Card className="bg-surface-elevated border-divider lg:col-span-1">
               <CardHeader>
                 <CardTitle className="text-white text-sm">Control</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-xs text-gray-400 block mb-2">Session</label>
+                  <label className="text-xs text-foreground-quiet block mb-2">Session</label>
                   <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-                    <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+                    <SelectTrigger className="bg-surface-elevated border-divider text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-800">
+                    <SelectContent className="bg-surface-elevated border-divider">
                       {sessions.sort((a, b) => (a.session_order || 0) - (b.session_order || 0)).map(s => (
                         <SelectItem key={s.id} value={s.id}>
                           {s.name}
@@ -436,12 +436,12 @@ export default function AnnouncerManager({
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-400 block mb-2">Class</label>
+                  <label className="text-xs text-foreground-quiet block mb-2">Class</label>
                   <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                    <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+                    <SelectTrigger className="bg-surface-elevated border-divider text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-800">
+                    <SelectContent className="bg-surface-elevated border-divider">
                       {classList.map(cls => (
                         <SelectItem key={cls} value={cls}>
                           {cls}
@@ -454,20 +454,20 @@ export default function AnnouncerManager({
             </Card>
 
             {/* Middle: Roster */}
-            <Card className="bg-[#171717] border-gray-800 lg:col-span-2">
+            <Card className="bg-surface-elevated border-divider lg:col-span-2">
               <CardHeader>
                 <CardTitle className="text-white text-sm">Roster - {selectedClassId}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <Table>
-                    <TableHeader className="bg-gray-900/30">
+                    <TableHeader className="bg-surface-elevated/30">
                       <TableRow>
-                        <TableHead className="text-gray-400 text-xs">Car</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Driver</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Team</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Hometown</TableHead>
-                        <TableHead className="text-gray-400 text-xs">Discipline</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Car</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Driver</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Team</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Hometown</TableHead>
+                        <TableHead className="text-foreground-quiet text-xs">Discipline</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -475,14 +475,14 @@ export default function AnnouncerManager({
                         const driver = driverMap.get(prog.driver_id);
                         const team = teamMap.get(prog.team_id);
                         return (
-                          <TableRow key={prog.id} className="border-gray-800">
+                          <TableRow key={prog.id} className="border-divider">
                             <TableCell className="text-sm font-semibold text-white">#{prog.car_number}</TableCell>
                             <TableCell className="text-sm text-white">{driver?.first_name} {driver?.last_name}</TableCell>
-                            <TableCell className="text-xs text-gray-400">{team?.name || '-'}</TableCell>
-                            <TableCell className="text-xs text-gray-400">
+                            <TableCell className="text-xs text-foreground-quiet">{team?.name || '-'}</TableCell>
+                            <TableCell className="text-xs text-foreground-quiet">
                               {driver?.hometown_city}, {driver?.hometown_state}
                             </TableCell>
-                            <TableCell className="text-xs text-gray-400">{driver?.primary_discipline || '-'}</TableCell>
+                            <TableCell className="text-xs text-foreground-quiet">{driver?.primary_discipline || '-'}</TableCell>
                           </TableRow>
                         );
                       })}
@@ -493,7 +493,7 @@ export default function AnnouncerManager({
             </Card>
 
             {/* Right: Highlights & Notes */}
-            <Card className="bg-[#171717] border-gray-800 lg:col-span-1">
+            <Card className="bg-surface-elevated border-divider lg:col-span-1">
               <CardHeader>
                 <CardTitle className="text-white text-sm flex items-center gap-2">
                   <Trophy className="w-4 h-4" /> Top 3
@@ -503,12 +503,12 @@ export default function AnnouncerManager({
                 {top3.length > 0 ? (
                   <div className="space-y-2">
                     {top3.map((result, idx) => (
-                      <div key={idx} className="p-2 bg-gray-900/50 rounded text-xs">
+                      <div key={idx} className="p-2 bg-surface-elevated/50 rounded text-xs">
                         <div className="text-yellow-400 font-bold">#{result.position}</div>
                         <div className="text-white font-semibold">
                           {result.driver?.first_name} {result.driver?.last_name}
                         </div>
-                        <div className="text-gray-400">{result.team?.name}</div>
+                        <div className="text-foreground-quiet">{result.team?.name}</div>
                       </div>
                     ))}
                   </div>
@@ -516,10 +516,10 @@ export default function AnnouncerManager({
                   <p className="text-gray-500 text-xs">No official results yet</p>
                 )}
 
-                <Separator className="bg-gray-800 my-4" />
+                <Separator className="bg-surface-interactive my-4" />
 
                 <div className="space-y-2">
-                  <label className="text-xs text-gray-400 block">Notes</label>
+                  <label className="text-xs text-foreground-quiet block">Notes</label>
                   <Textarea
                     placeholder="Announcer notes..."
                     value={noteText || (classNote ? (() => {
@@ -530,7 +530,7 @@ export default function AnnouncerManager({
                       }
                     })() : '')}
                     onChange={(e) => setNoteText(e.target.value)}
-                    className="bg-gray-900 border-gray-800 text-white text-xs h-20"
+                    className="bg-surface-elevated border-divider text-white text-xs h-20"
                   />
                   <Button
                     onClick={handleSaveNote}

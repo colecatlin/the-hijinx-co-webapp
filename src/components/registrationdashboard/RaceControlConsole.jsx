@@ -103,10 +103,10 @@ export default function RaceControlConsole({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to access Race Control Console</p>
+          <p className="text-foreground-quiet">Select an event to access Race Control Console</p>
         </CardContent>
       </Card>
     );
@@ -114,9 +114,9 @@ export default function RaceControlConsole({
 
   if (sessionsLoading) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-8 text-center">
-          <p className="text-gray-400">Loading sessions...</p>
+          <p className="text-foreground-quiet">Loading sessions...</p>
         </CardContent>
       </Card>
     );
@@ -124,10 +124,10 @@ export default function RaceControlConsole({
 
   if (sessions.length === 0) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">No sessions created yet</p>
+          <p className="text-foreground-quiet">No sessions created yet</p>
           <p className="text-xs text-gray-500 mt-2">Create sessions in Classes & Sessions tab to enable race control</p>
         </CardContent>
       </Card>
@@ -138,7 +138,7 @@ export default function RaceControlConsole({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column: Session List */}
       <div className="lg:col-span-1">
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader>
             <CardTitle className="text-white">Sessions</CardTitle>
           </CardHeader>
@@ -150,21 +150,21 @@ export default function RaceControlConsole({
                 className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
                   selectedSessionId === session.id
                     ? 'bg-blue-900/30 border-blue-500'
-                    : 'bg-gray-900/30 border-gray-700 hover:border-gray-600'
+                    : 'bg-surface-elevated/30 border-divider hover:border-gray-600'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="font-semibold text-white text-sm">{session.name}</div>
                   {session.locked && <Lock className="w-3 h-3 text-red-400" />}
                 </div>
-                <div className="text-xs text-gray-400 flex gap-2">
+                <div className="text-xs text-foreground-quiet flex gap-2">
                   <span>{session.session_type}</span>
                   <Badge
                     variant="outline"
                     className={`text-xs px-1.5 py-0 ${
                       ['Official', 'Locked'].includes(session.status)
                         ? 'border-green-600 bg-green-900/20 text-green-300'
-                        : 'border-gray-600 bg-gray-900/20 text-gray-300'
+                        : 'border-gray-600 bg-surface-elevated/20 text-foreground-secondary'
                     }`}
                   >
                     {session.status}
@@ -179,19 +179,19 @@ export default function RaceControlConsole({
       {/* Right Column: Session Control Panel */}
       <div className="lg:col-span-2">
         {!selectedSession ? (
-          <Card className="bg-[#171717] border-gray-800">
+          <Card className="bg-surface-elevated border-divider">
             <CardContent className="py-12 text-center">
               <AlertCircle className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-400">Select a session to manage</p>
+              <p className="text-foreground-quiet">Select a session to manage</p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {/* Session Info */}
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CardHeader>
                 <CardTitle className="text-white">{selectedSession.name}</CardTitle>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-foreground-quiet mt-2">
                   {selectedSession.session_type}
                   {selectedSession.laps && ` • ${selectedSession.laps} laps`}
                   {selectedSession.scheduled_time && ` • ${new Date(selectedSession.scheduled_time).toLocaleTimeString()}`}
@@ -200,7 +200,7 @@ export default function RaceControlConsole({
             </Card>
 
             {/* Status Control */}
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CardHeader>
                 <CardTitle className="text-sm text-white">Session Status</CardTitle>
               </CardHeader>
@@ -216,10 +216,10 @@ export default function RaceControlConsole({
                       )
                     }
                   >
-                    <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                    <SelectTrigger className="bg-surface-elevated border-divider text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-gray-700">
+                    <SelectContent className="bg-surface-elevated border-divider">
                       <SelectItem value="Draft" className="text-white">Draft</SelectItem>
                       <SelectItem value="Provisional" className="text-white">Provisional</SelectItem>
                       <SelectItem value="Official" className="text-white">Official</SelectItem>
@@ -229,7 +229,7 @@ export default function RaceControlConsole({
                 </div>
 
                 {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-700">
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-divider">
                   <Button
                     onClick={() =>
                       handleSessionUpdate(
@@ -272,7 +272,7 @@ export default function RaceControlConsole({
                 </div>
 
                 {/* Lock Toggle */}
-                <div className="pt-2 border-t border-gray-700 flex items-center gap-2">
+                <div className="pt-2 border-t border-divider flex items-center gap-2">
                   <Button
                     onClick={() =>
                       handleSessionUpdate(
@@ -283,7 +283,7 @@ export default function RaceControlConsole({
                     }
                     size="sm"
                     variant="outline"
-                    className="text-xs border-gray-700 text-gray-300 hover:bg-gray-800"
+                    className="text-xs border-divider text-foreground-secondary hover:bg-surface-interactive"
                   >
                     {selectedSession.locked ? (
                       <>
@@ -316,7 +316,7 @@ export default function RaceControlConsole({
                 </CardHeader>
                 <CardContent className="space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Total Results:</span>
+                    <span className="text-foreground-quiet">Total Results:</span>
                     <span className="text-white font-semibold">{resultsHealth.totalResults}</span>
                   </div>
                   {resultsHealth.totalResults === 0 && (

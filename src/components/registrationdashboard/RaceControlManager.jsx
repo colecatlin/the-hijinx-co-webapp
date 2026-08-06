@@ -265,10 +265,10 @@ export default function RaceControlManager({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to view race control</p>
+          <p className="text-foreground-quiet">Select an event to view race control</p>
         </CardContent>
       </Card>
     );
@@ -276,10 +276,10 @@ export default function RaceControlManager({
 
   if (!canEdit) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <p className="text-gray-400">You don't have access to Race Control</p>
+          <p className="text-foreground-quiet">You don't have access to Race Control</p>
         </CardContent>
       </Card>
     );
@@ -288,30 +288,30 @@ export default function RaceControlManager({
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <CardTitle className="text-white">Session Status Summary</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-gray-900/50 p-3 rounded">
-              <p className="text-xs text-gray-400 mb-1">Total Sessions</p>
+            <div className="bg-surface-elevated/50 p-3 rounded">
+              <p className="text-xs text-foreground-quiet mb-1">Total Sessions</p>
               <p className="text-xl font-bold text-white">{sessions.length}</p>
             </div>
             <div className="bg-blue-900/20 p-3 rounded border border-blue-800/50">
-              <p className="text-xs text-gray-400 mb-1">Draft</p>
+              <p className="text-xs text-foreground-quiet mb-1">Draft</p>
               <p className="text-xl font-bold text-blue-300">{statusCounts.Draft}</p>
             </div>
             <div className="bg-yellow-900/20 p-3 rounded border border-yellow-800/50">
-              <p className="text-xs text-gray-400 mb-1">Provisional</p>
+              <p className="text-xs text-foreground-quiet mb-1">Provisional</p>
               <p className="text-xl font-bold text-yellow-300">{statusCounts.Provisional}</p>
             </div>
             <div className="bg-green-900/20 p-3 rounded border border-green-800/50">
-              <p className="text-xs text-gray-400 mb-1">Official</p>
+              <p className="text-xs text-foreground-quiet mb-1">Official</p>
               <p className="text-xl font-bold text-green-300">{statusCounts.Official}</p>
             </div>
             <div className="bg-red-900/20 p-3 rounded border border-red-800/50">
-              <p className="text-xs text-gray-400 mb-1">Locked</p>
+              <p className="text-xs text-foreground-quiet mb-1">Locked</p>
               <p className="text-xl font-bold text-red-300">{statusCounts.Locked}</p>
             </div>
           </div>
@@ -319,15 +319,15 @@ export default function RaceControlManager({
       </Card>
 
       {/* Sessions by Class */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <CardTitle className="text-white">Session Control</CardTitle>
         </CardHeader>
         <CardContent>
           {sessionsLoading ? (
-            <p className="text-gray-400 text-sm">Loading sessions...</p>
+            <p className="text-foreground-quiet text-sm">Loading sessions...</p>
           ) : sessions.length === 0 ? (
-            <p className="text-gray-400 text-sm">No sessions found</p>
+            <p className="text-foreground-quiet text-sm">No sessions found</p>
           ) : (
             <Accordion type="multiple" defaultValue={Object.keys(sessionsByClass).slice(0, 1)}>
               {Object.entries(sessionsByClass).map(([classKey, classSessions]) => {
@@ -348,30 +348,30 @@ export default function RaceControlManager({
                       <div className="overflow-x-auto">
                         <Table>
                           <TableHeader>
-                            <TableRow className="border-gray-700">
-                              <TableHead className="text-gray-400">Order</TableHead>
-                              <TableHead className="text-gray-400">Session</TableHead>
-                              <TableHead className="text-gray-400">Type</TableHead>
-                              <TableHead className="text-gray-400">Time</TableHead>
-                              <TableHead className="text-gray-400">Status</TableHead>
-                              <TableHead className="text-gray-400">Locked</TableHead>
-                              <TableHead className="text-gray-400">Source</TableHead>
-                              <TableHead className="text-gray-400">Actions</TableHead>
+                            <TableRow className="border-divider">
+                              <TableHead className="text-foreground-quiet">Order</TableHead>
+                              <TableHead className="text-foreground-quiet">Session</TableHead>
+                              <TableHead className="text-foreground-quiet">Type</TableHead>
+                              <TableHead className="text-foreground-quiet">Time</TableHead>
+                              <TableHead className="text-foreground-quiet">Status</TableHead>
+                              <TableHead className="text-foreground-quiet">Locked</TableHead>
+                              <TableHead className="text-foreground-quiet">Source</TableHead>
+                              <TableHead className="text-foreground-quiet">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {classSessions.map((session) => (
-                              <TableRow key={session.id} className="border-gray-800">
+                              <TableRow key={session.id} className="border-divider">
                                 <TableCell className="text-white text-sm">
                                   {session.session_order || '-'}
                                 </TableCell>
                                 <TableCell className="text-white text-sm">
                                   {session.name}
                                 </TableCell>
-                                <TableCell className="text-gray-400 text-sm">
+                                <TableCell className="text-foreground-quiet text-sm">
                                   {session.session_type}
                                 </TableCell>
-                                <TableCell className="text-gray-400 text-sm">
+                                <TableCell className="text-foreground-quiet text-sm">
                                   {session.scheduled_time
                                     ? new Date(session.scheduled_time).toLocaleTimeString()
                                     : '-'}
@@ -381,10 +381,10 @@ export default function RaceControlManager({
                                     value={session.status || 'Draft'}
                                     onValueChange={(v) => handleStatusChange(session, v)}
                                   >
-                                    <SelectTrigger className="w-32 h-8 bg-gray-900 border-gray-700 text-white text-xs">
+                                    <SelectTrigger className="w-32 h-8 bg-surface-elevated border-divider text-white text-xs">
                                       <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-gray-900 border-gray-700">
+                                    <SelectContent className="bg-surface-elevated border-divider">
                                       <SelectItem value="Draft" className="text-white">
                                         Draft
                                       </SelectItem>
@@ -400,7 +400,7 @@ export default function RaceControlManager({
                                 <TableCell>
                                   <button
                                     onClick={() => handleLockToggle(session)}
-                                    className="p-1.5 hover:bg-gray-800 rounded transition-colors"
+                                    className="p-1.5 hover:bg-surface-interactive rounded transition-colors"
                                   >
                                     {session.locked ? (
                                       <Lock className="w-4 h-4 text-red-400" />
@@ -409,7 +409,7 @@ export default function RaceControlManager({
                                     )}
                                   </button>
                                 </TableCell>
-                                <TableCell className="text-gray-400 text-sm">
+                                <TableCell className="text-foreground-quiet text-sm">
                                   {session.input_source || '-'}
                                 </TableCell>
                                 <TableCell>
@@ -418,7 +418,7 @@ export default function RaceControlManager({
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => openNotes(session)}
-                                      className="p-1 h-auto text-gray-400 hover:text-white hover:bg-gray-800"
+                                      className="p-1 h-auto text-foreground-quiet hover:text-white hover:bg-surface-interactive"
                                     >
                                       <MessageSquare className="w-4 h-4" />
                                     </Button>
@@ -451,10 +451,10 @@ export default function RaceControlManager({
 
       {/* Notes Dialog */}
       <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
-        <DialogContent className="bg-[#262626] border-gray-700 sm:max-w-md">
+        <DialogContent className="bg-[#262626] border-divider sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-white">Race Control Notes</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-foreground-quiet">
               Add internal notes for this session
             </DialogDescription>
           </DialogHeader>
@@ -463,14 +463,14 @@ export default function RaceControlManager({
               placeholder="Enter race control notes..."
               value={notesText}
               onChange={(e) => setNotesText(e.target.value)}
-              className="bg-gray-900 border-gray-600 text-white h-32"
+              className="bg-surface-elevated border-gray-600 text-white h-32"
             />
           </div>
           <div className="flex gap-2 justify-end">
             <Button
               variant="outline"
               onClick={() => setNotesDialogOpen(false)}
-              className="border-gray-700 text-gray-300"
+              className="border-divider text-foreground-secondary"
             >
               Cancel
             </Button>

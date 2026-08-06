@@ -15,7 +15,7 @@ const PRIORITY_COLORS = {
   critical: 'bg-red-900/60 text-red-300 border-red-700',
   high:     'bg-orange-900/60 text-orange-300 border-orange-700',
   normal:   'bg-blue-900/40 text-blue-300 border-blue-700',
-  low:      'bg-slate-800 text-slate-400 border-slate-600',
+  low:      'bg-surface-interactive text-foreground-quiet border-divider',
 };
 
 const CONFLICT_ICONS = {
@@ -149,7 +149,7 @@ export default function IdentityReviewDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Identity Review Queue</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-foreground-quiet mt-1">
             Review pending identity matches before they are permanently attached.
           </p>
         </div>
@@ -159,7 +159,7 @@ export default function IdentityReviewDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={v => { setActiveTab(v); setSelectedItem(null); }}>
-        <TabsList className="bg-slate-800 border border-slate-700">
+        <TabsList className="bg-surface-interactive border border-divider">
           {STATUS_TABS.map(s => (
             <TabsTrigger key={s} value={s} className="capitalize">
               {s} {s === activeTab && queueItems.length > 0 && (
@@ -185,7 +185,7 @@ export default function IdentityReviewDashboard() {
                   return (
                     <Card
                       key={item.id}
-                      className={`cursor-pointer transition-all border ${isSelected ? 'border-teal-500/60' : 'border-slate-700'} bg-slate-900/60`}
+                      className={`cursor-pointer transition-all border ${isSelected ? 'border-teal-500/60' : 'border-divider'} bg-surface-elevated/60`}
                       onClick={() => setSelectedItem(isSelected ? null : item)}
                     >
                       <CardHeader className="pb-2">
@@ -205,7 +205,7 @@ export default function IdentityReviewDashboard() {
                             )}
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <div className="text-xs text-slate-400">Score</div>
+                            <div className="text-xs text-foreground-quiet">Score</div>
                             <div className={`text-lg font-bold ${item.confidence_score >= 95 ? 'text-green-400' : item.confidence_score >= 80 ? 'text-yellow-400' : 'text-red-400'}`}>
                               {item.confidence_score}
                             </div>
@@ -235,7 +235,7 @@ export default function IdentityReviewDashboard() {
 
                         {/* Candidate Identity */}
                         {identity && (
-                          <div className="bg-slate-800/60 rounded-lg p-3 mb-3">
+                          <div className="bg-surface-interactive/60 rounded-lg p-3 mb-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <User className="w-4 h-4 text-teal-400" />
@@ -247,7 +247,7 @@ export default function IdentityReviewDashboard() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="text-xs text-slate-400 h-6 px-2"
+                                className="text-xs text-foreground-quiet h-6 px-2"
                                 onClick={e => { e.stopPropagation(); setSelectedIdentityId(identity.id); }}
                               >
                                 View Profile →
@@ -263,7 +263,7 @@ export default function IdentityReviewDashboard() {
                         {item.confidence_signals?.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mb-3">
                             {item.confidence_signals.map((sig, i) => (
-                              <span key={i} className="text-[10px] bg-slate-800 border border-slate-700 text-slate-400 px-2 py-0.5 rounded-full font-mono">
+                              <span key={i} className="text-[10px] bg-surface-interactive border border-divider text-foreground-quiet px-2 py-0.5 rounded-full font-mono">
                                 {sig}
                               </span>
                             ))}
@@ -290,7 +290,7 @@ export default function IdentityReviewDashboard() {
 
                         {/* Actions (expanded when selected) */}
                         {isSelected && tab === 'pending' && (
-                          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-slate-700">
+                          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-divider">
                             {item.candidate_a_identity_id && (
                               <Button
                                 size="sm"

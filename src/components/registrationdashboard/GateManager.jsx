@@ -263,10 +263,10 @@ export default function GateManager({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to access gate tools</p>
+          <p className="text-foreground-quiet">Select an event to access gate tools</p>
         </CardContent>
       </Card>
     );
@@ -274,10 +274,10 @@ export default function GateManager({
 
   if (!canEdit) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <p className="text-gray-400">You don't have access to Gate tools</p>
+          <p className="text-foreground-quiet">You don't have access to Gate tools</p>
         </CardContent>
       </Card>
     );
@@ -285,9 +285,9 @@ export default function GateManager({
 
   if (entriesLoading) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Loading entries...</p>
+          <p className="text-foreground-quiet">Loading entries...</p>
         </CardContent>
       </Card>
     );
@@ -295,10 +295,10 @@ export default function GateManager({
 
   if (entries.length === 0) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-blue-500 mx-auto mb-3" />
-          <p className="text-gray-400">No entries exist yet</p>
+          <p className="text-foreground-quiet">No entries exist yet</p>
           <p className="text-sm text-gray-500 mt-2">Gate tools activate once entries are created</p>
         </CardContent>
       </Card>
@@ -309,28 +309,28 @@ export default function GateManager({
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="pt-6">
-            <p className="text-xs text-gray-400 mb-1">Total Entries</p>
+            <p className="text-xs text-foreground-quiet mb-1">Total Entries</p>
             <p className="text-2xl font-bold text-white">{stats.total}</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="pt-6">
-            <p className="text-xs text-gray-400 mb-1">Gate Checked</p>
+            <p className="text-xs text-foreground-quiet mb-1">Gate Checked</p>
             <p className="text-2xl font-bold text-green-400">{stats.gateChecked}</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="pt-6">
-            <p className="text-xs text-gray-400 mb-1">Flagged</p>
+            <p className="text-xs text-foreground-quiet mb-1">Flagged</p>
             <p className="text-2xl font-bold text-red-400">{stats.flagged}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Search & Filters */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <CardTitle className="text-white text-lg">Search & Filter</CardTitle>
         </CardHeader>
@@ -339,16 +339,16 @@ export default function GateManager({
             placeholder="Search driver, car number, transponder..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-gray-900 border-gray-700 text-white"
+            className="bg-surface-elevated border-gray-700 text-white"
           />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
-              <label className="text-xs text-gray-400 mb-2 block">Class</label>
+              <label className="text-xs text-foreground-quiet mb-2 block">Class</label>
               <Select value={classFilter} onValueChange={setClassFilter}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
+                <SelectTrigger className="bg-surface-elevated border-gray-700 text-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-gray-700">
                   <SelectItem value="all" className="text-white">All Classes</SelectItem>
                   {Array.from(classMap.values()).map(c => (
                     <SelectItem key={c.id} value={c.id} className="text-white">
@@ -359,12 +359,12 @@ export default function GateManager({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-400 mb-2 block">Entry Status</label>
+              <label className="text-xs text-foreground-quiet mb-2 block">Entry Status</label>
               <Select value={entryStatusFilter} onValueChange={setEntryStatusFilter}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
+                <SelectTrigger className="bg-surface-elevated border-gray-700 text-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-gray-700">
                   <SelectItem value="all" className="text-white">All</SelectItem>
                   <SelectItem value="Registered" className="text-white">Registered</SelectItem>
                   <SelectItem value="Checked In" className="text-white">Checked In</SelectItem>
@@ -374,12 +374,12 @@ export default function GateManager({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-400 mb-2 block">Payment</label>
+              <label className="text-xs text-foreground-quiet mb-2 block">Payment</label>
               <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
+                <SelectTrigger className="bg-surface-elevated border-gray-700 text-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-gray-700">
                   <SelectItem value="all" className="text-white">All</SelectItem>
                   <SelectItem value="Paid" className="text-white">Paid</SelectItem>
                   <SelectItem value="Unpaid" className="text-white">Unpaid</SelectItem>
@@ -387,12 +387,12 @@ export default function GateManager({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-400 mb-2 block">Tech Status</label>
+              <label className="text-xs text-foreground-quiet mb-2 block">Tech Status</label>
               <Select value={techFilter} onValueChange={setTechFilter}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white text-sm">
+                <SelectTrigger className="bg-surface-elevated border-gray-700 text-white text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-gray-700">
                   <SelectItem value="all" className="text-white">All</SelectItem>
                   <SelectItem value="Passed" className="text-white">Passed</SelectItem>
                   <SelectItem value="Not Inspected" className="text-white">Not Inspected</SelectItem>
@@ -405,7 +405,7 @@ export default function GateManager({
       </Card>
 
       {/* Entries Table */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <CardTitle className="text-white">
             Entries ({filteredEntries.length})
@@ -416,16 +416,16 @@ export default function GateManager({
             <Table>
               <TableHeader>
                 <TableRow className="border-gray-700">
-                  <TableHead className="text-gray-400">Car #</TableHead>
-                  <TableHead className="text-gray-400">Driver</TableHead>
-                  <TableHead className="text-gray-400">Class</TableHead>
-                  <TableHead className="text-gray-400">Entry Status</TableHead>
-                  <TableHead className="text-gray-400">Payment</TableHead>
-                  <TableHead className="text-gray-400">Tech</TableHead>
-                  <TableHead className="text-gray-400">Gate</TableHead>
-                  <TableHead className="text-gray-400">Wristbands</TableHead>
-                  <TableHead className="text-gray-400">Flags</TableHead>
-                  <TableHead className="text-gray-400">Actions</TableHead>
+                  <TableHead className="text-foreground-quiet">Car #</TableHead>
+                  <TableHead className="text-foreground-quiet">Driver</TableHead>
+                  <TableHead className="text-foreground-quiet">Class</TableHead>
+                  <TableHead className="text-foreground-quiet">Entry Status</TableHead>
+                  <TableHead className="text-foreground-quiet">Payment</TableHead>
+                  <TableHead className="text-foreground-quiet">Tech</TableHead>
+                  <TableHead className="text-foreground-quiet">Gate</TableHead>
+                  <TableHead className="text-foreground-quiet">Wristbands</TableHead>
+                  <TableHead className="text-foreground-quiet">Flags</TableHead>
+                  <TableHead className="text-foreground-quiet">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -436,7 +436,7 @@ export default function GateManager({
                   return (
                     <TableRow
                       key={entry.id}
-                      className={`border-gray-800 cursor-pointer hover:bg-gray-900/50 ${
+                      className={`border-divider cursor-pointer hover:bg-surface-elevated/50 ${
                         hasFlag(entry) ? 'bg-red-950/20' : ''
                       }`}
                       onClick={() => openDrawer(entry)}
@@ -447,15 +447,15 @@ export default function GateManager({
                       <TableCell className="text-white text-sm">
                         {driver ? `${driver.first_name} ${driver.last_name}` : '-'}
                       </TableCell>
-                      <TableCell className="text-gray-400 text-sm">
+                      <TableCell className="text-foreground-quiet text-sm">
                         {eventClass?.name || '-'}
                       </TableCell>
-                      <TableCell className="text-gray-400 text-sm">
+                      <TableCell className="text-foreground-quiet text-sm">
                         <Badge variant="outline" className="text-xs">
                           {entry.entry_status || 'Registered'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-400 text-sm">
+                      <TableCell className="text-foreground-quiet text-sm">
                         <Badge
                           variant="outline"
                           className={`text-xs ${
@@ -467,7 +467,7 @@ export default function GateManager({
                           {entry.payment_status || 'Unpaid'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-400 text-sm">
+                      <TableCell className="text-foreground-quiet text-sm">
                         <Badge
                           variant="outline"
                           className={`text-xs ${
@@ -488,7 +488,7 @@ export default function GateManager({
                           className={`p-1.5 rounded transition-colors ${
                             entry.gate_checked_in
                               ? 'bg-green-900/30 text-green-400'
-                              : 'bg-gray-800 text-gray-500 hover:bg-gray-700'
+                              : 'bg-surface-interactive text-gray-500 hover:bg-gray-700'
                           }`}
                         >
                           {entry.gate_checked_in ? (
@@ -516,7 +516,7 @@ export default function GateManager({
                             e.stopPropagation();
                             openDrawer(entry);
                           }}
-                          className="text-gray-400 hover:text-white hover:bg-gray-800 text-xs"
+                          className="text-foreground-quiet hover:text-white hover:bg-surface-interactive text-xs"
                         >
                           Details
                         </Button>
@@ -535,7 +535,7 @@ export default function GateManager({
         <SheetContent className="bg-[#262626] border-gray-700 w-full sm:w-96">
           <SheetHeader>
             <SheetTitle className="text-white">Entry Details</SheetTitle>
-            <SheetDescription className="text-gray-400">
+            <SheetDescription className="text-foreground-quiet">
               Gate management for this entry
             </SheetDescription>
           </SheetHeader>
@@ -544,7 +544,7 @@ export default function GateManager({
               {/* Driver Info */}
               <div className="space-y-3 border-b border-gray-700 pb-4">
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Driver</p>
+                  <p className="text-xs text-foreground-quiet mb-1">Driver</p>
                   <p className="text-sm font-semibold text-white">
                     {selectedDriver
                       ? `${selectedDriver.first_name} ${selectedDriver.last_name}`
@@ -562,11 +562,11 @@ export default function GateManager({
                   )}
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Car Number</p>
+                  <p className="text-xs text-foreground-quiet mb-1">Car Number</p>
                   <p className="text-sm font-semibold text-white">{selectedEntry.car_number}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Transponder</p>
+                  <p className="text-xs text-foreground-quiet mb-1">Transponder</p>
                   <p className="text-sm font-semibold text-white">
                     {selectedEntry.transponder_id || 'Not assigned'}
                   </p>
@@ -575,7 +575,7 @@ export default function GateManager({
 
               {/* Gate Check */}
               <div>
-                <p className="text-xs text-gray-400 mb-3">Gate Check</p>
+                <p className="text-xs text-foreground-quiet mb-3">Gate Check</p>
                 <Button
                   onClick={() => handleGateCheck(selectedEntry)}
                   className={`w-full ${
@@ -590,13 +590,13 @@ export default function GateManager({
 
               {/* Wristbands */}
               <div>
-                <p className="text-xs text-gray-400 mb-3">Wristbands</p>
+                <p className="text-xs text-foreground-quiet mb-3">Wristbands</p>
                 <div className="flex items-center gap-3">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleWristbandUpdate(selectedEntry, -1)}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                    className="border-gray-700 text-foreground-secondary hover:bg-surface-interactive"
                   >
                     <Minus className="w-4 h-4" />
                   </Button>
@@ -607,7 +607,7 @@ export default function GateManager({
                     size="sm"
                     variant="outline"
                     onClick={() => handleWristbandUpdate(selectedEntry, 1)}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                    className="border-gray-700 text-foreground-secondary hover:bg-surface-interactive"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
@@ -616,12 +616,12 @@ export default function GateManager({
 
               {/* Notes */}
               <div>
-                <p className="text-xs text-gray-400 mb-2">Gate Notes</p>
+                <p className="text-xs text-foreground-quiet mb-2">Gate Notes</p>
                 <Textarea
                   placeholder="Add gate-related notes..."
                   value={gateNotes}
                   onChange={(e) => setGateNotes(e.target.value)}
-                  className="bg-gray-900 border-gray-700 text-white text-sm h-24"
+                  className="bg-surface-elevated border-gray-700 text-white text-sm h-24"
                 />
                 <Button
                   onClick={() => handleSaveNotes(selectedEntry)}

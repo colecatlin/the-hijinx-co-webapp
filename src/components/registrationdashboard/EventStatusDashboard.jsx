@@ -74,9 +74,9 @@ export default function EventStatusDashboard({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to view status dashboard</p>
+          <p className="text-foreground-quiet">Select an event to view status dashboard</p>
         </CardContent>
       </Card>
     );
@@ -98,7 +98,7 @@ export default function EventStatusDashboard({
   };
 
   const statusColor = (value, total, threshold = 0.8) => {
-    if (total === 0) return 'text-gray-400';
+    if (total === 0) return 'text-foreground-quiet';
     const pct = value / total;
     if (pct >= threshold) return 'text-green-400';
     if (pct > 0) return 'text-yellow-400';
@@ -111,7 +111,7 @@ export default function EventStatusDashboard({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">{selectedEvent.name}</h2>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-foreground-quiet mt-1">
             {new Date(selectedEvent.event_date).toLocaleDateString()} • Operational Dashboard
           </p>
         </div>
@@ -119,7 +119,7 @@ export default function EventStatusDashboard({
           onClick={handleRefresh}
           variant="outline"
           size="sm"
-          className="border-gray-700 text-gray-300 hover:bg-gray-800"
+          className="border-divider text-foreground-secondary hover:bg-surface-interactive"
         >
           <RefreshCw className="w-4 h-4 mr-2" /> Refresh
         </Button>
@@ -128,10 +128,10 @@ export default function EventStatusDashboard({
       {/* Metrics row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
         {/* Sessions */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-400">Sessions</p>
+              <p className="text-xs text-foreground-quiet">Sessions</p>
               <Clock className="w-4 h-4 text-gray-500" />
             </div>
             <p className={`text-lg font-bold ${statusColor(metrics.sessionsCompleted, metrics.totalSessions)}`}>
@@ -145,10 +145,10 @@ export default function EventStatusDashboard({
         </Card>
 
         {/* Entries */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-400">Check-in</p>
+              <p className="text-xs text-foreground-quiet">Check-in</p>
               <Users className="w-4 h-4 text-gray-500" />
             </div>
             <p className={`text-lg font-bold ${statusColor(metrics.checkedInCount, metrics.totalEntries)}`}>
@@ -161,10 +161,10 @@ export default function EventStatusDashboard({
         </Card>
 
         {/* Tech */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-400">Tech Passed</p>
+              <p className="text-xs text-foreground-quiet">Tech Passed</p>
               <CheckCircle className="w-4 h-4 text-gray-500" />
             </div>
             <p className={`text-lg font-bold ${statusColor(metrics.techedCount, metrics.totalEntries)}`}>
@@ -175,10 +175,10 @@ export default function EventStatusDashboard({
         </Card>
 
         {/* Results */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-400">Results</p>
+              <p className="text-xs text-foreground-quiet">Results</p>
               <BarChart3 className="w-4 h-4 text-gray-500" />
             </div>
             <p className={`text-lg font-bold ${statusColor(metrics.resultsPublishedCount, metrics.totalSessions)}`}>
@@ -189,10 +189,10 @@ export default function EventStatusDashboard({
         </Card>
 
         {/* Standings */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-400">Standings</p>
+              <p className="text-xs text-foreground-quiet">Standings</p>
               <Trophy className="w-4 h-4 text-gray-500" />
             </div>
             <p className={`text-lg font-bold ${metrics.standingsCalculated ? 'text-green-400' : 'text-yellow-400'}`}>
@@ -205,13 +205,13 @@ export default function EventStatusDashboard({
         </Card>
 
         {/* Last action */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-gray-400">Last Action</p>
+              <p className="text-xs text-foreground-quiet">Last Action</p>
               <Clock className="w-4 h-4 text-gray-500" />
             </div>
-            <p className="text-xs text-gray-300 font-mono">
+            <p className="text-xs text-foreground-secondary font-mono">
               {metrics.lastRaceControlAction
                 ? new Date(metrics.lastRaceControlAction).toLocaleTimeString()
                 : 'No activity'}
@@ -223,19 +223,19 @@ export default function EventStatusDashboard({
 
       {/* Session progress table */}
       {sessions.length > 0 && (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Session Status</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
-                <thead className="border-b border-gray-800">
+                <thead className="border-b border-divider">
                   <tr>
-                    <th className="text-left py-2 px-3 text-gray-400 font-semibold">Session</th>
-                    <th className="text-left py-2 px-3 text-gray-400 font-semibold">Status</th>
-                    <th className="text-left py-2 px-3 text-gray-400 font-semibold">Results</th>
-                    <th className="text-left py-2 px-3 text-gray-400 font-semibold">Time</th>
+                    <th className="text-left py-2 px-3 text-foreground-quiet font-semibold">Session</th>
+                    <th className="text-left py-2 px-3 text-foreground-quiet font-semibold">Status</th>
+                    <th className="text-left py-2 px-3 text-foreground-quiet font-semibold">Results</th>
+                    <th className="text-left py-2 px-3 text-foreground-quiet font-semibold">Time</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -243,13 +243,13 @@ export default function EventStatusDashboard({
                     const sessionResults = results.filter((r) => r.session_id === s.id);
                     const resultStatus = sessionResults.length === 0 ? 'None' : sessionResults[0].status || 'Draft';
                     return (
-                      <tr key={s.id} className="border-b border-gray-800/50 hover:bg-gray-800/20">
+                      <tr key={s.id} className="border-b border-divider/50 hover:bg-surface-interactive/20">
                         <td className="py-2 px-3 text-white">{s.name}</td>
                         <td className="py-2 px-3">
                           <Badge className={`text-xs ${
                             s.status === 'completed' ? 'bg-green-500/20 text-green-400'
                               : s.status === 'in_progress' ? 'bg-blue-500/20 text-blue-400'
-                              : 'bg-gray-500/20 text-gray-400'
+                              : 'bg-gray-500/20 text-foreground-quiet'
                           }`}>
                             {s.status}
                           </Badge>
@@ -258,12 +258,12 @@ export default function EventStatusDashboard({
                           <Badge className={`text-xs ${
                             resultStatus === 'Official' || resultStatus === 'Locked' ? 'bg-green-500/20 text-green-400'
                               : resultStatus === 'Provisional' ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-gray-500/20 text-gray-400'
+                              : 'bg-gray-500/20 text-foreground-quiet'
                           }`}>
                             {resultStatus}
                           </Badge>
                         </td>
-                        <td className="py-2 px-3 text-gray-400 font-mono">
+                        <td className="py-2 px-3 text-foreground-quiet font-mono">
                           {s.scheduled_time ? new Date(s.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                         </td>
                       </tr>
@@ -278,33 +278,33 @@ export default function EventStatusDashboard({
 
       {/* Entry progress */}
       {entries.length > 0 && (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Entry Progress</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="text-center">
-                <p className="text-xs text-gray-400 mb-1">Registered</p>
+                <p className="text-xs text-foreground-quiet mb-1">Registered</p>
                 <p className="text-2xl font-bold text-blue-400">
                   {entries.filter((e) => e.entry_status === 'Registered').length}
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-gray-400 mb-1">Checked In</p>
+                <p className="text-xs text-foreground-quiet mb-1">Checked In</p>
                 <p className="text-2xl font-bold text-green-400">
                   {entries.filter((e) => e.entry_status === 'Checked In').length}
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-gray-400 mb-1">Teched</p>
+                <p className="text-xs text-foreground-quiet mb-1">Teched</p>
                 <p className="text-2xl font-bold text-purple-400">
                   {entries.filter((e) => e.entry_status === 'Teched').length}
                 </p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-gray-400 mb-1">Withdrawn</p>
-                <p className="text-2xl font-bold text-gray-400">
+                <p className="text-xs text-foreground-quiet mb-1">Withdrawn</p>
+                <p className="text-2xl font-bold text-foreground-quiet">
                   {entries.filter((e) => e.entry_status === 'Withdrawn').length}
                 </p>
               </div>

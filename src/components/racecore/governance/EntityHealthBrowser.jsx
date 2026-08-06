@@ -65,7 +65,7 @@ export default function EntityHealthBrowser() {
           <SelectTrigger className="w-44 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-gray-900 border-gray-700">
+          <SelectContent className="bg-surface-elevated border-divider">
             {ENTITY_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -73,7 +73,7 @@ export default function EntityHealthBrowser() {
           <SelectTrigger className="w-28 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-gray-900 border-gray-700">
+          <SelectContent className="bg-surface-elevated border-divider">
             {['25', '50', '100', '200'].map(n => <SelectItem key={n} value={n}>Top {n}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -86,7 +86,7 @@ export default function EntityHealthBrowser() {
             <SelectTrigger className="w-36 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs ml-auto">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-gray-700">
+            <SelectContent className="bg-surface-elevated border-divider">
               <SelectItem value="health_asc">Lowest Health</SelectItem>
               <SelectItem value="health_desc">Highest Health</SelectItem>
               <SelectItem value="cert">By Certification</SelectItem>
@@ -97,7 +97,7 @@ export default function EntityHealthBrowser() {
             <SelectTrigger className="w-32 h-8 bg-white/[0.04] border-white/[0.08] text-white text-xs">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-gray-700">
+            <SelectContent className="bg-surface-elevated border-divider">
               <SelectItem value="all">All Records</SelectItem>
               <SelectItem value="critical">Critical Issues</SelectItem>
               <SelectItem value="warning">Warnings Only</SelectItem>

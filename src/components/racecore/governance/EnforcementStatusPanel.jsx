@@ -92,7 +92,7 @@ const PHASES = [
 const STATUS_CONFIG = {
   active:   { icon: ShieldCheck, color: 'text-green-400',  bg: 'bg-green-950/20',  border: 'border-green-800/40',  label: 'Active' },
   partial:  { icon: Shield,      color: 'text-amber-400',  bg: 'bg-amber-950/20',  border: 'border-amber-800/40',  label: 'Partial' },
-  planned:  { icon: ShieldAlert, color: 'text-gray-500',   bg: 'bg-gray-800/20',   border: 'border-gray-700/40',   label: 'Planned' },
+  planned:  { icon: ShieldAlert, color: 'text-gray-500',   bg: 'bg-surface-interactive/20',   border: 'border-divider/40',   label: 'Planned' },
 };
 
 export default function EnforcementStatusPanel() {

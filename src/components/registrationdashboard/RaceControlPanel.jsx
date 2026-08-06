@@ -233,9 +233,9 @@ export default function RaceControlPanel({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to access Race Control</p>
+          <p className="text-foreground-quiet">Select an event to access Race Control</p>
         </CardContent>
       </Card>
     );
@@ -250,19 +250,19 @@ export default function RaceControlPanel({
       {/* Main controls */}
       <div className="lg:col-span-2 space-y-6">
         {/* Control Row */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader>
             <CardTitle className="text-white text-sm">Session Selection</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-400 mb-2 block">Class</label>
+                <label className="text-xs text-foreground-quiet mb-2 block">Class</label>
                 <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+                  <SelectTrigger className="bg-surface-elevated border-divider text-white">
                     <SelectValue placeholder="All Classes" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-gray-800">
+                  <SelectContent className="bg-surface-elevated border-divider">
                     <SelectItem value={null}>All Classes</SelectItem>
                     {classOptions.map(cls => (
                       <SelectItem key={cls} value={cls}>{cls}</SelectItem>
@@ -271,12 +271,12 @@ export default function RaceControlPanel({
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-gray-400 mb-2 block">Session</label>
+                <label className="text-xs text-foreground-quiet mb-2 block">Session</label>
                 <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-                  <SelectTrigger className="bg-gray-900 border-gray-800 text-white">
+                  <SelectTrigger className="bg-surface-elevated border-divider text-white">
                     <SelectValue placeholder="Select session" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-900 border-gray-800">
+                  <SelectContent className="bg-surface-elevated border-divider">
                     {filteredSessions.map(s => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.name}
@@ -291,14 +291,14 @@ export default function RaceControlPanel({
 
         {/* Session Details */}
         {selectedSession && (
-          <Card className="bg-[#171717] border-gray-800">
+          <Card className="bg-surface-elevated border-divider">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-white">{selectedSession.name}</CardTitle>
                 <Badge className={`${
                   selectedSession.status === 'Official' ? 'bg-green-900/40 text-green-300' :
                   selectedSession.status === 'Provisional' ? 'bg-yellow-900/40 text-yellow-300' :
-                  selectedSession.status === 'Draft' ? 'bg-gray-900/40 text-gray-300' :
+                  selectedSession.status === 'Draft' ? 'bg-surface-elevated/40 text-foreground-secondary' :
                   selectedSession.status === 'Locked' ? 'bg-red-900/40 text-red-300' :
                   'bg-blue-900/40 text-blue-300'
                 }`}>
@@ -308,7 +308,7 @@ export default function RaceControlPanel({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-xs text-gray-400 mb-3">Session Status</p>
+                <p className="text-xs text-foreground-quiet mb-3">Session Status</p>
                 <div className="grid grid-cols-2 gap-2">
                   {SESSION_STATUSES.map(status => (
                     <Button
@@ -318,7 +318,7 @@ export default function RaceControlPanel({
                       className={`h-8 text-xs ${
                         selectedSession.status === status
                           ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                          : 'bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-800'
+                          : 'bg-surface-elevated hover:bg-surface-interactive text-foreground-secondary border border-divider'
                       }`}
                     >
                       {status}
@@ -327,7 +327,7 @@ export default function RaceControlPanel({
                 </div>
               </div>
 
-              <Separator className="bg-gray-800" />
+              <Separator className="bg-surface-interactive" />
 
               <div className="grid grid-cols-2 gap-3">
                 {!selectedSession.locked ? (
@@ -369,17 +369,17 @@ export default function RaceControlPanel({
         )}
 
         {!selectedSession && (
-          <Card className="bg-[#171717] border-gray-800">
+          <Card className="bg-surface-elevated border-divider">
             <CardContent className="py-12 text-center">
               <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-400">Select a session to view controls</p>
+              <p className="text-foreground-quiet">Select a session to view controls</p>
             </CardContent>
           </Card>
         )}
       </div>
 
       {/* Recent Actions */}
-      <Card className="bg-[#171717] border-gray-800 lg:col-span-1">
+      <Card className="bg-surface-elevated border-divider lg:col-span-1">
         <CardHeader>
           <CardTitle className="text-white text-sm flex items-center gap-2">
             <Zap className="w-4 h-4" /> Recent Actions
@@ -391,8 +391,8 @@ export default function RaceControlPanel({
               log.operation_type.includes('race_control') || 
               log.operation_type.includes('session')
             ).slice(0, 20).map((log, idx) => (
-              <div key={idx} className="text-xs border-l-2 border-gray-800 pl-3 py-2">
-                <div className="font-semibold text-gray-300">{log.operation_type.replace(/_/g, ' ')}</div>
+              <div key={idx} className="text-xs border-l-2 border-divider pl-3 py-2">
+                <div className="font-semibold text-foreground-secondary">{log.operation_type.replace(/_/g, ' ')}</div>
                 <div className="text-gray-500 text-xs mt-1">{log.notes}</div>
                 <div className="text-gray-600 text-xs mt-1">
                   {new Date(log.created_date).toLocaleTimeString()}

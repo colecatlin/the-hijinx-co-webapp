@@ -29,19 +29,19 @@ function compareSessions(a, b) {
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 const STATUS_STYLES = {
-  Draft: 'bg-gray-800 text-gray-300 border-gray-700',
+  Draft: 'bg-surface-interactive text-foreground-secondary border-divider',
   Provisional: 'bg-yellow-900/50 text-yellow-300 border-yellow-700',
   Official: 'bg-green-900/50 text-green-300 border-green-700',
   Locked: 'bg-blue-900/50 text-blue-300 border-blue-700',
-  scheduled: 'bg-gray-800 text-gray-300 border-gray-700',
+  scheduled: 'bg-surface-interactive text-foreground-secondary border-divider',
   in_progress: 'bg-red-900/50 text-red-300 border-red-700 animate-pulse',
   completed: 'bg-green-900/50 text-green-300 border-green-700',
-  cancelled: 'bg-gray-900 text-gray-500 border-gray-800',
+  cancelled: 'bg-surface-elevated text-gray-500 border-divider',
 };
 
 function StatusBadge({ status }) {
   return (
-    <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_STYLES[status] || 'bg-gray-800 text-gray-400 border-gray-700'}`}>
+    <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_STYLES[status] || 'bg-surface-interactive text-foreground-quiet border-divider'}`}>
       {status}
     </span>
   );
@@ -63,7 +63,7 @@ function ResultsTable({ results, driversMap }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-800 text-xs text-gray-500 uppercase tracking-wide">
+          <tr className="border-b border-divider text-xs text-gray-500 uppercase tracking-wide">
             <th className="text-left py-2 pr-3 font-medium">Pos</th>
             <th className="text-left py-2 pr-3 font-medium">Car</th>
             <th className="text-left py-2 pr-3 font-medium">Driver</th>
@@ -79,9 +79,9 @@ function ResultsTable({ results, driversMap }) {
               ? `${driver.first_name} ${driver.last_name}`
               : r.driver_id?.slice(0, 8) || '—';
             return (
-              <tr key={r.id || idx} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+              <tr key={r.id || idx} className="border-b border-divider/50 hover:bg-surface-interactive/30 transition-colors">
                 <td className="py-2.5 pr-3">
-                  <span className={`text-lg font-black ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-amber-600' : 'text-white'}`}>
+                  <span className={`text-lg font-black ${idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-foreground-secondary' : idx === 2 ? 'text-amber-600' : 'text-white'}`}>
                     {r.position ?? '—'}
                   </span>
                 </td>
@@ -90,8 +90,8 @@ function ResultsTable({ results, driversMap }) {
                 <td className="py-2.5 pr-3 hidden sm:table-cell">
                   <StatusBadge status={r.status || 'Running'} />
                 </td>
-                <td className="py-2.5 pr-3 text-right text-gray-300 hidden md:table-cell">{r.laps_completed ?? '—'}</td>
-                <td className="py-2.5 text-right text-gray-300 font-mono hidden lg:table-cell">
+                <td className="py-2.5 pr-3 text-right text-foreground-secondary hidden md:table-cell">{r.laps_completed ?? '—'}</td>
+                <td className="py-2.5 text-right text-foreground-secondary font-mono hidden lg:table-cell">
                   {r.best_lap_time_ms ? `${(r.best_lap_time_ms / 1000).toFixed(3)}s` : '—'}
                 </td>
               </tr>
@@ -122,7 +122,7 @@ function DriverSpotlight({ driver, driverMedia, programs, seriesClasses }) {
 
   if (!driver) {
     return (
-      <Card className="bg-[#171717] border-gray-800 h-full">
+      <Card className="bg-surface-elevated border-divider h-full">
         <CardContent className="py-12 text-center space-y-2">
           <Mic className="w-8 h-8 text-gray-700 mx-auto" />
           <p className="text-gray-500 text-sm">Select a driver to load spotlight</p>
@@ -135,7 +135,7 @@ function DriverSpotlight({ driver, driverMedia, programs, seriesClasses }) {
     .filter(Boolean).join(', ');
 
   return (
-    <Card className="bg-[#171717] border-gray-800">
+    <Card className="bg-surface-elevated border-divider">
       <CardHeader className="pb-3">
         <CardTitle className="text-white flex items-center gap-2 text-base">
           <Mic className="w-4 h-4 text-purple-400" /> Driver Spotlight
@@ -148,10 +148,10 @@ function DriverSpotlight({ driver, driverMedia, programs, seriesClasses }) {
             <img
               src={driverMedia.headshot_url}
               alt={`${driver.first_name} ${driver.last_name}`}
-              className="w-20 h-20 rounded-lg object-cover border border-gray-700 flex-shrink-0"
+              className="w-20 h-20 rounded-lg object-cover border border-divider flex-shrink-0"
             />
           ) : (
-            <div className="w-20 h-20 rounded-lg bg-gray-800 border border-gray-700 flex items-center justify-center flex-shrink-0">
+            <div className="w-20 h-20 rounded-lg bg-surface-interactive border border-divider flex items-center justify-center flex-shrink-0">
               <User className="w-8 h-8 text-gray-600" />
             </div>
           )}
@@ -206,13 +206,13 @@ function DriverSpotlight({ driver, driverMedia, programs, seriesClasses }) {
         </div>
 
         {/* Story Notes */}
-        <div className="border-t border-gray-800 pt-4 space-y-2">
+        <div className="border-t border-divider pt-4 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Story Notes</p>
             <button
               onClick={handleCopy}
               disabled={!notes.trim()}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-white disabled:opacity-40 transition-colors"
+              className="flex items-center gap-1 text-xs text-foreground-quiet hover:text-white disabled:opacity-40 transition-colors"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? 'Copied' : 'Copy Notes'}
@@ -222,7 +222,7 @@ function DriverSpotlight({ driver, driverMedia, programs, seriesClasses }) {
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="Jot down talking points, story angles, background info…"
-            className="bg-[#262626] border-gray-700 text-white text-sm resize-none h-28 placeholder:text-gray-600"
+            className="bg-[#262626] border-divider text-white text-sm resize-none h-28 placeholder:text-gray-600"
           />
         </div>
       </CardContent>
@@ -338,7 +338,7 @@ export default function AnnouncerMode({ selectedEvent, sessions: propSessions, r
     return (
       <div className="py-16 text-center space-y-3">
         <Mic className="w-10 h-10 text-gray-700 mx-auto" />
-        <p className="text-gray-400 font-medium">No event selected</p>
+        <p className="text-foreground-quiet font-medium">No event selected</p>
         <p className="text-gray-600 text-sm max-w-xs mx-auto">
           Pick a Track or Series, select a season, and choose an event using the selectors above.
         </p>
@@ -351,7 +351,7 @@ export default function AnnouncerMode({ selectedEvent, sessions: propSessions, r
     return (
       <div className="py-16 text-center space-y-3">
         <AlertCircle className="w-10 h-10 text-gray-700 mx-auto" />
-        <p className="text-gray-400 font-medium">No sessions created yet</p>
+        <p className="text-foreground-quiet font-medium">No sessions created yet</p>
         <p className="text-gray-600 text-sm max-w-sm mx-auto">
           Ask race ops to build sessions in the Classes &amp; Sessions tab.
         </p>
@@ -368,9 +368,9 @@ export default function AnnouncerMode({ selectedEvent, sessions: propSessions, r
       <div className="space-y-5">
 
         {/* Quick Search */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <CardTitle className="text-sm font-semibold text-foreground-secondary flex items-center gap-2">
               <Search className="w-4 h-4 text-purple-400" /> Quick Driver Search
             </CardTitle>
           </CardHeader>
@@ -379,7 +379,7 @@ export default function AnnouncerMode({ selectedEvent, sessions: propSessions, r
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search by name or car number…"
-              className="bg-[#262626] border-gray-700 text-white placeholder:text-gray-600 text-base"
+              className="bg-[#262626] border-divider text-white placeholder:text-gray-600 text-base"
             />
             {searchQuery.trim() && (
               <div className="space-y-1 max-h-64 overflow-y-auto">
@@ -416,16 +416,16 @@ export default function AnnouncerMode({ selectedEvent, sessions: propSessions, r
         </Card>
 
         {/* Session Picker */}
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-gray-300">Session Picker</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground-secondary">Session Picker</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-              <SelectTrigger className="bg-[#262626] border-gray-700 text-white">
+              <SelectTrigger className="bg-[#262626] border-divider text-white">
                 <SelectValue placeholder="Select session…" />
               </SelectTrigger>
-              <SelectContent className="bg-[#262626] border-gray-700">
+              <SelectContent className="bg-[#262626] border-divider">
                 {sessions.map(s => {
                   const sc = s.series_class_id
                     ? seriesClasses.find(c => c.id === s.series_class_id)
@@ -472,9 +472,9 @@ export default function AnnouncerMode({ selectedEvent, sessions: propSessions, r
         </Card>
 
         {/* Results Table */}
-        <Card className="bg-[#171717] border-gray-800" ref={resultsRef}>
+        <Card className="bg-surface-elevated border-divider" ref={resultsRef}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <CardTitle className="text-sm font-semibold text-foreground-secondary flex items-center gap-2">
               <Trophy className="w-4 h-4 text-yellow-400" />
               {selectedSession
                 ? `${selectedSession.session_type} ${selectedSession.session_number ? `#${selectedSession.session_number}` : ''} — Results`

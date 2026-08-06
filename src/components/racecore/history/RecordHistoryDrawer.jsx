@@ -50,7 +50,7 @@ export default function RecordHistoryDrawer({ open, onClose, entityType, entityI
 
   return (
     <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent side="right" className="w-[480px] max-w-full p-0 flex flex-col" style={{ background: '#0F1212', borderColor: 'rgba(255,255,255,0.08)' }}>
+      <SheetContent side="right" className="w-[480px] max-w-full p-0 flex flex-col" style={{ background: 'hsl(var(--surface))', borderColor: 'rgba(255,255,255,0.08)' }}>
         <SheetHeader className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
           <SheetTitle className="text-white text-sm font-bold">
             Record History

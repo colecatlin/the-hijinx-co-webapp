@@ -202,10 +202,10 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">
+          <p className="text-foreground-quiet">
             Select an event in the top bar to register
           </p>
         </CardContent>
@@ -215,10 +215,10 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
 
   if (!selectedEvent.series_id) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <p className="text-gray-400">
+          <p className="text-foreground-quiet">
             This event is missing a series connection
           </p>
           <p className="text-xs text-gray-500 mt-2">Ask an admin to set series_id</p>
@@ -230,39 +230,39 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
   // DONE state
   if (step === 'done' && existingEntry) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader className="bg-green-900/20 border-b border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
+        <CardHeader className="bg-green-900/20 border-b border-divider">
           <CardTitle className="text-white flex items-center gap-2">
             <CheckCircle className="w-5 h-5 text-green-400" /> Registration Confirmed
           </CardTitle>
         </CardHeader>
         <CardContent className="py-6 space-y-4">
-          <div className="bg-gray-900/50 rounded p-4 space-y-2">
+          <div className="bg-surface-elevated/50 rounded p-4 space-y-2">
             <div>
-              <p className="text-xs text-gray-400">Driver</p>
+              <p className="text-xs text-foreground-quiet">Driver</p>
               <p className="text-sm font-semibold text-white">
                 {myDriver.first_name} {myDriver.last_name}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Event</p>
+              <p className="text-xs text-foreground-quiet">Event</p>
               <p className="text-sm font-semibold text-white">{selectedEvent.name}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Class</p>
+              <p className="text-xs text-foreground-quiet">Class</p>
               <p className="text-sm font-semibold text-white">
                 {seriesClasses.find((c) => c.id === selectedClass)?.class_name || selectedClass}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Status</p>
+              <p className="text-xs text-foreground-quiet">Status</p>
               <Badge className="bg-blue-500/20 text-blue-400">
                 {existingEntry.entry_status || 'Registered'}
               </Badge>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-800 space-y-3">
+          <div className="pt-4 border-t border-divider space-y-3">
             <a
               href={createPageUrl(`DriverProfile?id=${myDriver.id}`)}
               target="_blank"
@@ -271,7 +271,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
             >
               <Button
                 variant="outline"
-                className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="w-full border-gray-700 text-foreground-secondary hover:bg-surface-interactive"
               >
                 View Driver Profile ↗
               </Button>
@@ -298,29 +298,29 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
   if (step === 'driver') {
     if (myDriver) {
       return (
-        <Card className="bg-[#171717] border-gray-800">
-          <CardHeader className="bg-blue-900/20 border-b border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
+          <CardHeader className="bg-blue-900/20 border-b border-divider">
             <CardTitle className="text-white flex items-center gap-2">
               <User className="w-5 h-5 text-blue-400" /> Driver Profile
             </CardTitle>
           </CardHeader>
           <CardContent className="py-6 space-y-4">
-            <div className="bg-gray-900/50 rounded p-4 space-y-2">
+            <div className="bg-surface-elevated/50 rounded p-4 space-y-2">
               <div>
-                <p className="text-xs text-gray-400">Name</p>
+                <p className="text-xs text-foreground-quiet">Name</p>
                 <p className="text-sm font-semibold text-white">
                   {myDriver.first_name} {myDriver.last_name}
                 </p>
               </div>
               {myDriver.contact_email && (
                 <div>
-                  <p className="text-xs text-gray-400">Email</p>
-                  <p className="text-xs text-gray-300 font-mono">{myDriver.contact_email}</p>
+                  <p className="text-xs text-foreground-quiet">Email</p>
+                  <p className="text-xs text-foreground-secondary font-mono">{myDriver.contact_email}</p>
                 </div>
               )}
               {myDriver.primary_number && (
                 <div>
-                  <p className="text-xs text-gray-400">Primary #</p>
+                  <p className="text-xs text-foreground-quiet">Primary #</p>
                   <p className="text-xs font-mono text-white">{myDriver.primary_number}</p>
                 </div>
               )}
@@ -337,13 +337,13 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
     }
 
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <CardTitle className="text-white">Find or Create Driver Profile</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-xs text-gray-400 mb-3">
+            <p className="text-xs text-foreground-quiet mb-3">
               Search for an existing driver profile using your email or name
             </p>
             <div className="flex gap-2">
@@ -351,7 +351,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
                 placeholder="Search by email or name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-gray-900 border-gray-600 text-white"
+                className="bg-surface-elevated border-gray-600 text-white"
               />
               <Button
                 onClick={() => setShowSearchResults(!showSearchResults)}
@@ -365,22 +365,22 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
           {showSearchResults && (
             <div className="space-y-2">
               {searchLoading ? (
-                <p className="text-xs text-gray-400">Searching...</p>
+                <p className="text-xs text-foreground-quiet">Searching...</p>
               ) : driverSearchResults.length === 0 ? (
-                <p className="text-xs text-gray-400">No drivers found</p>
+                <p className="text-xs text-foreground-quiet">No drivers found</p>
               ) : (
                 <div className="space-y-2">
                   {driverSearchResults.slice(0, 5).map((driver) => (
                     <div
                       key={driver.id}
-                      className="bg-gray-900/50 border border-gray-700 rounded p-3 flex items-center justify-between"
+                      className="bg-surface-elevated/50 border border-gray-700 rounded p-3 flex items-center justify-between"
                     >
                       <div>
                         <p className="text-sm font-semibold text-white">
                           {driver.first_name} {driver.last_name}
                         </p>
                         {driver.contact_email && (
-                          <p className="text-xs text-gray-400">{driver.contact_email}</p>
+                          <p className="text-xs text-foreground-quiet">{driver.contact_email}</p>
                         )}
                       </div>
                       <Button
@@ -402,7 +402,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
             <Button
               onClick={() => setCreatingDriver(true)}
               variant="outline"
-              className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
+              className="w-full border-gray-700 text-foreground-secondary hover:bg-surface-interactive"
             >
               <Plus className="w-4 h-4 mr-2" /> Create New Profile
             </Button>
@@ -423,7 +423,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-400 block mb-1">First Name *</label>
+                <label className="text-xs text-foreground-quiet block mb-1">First Name *</label>
                 <Input
                   value={newDriverForm.first_name}
                   onChange={(e) =>
@@ -434,7 +434,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
                 />
               </div>
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Last Name *</label>
+                <label className="text-xs text-foreground-quiet block mb-1">Last Name *</label>
                 <Input
                   value={newDriverForm.last_name}
                   onChange={(e) =>
@@ -447,7 +447,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Email</label>
+              <label className="text-xs text-foreground-quiet block mb-1">Email</label>
               <Input
                 value={newDriverForm.contact_email}
                 onChange={(e) =>
@@ -459,7 +459,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Car Number</label>
+              <label className="text-xs text-foreground-quiet block mb-1">Car Number</label>
               <Input
                 value={newDriverForm.primary_number}
                 onChange={(e) =>
@@ -471,7 +471,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
             </div>
 
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Primary Discipline</label>
+              <label className="text-xs text-foreground-quiet block mb-1">Primary Discipline</label>
               <Select
                 value={newDriverForm.primary_discipline}
                 onValueChange={(val) =>
@@ -498,7 +498,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
             <Button
               variant="outline"
               onClick={() => setCreatingDriver(false)}
-              className="border-gray-700 text-gray-300"
+              className="border-gray-700 text-foreground-secondary"
             >
               Cancel
             </Button>
@@ -518,19 +518,19 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
   // CLASS selection step
   if (step === 'class') {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader>
           <CardTitle className="text-white">Select Class</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-foreground-quiet">
             Register {myDriver.first_name} {myDriver.last_name} for {selectedEvent.name}
           </p>
 
           <div>
-            <label className="text-xs text-gray-400 block mb-2">Class *</label>
+            <label className="text-xs text-foreground-quiet block mb-2">Class *</label>
             <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger className="bg-gray-900 border-gray-600 text-white">
+              <SelectTrigger className="bg-surface-elevated border-gray-600 text-white">
                 <SelectValue placeholder="Select class..." />
               </SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
@@ -550,7 +550,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
                 setSelectedClass('');
               }}
               variant="outline"
-              className="border-gray-700 text-gray-300 flex-1"
+              className="border-gray-700 text-foreground-secondary flex-1"
             >
               Back
             </Button>
@@ -571,24 +571,24 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
   if (step === 'confirm') {
     const selectedClassObj = seriesClasses.find((c) => c.id === selectedClass);
     return (
-      <Card className="bg-[#171717] border-gray-800">
-        <CardHeader className="bg-purple-900/20 border-b border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
+        <CardHeader className="bg-purple-900/20 border-b border-divider">
           <CardTitle className="text-white">Review Registration</CardTitle>
         </CardHeader>
         <CardContent className="py-6 space-y-4">
-          <div className="bg-gray-900/50 rounded p-4 space-y-3">
+          <div className="bg-surface-elevated/50 rounded p-4 space-y-3">
             <div>
-              <p className="text-xs text-gray-400">Driver</p>
+              <p className="text-xs text-foreground-quiet">Driver</p>
               <p className="text-sm font-semibold text-white">
                 {myDriver.first_name} {myDriver.last_name}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Event</p>
+              <p className="text-xs text-foreground-quiet">Event</p>
               <p className="text-sm font-semibold text-white">{selectedEvent.name}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-400">Class</p>
+              <p className="text-xs text-foreground-quiet">Class</p>
               <p className="text-sm font-semibold text-white">
                 {selectedClassObj?.class_name || 'Unknown'}
               </p>
@@ -599,7 +599,7 @@ export default function DriverRegistrationPanel({ selectedEvent, user }) {
             <Button
               onClick={() => setStep('class')}
               variant="outline"
-              className="border-gray-700 text-gray-300 flex-1"
+              className="border-gray-700 text-foreground-secondary flex-1"
             >
               Back
             </Button>

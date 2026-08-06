@@ -118,7 +118,7 @@ export const STATUS_ACCENT = {
   Inactive:  'bg-gray-700',
   Seasonal:  'bg-amber-500',
   Limited:   'bg-amber-500',
-  Archived:  'bg-gray-800',
+  Archived:  'bg-surface-interactive',
   Pending:   'bg-sky-500',
   Completed: 'bg-violet-500',
   Upcoming:  'bg-sky-500',

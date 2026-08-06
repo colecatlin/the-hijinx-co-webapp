@@ -567,10 +567,10 @@ export default function ResultsManager({
   // ── Guards ──
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select a Track or Series, Season, and Event to manage results</p>
+          <p className="text-foreground-quiet">Select a Track or Series, Season, and Event to manage results</p>
         </CardContent>
       </Card>
     );
@@ -579,17 +579,17 @@ export default function ResultsManager({
   if (sessionsLoading || resultsLoading) {
     return (
       <div className="space-y-3">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-gray-800/40 rounded animate-pulse" />)}
+        {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-surface-interactive/40 rounded animate-pulse" />)}
       </div>
     );
   }
 
   if (sessionsError) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center space-y-3">
           <p className="text-red-400 text-sm">Failed to load sessions</p>
-          <Button size="sm" variant="outline" onClick={refetchSessions} className="border-gray-700 text-gray-300">Retry</Button>
+          <Button size="sm" variant="outline" onClick={refetchSessions} className="border-gray-700 text-foreground-secondary">Retry</Button>
         </CardContent>
       </Card>
     );
@@ -597,9 +597,9 @@ export default function ResultsManager({
 
   if (sessions.length === 0) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400 mb-3">No sessions for this event. Create sessions first.</p>
+          <p className="text-foreground-quiet mb-3">No sessions for this event. Create sessions first.</p>
         </CardContent>
       </Card>
     );
@@ -622,7 +622,7 @@ export default function ResultsManager({
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               isHistoricalMode
                 ? 'bg-amber-900/40 border-amber-700 text-amber-300'
-                : 'bg-[#171717] border-gray-700 text-gray-500 hover:text-gray-300 hover:border-gray-600'
+                : 'bg-surface-elevated border-gray-700 text-gray-500 hover:text-foreground-secondary hover:border-gray-600'
             }`}
           >
             <History className="w-3.5 h-3.5" />
@@ -669,9 +669,9 @@ export default function ResultsManager({
       )}
 
       {/* Top control bar */}
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-4 flex items-end gap-3 flex-wrap">
+      <div className="bg-surface-elevated border border-divider rounded-lg p-4 flex items-end gap-3 flex-wrap">
           <div className="flex-1 min-w-[200px]">
-            <label className="text-xs text-gray-400 block mb-1">Session</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Session</label>
             <Select value={sessionId} onValueChange={setSessionId}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue placeholder="Select session…" /></SelectTrigger>
               <SelectContent className="bg-[#262626] border-gray-700">
@@ -682,19 +682,19 @@ export default function ResultsManager({
             </Select>
           </div>
           <div className="flex gap-2 ml-auto">
-            <Button size="sm" variant="outline" onClick={handleExportCSV} disabled={!selectedSession} className="border-gray-700 text-gray-300 h-8">
+            <Button size="sm" variant="outline" onClick={handleExportCSV} disabled={!selectedSession} className="border-gray-700 text-foreground-secondary h-8">
               <Download className="w-4 h-4 mr-1" /> Export CSV
             </Button>
-            <Button size="sm" disabled className="bg-gray-800 text-gray-500 h-8 cursor-not-allowed">
+            <Button size="sm" disabled className="bg-surface-interactive text-gray-500 h-8 cursor-not-allowed">
               API Sync (Coming Soon)
             </Button>
           </div>
       </div>
 
       {!selectedSession ? (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="py-12 text-center">
-            <p className="text-gray-400">Select a class and session above to manage results</p>
+            <p className="text-foreground-quiet">Select a class and session above to manage results</p>
           </CardContent>
         </Card>
       ) : (
@@ -702,7 +702,7 @@ export default function ResultsManager({
           {/* Left sidebar – Session info + actions */}
           <div className="lg:col-span-1 space-y-4">
             {/* Session info card */}
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-white">{getSessionLabel(selectedSession)}</CardTitle>
               </CardHeader>
@@ -725,18 +725,18 @@ export default function ResultsManager({
                   )}
                 </div>
                 <div className="text-xs text-gray-500 space-y-0.5">
-                  <p>Type: <span className="text-gray-300">{selectedSession.session_type}</span></p>
-                  {selectedSession.laps && <p>Laps: <span className="text-gray-300">{selectedSession.laps}</span></p>}
-                  <p>Results: <span className="text-gray-300">{sessionResults.length} rows</span></p>
-                  <p>Updated: <span className="text-gray-300">{selectedSession.updated_date ? new Date(selectedSession.updated_date).toLocaleString() : 'Recently'}</span></p>
+                  <p>Type: <span className="text-foreground-secondary">{selectedSession.session_type}</span></p>
+                  {selectedSession.laps && <p>Laps: <span className="text-foreground-secondary">{selectedSession.laps}</span></p>}
+                  <p>Results: <span className="text-foreground-secondary">{sessionResults.length} rows</span></p>
+                  <p>Updated: <span className="text-foreground-secondary">{selectedSession.updated_date ? new Date(selectedSession.updated_date).toLocaleString() : 'Recently'}</span></p>
                 </div>
 
                 {/* Roster stats */}
                 {rosterStats.total > 0 && (
                   <div className="border-t border-gray-700 pt-2 mt-2">
-                    <p className="text-xs text-gray-400 mb-1">Roster</p>
+                    <p className="text-xs text-foreground-quiet mb-1">Roster</p>
                     <div className="flex gap-1 flex-wrap">
-                      <Badge className="text-xs bg-gray-700 text-gray-300">Total: {rosterStats.total}</Badge>
+                      <Badge className="text-xs bg-gray-700 text-foreground-secondary">Total: {rosterStats.total}</Badge>
                       <Badge className="text-xs bg-green-900/40 text-green-300">Paid: {rosterStats.paid}</Badge>
                       <Badge className="text-xs bg-blue-900/40 text-blue-300">Checked In: {rosterStats.checkedIn}</Badge>
                       <Badge className="text-xs bg-purple-900/40 text-purple-300">Tech: {rosterStats.techPassed}</Badge>
@@ -751,7 +751,7 @@ export default function ResultsManager({
               <div>
                 <button
                   onClick={() => setShowHealthPanel(v => !v)}
-                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-gray-400 hover:text-gray-300 border border-gray-800 rounded bg-[#171717] mb-2"
+                  className="w-full flex items-center justify-between px-2 py-1.5 text-xs text-foreground-quiet hover:text-foreground-secondary border border-divider rounded bg-surface-elevated mb-2"
                 >
                   <span className="uppercase tracking-wide">Session Health</span>
                   <span>{showHealthPanel ? '▲' : '▼'}</span>
@@ -774,7 +774,7 @@ export default function ResultsManager({
                 <span className="text-xs text-amber-300 font-medium">Scores toward standings</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-gray-800/40 border border-gray-700/50">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-interactive/40 border border-gray-700/50">
                 <span className="text-xs">⚪</span>
                 <span className="text-xs text-gray-500">Non-scoring session</span>
               </div>
@@ -813,9 +813,9 @@ export default function ResultsManager({
 
             {/* Actions card */}
             {(can('results_save_draft') || can('results_mark_provisional') || can('results_publish_official') || can('results_lock_session') || can('results_unlock_session')) && (
-              <Card className="bg-[#171717] border-gray-800">
+              <Card className="bg-surface-elevated border-divider">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-gray-400 uppercase tracking-wide">Workflow</CardTitle>
+                  <CardTitle className="text-xs text-foreground-quiet uppercase tracking-wide">Workflow</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {isLocked ? (
@@ -868,7 +868,7 @@ export default function ResultsManager({
                        </Button>
                       )}
                       {(selectedSession.status === 'Provisional' || selectedSession.status === 'Draft') && can('results_save_draft') && (
-                       <Button size="sm" variant="outline" onClick={() => handleStatusTransition('Draft')} disabled={updateSessionStatus.isPending} className="w-full border-gray-700 text-gray-400 text-xs">
+                       <Button size="sm" variant="outline" onClick={() => handleStatusTransition('Draft')} disabled={updateSessionStatus.isPending} className="w-full border-gray-700 text-foreground-quiet text-xs">
                           Revert to Draft
                        </Button>
                       )}
@@ -889,11 +889,11 @@ export default function ResultsManager({
 
             <Tabs value={entryMode} onValueChange={setEntryMode}>
               <TabsList className="bg-[#262626] border border-gray-700 w-full mb-4">
-                <TabsTrigger value="manual" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Manual Entry</TabsTrigger>
-                <TabsTrigger value="csv" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">CSV Upload</TabsTrigger>
-                <TabsTrigger value="api" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">API Sync</TabsTrigger>
-                <TabsTrigger value="history" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Version History</TabsTrigger>
-                <TabsTrigger value="activity" className="data-[state=active]:bg-gray-700 text-gray-300 flex-1 text-xs">Activity Log</TabsTrigger>
+                <TabsTrigger value="manual" className="data-[state=active]:bg-gray-700 text-foreground-secondary flex-1 text-xs">Manual Entry</TabsTrigger>
+                <TabsTrigger value="csv" className="data-[state=active]:bg-gray-700 text-foreground-secondary flex-1 text-xs">CSV Upload</TabsTrigger>
+                <TabsTrigger value="api" className="data-[state=active]:bg-gray-700 text-foreground-secondary flex-1 text-xs">API Sync</TabsTrigger>
+                <TabsTrigger value="history" className="data-[state=active]:bg-gray-700 text-foreground-secondary flex-1 text-xs">Version History</TabsTrigger>
+                <TabsTrigger value="activity" className="data-[state=active]:bg-gray-700 text-foreground-secondary flex-1 text-xs">Activity Log</TabsTrigger>
               </TabsList>
 
               <TabsContent value="manual" className="space-y-4">
@@ -1015,7 +1015,7 @@ export default function ResultsManager({
       <AlertDialog open={!!pendingStatus && pendingStatus !== 'Official'} onOpenChange={(open) => !open && setPendingStatus(null)}>
         <AlertDialogContent className="bg-[#262626] border-gray-700">
           <AlertDialogTitle className="text-white">Confirm: {pendingStatus}</AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-400">
+          <AlertDialogDescription className="text-foreground-quiet">
             {pendingStatus === 'Official'
               ? isHistoricalMode
                 ? 'Publishing Official in Historical Mode. Live checks (Entry roster, tech) were bypassed. Standings recalculation will run normally.'
@@ -1027,7 +1027,7 @@ export default function ResultsManager({
               : 'Mark this session as Provisional. Results are still editable.'}
           </AlertDialogDescription>
           <div className="flex justify-end gap-2">
-            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-gray-700 text-foreground-secondary">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => updateSessionStatus.mutate(pendingStatus)}
               disabled={updateSessionStatus.isPending}

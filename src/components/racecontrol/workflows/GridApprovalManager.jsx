@@ -22,7 +22,7 @@ const GENERATION_METHODS = [
 ];
 
 const STATUS_COLOR = {
-  Draft: 'bg-gray-700 text-gray-300',
+  Draft: 'bg-gray-700 text-foreground-secondary',
   'Pending Approval': 'bg-yellow-900/60 text-yellow-300',
   Approved: 'bg-green-900/60 text-green-300',
   Published: 'bg-blue-900/60 text-blue-300',
@@ -40,7 +40,7 @@ async function logOp(eventId, action, entityId, detail) {
 
 function StatusBadge({ status }) {
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STATUS_COLOR[status] || 'bg-gray-700 text-gray-300'}`}>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STATUS_COLOR[status] || 'bg-gray-700 text-foreground-secondary'}`}>
       {status}
     </span>
   );
@@ -85,7 +85,7 @@ function GenerateLineupModal({ open, onClose, eventId, sessions = [] }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-md">
+      <DialogContent className="bg-gray-950 border-divider text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <LayoutList className="w-4 h-4 text-teal-400" /> Generate Grid Lineup
@@ -93,24 +93,24 @@ function GenerateLineupModal({ open, onClose, eventId, sessions = [] }) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Session *</Label>
+            <Label className="text-foreground-quiet text-xs">Session *</Label>
             <Select value={form.session_id} onValueChange={v => set('session_id', v)} required>
-              <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+              <SelectTrigger className="bg-surface-elevated border-divider text-white">
                 <SelectValue placeholder="Select session…" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
+              <SelectContent className="bg-surface-elevated border-divider">
                 {sessions.map(s => <SelectItem key={s.id} value={s.id} className="text-gray-200">{s.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Generation Method *</Label>
+            <Label className="text-foreground-quiet text-xs">Generation Method *</Label>
             <Select value={form.generation_method} onValueChange={v => set('generation_method', v)}>
-              <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+              <SelectTrigger className="bg-surface-elevated border-divider text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
+              <SelectContent className="bg-surface-elevated border-divider">
                 {GENERATION_METHODS.map(m => <SelectItem key={m} value={m} className="text-gray-200">{m}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -118,12 +118,12 @@ function GenerateLineupModal({ open, onClose, eventId, sessions = [] }) {
 
           {['Qualifying Order', 'Inverted Qualifying', 'Previous Session Result', 'Advancement from Heat'].includes(form.generation_method) && (
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Source Session (optional)</Label>
+              <Label className="text-foreground-quiet text-xs">Source Session (optional)</Label>
               <Select value={form.source_session_id} onValueChange={v => set('source_session_id', v)}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white">
                   <SelectValue placeholder="Source session…" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   {sessions.map(s => <SelectItem key={s.id} value={s.id} className="text-gray-200">{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -132,12 +132,12 @@ function GenerateLineupModal({ open, onClose, eventId, sessions = [] }) {
 
           {form.generation_method === 'Inverted Qualifying' && (
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Inversion Count</Label>
+              <Label className="text-foreground-quiet text-xs">Inversion Count</Label>
               <Select value={form.inversion_count} onValueChange={v => set('inversion_count', v)}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   {['0','1','2','3','4','5','6','8','10'].map(n => (
                     <SelectItem key={n} value={n} className="text-gray-200">Top {n} inverted</SelectItem>
                   ))}
@@ -147,13 +147,13 @@ function GenerateLineupModal({ open, onClose, eventId, sessions = [] }) {
           )}
 
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Notes (optional)</Label>
+            <Label className="text-foreground-quiet text-xs">Notes (optional)</Label>
             <Textarea value={form.notes} onChange={e => set('notes', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white h-16 resize-none" placeholder="Grid notes…" />
+              className="bg-surface-elevated border-divider text-white h-16 resize-none" placeholder="Grid notes…" />
           </div>
 
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400">Cancel</Button>
+            <Button type="button" variant="ghost" onClick={onClose} className="text-foreground-quiet">Cancel</Button>
             <Button type="submit" disabled={saving || !form.session_id}
               className="bg-teal-800 hover:bg-teal-700 text-white">
               {saving ? 'Generating…' : 'Generate'}
@@ -221,7 +221,7 @@ function LineupRow({ lineup, eventId, canApprove, onUpdate }) {
   };
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900/40 p-3 space-y-2">
+    <div className="rounded-lg border border-divider bg-surface-elevated/40 p-3 space-y-2">
       <button onClick={() => setExpanded(v => !v)} className="w-full text-left">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -234,10 +234,10 @@ function LineupRow({ lineup, eventId, canApprove, onUpdate }) {
       </button>
 
       {expanded && lineup.rows?.length > 0 && (
-        <div className="pt-2 border-t border-gray-800/60 max-h-32 overflow-y-auto">
+        <div className="pt-2 border-t border-divider/60 max-h-32 overflow-y-auto">
           <div className="space-y-0.5">
             {lineup.rows.slice(0, 20).map((row, i) => (
-              <div key={i} className="flex items-center gap-3 text-[10px] text-gray-400">
+              <div key={i} className="flex items-center gap-3 text-[10px] text-foreground-quiet">
                 <span className="w-5 font-mono text-right text-gray-600">{row.position}</span>
                 <span className="font-mono">{row.car_number || '—'}</span>
                 <span className="text-gray-600">{row.driver_id ? `…${row.driver_id.slice(-6)}` : ''}</span>
@@ -262,7 +262,7 @@ function LineupRow({ lineup, eventId, canApprove, onUpdate }) {
       )}
 
       {canApprove && (
-        <div className="flex gap-2 pt-1 border-t border-gray-800/60">
+        <div className="flex gap-2 pt-1 border-t border-divider/60">
           {lineup.status === 'Draft' && (
             <Button size="sm" disabled={acting} onClick={handleSubmitForApproval}
               className="bg-yellow-800/60 hover:bg-yellow-800 text-white text-xs h-7 gap-1">

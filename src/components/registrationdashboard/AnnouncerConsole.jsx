@@ -231,11 +231,11 @@ export default function AnnouncerConsole({
 
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-20 text-center">
           <Mic className="w-12 h-12 text-gray-600 mx-auto mb-3" />
           <p className="text-white font-semibold text-lg mb-1">Announcer Console</p>
-          <p className="text-gray-400 text-sm">Select an event to view announcements.</p>
+          <p className="text-foreground-quiet text-sm">Select an event to view announcements.</p>
         </CardContent>
       </Card>
     );
@@ -244,13 +244,13 @@ export default function AnnouncerConsole({
   return (
     <div className="space-y-6">
       {/* ── Header Bar ────────────────────────────────────────────────────── */}
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardHeader className="pb-3">
           <CardTitle className="text-white flex items-center gap-2 mb-3">
             <Mic className="w-5 h-5 text-purple-400" /> {selectedEvent.name}
           </CardTitle>
           {selectedTrack && (
-            <p className="text-xs text-gray-400">{selectedTrack.name}</p>
+            <p className="text-xs text-foreground-quiet">{selectedTrack.name}</p>
           )}
           <p className="text-xs text-gray-500">
             {selectedEvent.event_date}
@@ -311,7 +311,7 @@ export default function AnnouncerConsole({
         {/* Left: Live Now, Next Up, Finished */}
         <div className="lg:col-span-3 space-y-6">
           {/* Live Now */}
-          <Card className="bg-[#171717] border-gray-800 border-red-800/50">
+          <Card className="bg-surface-elevated border-divider border-red-800/50">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -329,7 +329,7 @@ export default function AnnouncerConsole({
                         {session.session_type}
                         {session.session_number ? ` ${session.session_number}` : ''}
                       </p>
-                      <p className="text-gray-400 text-xs">{getClassName(session.series_class_id, session.class_name)}</p>
+                      <p className="text-foreground-quiet text-xs">{getClassName(session.series_class_id, session.class_name)}</p>
                       {session.scheduled_time && (
                         <p className="text-gray-500 text-xs">
                           {new Date(session.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -339,11 +339,11 @@ export default function AnnouncerConsole({
 
                     {resultsBySession[session.id] && resultsBySession[session.id].length > 0 ? (
                       <div className="bg-[#1a1a1a] rounded p-2 text-xs space-y-1">
-                        <p className="text-gray-400 font-mono">Top 3:</p>
+                        <p className="text-foreground-quiet font-mono">Top 3:</p>
                         {resultsBySession[session.id].slice(0, 3).map((r, idx) => {
                           const driver = driverMap[r.driver_id];
                           return (
-                            <div key={idx} className="flex gap-2 text-gray-300">
+                            <div key={idx} className="flex gap-2 text-foreground-secondary">
                               <span className="font-bold w-4">P{r.position}</span>
                               <span className="flex-1">#{r.car_number || '—'} {driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'}</span>
                             </div>
@@ -371,7 +371,7 @@ export default function AnnouncerConsole({
           </Card>
 
           {/* Next Up */}
-          <Card className="bg-[#171717] border-gray-800">
+          <Card className="bg-surface-elevated border-divider">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
                 <Clock className="w-4 h-4 text-blue-400" /> Next Up ({nextUp.length})
@@ -388,7 +388,7 @@ export default function AnnouncerConsole({
                         {session.session_type}
                         {session.session_number ? ` ${session.session_number}` : ''}
                       </p>
-                      <p className="text-gray-400 text-xs">{getClassName(session.series_class_id, session.class_name)}</p>
+                      <p className="text-foreground-quiet text-xs">{getClassName(session.series_class_id, session.class_name)}</p>
                       {session.scheduled_time ? (
                         <p className="text-gray-500 text-xs">
                           {new Date(session.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -405,7 +405,7 @@ export default function AnnouncerConsole({
           </Card>
 
           {/* Finished */}
-          <Card className="bg-[#171717] border-gray-800">
+          <Card className="bg-surface-elevated border-divider">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-green-400" /> Finished ({finished.length})
@@ -423,7 +423,7 @@ export default function AnnouncerConsole({
                           {session.session_type}
                           {session.session_number ? ` ${session.session_number}` : ''}
                         </p>
-                        <p className="text-gray-400 text-xs">{getClassName(session.series_class_id, session.class_name)}</p>
+                        <p className="text-foreground-quiet text-xs">{getClassName(session.series_class_id, session.class_name)}</p>
                       </div>
                       <Badge className="bg-green-900/40 text-green-300 text-xs">
                         {session.status || 'Completed'}
@@ -432,7 +432,7 @@ export default function AnnouncerConsole({
 
                     {resultsBySession[session.id] && resultsBySession[session.id].length > 0 && (
                       <div className="bg-[#1a1a1a] rounded p-2 text-xs space-y-1">
-                        <p className="text-gray-400 font-mono">Winner:</p>
+                        <p className="text-foreground-quiet font-mono">Winner:</p>
                         {(() => {
                           const winner = resultsBySession[session.id][0];
                           const driver = driverMap[winner.driver_id];
@@ -461,7 +461,7 @@ export default function AnnouncerConsole({
 
         {/* Right: Driver Spotlight */}
         <div>
-          <Card className="bg-[#171717] border-gray-800 sticky top-24">
+          <Card className="bg-surface-elevated border-divider sticky top-24">
             <CardHeader className="pb-2">
               <CardTitle className="text-white text-sm flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-yellow-400" /> Driver Spotlight
@@ -486,14 +486,14 @@ export default function AnnouncerConsole({
                           <p className="text-white font-semibold">
                             #{carNum}
                           </p>
-                          <p className="text-gray-400">
+                          <p className="text-foreground-quiet">
                             {driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'}
                           </p>
                           {team && <p className="text-gray-500">{team.name}</p>}
                         </div>
                       </div>
                       {entry.bestFinish && (
-                        <p className="text-gray-400 text-xs">
+                        <p className="text-foreground-quiet text-xs">
                           Best: P{entry.bestFinish} • Pts: {entry.points}
                         </p>
                       )}
@@ -512,7 +512,7 @@ export default function AnnouncerConsole({
           <DialogHeader>
             <DialogTitle className="text-white">Announcer Pack</DialogTitle>
             {announcerPackSession && (
-              <DialogDescription className="text-gray-400 mt-2">
+              <DialogDescription className="text-foreground-quiet mt-2">
                 {announcerPackSession.session_type}
                 {announcerPackSession.session_number ? ` ${announcerPackSession.session_number}` : ''} •{' '}
                 {getClassName(announcerPackSession.series_class_id, announcerPackSession.class_name)}
@@ -524,8 +524,8 @@ export default function AnnouncerConsole({
             <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
               {/* Event Summary */}
               <div className="bg-[#1a1a1a] rounded p-3 border border-gray-700 space-y-2">
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Event Summary</p>
-                <div className="space-y-1 text-sm text-gray-300">
+                <p className="text-xs text-foreground-quiet uppercase tracking-wide mb-2">Event Summary</p>
+                <div className="space-y-1 text-sm text-foreground-secondary">
                   <p><span className="text-gray-500">Event:</span> {selectedEvent.name}</p>
                   <p><span className="text-gray-500">Date:</span> {selectedEvent.event_date}</p>
                   {selectedTrack && <p><span className="text-gray-500">Track:</span> {selectedTrack.name}</p>}
@@ -535,8 +535,8 @@ export default function AnnouncerConsole({
 
               {/* Session Summary */}
               <div className="bg-[#1a1a1a] rounded p-3 border border-gray-700 space-y-2">
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Session Summary</p>
-                <div className="space-y-1 text-sm text-gray-300">
+                <p className="text-xs text-foreground-quiet uppercase tracking-wide mb-2">Session Summary</p>
+                <div className="space-y-1 text-sm text-foreground-secondary">
                   <p><span className="text-gray-500">Type:</span> {announcerPackSession.session_type}</p>
                   <p><span className="text-gray-500">Class:</span> {getClassName(announcerPackSession.series_class_id, announcerPackSession.class_name)}</p>
                   {announcerPackSession.scheduled_time && (
@@ -551,8 +551,8 @@ export default function AnnouncerConsole({
 
               {/* Top Storylines */}
               <div className="bg-[#1a1a1a] rounded p-3 border border-gray-700 space-y-2">
-                <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Key Storylines</p>
-                <div className="space-y-2 text-sm text-gray-300">
+                <p className="text-xs text-foreground-quiet uppercase tracking-wide mb-2">Key Storylines</p>
+                <div className="space-y-2 text-sm text-foreground-secondary">
                   {(() => {
                     const sessionResults = resultsBySession[announcerPackSession.id] || [];
                     const storylines = [];
@@ -576,7 +576,7 @@ export default function AnnouncerConsole({
 
                     return storylines.length > 0 ? (
                       storylines.map((story, idx) => (
-                        <p key={idx} className="text-gray-300">{story}</p>
+                        <p key={idx} className="text-foreground-secondary">{story}</p>
                       ))
                     ) : (
                       <p className="text-gray-500 italic">Not enough data yet</p>
@@ -588,7 +588,7 @@ export default function AnnouncerConsole({
               {/* Full Results Preview */}
               {resultsBySession[announcerPackSession.id] && resultsBySession[announcerPackSession.id].length > 0 && (
                 <div className="bg-[#1a1a1a] rounded p-3 border border-gray-700 space-y-2">
-                  <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Results ({resultsBySession[announcerPackSession.id].length})</p>
+                  <p className="text-xs text-foreground-quiet uppercase tracking-wide mb-2">Results ({resultsBySession[announcerPackSession.id].length})</p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
@@ -603,11 +603,11 @@ export default function AnnouncerConsole({
                         {resultsBySession[announcerPackSession.id].slice(0, 10).map((r) => {
                           const driver = driverMap[r.driver_id];
                           return (
-                            <tr key={r.id} className="border-b border-gray-800">
+                            <tr key={r.id} className="border-b border-divider">
                               <td className="px-1 py-1 font-bold text-white">{r.position || '—'}</td>
-                              <td className="px-1 py-1 text-gray-300">#{r.car_number || '—'}</td>
-                              <td className="px-1 py-1 text-gray-300">{driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'}</td>
-                              <td className="px-1 py-1 text-gray-400">{r.status || '—'}</td>
+                              <td className="px-1 py-1 text-foreground-secondary">#{r.car_number || '—'}</td>
+                              <td className="px-1 py-1 text-foreground-secondary">{driver ? `${driver.first_name} ${driver.last_name}` : 'Driver'}</td>
+                              <td className="px-1 py-1 text-foreground-quiet">{r.status || '—'}</td>
                             </tr>
                           );
                         })}

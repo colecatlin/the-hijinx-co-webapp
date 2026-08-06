@@ -299,22 +299,22 @@ export default function DriverSelfServiceDrawer({
         <div className="space-y-4 mt-6">
           {/* Section A: Driver Profile */}
           <Collapsible defaultOpen>
-            <Card className="bg-[#171717] border-gray-800">
+            <Card className="bg-surface-elevated border-divider">
               <CollapsibleTrigger asChild>
-                <CardHeader className="cursor-pointer hover:bg-gray-800/30">
+                <CardHeader className="cursor-pointer hover:bg-surface-interactive/30">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm text-white">Driver Profile</CardTitle>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <ChevronDown className="w-4 h-4 text-foreground-quiet" />
                   </div>
                 </CardHeader>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="space-y-3">
                   {driverLoading ? (
-                    <p className="text-xs text-gray-400">Loading...</p>
+                    <p className="text-xs text-foreground-quiet">Loading...</p>
                   ) : !myDriver ? (
                     <div className="space-y-3">
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-foreground-quiet">
                         No driver profile yet. Create one to register for events.
                       </p>
                       <Button
@@ -329,87 +329,87 @@ export default function DriverSelfServiceDrawer({
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">First Name</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">First Name</label>
                           <Input
                             value={driverFormData.first_name || ''}
                             onChange={(e) => setDriverFormData({ ...driverFormData, first_name: e.target.value })}
-                            className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                            className="bg-surface border-gray-600 text-white h-8 text-xs"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">Last Name</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">Last Name</label>
                           <Input
                             value={driverFormData.last_name || ''}
                             onChange={(e) => setDriverFormData({ ...driverFormData, last_name: e.target.value })}
-                            className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                            className="bg-surface border-gray-600 text-white h-8 text-xs"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Date of Birth</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Date of Birth</label>
                         <Input
                           type="date"
                           value={driverFormData.date_of_birth || ''}
                           onChange={(e) => setDriverFormData({ ...driverFormData, date_of_birth: e.target.value })}
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Contact Email</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Contact Email</label>
                         <Input
                           type="email"
                           value={driverFormData.contact_email || ''}
                           onChange={(e) => setDriverFormData({ ...driverFormData, contact_email: e.target.value })}
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">City</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">City</label>
                           <Input
                             value={driverFormData.hometown_city || ''}
                             onChange={(e) => setDriverFormData({ ...driverFormData, hometown_city: e.target.value })}
-                            className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                            className="bg-surface border-gray-600 text-white h-8 text-xs"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">State</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">State</label>
                           <Input
                             value={driverFormData.hometown_state || ''}
                             onChange={(e) => setDriverFormData({ ...driverFormData, hometown_state: e.target.value })}
-                            className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                            className="bg-surface border-gray-600 text-white h-8 text-xs"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Country</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Country</label>
                         <Input
                           value={driverFormData.hometown_country || ''}
                           onChange={(e) => setDriverFormData({ ...driverFormData, hometown_country: e.target.value })}
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">Primary #</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">Primary #</label>
                           <Input
                             value={driverFormData.primary_number || ''}
                             onChange={(e) => setDriverFormData({ ...driverFormData, primary_number: e.target.value })}
-                            className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                            className="bg-surface border-gray-600 text-white h-8 text-xs"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">Manufacturer</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">Manufacturer</label>
                           <Select
                             value={driverFormData.manufacturer || ''}
                             onValueChange={(val) => setDriverFormData({ ...driverFormData, manufacturer: val })}
                           >
-                            <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs">
+                            <SelectTrigger className="bg-surface border-gray-600 text-white h-8 text-xs">
                               <SelectValue placeholder="Select" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#262626] border-gray-700">
@@ -424,12 +424,12 @@ export default function DriverSelfServiceDrawer({
                       </div>
 
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Primary Discipline</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Primary Discipline</label>
                         <Select
                           value={driverFormData.primary_discipline || ''}
                           onValueChange={(val) => setDriverFormData({ ...driverFormData, primary_discipline: val })}
                         >
-                          <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs">
+                          <SelectTrigger className="bg-surface border-gray-600 text-white h-8 text-xs">
                             <SelectValue placeholder="Select" />
                           </SelectTrigger>
                           <SelectContent className="bg-[#262626] border-gray-700">
@@ -445,12 +445,12 @@ export default function DriverSelfServiceDrawer({
                       </div>
 
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Brand Color (Hex)</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Brand Color (Hex)</label>
                         <Input
                           placeholder="#FF0000"
                           value={driverFormData.primary_color || ''}
                           onChange={(e) => setDriverFormData({ ...driverFormData, primary_color: e.target.value })}
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
 
@@ -471,12 +471,12 @@ export default function DriverSelfServiceDrawer({
           {/* Section B: Registration Defaults */}
           {myDriver && (
             <Collapsible>
-              <Card className="bg-[#171717] border-gray-800">
+              <Card className="bg-surface-elevated border-divider">
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-800/30">
+                  <CardHeader className="cursor-pointer hover:bg-surface-interactive/30">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm text-white">Registration Defaults</CardTitle>
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className="w-4 h-4 text-foreground-quiet" />
                     </div>
                   </CardHeader>
                 </CollapsibleTrigger>
@@ -484,7 +484,7 @@ export default function DriverSelfServiceDrawer({
                   <CardContent className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Emergency Contact Name</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Emergency Contact Name</label>
                         <Input
                           value={registrationDefaults.emergency_contact_name || ''}
                           onChange={(e) =>
@@ -493,11 +493,11 @@ export default function DriverSelfServiceDrawer({
                               emergency_contact_name: e.target.value,
                             })
                           }
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Contact Phone</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Contact Phone</label>
                         <Input
                           value={registrationDefaults.emergency_contact_phone || ''}
                           onChange={(e) =>
@@ -506,14 +506,14 @@ export default function DriverSelfServiceDrawer({
                               emergency_contact_phone: e.target.value,
                             })
                           }
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Transponder ID</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Transponder ID</label>
                         <Input
                           value={registrationDefaults.transponder_id_default || ''}
                           onChange={(e) =>
@@ -522,11 +522,11 @@ export default function DriverSelfServiceDrawer({
                               transponder_id_default: e.target.value,
                             })
                           }
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-gray-400 block mb-1">Preferred Car #</label>
+                        <label className="text-xs text-foreground-quiet block mb-1">Preferred Car #</label>
                         <Input
                           value={registrationDefaults.preferred_car_number || ''}
                           onChange={(e) =>
@@ -535,13 +535,13 @@ export default function DriverSelfServiceDrawer({
                               preferred_car_number: e.target.value,
                             })
                           }
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="text-xs text-gray-400 block mb-2">Sponsors</label>
+                      <label className="text-xs text-foreground-quiet block mb-2">Sponsors</label>
                       <div className="flex gap-1 mb-2">
                         <Input
                           placeholder="Add sponsor..."
@@ -553,20 +553,20 @@ export default function DriverSelfServiceDrawer({
                               handleAddSponsor();
                             }
                           }}
-                          className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs flex-1"
+                          className="bg-surface border-gray-600 text-white h-8 text-xs flex-1"
                         />
                         <Button
                           onClick={handleAddSponsor}
                           size="sm"
                           variant="outline"
-                          className="border-gray-600 text-gray-300 h-8"
+                          className="border-gray-600 text-foreground-secondary h-8"
                         >
                           <Plus className="w-3 h-3" />
                         </Button>
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {(registrationDefaults.sponsors || []).map((sponsor) => (
-                          <Badge key={sponsor} variant="secondary" className="text-xs bg-gray-700 text-gray-300">
+                          <Badge key={sponsor} variant="secondary" className="text-xs bg-gray-700 text-foreground-secondary">
                             {sponsor}
                             <button
                               onClick={() => handleRemoveSponsor(sponsor)}
@@ -595,9 +595,9 @@ export default function DriverSelfServiceDrawer({
           {/* Section C: My Event Registration */}
           {selectedEvent && myDriver && (
             <Collapsible defaultOpen>
-              <Card className="bg-[#171717] border-gray-800">
+              <Card className="bg-surface-elevated border-divider">
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-800/30">
+                  <CardHeader className="cursor-pointer hover:bg-surface-interactive/30">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm text-white">Event Registration</CardTitle>
                       {myEntry && <CheckCircle2 className="w-4 h-4 text-green-500" />}
@@ -607,20 +607,20 @@ export default function DriverSelfServiceDrawer({
                 <CollapsibleContent>
                   <CardContent className="space-y-3">
                     {entryLoading ? (
-                      <p className="text-xs text-gray-400">Loading...</p>
+                      <p className="text-xs text-foreground-quiet">Loading...</p>
                     ) : !myEntry ? (
                       <div className="space-y-3">
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-foreground-quiet">
                           Register for {selectedEvent.name} by selecting your class and team details.
                         </p>
 
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">Class</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">Class</label>
                           <Select
                             value={entryFormData.series_class_id || ''}
                             onValueChange={(val) => setEntryFormData({ ...entryFormData, series_class_id: val })}
                           >
-                            <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs">
+                            <SelectTrigger className="bg-surface border-gray-600 text-white h-8 text-xs">
                               <SelectValue placeholder="Select class..." />
                             </SelectTrigger>
                             <SelectContent className="bg-[#262626] border-gray-700">
@@ -634,12 +634,12 @@ export default function DriverSelfServiceDrawer({
                         </div>
 
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">Team (Optional)</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">Team (Optional)</label>
                           <Select
                             value={entryFormData.team_id || ''}
                             onValueChange={(val) => setEntryFormData({ ...entryFormData, team_id: val || undefined })}
                           >
-                            <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs">
+                            <SelectTrigger className="bg-surface border-gray-600 text-white h-8 text-xs">
                               <SelectValue placeholder="None" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#262626] border-gray-700">
@@ -655,19 +655,19 @@ export default function DriverSelfServiceDrawer({
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-xs text-gray-400 block mb-1">Car #</label>
+                            <label className="text-xs text-foreground-quiet block mb-1">Car #</label>
                             <Input
                               value={entryFormData.car_number || ''}
                               onChange={(e) => setEntryFormData({ ...entryFormData, car_number: e.target.value })}
-                              className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                              className="bg-surface border-gray-600 text-white h-8 text-xs"
                             />
                           </div>
                           <div>
-                            <label className="text-xs text-gray-400 block mb-1">Transponder ID</label>
+                            <label className="text-xs text-foreground-quiet block mb-1">Transponder ID</label>
                             <Input
                               value={entryFormData.transponder_id || ''}
                               onChange={(e) => setEntryFormData({ ...entryFormData, transponder_id: e.target.value })}
-                              className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                              className="bg-surface border-gray-600 text-white h-8 text-xs"
                             />
                           </div>
                         </div>
@@ -689,25 +689,25 @@ export default function DriverSelfServiceDrawer({
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 text-xs">
-                          <div className="bg-gray-900/30 rounded p-2">
-                            <p className="text-gray-400 mb-0.5">Status</p>
+                          <div className="bg-surface-elevated/30 rounded p-2">
+                            <p className="text-foreground-quiet mb-0.5">Status</p>
                             <p className="text-white font-medium">{myEntry.entry_status}</p>
                           </div>
-                          <div className="bg-gray-900/30 rounded p-2">
-                            <p className="text-gray-400 mb-0.5">Payment</p>
+                          <div className="bg-surface-elevated/30 rounded p-2">
+                            <p className="text-foreground-quiet mb-0.5">Payment</p>
                             <p className="text-white font-medium">{myEntry.payment_status}</p>
                           </div>
                         </div>
 
-                        <p className="text-xs text-gray-400">Update your registration details below:</p>
+                        <p className="text-xs text-foreground-quiet">Update your registration details below:</p>
 
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">Class</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">Class</label>
                           <Select
                             value={entryFormData.series_class_id || ''}
                             onValueChange={(val) => setEntryFormData({ ...entryFormData, series_class_id: val })}
                           >
-                            <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs">
+                            <SelectTrigger className="bg-surface border-gray-600 text-white h-8 text-xs">
                               <SelectValue placeholder="Select class..." />
                             </SelectTrigger>
                             <SelectContent className="bg-[#262626] border-gray-700">
@@ -721,12 +721,12 @@ export default function DriverSelfServiceDrawer({
                         </div>
 
                         <div>
-                          <label className="text-xs text-gray-400 block mb-1">Team (Optional)</label>
+                          <label className="text-xs text-foreground-quiet block mb-1">Team (Optional)</label>
                           <Select
                             value={entryFormData.team_id || ''}
                             onValueChange={(val) => setEntryFormData({ ...entryFormData, team_id: val || undefined })}
                           >
-                            <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs">
+                            <SelectTrigger className="bg-surface border-gray-600 text-white h-8 text-xs">
                               <SelectValue placeholder="None" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#262626] border-gray-700">
@@ -742,19 +742,19 @@ export default function DriverSelfServiceDrawer({
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-xs text-gray-400 block mb-1">Car #</label>
+                            <label className="text-xs text-foreground-quiet block mb-1">Car #</label>
                             <Input
                               value={entryFormData.car_number || ''}
                               onChange={(e) => setEntryFormData({ ...entryFormData, car_number: e.target.value })}
-                              className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                              className="bg-surface border-gray-600 text-white h-8 text-xs"
                             />
                           </div>
                           <div>
-                            <label className="text-xs text-gray-400 block mb-1">Transponder ID</label>
+                            <label className="text-xs text-foreground-quiet block mb-1">Transponder ID</label>
                             <Input
                               value={entryFormData.transponder_id || ''}
                               onChange={(e) => setEntryFormData({ ...entryFormData, transponder_id: e.target.value })}
-                              className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"
+                              className="bg-surface border-gray-600 text-white h-8 text-xs"
                             />
                           </div>
                         </div>

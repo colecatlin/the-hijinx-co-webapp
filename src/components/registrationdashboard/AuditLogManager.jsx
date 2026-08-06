@@ -128,7 +128,7 @@ function statusColor(status) {
   if (status === 'success') return 'bg-green-900/40 text-green-400 border-green-700/50';
   if (status === 'warning') return 'bg-amber-900/40 text-amber-400 border-amber-700/50';
   if (status === 'error') return 'bg-red-900/40 text-red-400 border-red-700/50';
-  return 'bg-gray-900/40 text-gray-400 border-gray-700/50';
+  return 'bg-surface-elevated/40 text-foreground-quiet border-divider/50';
 }
 
 function StatusIcon({ status }) {
@@ -238,13 +238,13 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
   // ── Guard: not admin ────────────────────────────────────────────────────────
   if (!isAdmin) {
     return (
-      <Card className="bg-[#262626] border-gray-700">
+      <Card className="bg-[#262626] border-divider">
         <CardContent className="py-8">
           <div className="flex gap-3">
             <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm text-amber-400 font-medium">Admin only</p>
-              <p className="text-xs text-gray-400 mt-1">Audit Log is available to admins only.</p>
+              <p className="text-xs text-foreground-quiet mt-1">Audit Log is available to admins only.</p>
             </div>
           </div>
         </CardContent>
@@ -257,7 +257,7 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <History className="w-5 h-5 text-gray-400" />
+          <History className="w-5 h-5 text-foreground-quiet" />
           <div>
             <h2 className="text-lg font-bold text-white">System Activity Log</h2>
             <p className="text-xs text-gray-500">
@@ -270,24 +270,24 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
           variant="outline"
           disabled={filteredLogs.length === 0}
           onClick={() => exportAuditCSV(filteredLogs, eventMap, userMap)}
-          className="border-gray-700 text-gray-300 hover:bg-gray-800"
+          className="border-divider text-foreground-secondary hover:bg-surface-interactive"
         >
           <Download className="w-3 h-3 mr-1.5" /> Export Audit CSV
         </Button>
       </div>
 
       {/* Filter Bar */}
-      <Card className="bg-[#262626] border-gray-700">
+      <Card className="bg-[#262626] border-divider">
         <CardContent className="py-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {/* Event */}
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">Event</label>
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide block mb-1">Event</label>
               <Select value={eventFilter} onValueChange={(v) => { setEventFilter(v === '_all' ? '' : v); resetPage(); }}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white text-xs">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white text-xs">
                   <SelectValue placeholder="All events" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700 max-h-64">
+                <SelectContent className="bg-[#262626] border-divider max-h-64">
                   <SelectItem value="_all" className="text-white text-xs">All events</SelectItem>
                   {events.map((e) => (
                     <SelectItem key={e.id} value={e.id} className="text-white text-xs">{e.name}</SelectItem>
@@ -298,12 +298,12 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
 
             {/* Operation Type */}
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">Operation</label>
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide block mb-1">Operation</label>
               <Select value={operationFilter} onValueChange={(v) => { setOperationFilter(v); resetPage(); }}>
-                <SelectTrigger className="bg-[#171717] border-gray-700 text-white text-xs">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white text-xs">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700 max-h-64">
+                <SelectContent className="bg-[#262626] border-divider max-h-64">
                   {OPERATION_OPTIONS.map((o) => (
                     <SelectItem key={o.value} value={o.value} className="text-white text-xs">{o.label}</SelectItem>
                   ))}
@@ -313,34 +313,34 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
 
             {/* User */}
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">User</label>
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide block mb-1">User</label>
               <Input
                 value={userFilter}
                 onChange={(e) => { setUserFilter(e.target.value); resetPage(); }}
                 placeholder="Search user…"
-                className="bg-[#171717] border-gray-700 text-white text-xs"
+                className="bg-surface-elevated border-divider text-white text-xs"
               />
             </div>
 
             {/* Start Date */}
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">From</label>
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide block mb-1">From</label>
               <Input
                 type="date"
                 value={startDate}
                 onChange={(e) => { setStartDate(e.target.value); resetPage(); }}
-                className="bg-[#171717] border-gray-700 text-white text-xs"
+                className="bg-surface-elevated border-divider text-white text-xs"
               />
             </div>
 
             {/* End Date */}
             <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wide block mb-1">To</label>
+              <label className="text-xs text-foreground-quiet uppercase tracking-wide block mb-1">To</label>
               <Input
                 type="date"
                 value={endDate}
                 onChange={(e) => { setEndDate(e.target.value); resetPage(); }}
-                className="bg-[#171717] border-gray-700 text-white text-xs"
+                className="bg-surface-elevated border-divider text-white text-xs"
               />
             </div>
           </div>
@@ -349,13 +349,13 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="bg-[#1e1e1e] border-gray-800">
+        <Card className="bg-[#1e1e1e] border-divider">
           <CardContent className="py-3">
             <p className="text-xs text-gray-500">Total Logs</p>
             <p className="text-xl font-bold text-white">{filteredLogs.length}</p>
           </CardContent>
         </Card>
-        <Card className="bg-[#1e1e1e] border-gray-800">
+        <Card className="bg-[#1e1e1e] border-divider">
           <CardContent className="py-3">
             <p className="text-xs text-gray-500">Errors</p>
             <p className="text-xl font-bold text-red-400">
@@ -363,7 +363,7 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-[#1e1e1e] border-gray-800">
+        <Card className="bg-[#1e1e1e] border-divider">
           <CardContent className="py-3">
             <p className="text-xs text-gray-500">Overrides</p>
             <p className="text-xl font-bold text-amber-400">
@@ -374,28 +374,28 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
       </div>
 
       {/* Table */}
-      <Card className="bg-[#262626] border-gray-700">
+      <Card className="bg-[#262626] border-divider">
         <CardContent className="p-0">
           {logsLoading ? (
             <div className="py-10 text-center text-sm text-gray-500">Loading…</div>
           ) : filteredLogs.length === 0 ? (
             <div className="py-12 text-center">
               <History className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-              <p className="text-sm text-gray-400">No audit logs available yet</p>
+              <p className="text-sm text-foreground-quiet">No audit logs available yet</p>
               <p className="text-xs text-gray-600 mt-1">Activity will appear here as operations are performed.</p>
             </div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader className="bg-[#171717]">
+                  <TableHeader className="bg-surface-elevated">
                     <TableRow>
-                      <TableHead className="text-gray-400 text-xs">Timestamp</TableHead>
-                      <TableHead className="text-gray-400 text-xs">Operation</TableHead>
-                      <TableHead className="text-gray-400 text-xs">User</TableHead>
-                      <TableHead className="text-gray-400 text-xs">Event</TableHead>
-                      <TableHead className="text-gray-400 text-xs">Details</TableHead>
-                      <TableHead className="text-gray-400 text-xs w-12"></TableHead>
+                      <TableHead className="text-foreground-quiet text-xs">Timestamp</TableHead>
+                      <TableHead className="text-foreground-quiet text-xs">Operation</TableHead>
+                      <TableHead className="text-foreground-quiet text-xs">User</TableHead>
+                      <TableHead className="text-foreground-quiet text-xs">Event</TableHead>
+                      <TableHead className="text-foreground-quiet text-xs">Details</TableHead>
+                      <TableHead className="text-foreground-quiet text-xs w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -407,18 +407,18 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
                       const ts = log.created_date || log.timestamp;
 
                       return (
-                        <TableRow key={log.id || idx} className="hover:bg-[#1e1e1e] border-t border-gray-800">
-                          <TableCell className="text-gray-400 text-xs py-2 whitespace-nowrap font-mono">
+                        <TableRow key={log.id || idx} className="hover:bg-[#1e1e1e] border-t border-divider">
+                          <TableCell className="text-foreground-quiet text-xs py-2 whitespace-nowrap font-mono">
                             {ts ? new Date(ts).toLocaleString() : '—'}
                           </TableCell>
                           <TableCell className="py-2">
-                            <Badge variant="outline" className="text-xs font-normal border-gray-600 text-gray-300">
+                            <Badge variant="outline" className="text-xs font-normal border-gray-600 text-foreground-secondary">
                               {opLabel}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-gray-300 text-xs py-2">{userName}</TableCell>
-                          <TableCell className="text-gray-300 text-xs py-2 max-w-[140px] truncate">{eventName}</TableCell>
-                          <TableCell className="text-gray-400 text-xs py-2 max-w-[260px]">
+                          <TableCell className="text-foreground-secondary text-xs py-2">{userName}</TableCell>
+                          <TableCell className="text-foreground-secondary text-xs py-2 max-w-[140px] truncate">{eventName}</TableCell>
+                          <TableCell className="text-foreground-quiet text-xs py-2 max-w-[260px]">
                             <span className="line-clamp-2">{summary}</span>
                           </TableCell>
                           <TableCell className="py-2">
@@ -439,8 +439,8 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-700">
-                <p className="text-xs text-gray-400">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-divider">
+                <p className="text-xs text-foreground-quiet">
                   Page {currentPage + 1} of {totalPages || 1} · {filteredLogs.length} records
                 </p>
                 <div className="flex gap-2">
@@ -449,7 +449,7 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
                     variant="outline"
                     disabled={currentPage === 0}
                     onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                    className="border-divider text-foreground-secondary hover:bg-surface-interactive"
                   >
                     <ChevronLeft className="w-3 h-3 mr-1" /> Prev
                   </Button>
@@ -458,7 +458,7 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
                     variant="outline"
                     disabled={currentPage >= totalPages - 1}
                     onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-                    className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                    className="border-divider text-foreground-secondary hover:bg-surface-interactive"
                   >
                     Next <ChevronRight className="w-3 h-3 ml-1" />
                   </Button>
@@ -471,7 +471,7 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
 
       {/* Detail Sheet */}
       <Sheet open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <SheetContent className="bg-[#262626] border-gray-700 w-full sm:max-w-xl overflow-y-auto">
+        <SheetContent className="bg-[#262626] border-divider w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="text-white">Operation Details</SheetTitle>
           </SheetHeader>
@@ -493,18 +493,18 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
               </div>
 
               {selectedLog.metadata && (
-                <div className="border-t border-gray-700 pt-4">
-                  <p className="text-gray-400 mb-2 font-medium">Metadata</p>
-                  <pre className="bg-[#171717] rounded p-3 text-gray-300 overflow-auto max-h-64 text-xs">
+                <div className="border-t border-divider pt-4">
+                  <p className="text-foreground-quiet mb-2 font-medium">Metadata</p>
+                  <pre className="bg-surface-elevated rounded p-3 text-foreground-secondary overflow-auto max-h-64 text-xs">
                     {JSON.stringify(selectedLog.metadata, null, 2)}
                   </pre>
                 </div>
               )}
 
               {selectedLog.error_details && (
-                <div className="border-t border-gray-700 pt-4">
+                <div className="border-t border-divider pt-4">
                   <p className="text-red-400 mb-2 font-medium">Error Details</p>
-                  <pre className="bg-[#171717] rounded p-3 text-gray-300 overflow-auto max-h-40 text-xs">
+                  <pre className="bg-surface-elevated rounded p-3 text-foreground-secondary overflow-auto max-h-40 text-xs">
                     {selectedLog.error_details}
                   </pre>
                 </div>
@@ -512,18 +512,18 @@ export default function AuditLogManager({ isAdmin, operationLogs: providedLogs, 
 
               {/* Related links */}
               {selectedLog.metadata && (
-                <div className="border-t border-gray-700 pt-4 space-y-2">
-                  <p className="text-gray-400 font-medium">Related Links</p>
+                <div className="border-t border-divider pt-4 space-y-2">
+                  <p className="text-foreground-quiet font-medium">Related Links</p>
                   {selectedLog.metadata.event_id && (
                     <Link to={createPageUrl('EventProfile') + `?id=${selectedLog.metadata.event_id}`}>
-                      <Button size="sm" variant="outline" className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 justify-start text-xs">
+                      <Button size="sm" variant="outline" className="w-full border-divider text-foreground-secondary hover:bg-surface-interactive justify-start text-xs">
                         <ExternalLink className="w-3 h-3 mr-2" /> View Event
                       </Button>
                     </Link>
                   )}
                   {selectedLog.metadata.session_id && (
                     <Link to={createPageUrl('SessionProfile') + `?id=${selectedLog.metadata.session_id}`}>
-                      <Button size="sm" variant="outline" className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 justify-start text-xs">
+                      <Button size="sm" variant="outline" className="w-full border-divider text-foreground-secondary hover:bg-surface-interactive justify-start text-xs">
                         <ExternalLink className="w-3 h-3 mr-2" /> View Session
                       </Button>
                     </Link>

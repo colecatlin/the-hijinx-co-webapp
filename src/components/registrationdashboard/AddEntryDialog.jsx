@@ -128,7 +128,7 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
 
   return (
     <AlertDialog open={true} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent className="bg-[#171717] border-gray-700 max-w-md">
+      <AlertDialogContent className="bg-surface-elevated border-divider max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-white">Add Entry</AlertDialogTitle>
           <AlertDialogDescription>Register a new driver for this event</AlertDialogDescription>
@@ -143,9 +143,9 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
 
           {/* Driver Search */}
           <div className="relative">
-            <label className="text-xs font-semibold text-gray-400 mb-1 block">Driver *</label>
+            <label className="text-xs font-semibold text-foreground-quiet mb-1 block">Driver *</label>
             {selectedDriver ? (
-              <div className="bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm text-white flex items-center justify-between">
+              <div className="bg-surface-elevated border border-divider rounded px-3 py-2 text-sm text-white flex items-center justify-between">
                 <span>
                   {selectedDriver.first_name} {selectedDriver.last_name}
                 </span>
@@ -154,7 +154,7 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
                     setDriverId('');
                     setSearchDriverName('');
                   }}
-                  className="text-xs text-gray-400 hover:text-white"
+                  className="text-xs text-foreground-quiet hover:text-white"
                 >
                   ✕
                 </button>
@@ -169,10 +169,10 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
                   }}
                   onFocus={() => setShowDriverDropdown(true)}
                   placeholder="Search driver name..."
-                  className="bg-gray-900 border-gray-700 text-xs"
+                  className="bg-surface-elevated border-divider text-xs"
                 />
                 {showDriverDropdown && filteredDrivers.length > 0 && (
-                  <div className="absolute top-full mt-1 w-full bg-gray-800 border border-gray-700 rounded shadow-lg z-10 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full mt-1 w-full bg-surface-interactive border border-divider rounded shadow-lg z-10 max-h-48 overflow-y-auto">
                     {filteredDrivers.map((driver) => (
                       <button
                         key={driver.id}
@@ -181,7 +181,7 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
                           setSearchDriverName('');
                           setShowDriverDropdown(false);
                         }}
-                        className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-gray-700 border-b border-gray-700 last:border-b-0"
+                        className="w-full text-left px-3 py-2 text-xs text-foreground-secondary hover:bg-gray-700 border-b border-divider last:border-b-0"
                       >
                         {driver.first_name} {driver.last_name}
                       </button>
@@ -194,9 +194,9 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
 
           {/* Class */}
           <div>
-            <label className="text-xs font-semibold text-gray-400 mb-1 block">Class *</label>
+            <label className="text-xs font-semibold text-foreground-quiet mb-1 block">Class *</label>
             <Select value={classId} onValueChange={setClassId}>
-              <SelectTrigger className="bg-gray-900 border-gray-700 h-8 text-xs">
+              <SelectTrigger className="bg-surface-elevated border-divider h-8 text-xs">
                 <SelectValue placeholder="Select class" />
               </SelectTrigger>
               <SelectContent>
@@ -211,31 +211,31 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
 
           {/* Car Number */}
           <div>
-            <label className="text-xs font-semibold text-gray-400 mb-1 block">Car Number *</label>
+            <label className="text-xs font-semibold text-foreground-quiet mb-1 block">Car Number *</label>
             <Input
               value={carNumber}
               onChange={(e) => setCarNumber(e.target.value)}
               placeholder="Enter car number"
-              className="bg-gray-900 border-gray-700 h-8 text-xs"
+              className="bg-surface-elevated border-divider h-8 text-xs"
             />
           </div>
 
           {/* Transponder ID */}
           <div>
-            <label className="text-xs font-semibold text-gray-400 mb-1 block">Transponder ID (optional)</label>
+            <label className="text-xs font-semibold text-foreground-quiet mb-1 block">Transponder ID (optional)</label>
             <Input
               value={transponderId}
               onChange={(e) => setTransponderId(e.target.value)}
               placeholder="Enter transponder ID"
-              className="bg-gray-900 border-gray-700 h-8 text-xs"
+              className="bg-surface-elevated border-divider h-8 text-xs"
             />
           </div>
 
           {/* Payment Status */}
           <div>
-            <label className="text-xs font-semibold text-gray-400 mb-1 block">Payment Status</label>
+            <label className="text-xs font-semibold text-foreground-quiet mb-1 block">Payment Status</label>
             <Select value={paymentStatus} onValueChange={setPaymentStatus}>
-              <SelectTrigger className="bg-gray-900 border-gray-700 h-8 text-xs">
+              <SelectTrigger className="bg-surface-elevated border-divider h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -248,9 +248,9 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
 
           {/* Waiver Status */}
           <div>
-            <label className="text-xs font-semibold text-gray-400 mb-1 block">Waiver Status</label>
+            <label className="text-xs font-semibold text-foreground-quiet mb-1 block">Waiver Status</label>
             <Select value={waiverStatus} onValueChange={setWaiverStatus}>
-              <SelectTrigger className="bg-gray-900 border-gray-700 h-8 text-xs">
+              <SelectTrigger className="bg-surface-elevated border-divider h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -262,7 +262,7 @@ export default function AddEntryDialog({ eventId, eventClasses, onClose, onSucce
         </div>
 
         <div className="flex gap-3">
-          <AlertDialogCancel className="border-gray-700">Cancel</AlertDialogCancel>
+          <AlertDialogCancel className="border-divider">Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleSave}
             disabled={createEntryMutation.isPending}

@@ -26,7 +26,7 @@ function techBadgeClass(status) {
     case 'Passed': return 'bg-green-500/20 text-green-400';
     case 'Failed': return 'bg-red-500/20 text-red-400';
     case 'Recheck Required': return 'bg-yellow-500/20 text-yellow-400';
-    default: return 'bg-gray-500/20 text-gray-400';
+    default: return 'bg-gray-500/20 text-foreground-quiet';
   }
 }
 
@@ -182,10 +182,10 @@ export default function TechManager({
   // ── Guards ──
   if (!selectedEvent) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center">
           <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto mb-3" />
-          <p className="text-gray-400">Select an event to manage tech inspection</p>
+          <p className="text-foreground-quiet">Select an event to manage tech inspection</p>
         </CardContent>
       </Card>
     );
@@ -194,17 +194,17 @@ export default function TechManager({
   if (isLoading) {
     return (
       <div className="space-y-3">
-        {[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-gray-800/40 rounded animate-pulse" />)}
+        {[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-surface-interactive/40 rounded animate-pulse" />)}
       </div>
     );
   }
 
   if (isError) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface-elevated border-divider">
         <CardContent className="py-12 text-center space-y-3">
           <p className="text-red-400 text-sm">Failed to load entries</p>
-          <Button size="sm" variant="outline" onClick={refetch} className="border-gray-700 text-gray-300">Retry</Button>
+          <Button size="sm" variant="outline" onClick={refetch} className="border-divider text-foreground-secondary">Retry</Button>
         </CardContent>
       </Card>
     );
@@ -219,26 +219,26 @@ export default function TechManager({
           { label: 'Passed', value: stats.passed, cls: 'text-green-400', filter: 'Passed' },
           { label: 'Failed', value: stats.failed, cls: 'text-red-400', filter: 'Failed' },
           { label: 'Recheck', value: stats.recheck, cls: 'text-yellow-400', filter: 'Recheck Required' },
-          { label: 'Pending', value: stats.notInspected, cls: 'text-gray-400', filter: 'Not Inspected' },
+          { label: 'Pending', value: stats.notInspected, cls: 'text-foreground-quiet', filter: 'Not Inspected' },
         ].map((s) => (
           <button
             key={s.label}
             onClick={() => s.filter && setStatusFilter(statusFilter === s.filter ? 'all' : s.filter)}
-            className={`bg-[#171717] border rounded-lg p-3 text-left transition-colors ${
-              statusFilter === s.filter ? 'border-gray-500' : 'border-gray-800 hover:border-gray-700'
+            className={`bg-surface-elevated border rounded-lg p-3 text-left transition-colors ${
+              statusFilter === s.filter ? 'border-gray-500' : 'border-divider hover:border-divider'
             }`}
           >
-            <p className="text-xs text-gray-400">{s.label}</p>
+            <p className="text-xs text-foreground-quiet">{s.label}</p>
             <p className={`text-xl font-bold ${s.cls}`}>{s.value}</p>
           </button>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-3">
+      <div className="bg-surface-elevated border border-divider rounded-lg p-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Search</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Search</label>
             <Input
               placeholder="Driver or car #…"
               value={search}
@@ -247,20 +247,20 @@ export default function TechManager({
             />
           </div>
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Class</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Class</label>
             <Select value={classFilter} onValueChange={setClassFilter}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#262626] border-gray-700">
+              <SelectContent className="bg-[#262626] border-divider">
                 <SelectItem value="all">All Classes</SelectItem>
                 {eventClasses.map((c) => <SelectItem key={c.id} value={c.id}>{c.class_name || c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <label className="text-xs text-gray-400 block mb-1">Tech Status</label>
+            <label className="text-xs text-foreground-quiet block mb-1">Tech Status</label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[#262626] border-gray-700">
+              <SelectContent className="bg-[#262626] border-divider">
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="Not Inspected">Not Inspected</SelectItem>
                 <SelectItem value="Failed">Failed</SelectItem>
@@ -274,26 +274,26 @@ export default function TechManager({
 
       {/* Table */}
       {filteredEntries.length === 0 ? (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface-elevated border-divider">
           <CardContent className="py-12 text-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-foreground-quiet text-sm">
               {entries.length === 0 ? 'No entries for this event yet.' : 'No entries match the current filters.'}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-[#171717] border-gray-800 overflow-hidden">
+        <Card className="bg-surface-elevated border-divider overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-900/60 border-b border-gray-800">
+              <thead className="bg-surface-elevated/60 border-b border-divider">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Car #</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Driver</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Class</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Tech Status</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Transponder</th>
-                  <th className="px-3 py-2 text-left text-xs text-gray-400 font-semibold">Notes</th>
-                  <th className="px-3 py-2 text-right text-xs text-gray-400 font-semibold">Actions</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Car #</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Driver</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Class</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Tech Status</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Transponder</th>
+                  <th className="px-3 py-2 text-left text-xs text-foreground-quiet font-semibold">Notes</th>
+                  <th className="px-3 py-2 text-right text-xs text-foreground-quiet font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -305,7 +305,7 @@ export default function TechManager({
                   const missingTransponder = !entry.transponder_id;
 
                   return (
-                    <tr key={entry.id} className={`border-b border-gray-800 transition-colors hover:bg-gray-800/20 ${highlight}`}>
+                    <tr key={entry.id} className={`border-b border-divider transition-colors hover:bg-surface-interactive/20 ${highlight}`}>
                       <td className="px-3 py-2 text-white font-mono text-xs">
                         {entry.car_number || '—'}
                       </td>
@@ -317,7 +317,7 @@ export default function TechManager({
                           <span className="text-white">{getDriverName(entry.driver_id)}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-gray-300 text-xs">{getClassName(entry)}</td>
+                      <td className="px-3 py-2 text-foreground-secondary text-xs">{getClassName(entry)}</td>
                       <td className="px-3 py-2">
                         <Badge className={`text-xs ${techBadgeClass(techStatus)}`}>
                           {techStatus}
@@ -327,7 +327,7 @@ export default function TechManager({
                         {missingTransponder ? (
                           <Badge className="text-xs bg-orange-500/20 text-orange-400">Missing</Badge>
                         ) : (
-                          <span className="text-gray-400 font-mono">{entry.transponder_id}</span>
+                          <span className="text-foreground-quiet font-mono">{entry.transponder_id}</span>
                         )}
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-500 max-w-[140px] truncate" title={entry.tech_notes || ''}>
@@ -367,7 +367,7 @@ export default function TechManager({
                             variant="outline"
                             disabled={saving}
                             onClick={() => openNotes(entry)}
-                            className="h-6 px-2 text-xs border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800"
+                            className="h-6 px-2 text-xs border-divider text-foreground-quiet hover:text-white hover:bg-surface-interactive"
                             title="Add note"
                           >
                             <StickyNote className="w-3 h-3" />
@@ -385,7 +385,7 @@ export default function TechManager({
 
       {/* Notes Drawer */}
       <Sheet open={!!notesEntry} onOpenChange={(open) => { if (!open) { setNotesEntry(null); setNotesText(''); } }}>
-        <SheetContent className="bg-[#1A1A1A] border-gray-700 text-white">
+        <SheetContent className="bg-[#1A1A1A] border-divider text-white">
           <SheetHeader>
             <SheetTitle className="text-white text-sm">
               Add Inspector Note — #{notesEntry?.car_number} {notesEntry ? getDriverName(notesEntry.driver_id) : ''}
@@ -393,7 +393,7 @@ export default function TechManager({
           </SheetHeader>
           <div className="py-4 space-y-3">
             {notesEntry?.tech_notes && (
-                <div className="bg-gray-900 rounded p-3 text-xs text-gray-400 max-h-32 overflow-y-auto whitespace-pre-wrap">
+                <div className="bg-surface-elevated rounded p-3 text-xs text-foreground-quiet max-h-32 overflow-y-auto whitespace-pre-wrap">
                   {notesEntry.tech_notes}
                 </div>
               )}
@@ -401,11 +401,11 @@ export default function TechManager({
               placeholder="Enter tech note…"
               value={notesText}
               onChange={(e) => setNotesText(e.target.value)}
-              className="bg-[#262626] border-gray-700 text-white text-xs min-h-[80px]"
+              className="bg-[#262626] border-divider text-white text-xs min-h-[80px]"
             />
           </div>
           <SheetFooter className="gap-2">
-            <Button variant="outline" className="border-gray-700 text-gray-300" onClick={() => { setNotesEntry(null); setNotesText(''); }}>
+            <Button variant="outline" className="border-divider text-foreground-secondary" onClick={() => { setNotesEntry(null); setNotesText(''); }}>
               Cancel
             </Button>
             <Button disabled={!notesText.trim() || saving} onClick={handleSaveNote} className="bg-blue-600 hover:bg-blue-700">

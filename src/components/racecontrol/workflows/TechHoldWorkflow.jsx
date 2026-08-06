@@ -27,7 +27,7 @@ const STATUS_COLOR = {
   'Conditionally Passed': 'bg-yellow-900/60 text-yellow-300',
   'Recheck Required': 'bg-orange-900/60 text-orange-300',
   Impounded: 'bg-purple-900/60 text-purple-300',
-  Released: 'bg-gray-700 text-gray-400',
+  Released: 'bg-gray-700 text-foreground-quiet',
 };
 
 async function logOp(eventId, action, entityId, detail) {
@@ -41,7 +41,7 @@ async function logOp(eventId, action, entityId, detail) {
 
 function StatusBadge({ status }) {
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STATUS_COLOR[status] || 'bg-gray-700 text-gray-300'}`}>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STATUS_COLOR[status] || 'bg-gray-700 text-foreground-secondary'}`}>
       {status}
     </span>
   );
@@ -93,7 +93,7 @@ function CreateImpoundModal({ open, onClose, eventId, sessions = [] }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-950 border-gray-800 text-white max-w-md">
+      <DialogContent className="bg-gray-950 border-divider text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
             <Wrench className="w-4 h-4 text-orange-400" /> Create Tech Hold
@@ -101,46 +101,46 @@ function CreateImpoundModal({ open, onClose, eventId, sessions = [] }) {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Entry ID *</Label>
+            <Label className="text-foreground-quiet text-xs">Entry ID *</Label>
             <Input value={form.entry_id} onChange={e => set('entry_id', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white" placeholder="Entry ID…" required />
+              className="bg-surface-elevated border-divider text-white" placeholder="Entry ID…" required />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Driver ID (optional)</Label>
+            <Label className="text-foreground-quiet text-xs">Driver ID (optional)</Label>
             <Input value={form.driver_id} onChange={e => set('driver_id', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white" placeholder="Driver ID…" />
+              className="bg-surface-elevated border-divider text-white" placeholder="Driver ID…" />
           </div>
           {sessions.length > 0 && (
             <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Session (optional)</Label>
+              <Label className="text-foreground-quiet text-xs">Session (optional)</Label>
               <Select value={form.session_id} onValueChange={v => set('session_id', v)}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-surface-elevated border-divider text-white">
                   <SelectValue placeholder="No session" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-gray-700">
+                <SelectContent className="bg-surface-elevated border-divider">
                   {sessions.map(s => <SelectItem key={s.id} value={s.id} className="text-gray-200">{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           )}
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Phase *</Label>
+            <Label className="text-foreground-quiet text-xs">Phase *</Label>
             <Select value={form.inspection_phase} onValueChange={v => set('inspection_phase', v)}>
-              <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+              <SelectTrigger className="bg-surface-elevated border-divider text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
+              <SelectContent className="bg-surface-elevated border-divider">
                 {INSPECTION_PHASES.map(p => <SelectItem key={p} value={p} className="text-gray-200">{p}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Initial Status</Label>
+            <Label className="text-foreground-quiet text-xs">Initial Status</Label>
             <Select value={form.status} onValueChange={v => set('status', v)}>
-              <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+              <SelectTrigger className="bg-surface-elevated border-divider text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-gray-700">
+              <SelectContent className="bg-surface-elevated border-divider">
                 {['In Progress', 'Impounded', 'Failed', 'Recheck Required'].map(s => (
                   <SelectItem key={s} value={s} className="text-gray-200">{s}</SelectItem>
                 ))}
@@ -148,17 +148,17 @@ function CreateImpoundModal({ open, onClose, eventId, sessions = [] }) {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Failure Reasons (comma-separated)</Label>
+            <Label className="text-foreground-quiet text-xs">Failure Reasons (comma-separated)</Label>
             <Input value={form.failure_reasons} onChange={e => set('failure_reasons', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white" placeholder="e.g. Weight, Fuel sample" />
+              className="bg-surface-elevated border-divider text-white" placeholder="e.g. Weight, Fuel sample" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-gray-400 text-xs">Notes</Label>
+            <Label className="text-foreground-quiet text-xs">Notes</Label>
             <Textarea value={form.overall_notes} onChange={e => set('overall_notes', e.target.value)}
-              className="bg-gray-900 border-gray-700 text-white h-16 resize-none" placeholder="Inspector notes…" />
+              className="bg-surface-elevated border-divider text-white h-16 resize-none" placeholder="Inspector notes…" />
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="ghost" onClick={onClose} className="text-gray-400">Cancel</Button>
+            <Button type="button" variant="ghost" onClick={onClose} className="text-foreground-quiet">Cancel</Button>
             <Button type="submit" disabled={saving || !form.entry_id}
               className="bg-orange-800 hover:bg-orange-700 text-white">
               {saving ? 'Creating…' : 'Create Hold'}
@@ -242,7 +242,7 @@ function TechRecordRow({ record, eventId, canManage, onUpdate }) {
   };
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900/40 p-3 space-y-2">
+    <div className="rounded-lg border border-divider bg-surface-elevated/40 p-3 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Wrench className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
@@ -262,7 +262,7 @@ function TechRecordRow({ record, eventId, canManage, onUpdate }) {
       )}
 
       {canManage && HOLD_STATUSES.includes(record.status) && (
-        <div className="flex flex-wrap gap-2 pt-1 border-t border-gray-800/60">
+        <div className="flex flex-wrap gap-2 pt-1 border-t border-divider/60">
           {record.status === 'Impounded' && (
             <Button size="sm" disabled={acting} onClick={handleFail}
               className="bg-red-900/60 hover:bg-red-900 text-white text-xs h-7 gap-1">
@@ -286,9 +286,9 @@ function TechRecordRow({ record, eventId, canManage, onUpdate }) {
       )}
 
       {showRefer && (
-        <div className="space-y-2 pt-2 border-t border-gray-800/60">
+        <div className="space-y-2 pt-2 border-t border-divider/60">
           <Input value={referReason} onChange={e => setReferReason(e.target.value)}
-            className="bg-gray-900 border-gray-700 text-white text-xs h-8"
+            className="bg-surface-elevated border-divider text-white text-xs h-8"
             placeholder="Reason for penalty referral…" />
           <div className="flex gap-2">
             <Button size="sm" disabled={acting || !referReason.trim()} onClick={handleReferToPenalty}
