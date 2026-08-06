@@ -32,6 +32,7 @@ const ENTITY_PREFIX_MAP = {
   Driver: 'DRVR',
   Entry: 'ENTR',
   Results: 'RSLT',
+  Standings: 'STND',
 };
 
 const PREFIX_ENTITY_MAP = {
@@ -41,10 +42,11 @@ const PREFIX_ENTITY_MAP = {
   DRVR: 'Driver',
   ENTR: 'Entry',
   RSLT: 'Results',
+  STND: 'Standings',
 };
 
-const ENTITY_FAMILIES = ['PersonIdentity', 'RacerProfile', 'SeasonParticipation', 'Driver', 'Entry', 'Results'];
-const ALL_PREFIXES = ['PERS', 'RACR', 'PART', 'DRVR', 'ENTR', 'RSLT'];
+const ENTITY_FAMILIES = ['PersonIdentity', 'RacerProfile', 'SeasonParticipation', 'Driver', 'Entry', 'Results', 'Standings'];
+const ALL_PREFIXES = ['PERS', 'RACR', 'PART', 'DRVR', 'ENTR', 'RSLT', 'STND'];
 
 async function loadAll(sr, entityName, sortField, batchSize) {
   const sort = sortField || '-created_date';

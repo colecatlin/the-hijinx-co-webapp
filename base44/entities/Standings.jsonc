@@ -16,7 +16,7 @@
     },
     "driver_id": {
       "type": "string",
-      "description": "Reference to Driver (required)"
+      "description": "Reference to Driver (legacy compatibility \u2014 retained during Phase 6. participation_id is the modern authoritative grouping key.)"
     },
     "program_id": {
       "type": "string",
@@ -90,6 +90,9 @@
     "points_breakdown": {
       "type": "array",
       "default": [],
+      "items": {
+        "type": "object"
+      },
       "description": "Per event breakdown for UI. Each item is { event_id, event_date, points, finish_position }"
     },
     "last_calculated": {
@@ -162,7 +165,7 @@
     },
     "participation_id": {
       "type": "string",
-      "description": "Reference to SeasonParticipation. Nullable in Phase 1 \u2014 populated during backfill. Replaces driver_id as the primary grouping key in future phases."
+      "description": "Reference to SeasonParticipation. Phase 6 authoritative championship competitor relationship. Replaces driver_id as the primary grouping key."
     }
   },
   "required": [

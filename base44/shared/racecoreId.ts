@@ -33,7 +33,7 @@
  *   Base44 does not currently support.
  */
 
-const SUPPORTED_PREFIXES = ['PERS', 'RACR', 'PART', 'DRVR', 'ENTR', 'RSLT'];
+const SUPPORTED_PREFIXES = ['PERS', 'RACR', 'PART', 'DRVR', 'ENTR', 'RSLT', 'STND'];
 
 const PREFIX_TO_ENTITY = {
   PERS: 'PersonIdentity',
@@ -42,6 +42,7 @@ const PREFIX_TO_ENTITY = {
   DRVR: 'Driver',
   ENTR: 'Entry',
   RSLT: 'Results',
+  STND: 'Standings',
 };
 
 const ENTITY_TO_PREFIX = {
@@ -51,6 +52,7 @@ const ENTITY_TO_PREFIX = {
   Driver: 'DRVR',
   Entry: 'ENTR',
   Results: 'RSLT',
+  Standings: 'STND',
 };
 
 const MAX_SEQUENCE = 999999999;
@@ -77,7 +79,7 @@ export async function generateRaceCoreId(base44, prefix) {
   if (!SUPPORTED_PREFIXES.includes(upperPrefix)) {
     return {
       success: false,
-      error: 'Unsupported prefix: ' + prefix + '. Phase 5 supports: PERS, RACR, PART, DRVR, ENTR, RSLT',
+      error: 'Unsupported prefix: ' + prefix + '. Phase 6 supports: PERS, RACR, PART, DRVR, ENTR, RSLT, STND',
     };
   }
 
@@ -245,7 +247,7 @@ export async function ensureRaceCoreId(base44, entityType, entityId) {
   if (!ENTITY_TO_PREFIX.hasOwnProperty(entityType)) {
     return {
       success: false,
-      error: 'Unsupported entity type: ' + entityType + '. Phase 5 supports: PersonIdentity, RacerProfile, SeasonParticipation, Driver, Entry, Results',
+      error: 'Unsupported entity type: ' + entityType + '. Phase 6 supports: PersonIdentity, RacerProfile, SeasonParticipation, Driver, Entry, Results, Standings',
     };
   }
 
