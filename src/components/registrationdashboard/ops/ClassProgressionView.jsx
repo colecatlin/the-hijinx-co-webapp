@@ -21,12 +21,12 @@ import {
 function ScoringBadge({ session }) {
   if (isScoringSession(session)) {
     return (
-      <span className="inline-flex items-center gap-0.5 text-xs text-amber-400 font-medium">
+      <span className="inline-flex items-center gap-0.5 text-xs text-warning font-medium">
         <Trophy className="w-2.5 h-2.5" /> Scores
       </span>
     );
   }
-  return <span className="text-xs text-gray-600">Non-scoring</span>;
+  return <span className="text-xs text-foreground-quiet">Non-scoring</span>;
 }
 
 // Compact session row inside the class arc
@@ -46,8 +46,8 @@ function ArcSessionRow({ session, sessionResults, allSessions, seriesClasses, ev
     <div
       className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
         isSelected
-          ? 'bg-[#1e2a1e] border-green-700'
-          : 'bg-[#1a1a1a] border-gray-800 hover:border-gray-600'
+          ? 'bg-success/10 border-success/40'
+          : 'bg-surface-interactive border-divider hover:border-foreground-quiet'
       }`}
       onClick={() => onSelectSession && onSelectSession(session.id)}
     >
@@ -56,10 +56,10 @@ function ArcSessionRow({ session, sessionResults, allSessions, seriesClasses, ev
 
       {/* Label */}
       <div className="flex-1 min-w-0">
-        <span className="text-sm text-white font-medium truncate block">{label}</span>
+        <span className="text-sm text-foreground font-medium truncate block">{label}</span>
         <div className="flex items-center gap-2 mt-0.5">
-          {timeStr && <span className="text-xs text-gray-500">{timeStr}</span>}
-          {session.round_number && <span className="text-xs text-gray-400 font-mono">R{session.round_number}</span>}
+          {timeStr && <span className="text-xs text-foreground-quiet">{timeStr}</span>}
+          {session.round_number && <span className="text-xs text-foreground-quiet font-mono">R{session.round_number}</span>}
           <ScoringBadge session={session} />
         </div>
       </div>
@@ -70,7 +70,7 @@ function ArcSessionRow({ session, sessionResults, allSessions, seriesClasses, ev
       </Badge>
 
       {/* Result count */}
-      <span className="text-xs text-gray-600 flex-shrink-0">{sessionResults.length}r</span>
+      <span className="text-xs text-foreground-quiet flex-shrink-0">{sessionResults.length}r</span>
     </div>
   );
 }
@@ -82,8 +82,8 @@ function ClassDayBlock({ dayLabel, sessions, results, seriesClasses, eventClasse
     <div className="space-y-1.5">
       {/* Day label */}
       <div className="flex items-center gap-2 mt-3 mb-1">
-        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{dayLabel}</span>
-        <div className="flex-1 h-px bg-gray-800" />
+        <span className="text-xs font-bold text-foreground-quiet uppercase tracking-widest">{dayLabel}</span>
+        <div className="flex-1 h-px bg-divider" />
       </div>
       {sessions.map(session => (
         <ArcSessionRow
@@ -158,8 +158,8 @@ export default function ClassProgressionView({
 
   if (sessions.length === 0) {
     return (
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-6 text-center">
-        <p className="text-gray-400 text-sm">No sessions yet. Sessions will appear grouped by class once added.</p>
+      <div className="bg-surface border border-divider rounded-lg p-6 text-center">
+        <p className="text-foreground-quiet text-sm">No sessions yet. Sessions will appear grouped by class once added.</p>
       </div>
     );
   }
@@ -177,36 +177,36 @@ export default function ClassProgressionView({
         const scoringSessions = cg.sessions.filter(isScoringSession);
 
         return (
-          <div key={cg.id} className="rounded-lg border border-gray-800 overflow-hidden">
+          <div key={cg.id} className="rounded-lg border border-divider overflow-hidden">
             {/* Class header */}
             <button
-              className="w-full flex items-center gap-3 px-4 py-3 text-left bg-[#171717] hover:bg-[#1e1e22] transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 text-left bg-surface hover:bg-surface-interactive transition-colors"
               onClick={() => toggleClass(cg.id)}
             >
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-sm text-white">{cg.name}</p>
+                <p className="font-bold text-sm text-foreground">{cg.name}</p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <span className="text-xs text-gray-500">{cg.sessions.length} sessions</span>
-                  <span className="text-xs text-gray-600">·</span>
-                  <span className="text-xs text-gray-500">{totalResults} results</span>
+                  <span className="text-xs text-foreground-quiet">{cg.sessions.length} sessions</span>
+                  <span className="text-xs text-foreground-quiet">·</span>
+                  <span className="text-xs text-foreground-quiet">{totalResults} results</span>
                   {officialCount > 0 && (
-                    <span className="text-xs text-green-400">{officialCount} official</span>
+                    <span className="text-xs text-success">{officialCount} official</span>
                   )}
                   {scoringSessions.length > 0 && (
-                    <span className="text-xs text-amber-400 flex items-center gap-0.5">
+                    <span className="text-xs text-warning flex items-center gap-0.5">
                       <Trophy className="w-2.5 h-2.5" /> {scoringSessions.length} scoring
                     </span>
                   )}
                 </div>
               </div>
               {isCollapsed
-                ? <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                : <ChevronUp className="w-4 h-4 text-gray-500 flex-shrink-0" />}
+                ? <ChevronDown className="w-4 h-4 text-foreground-quiet flex-shrink-0" />
+                : <ChevronUp className="w-4 h-4 text-foreground-quiet flex-shrink-0" />}
             </button>
 
             {/* Class content — sessions grouped by day */}
             {!isCollapsed && (
-              <div className="bg-[#111111] px-4 py-3">
+              <div className="bg-surface px-4 py-3">
                 {dayGroups.map(({ dayLabel, sessions: daySessions }) => (
                   <ClassDayBlock
                     key={dayLabel}

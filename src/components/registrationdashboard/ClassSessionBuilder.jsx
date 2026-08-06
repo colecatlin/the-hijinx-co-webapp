@@ -411,10 +411,10 @@ export default function ClassSessionBuilder({
   const isLocked = (s) => isSessionLocked(s);
 
   const statusBadge = (s) => {
-    if (s === 'Open') return 'bg-green-500/20 text-green-400';
-    if (s === 'Full') return 'bg-yellow-500/20 text-yellow-400';
-    if (s === 'Closed') return 'bg-red-500/20 text-red-400';
-    return 'bg-gray-500/20 text-gray-400';
+    if (s === 'Open') return 'bg-success/10 text-success';
+    if (s === 'Full') return 'bg-warning/10 text-warning';
+    if (s === 'Closed') return 'bg-danger/10 text-danger';
+    return 'bg-surface-interactive text-foreground-quiet';
   };
 
   const generateSessions = async (type, classGroupId) => {
@@ -491,9 +491,9 @@ export default function ClassSessionBuilder({
 
   if (!eventId) {
     return (
-      <Card className="bg-[#171717] border-gray-800">
+      <Card className="bg-surface border-divider">
         <CardContent className="py-12 text-center">
-          <p className="text-gray-400">Select an event to manage classes and sessions</p>
+          <p className="text-foreground-quiet">Select an event to manage classes and sessions</p>
         </CardContent>
       </Card>
     );
@@ -504,8 +504,8 @@ export default function ClassSessionBuilder({
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold text-white">Classes &amp; Sessions</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Define classes, then build sessions under each class.</p>
+          <h2 className="text-base font-bold text-foreground">Classes &amp; Sessions</h2>
+          <p className="text-xs text-foreground-quiet mt-0.5">Define classes, then build sessions under each class.</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {seriesId && seriesClasses.length > 0 && (
@@ -514,7 +514,7 @@ export default function ClassSessionBuilder({
               disabled={creatingClass}
               variant="outline"
               size="sm"
-              className="border-teal-700 text-teal-300 hover:bg-teal-900/30"
+              className="border-motion text-motion hover:bg-motion/10"
               title="Create event classes from this series' class definitions"
             >
               <Layers className="w-4 h-4 mr-1" /> Import Series Classes
@@ -524,12 +524,12 @@ export default function ClassSessionBuilder({
             onClick={() => setPasteImportOpen(true)}
             variant="outline"
             size="sm"
-            className="border-teal-700 text-teal-300 hover:bg-teal-900/30"
+            className="border-motion text-motion hover:bg-motion/10"
             title="Paste a full schedule and bulk-create sessions"
           >
             <ClipboardPaste className="w-4 h-4 mr-1" /> Paste Schedule
           </Button>
-          <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={openAddClass} disabled={creatingClass} size="sm" className="bg-motion hover:bg-motion-hover text-foreground">
             <Plus className="w-4 h-4 mr-1" /> Add Class
           </Button>
         </div>
@@ -537,10 +537,10 @@ export default function ClassSessionBuilder({
 
       {/* Empty state */}
       {classGroups.length === 0 && (
-        <Card className="bg-[#171717] border-gray-800">
+        <Card className="bg-surface border-divider">
           <CardContent className="py-10 text-center space-y-3">
-            <p className="text-gray-400 text-sm">No classes defined for this event yet</p>
-            <Button onClick={openAddClass} disabled={creatingClass} variant="outline" size="sm" className="border-gray-700 text-gray-300">
+            <p className="text-foreground-quiet text-sm">No classes defined for this event yet</p>
+            <Button onClick={openAddClass} disabled={creatingClass} variant="outline" size="sm" className="border-divider text-foreground-secondary">
               <Plus className="w-3 h-3 mr-1" /> Add First Class
             </Button>
           </CardContent>
@@ -558,46 +558,46 @@ export default function ClassSessionBuilder({
             const sortedSessions = sortSessionsChronologically(cg.sessions);
 
             return (
-              <AccordionItem key={cg.id} value={cg.id} className="bg-[#171717] border border-gray-800 rounded-lg overflow-hidden">
-                <AccordionTrigger className="hover:bg-gray-800/50 px-4 py-3 [&>svg]:hidden">
+              <AccordionItem key={cg.id} value={cg.id} className="bg-surface border border-divider rounded-lg overflow-hidden">
+                <AccordionTrigger className="hover:bg-surface-interactive/50 px-4 py-3 [&>svg]:hidden">
                   <div className="flex items-center gap-3 flex-1 text-left">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-white">{cg.class_name}</h3>
+                        <h3 className="font-semibold text-foreground">{cg.class_name}</h3>
                         <Badge className={`text-xs ${statusBadge(cg.class_status)}`}>{cg.class_status || 'Open'}</Badge>
-                        {hasLocked && <Badge className="text-xs bg-yellow-900/40 text-yellow-300"><Lock className="w-3 h-3 mr-1 inline" />Locked</Badge>}
-                        {isFull && <Badge className="text-xs bg-orange-900/40 text-orange-300">Full</Badge>}
+                        {hasLocked && <Badge className="text-xs bg-warning/10 text-warning"><Lock className="w-3 h-3 mr-1 inline" />Locked</Badge>}
+                        {isFull && <Badge className="text-xs bg-warning/10 text-warning">Full</Badge>}
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-foreground-quiet mt-0.5">
                         {entryCount}{cg.max_entries ? `/${cg.max_entries}` : ''} entr{entryCount === 1 ? 'y' : 'ies'} · {sortedSessions.length} session{sortedSessions.length !== 1 ? 's' : ''}
                       </p>
                     </div>
                     <div className="flex gap-1 mr-2" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => openEditClass(cg)} className="p-1.5 hover:bg-gray-700 rounded transition-colors" title="Edit class">
-                        <Settings className="w-3.5 h-3.5 text-gray-400" />
+                      <button onClick={() => openEditClass(cg)} className="p-1.5 hover:bg-surface-interactive rounded transition-colors" title="Edit class">
+                        <Settings className="w-3.5 h-3.5 text-foreground-quiet" />
                       </button>
                       <button
                         onClick={() => setDeleteClassConfirm(cg.id)}
-                        className="p-1.5 hover:bg-red-900/30 rounded transition-colors"
+                        className="p-1.5 hover:bg-danger/10 rounded transition-colors"
                         title={entryCount > 0 ? `${entryCount} entries — cannot delete` : 'Delete class'}
                       >
-                        <Trash2 className={`w-3.5 h-3.5 ${entryCount > 0 ? 'text-gray-600' : 'text-red-400'}`} />
+                        <Trash2 className={`w-3.5 h-3.5 ${entryCount > 0 ? 'text-foreground-quiet' : 'text-danger'}`} />
                       </button>
                     </div>
                   </div>
                 </AccordionTrigger>
 
-                <AccordionContent className="px-4 py-4 border-t border-gray-800">
+                <AccordionContent className="px-4 py-4 border-t border-divider">
                   {sortedSessions.length === 0 ? (
                     <div className="text-center py-4 space-y-3">
-                      <p className="text-xs text-gray-500">No sessions in this class</p>
+                      <p className="text-xs text-foreground-quiet">No sessions in this class</p>
                       {/* Event Day selector for quick-gen */}
                       {eventDays.length > 0 && (
                         <div className="flex items-center gap-2">
-                          <label className="text-xs text-gray-500 whitespace-nowrap">Assign to Day:</label>
+                          <label className="text-xs text-foreground-quiet whitespace-nowrap">Assign to Day:</label>
                           <Select value={quickGenDate || '__none'} onValueChange={(v) => setQuickGenDate(v === '__none' ? '' : v)}>
-                            <SelectTrigger className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-7 w-40"><SelectValue placeholder="No day" /></SelectTrigger>
-                            <SelectContent className="bg-[#262626] border-gray-700">
+                            <SelectTrigger className="bg-surface-interactive border-divider text-foreground text-xs h-7 w-40"><SelectValue placeholder="No day" /></SelectTrigger>
+                            <SelectContent className="bg-surface-elevated border-divider">
                               <SelectItem value="__none">No day</SelectItem>
                               {[...eventDays].sort((a,b) => (a.sort_order||0)-(b.sort_order||0)).map(d => (
                                 <SelectItem key={d.id} value={d.id}>{d.label} — {d.date}</SelectItem>
@@ -607,23 +607,23 @@ export default function ClassSessionBuilder({
                         </div>
                       )}
                       <div className="flex flex-wrap justify-center gap-2">
-                        <Button onClick={() => generateSessions('practice', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                        <Button onClick={() => generateSessions('practice', cg.id)} variant="outline" size="sm" className="border-divider text-foreground-secondary text-xs">
                           <Zap className="w-3 h-3 mr-1" /> Practice
                         </Button>
-                        <Button onClick={() => generateSessions('qualifying', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                        <Button onClick={() => generateSessions('qualifying', cg.id)} variant="outline" size="sm" className="border-divider text-foreground-secondary text-xs">
                           <Zap className="w-3 h-3 mr-1" /> Qualifying
                         </Button>
-                        <Button onClick={() => { setSelectedClassForGen(cg.id); setQuickGenDialog('heats'); }} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                        <Button onClick={() => { setSelectedClassForGen(cg.id); setQuickGenDialog('heats'); }} variant="outline" size="sm" className="border-divider text-foreground-secondary text-xs">
                           <Zap className="w-3 h-3 mr-1" /> Heats
                         </Button>
-                        <Button onClick={() => generateSessions('lcq', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                        <Button onClick={() => generateSessions('lcq', cg.id)} variant="outline" size="sm" className="border-divider text-foreground-secondary text-xs">
                           <Zap className="w-3 h-3 mr-1" /> LCQ
                         </Button>
-                        <Button onClick={() => generateSessions('feature', cg.id)} variant="outline" size="sm" className="border-gray-700 text-gray-300 text-xs">
+                        <Button onClick={() => generateSessions('feature', cg.id)} variant="outline" size="sm" className="border-divider text-foreground-secondary text-xs">
                           <Zap className="w-3 h-3 mr-1" /> Feature 🏆
                         </Button>
                       </div>
-                      <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="border-gray-700 text-gray-300 w-full">
+                      <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="border-divider text-foreground-secondary w-full">
                         <Plus className="w-3 h-3 mr-1" /> Add Session
                       </Button>
                     </div>
@@ -637,46 +637,46 @@ export default function ClassSessionBuilder({
                          <div
                            key={session.id}
                            className={`p-3 rounded-lg border transition-colors ${
-                             isLocked(session) ? 'bg-gray-800/20 border-gray-700 opacity-60' : 'bg-gray-800/40 border-gray-700 hover:bg-gray-700/50'
+                             isLocked(session) ? 'bg-surface-interactive/20 border-divider opacity-60' : 'bg-surface-interactive/40 border-divider hover:bg-surface-interactive/50'
                            }`}
                          >
                            <div className="flex items-center justify-between gap-3">
                            <div className="flex-1 min-w-0">
                              <div className="flex items-center gap-2 flex-wrap">
-                               <span className="text-[10px] font-mono text-gray-600">#{session.run_order || '0'}</span>
-                               <p className="font-medium text-white text-sm">{session.name}</p>
-                               <Badge className="bg-purple-500/20 text-purple-400 text-xs">{session.session_type}</Badge>
+                               <span className="text-[10px] font-mono text-foreground-quiet">#{session.run_order || '0'}</span>
+                               <p className="font-medium text-foreground text-sm">{session.name}</p>
+                               <Badge className="bg-motion/10 text-motion text-xs">{session.session_type}</Badge>
                                {(session.session_type === 'Feature' || session.session_type === 'Final') && (
-                                 <Badge className="bg-amber-900/40 text-amber-300 text-xs">
+                                 <Badge className="bg-warning/10 text-warning text-xs">
                                    🏆 {session.round_number ? `Round ${session.round_number}` : 'Final'}
                                  </Badge>
                                )}
                                {session.points_enabled && session.points_type === 'qualifying' && (
-                                 <Badge className="bg-blue-900/40 text-blue-300 text-xs">⬆ Qual Pts</Badge>
+                                 <Badge className="bg-motion/10 text-motion text-xs">⬆ Qual Pts</Badge>
                                )}
                              </div>
                              <div className="flex items-center gap-2 mt-0.5">
                                {sessionDay ? (
-                                 <span className="text-[9px] font-mono text-teal-700">{dayWeekday} · {sessionDay.label}</span>
+                                 <span className="text-[9px] font-mono text-motion">{dayWeekday} · {sessionDay.label}</span>
                                ) : (
-                                 <span className="text-[9px] font-mono text-gray-700">No day assigned</span>
+                                 <span className="text-[9px] font-mono text-foreground-quiet">No day assigned</span>
                                )}
                                {session.scheduled_time && (
-                                 <span className="text-[9px] font-mono text-gray-600">
+                                 <span className="text-[9px] font-mono text-foreground-quiet">
                                    {new Date(session.scheduled_time).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
                                  </span>
                                )}
                                {session.duration_minutes && (
-                                 <span className="text-[9px] font-mono text-gray-600">{session.duration_minutes}m</span>
+                                 <span className="text-[9px] font-mono text-foreground-quiet">{session.duration_minutes}m</span>
                                )}
                              </div>
                            </div>
                           <div className="flex gap-1 flex-shrink-0">
                             {!isLocked(session) && <>
-                              <button onClick={() => handleMove(session, 'up', cg)} className="p-1 hover:bg-gray-600 rounded" title="Move up"><ChevronUp className="w-3 h-3 text-gray-400" /></button>
-                              <button onClick={() => handleMove(session, 'down', cg)} className="p-1 hover:bg-gray-600 rounded" title="Move down"><ChevronDown className="w-3 h-3 text-gray-400" /></button>
-                              <button onClick={() => openEditSession(session)} className="p-1 hover:bg-gray-600 rounded" title="Edit"><Edit2 className="w-3 h-3 text-gray-400" /></button>
-                              <button onClick={() => handleDuplicate(session)} className="p-1 hover:bg-gray-600 rounded" title="Duplicate"><Copy className="w-3 h-3 text-gray-400" /></button>
+                              <button onClick={() => handleMove(session, 'up', cg)} className="p-1 hover:bg-surface-interactive rounded" title="Move up"><ChevronUp className="w-3 h-3 text-foreground-quiet" /></button>
+                              <button onClick={() => handleMove(session, 'down', cg)} className="p-1 hover:bg-surface-interactive rounded" title="Move down"><ChevronDown className="w-3 h-3 text-foreground-quiet" /></button>
+                              <button onClick={() => openEditSession(session)} className="p-1 hover:bg-surface-interactive rounded" title="Edit"><Edit2 className="w-3 h-3 text-foreground-quiet" /></button>
+                              <button onClick={() => handleDuplicate(session)} className="p-1 hover:bg-surface-interactive rounded" title="Duplicate"><Copy className="w-3 h-3 text-foreground-quiet" /></button>
                             </>}
                             {sessionHasResults(session.id) ? (
                               <button
@@ -684,22 +684,22 @@ export default function ClassSessionBuilder({
                                 title="Use the Results tab to lock sessions that already have results so result publishing and lifecycle states stay in sync."
                                 disabled
                               >
-                                <Lock className="w-3 h-3 text-gray-500" />
+                                <Lock className="w-3 h-3 text-foreground-quiet" />
                               </button>
                             ) : (
-                              <button onClick={() => setLockConfirm(session.id)} className="p-1 hover:bg-gray-600 rounded" title={isLocked(session) ? 'Unlock' : 'Lock'}>
-                                {isLocked(session) ? <LockOpen className="w-3 h-3 text-yellow-400" /> : <Lock className="w-3 h-3 text-gray-400" />}
+                              <button onClick={() => setLockConfirm(session.id)} className="p-1 hover:bg-surface-interactive rounded" title={isLocked(session) ? 'Unlock' : 'Lock'}>
+                                {isLocked(session) ? <LockOpen className="w-3 h-3 text-warning" /> : <Lock className="w-3 h-3 text-foreground-quiet" />}
                               </button>
                             )}
                             {!isLocked(session) && session.status === 'Draft' && (
-                              <button onClick={() => deleteSession(session.id)} className="p-1 hover:bg-red-900/30 rounded" title="Delete"><Trash2 className="w-3 h-3 text-red-400" /></button>
+                              <button onClick={() => deleteSession(session.id)} className="p-1 hover:bg-danger/10 rounded" title="Delete"><Trash2 className="w-3 h-3 text-danger" /></button>
                             )}
                           </div>
                         </div>
                         </div>
                         );
                         })}
-                        <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="w-full border-gray-700 text-gray-300 mt-2">
+                        <Button onClick={() => openAddSession(cg)} variant="outline" size="sm" className="w-full border-divider text-foreground-secondary mt-2">
                         <Plus className="w-3 h-3 mr-1" /> Add Session
                       </Button>
                     </div>
@@ -713,21 +713,21 @@ export default function ClassSessionBuilder({
 
       {/* ── Add/Edit Class Dialog ─────────────────────────────────────────── */}
       <Dialog open={classDialog} onOpenChange={setClassDialog}>
-        <DialogContent className="bg-[#262626] border-gray-700 max-w-lg">
+        <DialogContent className="bg-surface-elevated border-divider max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-white">{editingClass ? 'Edit Class' : 'Add Class'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingClass ? 'Edit Class' : 'Add Class'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Class Name *</label>
-              <Input value={classForm.class_name} onChange={(e) => setClassForm({ ...classForm, class_name: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. Pro Stock" />
+              <label className="text-xs text-foreground-quiet block mb-1">Class Name *</label>
+              <Input value={classForm.class_name} onChange={(e) => setClassForm({ ...classForm, class_name: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="e.g. Pro Stock" />
             </div>
             {seriesClasses.length > 0 && (
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Linked Series Class (optional)</label>
+                <label className="text-xs text-foreground-quiet block mb-1">Linked Series Class (optional)</label>
                 <Select value={classForm.series_class_id || '__none'} onValueChange={(v) => setClassForm({ ...classForm, series_class_id: v === '__none' ? '' : v })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="None" /></SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectTrigger className="bg-surface-interactive border-divider text-foreground"><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectContent className="bg-surface-elevated border-divider">
                     <SelectItem value="__none">None</SelectItem>
                     {seriesClasses.map((sc) => <SelectItem key={sc.id} value={sc.id}>{sc.class_name}</SelectItem>)}
                   </SelectContent>
@@ -736,19 +736,19 @@ export default function ClassSessionBuilder({
             )}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Max Entries</label>
-                <Input type="number" value={classForm.max_entries} onChange={(e) => setClassForm({ ...classForm, max_entries: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
+                <label className="text-xs text-foreground-quiet block mb-1">Max Entries</label>
+                <Input type="number" value={classForm.max_entries} onChange={(e) => setClassForm({ ...classForm, max_entries: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="Unlimited" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Display Order</label>
-                <Input type="number" value={classForm.class_order} onChange={(e) => setClassForm({ ...classForm, class_order: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="0" />
+                <label className="text-xs text-foreground-quiet block mb-1">Display Order</label>
+                <Input type="number" value={classForm.class_order} onChange={(e) => setClassForm({ ...classForm, class_order: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="0" />
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Status</label>
+              <label className="text-xs text-foreground-quiet block mb-1">Status</label>
               <Select value={classForm.class_status} onValueChange={(v) => setClassForm({ ...classForm, class_status: v })}>
-                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectTrigger className="bg-surface-interactive border-divider text-foreground"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-surface-elevated border-divider">
                   <SelectItem value="Open">Open</SelectItem>
                   <SelectItem value="Full">Full</SelectItem>
                   <SelectItem value="Closed">Closed</SelectItem>
@@ -756,13 +756,13 @@ export default function ClassSessionBuilder({
               </Select>
             </div>
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Notes</label>
-              <Textarea value={classForm.notes} onChange={(e) => setClassForm({ ...classForm, notes: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" rows={2} placeholder="Optional admin notes" />
+              <label className="text-xs text-foreground-quiet block mb-1">Notes</label>
+              <Textarea value={classForm.notes} onChange={(e) => setClassForm({ ...classForm, notes: e.target.value })} className="bg-surface-interactive border-divider text-foreground" rows={2} placeholder="Optional admin notes" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setClassDialog(false)} className="border-gray-700 text-gray-300">Cancel</Button>
-            <Button onClick={handleSaveClass} disabled={creatingClass || updatingClass} className="bg-blue-600 hover:bg-blue-700">
+            <Button variant="outline" onClick={() => setClassDialog(false)} className="border-divider text-foreground-secondary">Cancel</Button>
+            <Button onClick={handleSaveClass} disabled={creatingClass || updatingClass} className="bg-motion hover:bg-motion-hover">
               {editingClass ? 'Update Class' : 'Create Class'}
             </Button>
           </DialogFooter>
@@ -771,27 +771,27 @@ export default function ClassSessionBuilder({
 
       {/* ── Add/Edit Session Dialog ────────────────────────────────────────── */}
       <Dialog open={sessionDialog} onOpenChange={setSessionDialog}>
-        <DialogContent className="bg-[#262626] border-gray-700 max-w-2xl">
+        <DialogContent className="bg-surface-elevated border-divider max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-white">{editingSession ? 'Edit Session' : 'Add Session'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingSession ? 'Edit Session' : 'Add Session'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
             {/* Row 1: Class + Day */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Class *</label>
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Class *</label>
                 <Select value={sessionForm.event_class_id || ''} onValueChange={(v) => setSessionForm({ ...sessionForm, event_class_id: v })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="Select class…" /></SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectTrigger className="bg-surface-interactive border-divider text-foreground"><SelectValue placeholder="Select class…" /></SelectTrigger>
+                  <SelectContent className="bg-surface-elevated border-divider">
                     {eventClasses.map((ec) => <SelectItem key={ec.id} value={ec.id}>{ec.class_name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Event Day</label>
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Event Day</label>
                 <Select value={sessionForm.event_day_id || '__none'} onValueChange={(v) => setSessionForm({ ...sessionForm, event_day_id: v === '__none' ? '' : v })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue placeholder="No day assigned" /></SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectTrigger className="bg-surface-interactive border-divider text-foreground"><SelectValue placeholder="No day assigned" /></SelectTrigger>
+                  <SelectContent className="bg-surface-elevated border-divider">
                     <SelectItem value="__none">No day assigned</SelectItem>
                     {[...eventDays].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map((d) => {
                       let wd = '';
@@ -801,7 +801,7 @@ export default function ClassSessionBuilder({
                   </SelectContent>
                 </Select>
                 {eventDays.length === 0 && (
-                  <p className="text-[10px] text-gray-600 mt-0.5">Generate event days in Settings to enable day assignment.</p>
+                  <p className="text-[10px] text-foreground-quiet mt-0.5">Generate event days in Settings to enable day assignment.</p>
                 )}
               </div>
             </div>
@@ -809,7 +809,7 @@ export default function ClassSessionBuilder({
             {/* Row 2: Session Type + Name */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Session Type</label>
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Session Type</label>
                 <Select
                   value={sessionForm.session_type}
                   onValueChange={(v) => {
@@ -826,8 +826,8 @@ export default function ClassSessionBuilder({
                     }));
                   }}
                 >
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectTrigger className="bg-surface-interactive border-divider text-foreground"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-surface-elevated border-divider">
                     {['Practice', 'Qualifying', 'Heat', 'LCQ', 'Feature', 'Final', 'Time Attack', 'Other'].map((t) => (
                       <SelectItem key={t} value={t}>
                         {t === 'Final' || t === 'Feature' ? `${t} 🏆` : t}
@@ -837,17 +837,17 @@ export default function ClassSessionBuilder({
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Session Name *</label>
-                <Input value={sessionForm.name} onChange={(e) => setSessionForm({ ...sessionForm, name: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. Heat 1, Final" />
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Session Name *</label>
+                <Input value={sessionForm.name} onChange={(e) => setSessionForm({ ...sessionForm, name: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="e.g. Heat 1, Final" />
               </div>
             </div>
 
             {/* Points section */}
-            <div className="p-3 bg-[#111518] border border-gray-800 rounded-lg space-y-3">
+            <div className="p-3 bg-surface-interactive border border-divider rounded-lg space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs text-gray-400 uppercase font-semibold tracking-wider">Points Settings</label>
+                <label className="text-xs text-foreground-quiet uppercase font-semibold tracking-wider">Points Settings</label>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <span className="text-xs text-gray-400">Points Active</span>
+                  <span className="text-xs text-foreground-quiet">Points Active</span>
                   <button
                     type="button"
                     onClick={() => setSessionForm(prev => ({
@@ -857,7 +857,7 @@ export default function ClassSessionBuilder({
                         ? (prev.session_type === 'Qualifying' ? 'qualifying' : prev.session_type === 'Final' || prev.session_type === 'Feature' ? 'final' : 'none')
                         : 'none',
                     }))}
-                    className={`w-9 h-5 rounded-full transition-colors ${sessionForm.points_enabled ? 'bg-teal-600' : 'bg-gray-700'}`}
+                    className={`w-9 h-5 rounded-full transition-colors ${sessionForm.points_enabled ? 'bg-motion' : 'bg-gray-700'}`}
                   >
                     <span className={`block w-4 h-4 rounded-full bg-white shadow transition-transform mx-0.5 ${sessionForm.points_enabled ? 'translate-x-4' : 'translate-x-0'}`} />
                   </button>
@@ -867,13 +867,13 @@ export default function ClassSessionBuilder({
               {sessionForm.points_enabled && (
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase block mb-1">Points Type</label>
+                    <label className="text-[10px] text-foreground-quiet uppercase block mb-1">Points Type</label>
                     <Select
                       value={sessionForm.points_type}
                       onValueChange={(v) => setSessionForm({ ...sessionForm, points_type: v })}
                     >
-                      <SelectTrigger className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-8"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-[#262626] border-gray-700">
+                      <SelectTrigger className="bg-surface-interactive border-divider text-foreground text-xs h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent className="bg-surface-elevated border-divider">
                         <SelectItem value="none">None</SelectItem>
                         <SelectItem value="qualifying">Qualifying</SelectItem>
                         <SelectItem value="final">Final (Championship)</SelectItem>
@@ -882,12 +882,12 @@ export default function ClassSessionBuilder({
                   </div>
                   {sessionForm.points_type === 'final' && (
                     <div>
-                      <label className="text-[10px] text-gray-500 uppercase block mb-1">Round #</label>
+                      <label className="text-[10px] text-foreground-quiet uppercase block mb-1">Round #</label>
                       <Input
                         type="number"
                         value={sessionForm.round_number}
                         onChange={(e) => setSessionForm({ ...sessionForm, round_number: e.target.value })}
-                        className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-8"
+                        className="bg-surface-interactive border-divider text-foreground text-xs h-8"
                         placeholder="1, 2, 3…"
                         min="1"
                       />
@@ -895,11 +895,11 @@ export default function ClassSessionBuilder({
                   )}
                   {sessionForm.points_type === 'final' && (
                     <div className="col-span-2">
-                      <label className="text-[10px] text-gray-500 uppercase block mb-1">Round Label (optional)</label>
+                      <label className="text-[10px] text-foreground-quiet uppercase block mb-1">Round Label (optional)</label>
                       <Input
                         value={sessionForm.round_label}
                         onChange={(e) => setSessionForm({ ...sessionForm, round_label: e.target.value })}
-                        className="bg-[#1A1A1A] border-gray-700 text-white text-xs h-8"
+                        className="bg-surface-interactive border-divider text-foreground text-xs h-8"
                         placeholder="e.g. Saturday Final"
                       />
                     </div>
@@ -907,7 +907,7 @@ export default function ClassSessionBuilder({
                 </div>
               )}
               {!sessionForm.points_enabled && (
-                <p className="text-[10px] text-gray-600">
+                <p className="text-[10px] text-foreground-quiet">
                   {['Practice', 'Heat', 'LCQ'].includes(sessionForm.session_type)
                     ? 'Practice / Heat sessions do not award points.'
                     : 'Enable to award championship or qualifying points for this session.'}
@@ -918,50 +918,50 @@ export default function ClassSessionBuilder({
             {/* Timing / logistics */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Scheduled Time</label>
-                <Input type="time" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" />
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Scheduled Time</label>
+                <Input type="time" value={sessionForm.scheduled_time} onChange={(e) => setSessionForm({ ...sessionForm, scheduled_time: e.target.value })} className="bg-surface-interactive border-divider text-foreground" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Duration (min)</label>
-                <Input type="number" value={sessionForm.duration_minutes} onChange={(e) => setSessionForm({ ...sessionForm, duration_minutes: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Duration (min)</label>
+                <Input type="number" value={sessionForm.duration_minutes} onChange={(e) => setSessionForm({ ...sessionForm, duration_minutes: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="Optional" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Laps</label>
-                <Input type="number" value={sessionForm.laps} onChange={(e) => setSessionForm({ ...sessionForm, laps: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Unlimited" />
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Laps</label>
+                <Input type="number" value={sessionForm.laps} onChange={(e) => setSessionForm({ ...sessionForm, laps: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="Unlimited" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Session #</label>
-                <Input type="number" value={sessionForm.session_number} onChange={(e) => setSessionForm({ ...sessionForm, session_number: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" />
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Session #</label>
+                <Input type="number" value={sessionForm.session_number} onChange={(e) => setSessionForm({ ...sessionForm, session_number: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="Optional" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Run Order</label>
-                <Input type="number" value={sessionForm.run_order} onChange={(e) => setSessionForm({ ...sessionForm, run_order: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Auto" />
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Run Order</label>
+                <Input type="number" value={sessionForm.run_order} onChange={(e) => setSessionForm({ ...sessionForm, run_order: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="Auto" />
               </div>
               <div>
-                <label className="text-xs text-gray-400 uppercase block mb-1">Status</label>
+                <label className="text-xs text-foreground-quiet uppercase block mb-1">Status</label>
                 <Select value={sessionForm.status} onValueChange={(v) => setSessionForm({ ...sessionForm, status: v })}>
-                  <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#262626] border-gray-700">
+                  <SelectTrigger className="bg-surface-interactive border-divider text-foreground"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-surface-elevated border-divider">
                     <SelectItem value="Draft">Draft</SelectItem>
                     <SelectItem value="Provisional">Provisional</SelectItem>
                     {/* Official and Locked transitions must use the state machine (lock button / Results tab) */}
                   </SelectContent>
                 </Select>
                 {(sessionForm.status === 'Official' || sessionForm.status === 'Locked') && (
-                  <p className="text-[10px] text-amber-500 mt-1">
+                  <p className="text-[10px] text-warning mt-1">
                     Official/Locked — use the Results tab or lock button to manage this transition.
                   </p>
                 )}
               </div>
             </div>
             <div>
-              <label className="text-xs text-gray-400 uppercase block mb-1">Advancement Rules</label>
-              <Textarea value={sessionForm.advancement_rules} onChange={(e) => setSessionForm({ ...sessionForm, advancement_rules: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="Optional" rows={2} />
+              <label className="text-xs text-foreground-quiet uppercase block mb-1">Advancement Rules</label>
+              <Textarea value={sessionForm.advancement_rules} onChange={(e) => setSessionForm({ ...sessionForm, advancement_rules: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="Optional" rows={2} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSessionDialog(false)} className="border-gray-700 text-gray-300">Cancel</Button>
-            <Button onClick={handleSaveSession} disabled={creatingSession} className="bg-blue-600 hover:bg-blue-700">
+            <Button variant="outline" onClick={() => setSessionDialog(false)} className="border-divider text-foreground-secondary">Cancel</Button>
+            <Button onClick={handleSaveSession} disabled={creatingSession} className="bg-motion hover:bg-motion-hover">
               {editingSession ? 'Update Session' : 'Create Session'}
             </Button>
           </DialogFooter>
@@ -970,17 +970,17 @@ export default function ClassSessionBuilder({
 
       {/* ── Delete Class Confirm ──────────────────────────────────────────── */}
       <AlertDialog open={!!deleteClassConfirm} onOpenChange={(o) => !o && setDeleteClassConfirm(null)}>
-        <AlertDialogContent className="bg-[#262626] border-gray-700">
-          <AlertDialogTitle className="text-white">Delete Class</AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-400">
+        <AlertDialogContent className="bg-surface-elevated border-divider">
+          <AlertDialogTitle className="text-foreground">Delete Class</AlertDialogTitle>
+          <AlertDialogDescription className="text-foreground-quiet">
             {(entriesByClass[deleteClassConfirm] || 0) > 0
               ? `This class has ${entriesByClass[deleteClassConfirm]} entr${entriesByClass[deleteClassConfirm] === 1 ? 'y' : 'ies'}. Remove them first.`
               : 'This will permanently delete this class and all its sessions.'}
           </AlertDialogDescription>
           <div className="flex justify-end gap-2">
-            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-divider text-foreground-secondary">Cancel</AlertDialogCancel>
             {(entriesByClass[deleteClassConfirm] || 0) === 0 && (
-              <AlertDialogAction onClick={() => handleDeleteClass(deleteClassConfirm)} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+              <AlertDialogAction onClick={() => handleDeleteClass(deleteClassConfirm)} className="bg-danger hover:bg-danger/80">Delete</AlertDialogAction>
             )}
           </div>
         </AlertDialogContent>
@@ -988,20 +988,20 @@ export default function ClassSessionBuilder({
 
       {/* ── Lock Confirm ─────────────────────────────────────────────────── */}
       <AlertDialog open={!!lockConfirm} onOpenChange={(o) => !o && setLockConfirm(null)}>
-        <AlertDialogContent className="bg-[#262626] border-gray-700">
-          <AlertDialogTitle className="text-white">
+        <AlertDialogContent className="bg-surface-elevated border-divider">
+          <AlertDialogTitle className="text-foreground">
             {sessions.find((s) => s.id === lockConfirm)?.status === 'Locked' ? 'Unlock Session' : 'Lock Session'}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-400">
+          <AlertDialogDescription className="text-foreground-quiet">
             {sessions.find((s) => s.id === lockConfirm)?.status === 'Locked'
               ? 'Unlock to allow editing again.'
               : 'Locking prevents all edits to this session.'}
           </AlertDialogDescription>
           <div className="flex justify-end gap-2">
-            <AlertDialogCancel className="border-gray-700 text-gray-300">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-divider text-foreground-secondary">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => { const s = sessions.find((s) => s.id === lockConfirm); if (s) handleToggleLock(s); }}
-              className="bg-yellow-600 hover:bg-yellow-700"
+              className="bg-warning hover:bg-warning/80"
             >
               Confirm
             </AlertDialogAction>
@@ -1024,24 +1024,24 @@ export default function ClassSessionBuilder({
 
       {/* ── Heat Generator Dialog ──────────────────────────────────────────── */}
       <Dialog open={quickGenDialog === 'heats'} onOpenChange={(o) => !o && setQuickGenDialog(null)}>
-        <DialogContent className="bg-[#262626] border-gray-700 max-w-sm">
+        <DialogContent className="bg-surface-elevated border-divider max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-white">Generate Heats</DialogTitle>
+            <DialogTitle className="text-foreground">Generate Heats</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Number of Entries</label>
-              <Input type="number" value={heatInputs.number_of_entries} onChange={(e) => setHeatInputs({ ...heatInputs, number_of_entries: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. 18" />
+              <label className="text-xs text-foreground-quiet block mb-1">Number of Entries</label>
+              <Input type="number" value={heatInputs.number_of_entries} onChange={(e) => setHeatInputs({ ...heatInputs, number_of_entries: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="e.g. 18" />
             </div>
             <div>
-              <label className="text-xs text-gray-400 block mb-1">Cars Per Heat</label>
-              <Input type="number" value={heatInputs.cars_per_heat} onChange={(e) => setHeatInputs({ ...heatInputs, cars_per_heat: e.target.value })} className="bg-[#1A1A1A] border-gray-600 text-white" placeholder="e.g. 8" />
+              <label className="text-xs text-foreground-quiet block mb-1">Cars Per Heat</label>
+              <Input type="number" value={heatInputs.cars_per_heat} onChange={(e) => setHeatInputs({ ...heatInputs, cars_per_heat: e.target.value })} className="bg-surface-interactive border-divider text-foreground" placeholder="e.g. 8" />
             </div>
                     <div>
-              <label className="text-xs text-gray-400 block mb-1">Event Day (optional)</label>
+              <label className="text-xs text-foreground-quiet block mb-1">Event Day (optional)</label>
               <Select value={quickGenDate || '__none'} onValueChange={(v) => setQuickGenDate(v === '__none' ? '' : v)}>
-                <SelectTrigger className="bg-[#1A1A1A] border-gray-600 text-white text-xs"><SelectValue placeholder="No day" /></SelectTrigger>
-                <SelectContent className="bg-[#262626] border-gray-700">
+                <SelectTrigger className="bg-surface-interactive border-divider text-foreground text-xs"><SelectValue placeholder="No day" /></SelectTrigger>
+                <SelectContent className="bg-surface-elevated border-divider">
                   <SelectItem value="__none">No day</SelectItem>
                   {[...eventDays].sort((a,b) => (a.sort_order||0)-(b.sort_order||0)).map(d => (
                     <SelectItem key={d.id} value={d.id}>{d.label} — {d.date}</SelectItem>
@@ -1049,15 +1049,15 @@ export default function ClassSessionBuilder({
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-foreground-quiet">
               {heatInputs.number_of_entries && heatInputs.cars_per_heat
                 ? `Will create ${Math.ceil(Number(heatInputs.number_of_entries) / Number(heatInputs.cars_per_heat))} heat${Math.ceil(Number(heatInputs.number_of_entries) / Number(heatInputs.cars_per_heat)) !== 1 ? 's' : ''}`
                 : 'Enter values to preview'}
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setQuickGenDialog(null)} className="border-gray-700 text-gray-300">Cancel</Button>
-            <Button onClick={() => generateSessions('heats', selectedClassForGen)} className="bg-blue-600 hover:bg-blue-700">Generate</Button>
+            <Button variant="outline" onClick={() => setQuickGenDialog(null)} className="border-divider text-foreground-secondary">Cancel</Button>
+            <Button onClick={() => generateSessions('heats', selectedClassForGen)} className="bg-motion hover:bg-motion-hover">Generate</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

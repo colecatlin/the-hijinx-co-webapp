@@ -21,8 +21,8 @@ export default function EventSessionsPanel() {
 
   if (!selectedEvent) {
     return (
-      <div className="bg-[#171717] border border-gray-800 rounded-lg p-8 text-center">
-        <p className="text-gray-400">Select an event to manage classes and sessions</p>
+      <div className="bg-surface border border-divider rounded-lg p-8 text-center">
+        <p className="text-foreground-quiet">Select an event to manage classes and sessions</p>
       </div>
     );
   }
