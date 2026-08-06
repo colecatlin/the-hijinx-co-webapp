@@ -3,11 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageShell from '@/components/shared/PageShell';
 import TrackCard from '@/components/tracks/TrackCard';
+import TrackMapTab from '@/components/tracks/TrackMapTab';
 import DirectoryFilters from '@/components/shared/DirectoryFilters';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Map } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TrackDirectory() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('list');
   const [filters, setFilters] = useState({
     track_type: 'all',
     surface: 'all',
@@ -118,25 +122,53 @@ export default function TrackDirectory() {
           sortOptions={sortOptions}
         />
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-72" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredTracks.map(track => (
-              <TrackCard key={track.id} track={track} nonClickable />
-            ))}
-          </div>
-        )}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-8 bg-transparent border-b border-gray-200 rounded-none w-full justify-start gap-0 h-auto p-0">
+            <TabsTrigger
+              value="list"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323] text-gray-400 px-4 pb-3 text-sm font-medium"
+            >
+              All Tracks
+            </TabsTrigger>
+            <TabsTrigger
+              value="map"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#232323] data-[state=active]:bg-transparent data-[state=active]:text-[#232323] text-gray-400 px-3 md:px-4 pb-3 text-sm font-medium flex items-center gap-1.5"
+            >
+              <Map className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Track Map</span>
+              <span className="sm:hidden">Map</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {!isLoading && filteredTracks.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600">No tracks found matching your filters.</p>
-          </div>
-        )}
+          <TabsContent value="list">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <Skeleton key={i} className="h-72" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredTracks.map(track => (
+                  <TrackCard key={track.id} track={track} nonClickable />
+                ))}
+              </div>
+            )}
+
+            {!isLoading && filteredTracks.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-600">No tracks found matching your filters.</p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="map">
+            <TrackMapTab
+              searchQuery={searchQuery}
+              trackTypeFilter={filters.track_type}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </PageShell>
   );
