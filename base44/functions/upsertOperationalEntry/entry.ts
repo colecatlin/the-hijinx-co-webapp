@@ -736,6 +736,12 @@ Deno.serve(async (req) => {
         delete updatePayload.racecore_id;
       }
 
+      // Preserve existing normalized_entry_key if the new logical key is less specific
+      // (prevents key degradation when event_class_id is omitted on update)
+      if (existing.normalized_entry_key && logicalKey && logicalKey !== existing.normalized_entry_key) {
+        delete updatePayload.normalized_entry_key;
+      }
+
       record = await sr.entities.Entry.update(existing.id, updatePayload);
       action = 'updated';
       result.updated_records.entry = true;

@@ -152,16 +152,26 @@ export default function EdgeCaseLab({ selectedEvent, isAdmin }) {
 
     const createdEntries = [];
     for (let i = 0; i < 2; i++) {
-      const entry = await base44.asServiceRole.entities.Entry.create({
-        event_id: selectedEvent.id,
-        driver_id: drivers[i].id,
-        car_number: 'TEST_DUP_001',
-        entry_status: 'Registered',
-        payment_status: 'Unpaid',
-        tech_status: 'Not Inspected',
-        notes: 'TEST_EDGE_CASE: Duplicate car number detection',
+      // Phase 4B: Route through upsertOperationalEntry for participation_id + ENTR assignment
+      const result = await base44.functions.invoke('upsertOperationalEntry', {
+        payload: {
+          event_id: selectedEvent.id,
+          driver_id: drivers[i].id,
+          car_number: 'TEST_DUP_001',
+          entry_status: 'Registered',
+          payment_status: 'Unpaid',
+          tech_status: 'Not Inspected',
+          notes: 'TEST_EDGE_CASE: Duplicate car number detection',
+        },
+        source_path: 'EdgeCaseLab:duplicate_car_number',
+        dry_run: false,
       });
-      createdEntries.push(entry.id);
+      if (result && result.entry_id) {
+        createdEntries.push(result.entry_id);
+      } else if (result && result.resolution_status === 'review') {
+        // Identity resolution returned review — expected for test drivers without identity chain
+        createdEntries.push(null);
+      }
     }
 
     await base44.asServiceRole.entities.OperationLog.create({
