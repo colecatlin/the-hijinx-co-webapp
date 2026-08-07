@@ -1,18 +1,19 @@
 {
   "name": "Vehicle",
   "type": "object",
+  "description": "First-class racing vehicle identity with ownership, claiming, public experience, statistics, achievements, timeline, chassis history, engine history, and media. Phase 12 elevates Vehicle to a permanent identity object within RaceCore, mirroring the RacerProfile and Team architectures. A Vehicle represents a long-lived racing asset whose history spans multiple owners, teams, drivers, seasons, classes, and championships.",
   "properties": {
     "owner_driver_id": {
       "type": "string",
-      "description": "Reference to Driver (optional)"
+      "description": "Reference to Driver (legacy current owner \u2014 retained for compatibility)"
     },
     "owner_team_id": {
       "type": "string",
-      "description": "Reference to Team (optional)"
+      "description": "Reference to Team (legacy current owner \u2014 retained for compatibility)"
     },
     "nickname": {
       "type": "string",
-      "description": "Vehicle nickname/name"
+      "description": "Vehicle nickname or display name"
     },
     "vehicle_type": {
       "type": "string",
@@ -57,7 +58,304 @@
         "archived"
       ],
       "default": "active",
-      "description": "Archive status"
+      "description": "Legacy archive status (retained for compatibility). Use is_archived + racing_status for Phase 12 lifecycle."
+    },
+    "slug": {
+      "type": "string",
+      "description": "Phase 12: URL-friendly unique identifier for public profile routing"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Phase 12: Full public biography for the vehicle"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Phase 12: Short headline or identity statement"
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "Phase 12: Primary profile image"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Phase 12: Hero banner image for profile page"
+    },
+    "racing_status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Part Time",
+        "Historic",
+        "Inactive"
+      ],
+      "default": "Active",
+      "description": "Phase 12: Vehicle's operational racing activity status."
+    },
+    "visibility_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "live"
+      ],
+      "default": "draft",
+      "description": "Phase 12: Controls public profile visibility."
+    },
+    "primary_discipline": {
+      "type": "string",
+      "enum": [
+        "Stock Car",
+        "Open Wheel",
+        "Sports Car",
+        "Touring Car",
+        "Off Road",
+        "Dirt Oval",
+        "Rally",
+        "Rallycross",
+        "Drift",
+        "Drag Racing",
+        "Motorcycle",
+        "Karting",
+        "Snowmobile",
+        "Watercraft",
+        "Aviation",
+        "Alternative"
+      ],
+      "description": "Phase 12: Primary racing discipline"
+    },
+    "build_year": {
+      "type": "number",
+      "description": "Phase 12: Year the vehicle was built/constructed (may differ from model year)"
+    },
+    "retired_year": {
+      "type": "number",
+      "description": "Phase 12: Year the vehicle was retired from active competition"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Phase 12: Vehicle or team website"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "facebook_url": {
+      "type": "string"
+    },
+    "tiktok_url": {
+      "type": "string"
+    },
+    "x_url": {
+      "type": "string"
+    },
+    "youtube_url": {
+      "type": "string"
+    },
+    "chassis_id": {
+      "type": "string",
+      "description": "Phase 12: Chassis identifier (serial number or build number). Tracks chassis identity separately from appearance."
+    },
+    "chassis_build_year": {
+      "type": "number",
+      "description": "Phase 12: Year the chassis was constructed"
+    },
+    "chassis_builder": {
+      "type": "string",
+      "description": "Phase 12: Builder or fabricator of the chassis (e.g., Jimco, Geiser, Racer X)"
+    },
+    "chassis_model": {
+      "type": "string",
+      "description": "Phase 12: Chassis model designation (e.g., Geiser G6, Jimco X3)"
+    },
+    "chassis_notes": {
+      "type": "string",
+      "description": "Phase 12: Notes on chassis rebuilds, updates, or modifications"
+    },
+    "engine_platform": {
+      "type": "string",
+      "description": "Phase 12: Engine platform or family (e.g., LS3, Ford EcoBoost, KTM 450)"
+    },
+    "engine_manufacturer": {
+      "type": "string",
+      "description": "Phase 12: Engine manufacturer (e.g., Chevrolet, Ford, KTM)"
+    },
+    "engine_displacement": {
+      "type": "string",
+      "description": "Phase 12: Engine displacement (e.g., 6.2L, 450cc)"
+    },
+    "engine_configuration": {
+      "type": "string",
+      "description": "Phase 12: Engine configuration (e.g., V8, Inline-4, Single)"
+    },
+    "engine_notes": {
+      "type": "string",
+      "description": "Phase 12: Notes on engine builds, refreshes, or performance specs"
+    },
+    "engine_builder": {
+      "type": "string",
+      "description": "Phase 12: Engine builder or shop (e.g., Gary Bingham Racing, Pro Line)"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "Phase 12: User ID of the primary owner of this Vehicle. Null = unclaimed. Set when a claim is approved. Survives driver/team changes."
+    },
+    "owner_person_identity_id": {
+      "type": "string",
+      "description": "Phase 12: PersonIdentity ID of the primary owner. Links the vehicle to the person-centered identity chain."
+    },
+    "co_owner_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Phase 12: Additional co-owner User IDs."
+    },
+    "claim_status": {
+      "type": "string",
+      "enum": [
+        "unclaimed",
+        "pending",
+        "claimed",
+        "rejected"
+      ],
+      "default": "unclaimed",
+      "description": "Phase 12: Claim lifecycle state."
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 12: When ownership was granted."
+    },
+    "claimed_by_user_id": {
+      "type": "string",
+      "description": "Phase 12: User ID who submitted the current/most-recent claim."
+    },
+    "claim_submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 12: When the current/most-recent claim was submitted."
+    },
+    "claim_evidence": {
+      "type": "object",
+      "description": "Phase 12: Evidence submitted with the claim.",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "contact_email": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "attachment_urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "claim_history": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "approved",
+              "rejected",
+              "revoked",
+              "transferred"
+            ]
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "reviewed_by": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence_summary": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Phase 12: Append-only audit trail of all claim lifecycle events."
+    },
+    "claim_reviewed_by": {
+      "type": "string",
+      "description": "Phase 12: Admin user ID who reviewed the most recent claim."
+    },
+    "claim_reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 12: When the most recent claim was reviewed."
+    },
+    "claim_rejection_reason": {
+      "type": "string",
+      "description": "Phase 12: Reason given when a claim was rejected."
+    },
+    "trending_score": {
+      "type": "number",
+      "default": 0,
+      "description": "Phase 12: Dynamic trending score"
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Phase 12: Normalized lowercase name for deduplication"
+    },
+    "canonical_slug": {
+      "type": "string",
+      "description": "Phase 12: Canonical slug derived from normalized name for deduplication"
+    },
+    "canonical_key": {
+      "type": "string",
+      "description": "Phase 12: Canonical unique key for deduplication"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "Phase 12: Source system or import job that created this record"
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "Phase 12: UID from external data source for deduplication"
+    },
+    "sync_last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 12: Timestamp when last seen during a sync operation"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Phase 12: Whether this record is archived (replaces legacy status field)"
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 12: When this record was archived"
+    },
+    "archived_by": {
+      "type": "string",
+      "description": "Phase 12: User ID who archived this record"
+    },
+    "archive_reason": {
+      "type": "string",
+      "description": "Phase 12: Reason for archiving"
+    },
+    "racecore_id": {
+      "type": "string",
+      "description": "Phase 12: Immutable RaceCore ID (VEHC + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
     }
   },
   "required": []

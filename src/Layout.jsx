@@ -65,7 +65,7 @@ export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const EMPTY_RESULTS = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [] };
+  const EMPTY_RESULTS = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [], vehicles: [] };
   const [searchResults, setSearchResults] = useState(EMPTY_RESULTS);
   const [searchLoading, setSearchLoading] = useState(false);
   const searchInputRef = React.useRef(null);
@@ -120,13 +120,14 @@ export default function Layout({ children, currentPageName }) {
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       const q = searchQuery.toLowerCase();
-      const [allStories, allRacerProfiles, allEvents, allTracks, allSeries, allTeams] = await Promise.all([
+      const [allStories, allRacerProfiles, allEvents, allTracks, allSeries, allTeams, allVehicles] = await Promise.all([
         base44.entities.OutletStory.list('-published_date', 200),
         base44.entities.RacerProfile.list('-created_date', 200),
         base44.entities.Event.list('-event_date', 200),
         base44.entities.Track.list('-created_date', 200),
         base44.entities.Series.list('-created_date', 200),
         base44.entities.Team.list('-created_date', 200),
+        base44.entities.Vehicle.list('-created_date', 200),
       ]);
       setSearchResults({
         stories: allStories.filter(s =>
@@ -159,6 +160,13 @@ export default function Layout({ children, currentPageName }) {
         teams: allTeams.filter(t =>
           t.name?.toLowerCase().includes(q) || t.location_city?.toLowerCase().includes(q) ||
           t.primary_discipline?.toLowerCase().includes(q)
+        ).slice(0, 4),
+        vehicles: allVehicles.filter(v =>
+          v.visibility_status !== 'draft' && !v.is_archived &&
+          (v.nickname?.toLowerCase().includes(q) || v.manufacturer?.toLowerCase().includes(q) ||
+           v.model?.toLowerCase().includes(q) || v.vehicle_type?.toLowerCase().includes(q) ||
+           v.chassis_id?.toLowerCase().includes(q) || v.chassis_builder?.toLowerCase().includes(q) ||
+           v.engine_platform?.toLowerCase().includes(q) || v.number_default?.toLowerCase().includes(q))
         ).slice(0, 4),
       });
       setSearchLoading(false);
@@ -336,7 +344,7 @@ export default function Layout({ children, currentPageName }) {
                         <input
                           ref={searchInputRef}
                           type="text"
-                          placeholder="Search stories, drivers, events, tracks, series, teams..."
+                          placeholder="Search stories, drivers, events, tracks, series, teams, vehicles..."
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
                           className="flex-1 bg-transparent outline-none text-sm font-medium"
@@ -455,6 +463,23 @@ export default function Layout({ children, currentPageName }) {
                                     onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {team.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {searchResults.vehicles.length > 0 && (
+                            <div>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>VEHICLES</p>
+                              <div className="space-y-0.5">
+                                {searchResults.vehicles.map(vehicle => (
+                                  <Link key={vehicle.id} to={vehicle.slug ? `/vehicles/${vehicle.slug}` : `/VehicleProfile?id=${vehicle.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    {vehicle.nickname || `${vehicle.manufacturer || ''} ${vehicle.model || ''}`.trim() || 'Vehicle'}
                                   </Link>
                                 ))}
                               </div>
