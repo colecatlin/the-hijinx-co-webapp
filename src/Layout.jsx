@@ -405,7 +405,7 @@ export default function Layout({ children, currentPageName }) {
                               <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>EVENTS</p>
                               <div className="space-y-0.5">
                                 {searchResults.events.map(event => (
-                                  <Link key={event.id} to={`/EventProfile?id=${event.id}`}
+                                  <Link key={event.id} to={event.slug || event.canonical_slug ? `/events/${event.slug || event.canonical_slug}` : `/EventProfile?id=${event.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
                                     style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}

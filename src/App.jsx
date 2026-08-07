@@ -39,6 +39,7 @@ import RaceCoreTrackEditor from './pages/RaceCoreTrackEditor';
 import RaceCoreSeriesEditor from './pages/RaceCoreSeriesEditor';
 import RaceCoreEventEditor from './pages/RaceCoreEventEditor';
 import VehicleProfile from './pages/VehicleProfile';
+import EventProfileRouteWrapper from './pages/EventProfileRouteWrapper';
 import ProfileSetup from './pages/ProfileSetup';
 import ClaimUsername from './pages/ClaimUsername';
 import UsernameRequiredGuard from '@/components/onboarding/UsernameRequiredGuard';
@@ -231,6 +232,8 @@ const AuthenticatedApp = () => {
       <Route path="/drivers/:slug" element={<LayoutWrapper currentPageName="DriverProfile"><DriverSlugRedirect /></LayoutWrapper>} />
       <Route path="/series/:slug" element={<LayoutWrapper currentPageName="SeriesDetail"><SeriesDetailRouteWrapper /></LayoutWrapper>} />
       <Route path="/vehicles/:slug" element={<LayoutWrapper currentPageName="VehicleProfile"><VehicleProfile /></LayoutWrapper>} />
+      {/* Phase 13: Canonical Event profile route — /events/:slug */}
+      <Route path="/events/:slug" element={<LayoutWrapper currentPageName="EventProfile"><EventProfileRouteWrapper /></LayoutWrapper>} />
       <Route path="/VehicleProfile" element={<LayoutWrapper currentPageName="VehicleProfile"><VehicleProfile /></LayoutWrapper>} />
       <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
       <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />

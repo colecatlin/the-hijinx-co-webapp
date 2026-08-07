@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Event name"
     },
+    "slug": {
+      "type": "string",
+      "description": "Phase 13: URL-friendly unique identifier for public profile routing (/events/:slug)"
+    },
     "track_id": {
       "type": "string",
       "description": "Reference to Track"
@@ -189,6 +193,84 @@
     "event_promo_video_url": {
       "type": "string",
       "description": "Promotional video URL for the event"
+    },
+    "description": {
+      "type": "string",
+      "description": "Phase 13: Full public event description for the race weekend"
+    },
+    "ticket_url": {
+      "type": "string",
+      "description": "Phase 13: Ticket purchase link"
+    },
+    "broadcast_url": {
+      "type": "string",
+      "description": "Phase 13: Broadcast / livestream URL"
+    },
+    "registration_url": {
+      "type": "string",
+      "description": "Phase 13: Registration link for racers"
+    },
+    "event_notes": {
+      "type": "string",
+      "description": "Phase 13: Public notes displayed on the event profile"
+    },
+    "spectator_info": {
+      "type": "object",
+      "description": "Phase 13: Spectator information for the race weekend",
+      "properties": {
+        "parking": {
+          "type": "string"
+        },
+        "camping": {
+          "type": "string"
+        },
+        "gates": {
+          "type": "string"
+        },
+        "paddock_access": {
+          "type": "string"
+        },
+        "food": {
+          "type": "string"
+        },
+        "merchandise": {
+          "type": "string"
+        },
+        "accessibility": {
+          "type": "string"
+        },
+        "pit_access": {
+          "type": "string"
+        },
+        "fan_zones": {
+          "type": "string"
+        },
+        "concerts": {
+          "type": "string"
+        },
+        "special_events": {
+          "type": "string"
+        }
+      }
+    },
+    "weather_info": {
+      "type": "object",
+      "description": "Phase 13: Weather placeholder for race weekend (populated by future integration)",
+      "properties": {
+        "forecast": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     },
     "normalized_name": {
       "type": "string",
