@@ -60,11 +60,14 @@ export default function RacerDirectory() {
   );
 
   // Load legacy Drivers for compatibility fields (primary_number, team, programs)
+  // Production Hardening: only load if any RacerProfile has a legacy_driver_id link
   const racerProfileDriverIds = publicRacers.map(rp => rp.legacy_driver_id).filter(Boolean);
+  const hasLegacyDriverLinks = racerProfileDriverIds.length > 0;
   const { data: allDrivers = [] } = useQuery({
     queryKey: ['drivers-for-racers'],
     queryFn: () => base44.entities.Driver.list('-created_date', 500),
     staleTime: 5 * 60 * 1000,
+    enabled: hasLegacyDriverLinks,
   });
   const driverMap = useMemo(() => {
     const m = {};

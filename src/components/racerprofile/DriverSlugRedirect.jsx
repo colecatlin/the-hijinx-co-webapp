@@ -16,6 +16,24 @@ import { base44 } from '@/api/base44Client';
 import { resolveRacerProfileByLegacyDriverId } from '@/components/racerprofile/publicRacerProfileApi';
 import DriverProfile from '@/pages/DriverProfile';
 
+// Production Hardening — log redirect usage for observability
+async function logRedirect(slug, driverId, racerProfileSlug, resolved) {
+  try {
+    await base44.functions.invoke('logActivityFeedItem', {
+      type: 'platform_health_monitor',
+      title: 'driver_redirect_usage',
+      description: resolved
+        ? `Redirect /drivers/${slug} → /racers/${racerProfileSlug}`
+        : `Redirect /drivers/${slug} → legacy fallback (no RacerProfile)`,
+      entity_type: 'Driver',
+      entity_id: driverId || null,
+      metadata: { monitor_event: 'driver_redirect_usage', slug, racer_profile_slug: racerProfileSlug, resolved },
+    });
+  } catch {
+    // Non-critical — monitoring must not break redirects
+  }
+}
+
 export default function DriverSlugRedirect() {
   const { slug } = useParams();
   const navigate = useNavigate();
