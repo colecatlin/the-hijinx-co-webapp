@@ -1,6 +1,7 @@
 {
   "name": "Team",
   "type": "object",
+  "description": "First-class motorsports team identity with ownership, claiming, public experience, statistics, achievements, timeline, and media. Phase 11 elevates Team to a permanent identity object within RaceCore, mirroring the RacerProfile architecture.",
   "properties": {
     "name": {
       "type": "string",
@@ -8,19 +9,31 @@
     },
     "slug": {
       "type": "string",
-      "description": "URL-friendly identifier"
+      "description": "URL-friendly unique identifier for public profile routing"
     },
     "headquarters_city": {
       "type": "string",
-      "description": "City where team is based"
+      "description": "City where team is based (permanent HQ)"
     },
     "headquarters_state": {
       "type": "string",
-      "description": "State or region"
+      "description": "State or region (permanent HQ)"
     },
     "country": {
       "type": "string",
       "description": "Country"
+    },
+    "racing_base_city": {
+      "type": "string",
+      "description": "Current racing operations base city (may differ from HQ)"
+    },
+    "racing_base_state": {
+      "type": "string",
+      "description": "Current racing operations base state or region"
+    },
+    "racing_base_country": {
+      "type": "string",
+      "description": "Current racing operations base country"
     },
     "primary_discipline": {
       "type": "string",
@@ -85,19 +98,50 @@
     },
     "description_summary": {
       "type": "string",
-      "description": "Team description"
+      "description": "Short team description (legacy field, retained for compatibility)"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Full public biography for the team"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Short headline or identity statement"
     },
     "logo_url": {
       "type": "string",
       "description": "Team logo image URL"
     },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Hero banner image for profile page"
+    },
     "manufacturer": {
       "type": "string",
-      "description": "Vehicle manufacturer"
+      "description": "Primary vehicle manufacturer"
     },
     "manufacturer_logo_url": {
       "type": "string",
       "description": "Manufacturer logo image URL"
+    },
+    "website_url": {
+      "type": "string",
+      "description": "Official team website"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "facebook_url": {
+      "type": "string"
+    },
+    "tiktok_url": {
+      "type": "string"
+    },
+    "x_url": {
+      "type": "string"
+    },
+    "youtube_url": {
+      "type": "string"
     },
     "calendar_id": {
       "type": "string",
@@ -149,6 +193,119 @@
     "archive_reason": {
       "type": "string",
       "description": "R9CS: Reason for archiving"
+    },
+    "owner_user_id": {
+      "type": "string",
+      "description": "Phase 11: User ID of the primary owner of this Team. Null = unclaimed. Set when a claim is approved. Survives roster and sponsorship changes."
+    },
+    "owner_person_identity_id": {
+      "type": "string",
+      "description": "Phase 11: PersonIdentity ID of the primary owner. Links the team to the person-centered identity chain."
+    },
+    "co_owner_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Phase 11: Additional co-owner User IDs. Primary owner is in owner_user_id; co-owners have equivalent management access."
+    },
+    "claim_status": {
+      "type": "string",
+      "enum": [
+        "unclaimed",
+        "pending",
+        "claimed",
+        "rejected"
+      ],
+      "default": "unclaimed",
+      "description": "Phase 11: Claim lifecycle state. unclaimed = no claim submitted; pending = claim submitted awaiting admin review; claimed = owner verified; rejected = claim denied (resubmittable with new evidence)."
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 11: When ownership was granted (claim approved)."
+    },
+    "claimed_by_user_id": {
+      "type": "string",
+      "description": "Phase 11: User ID who submitted the current/most-recent claim. May differ from owner_user_id until approved."
+    },
+    "claim_submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 11: When the current/most-recent claim was submitted."
+    },
+    "claim_evidence": {
+      "type": "object",
+      "description": "Phase 11: Evidence submitted with the claim. Shape: { role, contact_email, notes, attachment_urls }.",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "Claimant's role (e.g. owner, manager, representative)"
+        },
+        "contact_email": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "attachment_urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "claim_history": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "approved",
+              "rejected",
+              "revoked",
+              "transferred"
+            ]
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "reviewed_by": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidence_summary": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Phase 11: Append-only audit trail of all claim lifecycle events."
+    },
+    "claim_reviewed_by": {
+      "type": "string",
+      "description": "Phase 11: Admin user ID who reviewed the most recent claim."
+    },
+    "claim_reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 11: When the most recent claim was reviewed."
+    },
+    "claim_rejection_reason": {
+      "type": "string",
+      "description": "Phase 11: Reason given when a claim was rejected."
     }
   },
   "required": [

@@ -18,6 +18,11 @@ import { createPageUrl } from '@/components/utils';
 import TeamScheduleResults from '@/components/teams/TeamScheduleResults';
 import TeamDriversSection from '@/components/teams/TeamDriversSection';
 import PublicMediaGallery from '@/components/media/PublicMediaGallery';
+import TeamTimeline from '@/components/teams/TeamTimeline';
+import TeamAchievementsGrid from '@/components/teams/TeamAchievementsGrid';
+import TeamStatisticsBreakdown from '@/components/teams/TeamStatisticsBreakdown';
+import TeamRosterPanel from '@/components/teams/TeamRosterPanel';
+import TeamCompletenessIndicator from '@/components/teams/TeamCompletenessIndicator';
 
 function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
   if (!dateStr) return 'TBA';
@@ -27,6 +32,10 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: MapPin },
+  { id: 'roster', label: 'Roster', icon: Users },
+  { id: 'timeline', label: 'Timeline', icon: Calendar },
+  { id: 'stats', label: 'Statistics', icon: TrendingUp },
+  { id: 'achievements', label: 'Achievements', icon: Trophy },
   { id: 'drivers', label: 'Drivers', icon: Users },
   { id: 'programs', label: 'Programs', icon: Flag },
   { id: 'schedule', label: 'Schedule & Results', icon: Calendar },
@@ -43,6 +52,14 @@ export default function TeamProfile() {
     queryFn: () => getTeamProfileData({ id: teamSlug, slug: teamSlug }),
     enabled: !!teamSlug,
   });
+
+  // Phase 11 — Computed team experience data
+  const { data: experienceData } = useQuery({
+    queryKey: ['teamExperience', teamSlug],
+    queryFn: () => base44.functions.invoke('getTeamExperience', { slug: teamSlug, allow_draft: true }),
+    enabled: !!teamSlug,
+  });
+  const experience = experienceData?.data || experienceData || null;
 
   const team           = profileData?.team           ?? null;
   const rosterDrivers  = profileData?.roster_drivers ?? [];
@@ -120,6 +137,9 @@ export default function TeamProfile() {
         description={team.description_summary || teamDesc}
         image={teamImg}
       />
+      {experience?.seo?.structured_data && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(experience.seo.structured_data) }} />
+      )}
 
       {/* ── HERO ── */}
       <div className="relative w-full h-[280px] bg-[#0A0A0A] overflow-hidden">
@@ -189,6 +209,13 @@ export default function TeamProfile() {
       {/* ── CONTENT ── */}
       <div className="max-w-7xl mx-auto px-6 py-8">
 
+        {/* SIDEBAR — Completeness indicator */}
+        {experience?.profile_completeness && (
+          <div className="mb-6 max-w-xs">
+            <TeamCompletenessIndicator completeness={experience.profile_completeness} />
+          </div>
+        )}
+
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
@@ -236,6 +263,38 @@ export default function TeamProfile() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ROSTER */}
+        {activeTab === 'roster' && (
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Team Roster</h2>
+            <TeamRosterPanel roster={experience?.roster} />
+          </div>
+        )}
+
+        {/* TIMELINE */}
+        {activeTab === 'timeline' && (
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Career Timeline</h2>
+            <TeamTimeline timeline={experience?.timeline || []} />
+          </div>
+        )}
+
+        {/* STATISTICS */}
+        {activeTab === 'stats' && (
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Statistics</h2>
+            <TeamStatisticsBreakdown statistics={experience?.statistics} />
+          </div>
+        )}
+
+        {/* ACHIEVEMENTS */}
+        {activeTab === 'achievements' && (
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Achievements</h2>
+            <TeamAchievementsGrid achievements={experience?.achievements || []} />
           </div>
         )}
 
