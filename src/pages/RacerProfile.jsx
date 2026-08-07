@@ -45,6 +45,12 @@ import DriverCareerTab from '@/components/drivers/DriverCareerTab';
 import DriverSponsorsTab from '@/components/drivers/DriverSponsorsTab';
 import ClaimProfileButton from '@/components/identity/ClaimProfileButton';
 import RacerProfileOwnerEditor from '@/components/racerprofile/RacerProfileOwnerEditor';
+import CareerTimeline from '@/components/racerprofile/CareerTimeline';
+import AchievementsGrid from '@/components/racerprofile/AchievementsGrid';
+import TeamHistoryPanel from '@/components/racerprofile/TeamHistoryPanel';
+import VehicleHistoryPanel from '@/components/racerprofile/VehicleHistoryPanel';
+import ProfileCompletenessIndicator from '@/components/racerprofile/ProfileCompletenessIndicator';
+import StatisticsBreakdown from '@/components/racerprofile/StatisticsBreakdown';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -68,6 +74,9 @@ function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
 const TABS = [
   { id: 'overview',  label: 'Overview' },
   { id: 'career',    label: 'Career' },
+  { id: 'timeline',  label: 'Timeline' },
+  { id: 'stats',     label: 'Statistics' },
+  { id: 'achievements', label: 'Achievements' },
   { id: 'schedule',  label: 'Schedule & Results' },
   { id: 'media',     label: 'Media' },
   { id: 'sponsors',  label: 'Sponsors' },
@@ -93,6 +102,15 @@ export default function RacerProfile() {
     enabled: !!routeSlug,
     ...DQ,
   });
+
+  // Phase 10 — Computed experience data (timeline, stats, achievements, team/vehicle history, completeness)
+  const { data: experienceData } = useQuery({
+    queryKey: ['racerProfileExperience', routeSlug],
+    queryFn: () => base44.functions.invoke('getRacerProfileExperience', { slug: routeSlug, allow_draft: user?.role === 'admin' }),
+    enabled: !!routeSlug,
+    ...DQ,
+  });
+  const experience = experienceData?.data || experienceData || null;
 
   const racerProfile = profileData?.racerProfile ?? null;
   const identity = profileData?.identity ?? null;
@@ -222,6 +240,9 @@ export default function RacerProfile() {
         image={heroImg || profileImg || SITE_FALLBACK_IMAGE}
         type="profile"
       />
+      {experience?.seo?.structured_data && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(experience.seo.structured_data) }} />
+      )}
 
       <MobileBackHeader tone="light" title={fullName} to="/Directory?cat=racers" />
 
@@ -436,6 +457,9 @@ export default function RacerProfile() {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {experience?.profile_completeness && (
+                <ProfileCompletenessIndicator completeness={experience.profile_completeness} />
+              )}
               {profileImg && (
                 <div className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
                   <img src={profileImg} alt={fullName} className="w-full object-cover max-h-[360px]" />
@@ -513,13 +537,51 @@ export default function RacerProfile() {
 
         {/* CAREER TAB */}
         {activeTab === 'career' && (
-          <div className="pb-12">
-            <h2 className="text-2xl font-black text-[#232323] mb-6">Career History</h2>
-            {careerEntries.length > 0 && legacyDriver ? (
-              <DriverCareerTab driverId={legacyDriver.id} initialEntries={careerEntries} />
-            ) : (
-              <p className="text-gray-400 text-sm">No career history available.</p>
+          <div className="pb-12 space-y-8">
+            <div>
+              <h2 className="text-2xl font-black text-[#232323] mb-6">Career History</h2>
+              {careerEntries.length > 0 && legacyDriver ? (
+                <DriverCareerTab driverId={legacyDriver.id} initialEntries={careerEntries} />
+              ) : (
+                <p className="text-gray-400 text-sm">No career history available.</p>
+              )}
+            </div>
+            {experience?.team_history?.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-black text-[#232323] mb-4">Team History</h2>
+                <TeamHistoryPanel teamHistory={experience.team_history} />
+              </div>
             )}
+            {experience?.vehicle_history?.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-black text-[#232323] mb-4">Vehicle History</h2>
+                <VehicleHistoryPanel vehicleHistory={experience.vehicle_history} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TIMELINE TAB */}
+        {activeTab === 'timeline' && (
+          <div className="pb-12">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Career Timeline</h2>
+            <CareerTimeline timeline={experience?.timeline || []} />
+          </div>
+        )}
+
+        {/* STATISTICS TAB */}
+        {activeTab === 'stats' && (
+          <div className="pb-12">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Statistics</h2>
+            <StatisticsBreakdown statistics={experience?.statistics} />
+          </div>
+        )}
+
+        {/* ACHIEVEMENTS TAB */}
+        {activeTab === 'achievements' && (
+          <div className="pb-12">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Achievements</h2>
+            <AchievementsGrid achievements={experience?.achievements || []} />
           </div>
         )}
 
