@@ -19,7 +19,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { getRacerProfilePageData, isRacerProfilePublic } from '@/components/racerprofile/publicRacerProfileApi';
 import { racerProfileToDriverShape, getRacerProfileUrl } from '@/components/racerprofile/racerProfileAdapter';
@@ -44,6 +44,7 @@ import PublicMediaGallery from '@/components/media/PublicMediaGallery';
 import DriverCareerTab from '@/components/drivers/DriverCareerTab';
 import DriverSponsorsTab from '@/components/drivers/DriverSponsorsTab';
 import ClaimProfileButton from '@/components/identity/ClaimProfileButton';
+import RacerProfileOwnerEditor from '@/components/racerprofile/RacerProfileOwnerEditor';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -75,6 +76,7 @@ const TABS = [
 export default function RacerProfile() {
   const { slug: routeSlug } = useContext(RacerProfileRouteContext) || {};
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
@@ -307,6 +309,18 @@ export default function RacerProfile() {
             <SocialShareButtons url={window.location.href} title={`${fullName} - Racer Profile`} description="" />
           </div>
         </div>
+
+        {/* OWNER EDIT PANEL — only visible to approved owners, managers, and admins */}
+        {racerProfile && user && (
+          <RacerProfileOwnerEditor
+            racerProfile={racerProfile}
+            identity={identity}
+            user={user}
+            onUpdated={() => {
+              queryClient.invalidateQueries({ queryKey: ['racerProfileData', routeSlug] });
+            }}
+          />
+        )}
 
         {/* TAB NAV */}
         <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mt-2 mb-6 scrollbar-hide">

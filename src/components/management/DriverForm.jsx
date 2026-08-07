@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Lock, AlertTriangle, Shield } from 'lucide-react';
 import DateInput from '@/components/shared/DateInput';
 import LocationFields from '@/components/shared/LocationFields';
 import { useDisciplines } from '@/hooks/useDisciplines';
+import { isDriverWriteAllowed } from '@/lib/driverReadOnly';
 
 export default function DriverForm({ driver, onClose }) {
   const { disciplines: disciplineList = [] } = useDisciplines();
@@ -26,7 +27,29 @@ export default function DriverForm({ driver, onClose }) {
     primary_discipline: '',
   });
 
+  // ── Driver read-only enforcement ──
+  // Driver is read-only in normal UI. Admin repair mode unlocks compatibility fields.
+  const [repairMode, setRepairMode] = useState(false);
+  const [enforcementChecked, setEnforcementChecked] = useState(false);
+  const [enforcementResult, setEnforcementResult] = useState(null);
+
   const queryClient = useQueryClient();
+
+  // Check enforcement on mount
+  React.useEffect(() => {
+    const checkEnforcement = async () => {
+      const result = await isDriverWriteAllowed(driver ? 'update' : 'create', {
+        source_operation: 'driver_form',
+      });
+      setEnforcementResult(result);
+      setEnforcementChecked(true);
+      // If admin, allow repair mode toggle
+      if (result.auth_source === 'admin') {
+        // Admin can enable repair mode
+      }
+    };
+    checkEnforcement();
+  }, [driver?.id]);
 
   // ── Normalization helpers (mirror backend logic) ──
   const normalizeName = (value) => {
@@ -68,6 +91,21 @@ export default function DriverForm({ driver, onClose }) {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
+      // ── Driver read-only enforcement check ──
+      // Block save unless in admin repair mode or allowlisted compat service
+      if (!repairMode) {
+        throw new Error('Driver is read-only. Use the RacerProfile page to edit public fields, or enable Admin Repair Mode for compatibility changes.');
+      }
+
+      // Log the admin repair attempt through enforcement backend
+      const enforcementCheck = await isDriverWriteAllowed(driver ? 'update' : 'create', {
+        source_operation: 'driver_form_admin_repair',
+        driver_id: driver?.id,
+      });
+      if (!enforcementCheck.allowed && enforcementCheck.auth_source !== 'admin') {
+        throw new Error(enforcementCheck.reason || 'Driver write blocked by enforcement.');
+      }
+
       let payload = { ...data };
 
       if (!driver) {
@@ -165,7 +203,34 @@ export default function DriverForm({ driver, onClose }) {
           </h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white border border-gray-200 rounded-lg p-6">
+        {/* ── Driver Read-Only Banner ── */}
+        <div className={`border rounded-lg p-4 mb-6 ${repairMode ? 'bg-orange-50 border-orange-300' : 'bg-blue-50 border-blue-200'}`}>
+          <div className="flex items-start gap-3">
+            {repairMode ? <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" /> : <Lock className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />}
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-gray-800 mb-1">
+                {repairMode ? 'Admin Repair Mode — Driver Compatibility' : 'Driver is Read-Only'}
+              </h3>
+              <p className="text-xs text-gray-600 mb-2">
+                {repairMode
+                  ? 'You are editing Driver compatibility fields directly. This is logged as an admin repair. Use this only for data correction that cannot be done through the modern identity chain.'
+                  : 'Driver is a compatibility-only entity. Public profile fields should be edited on the RacerProfile page. Governed identity fields (legal name, DOB) should be edited through PersonIdentity admin tools.'}
+              </p>
+              {enforcementChecked && enforcementResult?.auth_source === 'admin' && (
+                <button
+                  type="button"
+                  onClick={() => setRepairMode(!repairMode)}
+                  className={`text-xs font-semibold flex items-center gap-1 ${repairMode ? 'text-orange-700' : 'text-blue-700'} hover:underline`}
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  {repairMode ? 'Exit Repair Mode' : 'Enable Admin Repair Mode'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className={`space-y-6 bg-white border border-gray-200 rounded-lg p-6 ${!repairMode ? 'opacity-60 pointer-events-none' : ''}`}>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">First Name *</label>

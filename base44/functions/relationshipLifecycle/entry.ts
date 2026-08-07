@@ -29,8 +29,11 @@ import {
   emitRelationshipEvent,
   RELATIONSHIP_EVENTS,
 } from '../../shared/relationshipEvents.ts';
+import { driverCollaboratorDeprecatedError } from '../../shared/driverWriteEnforcement.ts';
 
 // EntityCollaborator.entity_type enum — the only org shapes this engine serves.
+// Driver is retained in the set for legacy read compatibility but is blocked
+// for new collaborator creation below (driver_collaborator_deprecated).
 const ALLOWED_ENTITY_TYPES = new Set(['Driver', 'Team', 'Track', 'Series', 'Event']);
 
 // Legacy `role` field is required by the schema but superseded by role_key.
@@ -131,6 +134,30 @@ async function handleCreate(base44: any, user: any, body: any) {
   }
   if (!ALLOWED_ENTITY_TYPES.has(entityType)) {
     return bad(`Invalid entity_type: ${entityType}`);
+  }
+
+  // ── Driver collaborator deprecation ──
+  // New Driver-based ownership/collaborator relationships are rejected.
+  // Use PersonIdentity or RacerProfile instead. Admin repair goes through
+  // a separate allowlisted backend path, not this lifecycle function.
+  if (entityType === 'Driver') {
+    // Log the blocked attempt for monitoring
+    try {
+      await base44.asServiceRole.entities.ActivityFeed.create({
+        type: 'driver_write_monitor',
+        title: 'Blocked Driver collaborator creation',
+        description: 'blocked_driver_collaborator_create',
+        entity_type: 'EntityCollaborator',
+        metadata: {
+          event: 'blocked_driver_collaborator_create',
+          user_id: user.id,
+          entity_id: entityId,
+          role_key: roleKey,
+        },
+      });
+    } catch (e) { /* non-critical */ }
+
+    return Response.json(driverCollaboratorDeprecatedError(), { status: 422 });
   }
 
   // Validate the org entity exists (service-role read — orgs may not be
