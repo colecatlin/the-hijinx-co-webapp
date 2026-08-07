@@ -2,55 +2,64 @@
   "name": "HeroSlide",
   "type": "object",
   "properties": {
-    "title": {
-      "type": "string"
-    },
-    "subtitle": {
-      "type": "string"
-    },
-    "eyebrow": {
+    "headline_line1": {
       "type": "string",
-      "description": "Small label above title (e.g. 'New Collection')"
+      "description": "Primary headline text (line 1)"
     },
-    "image_url": {
-      "type": "string"
-    },
-    "video_url": {
-      "type": "string"
-    },
-    "cta_label": {
+    "headline_line2": {
       "type": "string",
-      "description": "CTA button text"
+      "description": "Secondary headline text (line 2)"
     },
-    "cta_url": {
+    "subtext": {
       "type": "string",
-      "description": "CTA link URL"
+      "description": "Supporting subtext below the headline"
     },
-    "cta_secondary_label": {
-      "type": "string"
-    },
-    "cta_secondary_url": {
-      "type": "string"
-    },
-    "text_position": {
+    "media_type": {
       "type": "string",
       "enum": [
-        "left",
-        "center",
-        "right"
+        "image",
+        "video"
       ],
-      "default": "left"
+      "default": "image",
+      "description": "Type of background media"
     },
-    "active": {
+    "background_url": {
+      "type": "string",
+      "description": "Background image or video URL"
+    },
+    "cta1_label": {
+      "type": "string",
+      "description": "Primary CTA button text"
+    },
+    "cta1_url": {
+      "type": "string",
+      "description": "Primary CTA link URL"
+    },
+    "cta2_label": {
+      "type": "string",
+      "description": "Secondary CTA button text"
+    },
+    "cta2_url": {
+      "type": "string",
+      "description": "Secondary CTA link URL"
+    },
+    "is_active": {
       "type": "boolean",
-      "default": true
+      "default": true,
+      "description": "Whether this slide is visible on the homepage"
     },
     "sort_order": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Display order (lower = earlier)"
+    },
+    "is_sample": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is sample/demo data"
     }
   },
   "required": [
-    "title"
+    "headline_line1"
   ]
 }
