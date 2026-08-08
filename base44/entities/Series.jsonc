@@ -83,6 +83,14 @@
       "type": "string",
       "description": "Series description"
     },
+    "bio": {
+      "type": "string",
+      "description": "Phase 14: Full public biography for the series championship"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Phase 14: Short headline or identity statement"
+    },
     "logo_url": {
       "type": "string",
       "description": "Series logo URL"
@@ -90,6 +98,10 @@
     "banner_url": {
       "type": "string",
       "description": "Banner image URL"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Phase 14: Hero banner image for profile page (falls back to banner_url)"
     },
     "website_url": {
       "type": "string",
@@ -123,6 +135,10 @@
       "type": "string",
       "description": "LinkedIn URL"
     },
+    "social_tiktok": {
+      "type": "string",
+      "description": "Phase 14: TikTok handle or URL"
+    },
     "title_sponsor_name": {
       "type": "string",
       "description": "Title/presenting sponsor name"
@@ -134,6 +150,26 @@
     "title_sponsor_url": {
       "type": "string",
       "description": "Title sponsor website URL"
+    },
+    "registration_url": {
+      "type": "string",
+      "description": "Phase 14: Registration link for racers"
+    },
+    "rules_url": {
+      "type": "string",
+      "description": "Phase 14: Link to series rulebook"
+    },
+    "broadcast_url": {
+      "type": "string",
+      "description": "Phase 14: Broadcast / livestream URL"
+    },
+    "seo_title": {
+      "type": "string",
+      "description": "Phase 14: Optional SEO title override"
+    },
+    "seo_description": {
+      "type": "string",
+      "description": "Phase 14: Optional SEO meta description override"
     },
     "popularity_rank": {
       "type": "number",
