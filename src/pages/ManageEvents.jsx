@@ -183,10 +183,10 @@ export default function ManageEvents() {
   // ── Composed slots ────────────────────────────────────────────────────────────
   const stats = [
     { label: 'Total',     value: events.length },
-    { label: 'Published', value: publishedCount,  accent: 'text-teal-400' },
-    { label: 'Live',      value: liveCount,        accent: 'text-emerald-400' },
-    { label: 'Completed', value: completedCount,   accent: 'text-gray-500' },
-    ...(pendingCount > 0 ? [{ label: 'Pending', value: pendingCount, accent: 'text-amber-400' }] : []),
+    { label: 'Published', value: publishedCount,  accent: 'text-motion' },
+    { label: 'Live',      value: liveCount,        accent: 'text-emerald-500' },
+    { label: 'Completed', value: completedCount,   accent: 'text-foreground-quiet' },
+    ...(pendingCount > 0 ? [{ label: 'Pending', value: pendingCount, accent: 'text-amber-500' }] : []),
   ];
 
   const headerActions = (
@@ -197,8 +197,8 @@ export default function ManageEvents() {
         className={cn(
           'h-7 px-3 text-[11px] font-mono rounded border transition-colors flex items-center gap-1.5',
           showScheduler
-            ? 'bg-amber-900/30 border-amber-700/60 text-amber-300'
-            : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
+            ? 'bg-amber-500/10 border-amber-500/40 text-amber-600'
+            : 'bg-transparent border-divider text-foreground-quiet hover:border-foreground-quiet hover:text-foreground'
         )}
       >
         <CalendarDays className="w-3 h-3" />
@@ -211,8 +211,8 @@ export default function ManageEvents() {
         className={cn(
           'h-7 px-3 text-[11px] font-mono rounded border transition-colors',
           showActivity
-            ? 'bg-gray-800 border-gray-600 text-gray-200'
-            : 'bg-transparent border-gray-800 text-gray-600 hover:border-gray-600 hover:text-gray-400'
+            ? 'bg-surface-interactive border-divider text-foreground'
+            : 'bg-transparent border-divider text-foreground-quiet hover:border-foreground-quiet hover:text-foreground'
         )}
       >
         Activity
@@ -221,7 +221,7 @@ export default function ManageEvents() {
       {/* Add Event */}
       <button
         onClick={() => setQuickAddOpen(true)}
-        className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-teal-600/60 bg-teal-600/10 text-teal-300 hover:bg-teal-600/20 transition-colors flex items-center gap-1.5"
+        className="h-7 px-3 text-[11px] font-mono font-semibold rounded border border-motion/40 bg-motion/10 text-motion hover:bg-motion/20 transition-colors flex items-center gap-1.5"
       >
         <Plus className="w-3 h-3" />
         Add Event
@@ -274,17 +274,17 @@ export default function ManageEvents() {
 
   // ── Bulk bar (admin only, selection-driven) ───────────────────────────────────
   const bulkBar = isAdmin && selectedEvents.length > 0 ? (
-    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-red-900/40 bg-red-900/10">
-      <span className="text-xs font-mono text-red-400">{selectedEvents.length} selected</span>
+    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-danger/30 bg-danger/5">
+      <span className="text-xs font-mono text-danger">{selectedEvents.length} selected</span>
       <button
         onClick={() => setBulkDeleteConfirm(true)}
         disabled={bulkDeleteMutation.isPending}
-        className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+        className="h-6 px-3 text-[11px] font-mono rounded border border-danger/40 bg-danger/10 text-danger hover:bg-danger/20 transition-colors disabled:opacity-40 flex items-center gap-1.5"
       >
         <Trash2 className="w-3 h-3" />
         {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedEvents.length}`}
       </button>
-      <button onClick={() => setSelectedEvents([])} className="text-[11px] font-mono text-gray-600 hover:text-gray-400">
+      <button onClick={() => setSelectedEvents([])} className="text-[11px] font-mono text-foreground-quiet hover:text-foreground">
         Cancel
       </button>
     </div>
@@ -292,16 +292,16 @@ export default function ManageEvents() {
 
   // ── Bulk Scheduler panel (collapsible, below the grid header) ─────────────────
   const schedulerPanel = showScheduler ? (
-    <div className="border-b border-amber-800/30 bg-amber-900/10">
-      <div className="px-5 py-3 flex items-center justify-between border-b border-amber-800/20">
+    <div className="border-b border-amber-500/20 bg-amber-500/5">
+      <div className="px-5 py-3 flex items-center justify-between border-b border-amber-500/15">
         <div className="flex items-center gap-2">
-          <CalendarDays className="w-3.5 h-3.5 text-amber-400" />
-          <span className="text-xs font-mono font-semibold text-amber-300 tracking-wider">BULK EVENT SCHEDULER</span>
-          <span className="text-[10px] text-amber-600">Create multiple events with sessions for a series</span>
+          <CalendarDays className="w-3.5 h-3.5 text-amber-500" />
+          <span className="text-xs font-mono font-semibold text-amber-600 tracking-wider">BULK EVENT SCHEDULER</span>
+          <span className="text-[10px] text-foreground-quiet">Create multiple events with sessions for a series</span>
         </div>
         <button
           onClick={() => { setShowScheduler(false); setSelectedSeriesForScheduler(null); }}
-          className="text-amber-700 hover:text-amber-400 transition-colors"
+          className="text-foreground-quiet hover:text-amber-500 transition-colors"
           aria-label="Close bulk scheduler"
         >
           <X className="w-3.5 h-3.5" />
@@ -314,11 +314,11 @@ export default function ManageEvents() {
             <div className="flex items-center gap-3 mb-4">
               <button
                 onClick={() => setSelectedSeriesForScheduler(null)}
-                className="text-[11px] font-mono text-gray-500 hover:text-gray-300 flex items-center gap-1"
+                className="text-[11px] font-mono text-foreground-quiet hover:text-foreground flex items-center gap-1"
               >
                 <ArrowLeft className="w-3 h-3" /> Back to series
               </button>
-              <span className="text-xs font-semibold text-gray-200">{selectedSeriesForScheduler.name}</span>
+              <span className="text-xs font-semibold text-foreground">{selectedSeriesForScheduler.name}</span>
             </div>
             <EventSchedulerForm
               seriesId={selectedSeriesForScheduler.id}
@@ -331,19 +331,19 @@ export default function ManageEvents() {
           </div>
         ) : (
           <div>
-            <p className="text-[11px] font-mono text-gray-500 mb-3">Select a series to create events:</p>
+            <p className="text-[11px] font-mono text-foreground-quiet mb-3">Select a series to create events:</p>
             {series.length === 0 ? (
-              <p className="text-xs text-gray-600">No series found. Create a series first.</p>
+              <p className="text-xs text-foreground-quiet">No series found. Create a series first.</p>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {series.map(s => (
                   <button
                     key={s.id}
                     onClick={() => setSelectedSeriesForScheduler(s)}
-                    className="text-left px-3 py-2.5 rounded border border-gray-800 hover:border-amber-700/50 hover:bg-amber-900/10 transition-colors"
+                    className="text-left px-3 py-2.5 rounded border border-divider hover:border-amber-500/50 hover:bg-amber-500/10 transition-colors"
                   >
-                    <p className="text-xs font-semibold text-gray-200 truncate">{s.name}</p>
-                    <p className="text-[10px] text-gray-600 mt-0.5 truncate">{s.sanctioning_body || s.discipline || '—'}</p>
+                    <p className="text-xs font-semibold text-foreground truncate">{s.name}</p>
+                    <p className="text-[10px] text-foreground-quiet mt-0.5 truncate">{s.sanctioning_body || s.discipline || '—'}</p>
                   </button>
                 ))}
               </div>
@@ -382,7 +382,7 @@ export default function ManageEvents() {
           emptyIcon={CalendarDays}
           emptyMessage={hasActiveFilters ? 'No events match filters' : 'No events found'}
           emptyAction={hasActiveFilters && (
-            <button onClick={clearFilters} className="text-[11px] font-mono text-teal-600 hover:text-teal-400 underline">
+            <button onClick={clearFilters} className="text-[11px] font-mono text-motion hover:text-motion-hover underline">
               Clear filters
             </button>
           )}

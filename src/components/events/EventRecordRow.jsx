@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 
 // Mini acceptance dot — compact, no badge component needed
 function AcceptanceDot({ value }) {
-  if (!value) return <span className="text-[9px] font-mono text-gray-700">—</span>;
+  if (!value) return <span className="text-[9px] font-mono text-foreground-quiet">—</span>;
   const color =
     value === 'approved' || value === 'Accepted' ? 'bg-emerald-500' :
     value === 'rejected' || value === 'Rejected' ? 'bg-red-500' :
@@ -16,7 +16,7 @@ function AcceptanceDot({ value }) {
   return (
     <span className="flex items-center gap-1">
       <span className={`inline-block w-1.5 h-1.5 rounded-full ${color}`} />
-      <span className="text-[9px] font-mono text-gray-500 truncate">{value}</span>
+      <span className="text-[9px] font-mono text-foreground-quiet truncate">{value}</span>
     </span>
   );
 }
@@ -71,7 +71,7 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
         onClick={(e) => { e.stopPropagation(); navigate('/racecore/event-files/' + event.id); }}
         title="Open Event File (Ops)"
         aria-label={`Open ${event.name} in EventFile`}
-        className={`${btnBase} text-gray-500 hover:text-teal-400 hover:bg-teal-400/10`}
+        className={`${btnBase} text-foreground-quiet hover:text-motion hover:bg-motion/10`}
       >
         <Flag className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
@@ -86,7 +86,7 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
         }}
         title="Open in Race Core Ops"
         aria-label={`Open ${event.name} in Race Core`}
-        className={`${btnBase} text-gray-500 hover:text-teal-400 hover:bg-teal-400/10`}
+        className={`${btnBase} text-foreground-quiet hover:text-motion hover:bg-motion/10`}
       >
         <ExternalLink className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
@@ -96,7 +96,7 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
         onClick={(e) => { e.stopPropagation(); navigate('/racecore/event-files/' + event.id + '/settings'); }}
         title="Edit event settings"
         aria-label={`Edit ${event.name} settings`}
-        className={`${btnBase} text-gray-500 hover:text-gray-200 hover:bg-gray-700/60`}
+        className={`${btnBase} text-foreground-quiet hover:text-foreground hover:bg-surface-interactive`}
       >
         <Pencil className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
       </button>
@@ -108,7 +108,7 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
           disabled={isDeleting}
           title="Delete"
           aria-label={`Delete ${event.name}`}
-          className={`${btnBase} text-gray-600 hover:text-red-400 hover:bg-red-400/10 disabled:opacity-40`}
+          className={`${btnBase} text-foreground-quiet hover:text-danger hover:bg-danger/10 disabled:opacity-40`}
         >
           <Trash2 className="w-3.5 h-3.5 sm:w-3 sm:h-3" aria-hidden="true" />
         </button>
@@ -130,17 +130,17 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
       {/* Identity block */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-gray-100 truncate">{event.name}</span>
+          <span className="text-sm font-semibold text-foreground truncate">{event.name}</span>
           <RecordStatusBadge status={displayStatus} />
         </div>
-        <div className="text-xs text-gray-500 truncate mt-0.5">
+        <div className="text-xs text-foreground-quiet truncate mt-0.5">
           {event.series_name || '—'}
         </div>
       </div>
 
       {/* Date */}
       <div className="hidden sm:block w-24 shrink-0">
-        <span className="text-[10px] font-mono text-gray-400">{dateDisplay}{endDisplay}</span>
+        <span className="text-[10px] font-mono text-foreground-quiet">{dateDisplay}{endDisplay}</span>
       </div>
 
       {/* Acceptance status */}
@@ -151,12 +151,12 @@ export default function EventRecordRow({ event, isAdmin, isSelected, onSelect, o
 
       {/* Season */}
       <div className="hidden lg:block w-12 shrink-0 text-center">
-        <span className="text-[10px] font-mono text-gray-600">{event.season || '—'}</span>
+        <span className="text-[10px] font-mono text-foreground-quiet">{event.season || '—'}</span>
       </div>
 
       {/* Updated */}
       <div className="hidden xl:block w-20 shrink-0 text-right">
-        <span className="text-[10px] font-mono text-gray-600">{updatedDisplay}</span>
+        <span className="text-[10px] font-mono text-foreground-quiet">{updatedDisplay}</span>
       </div>
     </RecordRowShell>
   );
