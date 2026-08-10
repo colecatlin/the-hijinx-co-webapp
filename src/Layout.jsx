@@ -65,7 +65,7 @@ export default function Layout({ children, currentPageName }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const EMPTY_RESULTS = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [], vehicles: [], media: [] };
+  const EMPTY_RESULTS = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [], vehicles: [], media: [], sponsors: [] };
   const [searchResults, setSearchResults] = useState(EMPTY_RESULTS);
   const [searchLoading, setSearchLoading] = useState(false);
   const searchInputRef = React.useRef(null);
@@ -120,7 +120,7 @@ export default function Layout({ children, currentPageName }) {
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       const q = searchQuery.toLowerCase();
-      const [allStories, allRacerProfiles, allEvents, allTracks, allSeries, allTeams, allVehicles, allMediaAssets] = await Promise.all([
+      const [allStories, allRacerProfiles, allEvents, allTracks, allSeries, allTeams, allVehicles, allMediaAssets, allSponsorOrgs = []] = await Promise.all([
         base44.entities.OutletStory.list('-published_date', 200),
         base44.entities.RacerProfile.list('-created_date', 200),
         base44.entities.Event.list('-event_date', 200),
@@ -129,6 +129,7 @@ export default function Layout({ children, currentPageName }) {
         base44.entities.Team.list('-created_date', 200),
         base44.entities.Vehicle.list('-created_date', 200),
         base44.entities.MediaAsset.list('-created_date', 200),
+        base44.entities.Organization.filter({ type: 'Sponsor' }),
       ]);
       setSearchResults({
         stories: allStories.filter(s =>
@@ -174,6 +175,12 @@ export default function Layout({ children, currentPageName }) {
           (a.title?.toLowerCase().includes(q) || a.description?.toLowerCase().includes(q) ||
            a.file_name?.toLowerCase().includes(q) || a.tags?.some(t => t.toLowerCase().includes(q)) ||
            a.asset_type?.toLowerCase().includes(q))
+        ).slice(0, 4),
+        sponsors: allSponsorOrgs.filter(o =>
+          o.visibility_status === 'live' && !o.is_archived &&
+          (o.name?.toLowerCase().includes(q) || o.normalized_name?.toLowerCase().includes(q) ||
+           o.description?.toLowerCase().includes(q) || o.tagline?.toLowerCase().includes(q) ||
+           o.industry?.toLowerCase().includes(q) || o.website_url?.toLowerCase().includes(q))
         ).slice(0, 4),
       });
       setSearchLoading(false);
@@ -504,6 +511,23 @@ export default function Layout({ children, currentPageName }) {
                                     onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
                                     onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
                                     {asset.title || asset.file_name || 'Untitled'} <span className="text-[9px] uppercase opacity-50">· {asset.asset_type}</span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {searchResults.sponsors.length > 0 && (
+                            <div>
+                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>SPONSORS</p>
+                              <div className="space-y-0.5">
+                                {searchResults.sponsors.map(org => (
+                                  <Link key={org.id} to={`/organization/Sponsor/${org.id}`}
+                                    onClick={() => setSearchOpen(false)}
+                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
+                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
+                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
+                                    {org.name} {org.industry ? <span className="text-[9px] uppercase opacity-50">· {org.industry}</span> : null}
                                   </Link>
                                 ))}
                               </div>

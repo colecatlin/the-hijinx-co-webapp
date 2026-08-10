@@ -14,6 +14,7 @@ import OrganizationRelationships from '@/components/organizations/OrganizationRe
 import OrganizationActivity from '@/components/organizations/OrganizationActivity';
 import OrganizationSettings from '@/components/organizations/OrganizationSettings';
 import OrganizationDashboard from '@/components/organizations/OrganizationDashboard';
+import SponsorProfile from '@/pages/SponsorProfile';
 
 /**
  * OrganizationPage — the single route that serves every organization. Derives
@@ -95,6 +96,11 @@ export default function OrganizationPage() {
   }
   if (recordQ.error || !record) {
     return <Centered><AlertTriangle className="w-6 h-6 mb-2" style={{ color: '#ef4444' }} /><p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>Organization not found.</p></Centered>;
+  }
+
+  // Phase 17E: Sponsor type renders the dedicated public Sponsor experience.
+  if (type === 'Sponsor') {
+    return <SponsorProfile />;
   }
 
   const stats = {
