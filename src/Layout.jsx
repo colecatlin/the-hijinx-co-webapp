@@ -422,7 +422,7 @@ export default function Layout({ children, currentPageName }) {
                               <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>TRACKS</p>
                               <div className="space-y-0.5">
                                 {searchResults.tracks.map(track => (
-                                  <Link key={track.id} to={track.slug ? `/TrackProfile?slug=${track.slug}` : `/TrackProfile?id=${track.id}`}
+                                  <Link key={track.id} to={track.slug || track.canonical_slug ? `/tracks/${track.slug || track.canonical_slug}` : `/TrackProfile?id=${track.id}`}
                                     onClick={() => setSearchOpen(false)}
                                     className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
                                     style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
