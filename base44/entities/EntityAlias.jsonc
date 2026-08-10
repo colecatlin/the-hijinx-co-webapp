@@ -1,7 +1,7 @@
 {
   "name": "EntityAlias",
   "type": "object",
-  "description": "Universal alias record for any canonical entity in RaceCore. Append-only \u2014 never delete, only deactivate. Every alias belongs to exactly one canonical entity.",
+  "description": "Universal alias record for any canonical entity in RaceCore. Append-only \u2014 never delete, only deactivate. Every alias belongs to exactly one canonical entity. Phase 17A: Organization added to entity_type enum for sponsor/partner name alias resolution.",
   "properties": {
     "entity_type": {
       "type": "string",
@@ -14,9 +14,10 @@
         "SeriesClass",
         "Manufacturer",
         "Vehicle",
-        "Event"
+        "Event",
+        "Organization"
       ],
-      "description": "The type of entity this alias belongs to"
+      "description": "The type of entity this alias belongs to. Phase 17A: Organization added for sponsor/partner name alias resolution."
     },
     "entity_id": {
       "type": "string",

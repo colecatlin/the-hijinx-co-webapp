@@ -1,7 +1,7 @@
 {
   "name": "Organization",
   "type": "object",
-  "description": "Generic organization record for org types without a dedicated racing entity (Sponsor, Vendor, Manufacturer, OEM, broadcast partners, venues, sanctioning bodies, etc.). The Organization Platform registry routes each `type` to this entity. Teams, Tracks, Series, and MediaOutlets keep their own entities; everything else lives here so the framework stays configuration-driven.",
+  "description": "Generic organization record for org types without a dedicated racing entity (Sponsor, Vendor, Manufacturer, OEM, broadcast partners, venues, sanctioning bodies, etc.). The Organization Platform registry routes each `type` to this entity. Teams, Tracks, Series, and MediaOutlets keep their own entities; everything else lives here so the framework stays configuration-driven. Phase 17A adds deterministic normalization fields for canonical Sponsor/Partner identity resolution.",
   "properties": {
     "type": {
       "type": "string",
@@ -115,6 +115,31 @@
     },
     "data_source": {
       "type": "string"
+    },
+    "normalized_name": {
+      "type": "string",
+      "description": "Phase 17A: Normalized lowercase name for deterministic deduplication. Computed from name via normalizeOrganizationName()."
+    },
+    "canonical_slug": {
+      "type": "string",
+      "description": "Phase 17A: Canonical slug derived from normalized name for deduplication."
+    },
+    "canonical_key": {
+      "type": "string",
+      "description": "Phase 17A: Deterministic internal organization identity key (Organization:<normalized_name> or Organization:<external_uid>)."
+    },
+    "external_uid": {
+      "type": "string",
+      "description": "Phase 17A: Trusted external organization identifier for deterministic resolution."
+    },
+    "sync_last_seen_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Phase 17A: External sync timestamp."
+    },
+    "industry": {
+      "type": "string",
+      "description": "Phase 17A: Public/commercial industry classification (e.g. Motor Oil, Energy Drink, Tires)."
     }
   },
   "required": [

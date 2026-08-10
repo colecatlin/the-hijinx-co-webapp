@@ -1,0 +1,177 @@
+{
+  "name": "Sponsorship",
+  "type": "object",
+  "description": "Phase 17A: One commercial relationship between one Organization (sponsor/partner) and one target entity (RacerProfile, Team, Vehicle, Event, Series, Track, MediaAsset, Platform) for a defined scope and period. The canonical sponsorship relationship entity. Organization is the canonical sponsor/partner identity; this entity links it to a target via a polymorphic reference (target_entity_type + target_entity_id). Application-level deduplication uses normalized_sponsorship_key since Base44 does not support compound unique constraints.",
+  "properties": {
+    "racecore_id": {
+      "type": "string",
+      "description": "Immutable RaceCore ID. Nullable during Phase 17A foundation \u2014 not generated yet. Will be assigned when the RaceCore ID architecture is extended to Sponsorship."
+    },
+    "sponsor_organization_id": {
+      "type": "string",
+      "description": "Reference to Organization.id. The sponsor/partner organization."
+    },
+    "target_entity_type": {
+      "type": "string",
+      "enum": [
+        "RacerProfile",
+        "Team",
+        "Vehicle",
+        "Event",
+        "Series",
+        "Track",
+        "MediaAsset",
+        "Platform"
+      ],
+      "description": "Polymorphic target type. Determines which entity target_entity_id references."
+    },
+    "target_entity_id": {
+      "type": "string",
+      "description": "Polymorphic target ID. For Platform target, must be the sentinel 'hijinx-platform'."
+    },
+    "relationship_type": {
+      "type": "string",
+      "enum": [
+        "Sponsor",
+        "Partner",
+        "Supplier",
+        "Vendor",
+        "MediaPartner",
+        "BroadcastPartner",
+        "HospitalityPartner",
+        "TechnicalPartner",
+        "CommunityPartner",
+        "MerchandisingPartner"
+      ],
+      "default": "Sponsor",
+      "description": "Nature of the commercial relationship."
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "Title",
+        "Presenting",
+        "Official",
+        "Primary",
+        "Supporting",
+        "Associate"
+      ],
+      "description": "Prominence level within the relationship. Title/Presenting/Primary prominence is derived from this field, not stored as separate booleans."
+    },
+    "category": {
+      "type": "string",
+      "description": "Industry classification (free-text, e.g. Energy Drink, Tires, Apparel, Insurance)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "proposed",
+        "active",
+        "completed",
+        "expired",
+        "cancelled",
+        "archived"
+      ],
+      "default": "draft",
+      "description": "Lifecycle status."
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Sponsorship start date."
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Sponsorship end date (null = ongoing)."
+    },
+    "season_year": {
+      "type": "string",
+      "description": "Season scoping (optional, four-digit year string)."
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display ordering (lower = earlier)."
+    },
+    "public_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "public",
+      "description": "Controls whether this sponsorship is visible on public profiles."
+    },
+    "logo_override": {
+      "type": "string",
+      "description": "Override sponsor logo URL for this specific sponsorship."
+    },
+    "website_override": {
+      "type": "string",
+      "description": "Override sponsor website URL for this specific sponsorship."
+    },
+    "campaign_name": {
+      "type": "string",
+      "description": "Campaign name for this sponsorship."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes."
+    },
+    "revenue_agreement_id": {
+      "type": "string",
+      "description": "Reference to RevenueAgreement.id. Optional \u2014 linked in Phase 17C."
+    },
+    "source": {
+      "type": "string",
+      "description": "Data source (e.g. manual, import, migration)."
+    },
+    "legacy_driver_sponsor_id": {
+      "type": "string",
+      "description": "Transitional: Reference to DriverSponsor.id if this sponsorship was migrated from a legacy DriverSponsor record."
+    },
+    "legacy_entry_sponsor_id": {
+      "type": "string",
+      "description": "Transitional: Reference to EntrySponsor.id if this sponsorship was migrated from a legacy EntrySponsor record."
+    },
+    "deliverables": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "default": [],
+      "description": "Phase 17A foundation: Simple JSON array for deliverable placeholders. Full deliverable entity is Phase 17D."
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archive flag."
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Archive timestamp."
+    },
+    "normalized_sponsorship_key": {
+      "type": "string",
+      "description": "Application-level deduplication key: sponsor_organization_id:target_entity_type:target_entity_id:relationship_type:start_date. Used because Base44 does not support compound unique constraints."
+    },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "User ID who created this sponsorship."
+    },
+    "updated_by_user_id": {
+      "type": "string",
+      "description": "User ID who last updated this sponsorship."
+    }
+  },
+  "required": [
+    "sponsor_organization_id",
+    "target_entity_type",
+    "target_entity_id",
+    "relationship_type",
+    "status"
+  ]
+}
