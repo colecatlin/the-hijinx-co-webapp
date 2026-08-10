@@ -3,6 +3,7 @@
  * Phase 11 — Read-only function that computes the complete public Team experience.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
 
 async function resolveTeam(base44, slug, team_id) {
   if (slug) {
@@ -80,7 +81,13 @@ export default async function(req) {
     const profileCompleteness = buildProfileCompleteness(team);
     const seo = buildSEO(team, statistics);
 
-    return Response.json({ team: publicFields, roster, timeline, statistics, achievements, sponsors, media, profile_completeness: profileCompleteness, seo });
+    // Phase 17B: Unified sponsorship read (modern Sponsorship + legacy EntrySponsor fallback)
+    const legacyEntrySponsors = ctx.entrySponsors.map(es => normalizeEntrySponsorLegacy(es));
+    const sponsorshipResult = await buildSponsorshipsForTarget(base44, 'Team', team.id, {
+      legacySponsors: legacyEntrySponsors,
+    });
+
+    return Response.json({ team: publicFields, roster, timeline, statistics, achievements, sponsors, sponsorships: sponsorshipResult.sponsorships, sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count }, media, profile_completeness: profileCompleteness, seo });
   } catch (err) {
     console.error("[getTeamExperience] Error:", err);
     return Response.json({ error: err.message || "Internal server error" }, { status: 500 });

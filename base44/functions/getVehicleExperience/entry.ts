@@ -4,6 +4,7 @@
  * Mirrors getTeamExperience architecture. Everything generated from operational data.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
 
 async function resolveVehicle(base44, slug, vehicle_id) {
   if (slug) {
@@ -89,9 +90,17 @@ export default async function(req) {
     const profileCompleteness = buildProfileCompleteness(vehicle);
     const seo = buildSEO(vehicle, statistics, ctx);
 
+    // Phase 17B: Unified sponsorship read (modern Sponsorship + legacy EntrySponsor fallback)
+    const legacyEntrySponsors = ctx.entrySponsors.map(es => normalizeEntrySponsorLegacy(es));
+    const sponsorshipResult = await buildSponsorshipsForTarget(base44, 'Vehicle', vehicle.id, {
+      legacySponsors: legacyEntrySponsors,
+    });
+
     return Response.json({
       vehicle: publicFields, history, chassis, engine, timeline,
       statistics, achievements, sponsors, media,
+      sponsorships: sponsorshipResult.sponsorships,
+      sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count },
       profile_completeness: profileCompleteness, seo,
     });
   } catch (err) {

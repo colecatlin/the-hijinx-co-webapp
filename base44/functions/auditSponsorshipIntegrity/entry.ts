@@ -54,6 +54,7 @@ export default async function(req: Request): Promise<Response> {
       driverSponsors,
       entrySponsors,
       revenueAgreements,
+      allSeries,
     ] = await Promise.all([
       base44.asServiceRole.entities.Organization.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.Sponsorship.list('-created_date', 500).catch(() => []),
@@ -61,6 +62,7 @@ export default async function(req: Request): Promise<Response> {
       base44.asServiceRole.entities.DriverSponsor.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.EntrySponsor.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.RevenueAgreement.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.Series.list('-created_date', 500).catch(() => []),
     ]);
 
     const orgs = organizations || [];
@@ -69,6 +71,7 @@ export default async function(req: Request): Promise<Response> {
     const dsRecords = driverSponsors || [];
     const esRecords = entrySponsors || [];
     const raRecords = revenueAgreements || [];
+    const seriesRecords = allSeries || [];
 
     // ── Organization audits ──────────────────────────────────────────
     const orgsByType: Record<string, number> = {};
@@ -241,6 +244,83 @@ export default async function(req: Request): Promise<Response> {
       revenue_agreement_id: s.revenue_agreement_id,
     }));
 
+    // ── Title Sponsor consistency (Phase 17B) ───────────────────────────
+    const titleSponsorshipIssues: any[] = [];
+
+    // Group active Title sponsorships by Series
+    const activeTitleBySeries: Record<string, any[]> = {};
+    spons.forEach((s: any) => {
+      if (s.tier === 'Title' && s.status === 'active' && !s.is_archived && s.target_entity_type === 'Series') {
+        if (!activeTitleBySeries[s.target_entity_id]) activeTitleBySeries[s.target_entity_id] = [];
+        activeTitleBySeries[s.target_entity_id].push(s);
+      }
+    });
+
+    // Check for multiple active Title sponsorships on the same Series
+    Object.entries(activeTitleBySeries).forEach(([seriesId, titleSponsorships]) => {
+      if (titleSponsorships.length > 1) {
+        // Check for date overlap
+        const hasOverlap = checkDateOverlap(titleSponsorships);
+        titleSponsorshipIssues.push({
+          type: 'multiple_active_title_sponsorships',
+          series_id: seriesId,
+          sponsorship_ids: titleSponsorships.map(s => s.id),
+          count: titleSponsorships.length,
+          has_date_overlap: hasOverlap,
+        });
+      }
+    });
+
+    // Check for Series with modern Title Sponsorship AND legacy title_sponsor_name
+    seriesRecords.forEach((series: any) => {
+      const modernTitles = activeTitleBySeries[series.id] || [];
+      if (modernTitles.length > 0 && series.title_sponsor_name) {
+        titleSponsorshipIssues.push({
+          type: 'modern_title_conflicts_with_legacy',
+          series_id: series.id,
+          series_name: series.name,
+          modern_sponsorship_ids: modernTitles.map(s => s.id),
+          legacy_title_sponsor_name: series.title_sponsor_name,
+        });
+      }
+    });
+
+    // Check for missing Organization on title Sponsorship
+    spons.forEach((s: any) => {
+      if (s.tier === 'Title' && s.status === 'active' && !s.is_archived) {
+        if (!orgIds.has(s.sponsor_organization_id)) {
+          titleSponsorshipIssues.push({
+            type: 'title_sponsorship_missing_organization',
+            sponsorship_id: s.id,
+            sponsor_organization_id: s.sponsor_organization_id,
+          });
+        }
+      }
+    });
+
+    // Check for private title Sponsorship being used publicly (should not appear in public reads)
+    spons.forEach((s: any) => {
+      if (s.tier === 'Title' && s.status === 'active' && !s.is_archived && s.public_visibility === 'private') {
+        titleSponsorshipIssues.push({
+          type: 'private_title_sponsorship_not_publicly_visible',
+          sponsorship_id: s.id,
+          public_visibility: s.public_visibility,
+        });
+      }
+    });
+
+    // Check for archived title Sponsorship that might still be exposed
+    spons.forEach((s: any) => {
+      if (s.tier === 'Title' && s.is_archived && s.status !== 'archived') {
+        titleSponsorshipIssues.push({
+          type: 'archived_title_sponsorship_with_active_status',
+          sponsorship_id: s.id,
+          is_archived: s.is_archived,
+          status: s.status,
+        });
+      }
+    });
+
     // ── Build report ──────────────────────────────────────────────────
     const report = {
       status: 'complete',
@@ -287,10 +367,31 @@ export default async function(req: Request): Promise<Response> {
         legacy_entry_sponsor_missing: legacyEntrySponsorMissing,
         revenue_agreement_missing: revenueAgreementMissing,
       },
+      title_sponsor_issues: titleSponsorshipIssues,
     };
 
     return Response.json(report, { status: 200 });
   } catch (error) {
     return Response.json({ error: error?.message || 'auditSponsorshipIntegrity failed' }, { status: 500 });
   }
+}
+
+/**
+ * Check if any sponsorships in a list have overlapping date ranges.
+ */
+function checkDateOverlap(sponsorships: any[]): boolean {
+  const ranges = sponsorships
+    .filter(s => s.start_date)
+    .map(s => ({
+      start: new Date(s.start_date).getTime(),
+      end: s.end_date ? new Date(s.end_date).getTime() : Date.now() + 365 * 24 * 60 * 60 * 1000,
+    }));
+  for (let i = 0; i < ranges.length; i++) {
+    for (let j = i + 1; j < ranges.length; j++) {
+      if (ranges[i].start <= ranges[j].end && ranges[j].start <= ranges[i].end) {
+        return true;
+      }
+    }
+  }
+  return false;
 }

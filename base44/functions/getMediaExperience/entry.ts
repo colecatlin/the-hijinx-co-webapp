@@ -17,6 +17,7 @@ import {
   resolveGalleryItems,
   buildMediaSeo,
 } from '../../shared/mediaExperienceHelpers.ts';
+import { buildSponsorshipsForTarget } from '../../shared/sponsorshipReadHelpers.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -64,6 +65,12 @@ Deno.serve(async (req) => {
     // Build SEO + structured data
     const seo = buildMediaSeo(media_type, item, publisher, author, canonicalUrl);
 
+    // Phase 17B: Unified sponsorship read (modern Sponsorship only for MediaAsset targets)
+    let sponsorshipResult: any = { sponsorships: [], modern_count: 0, legacy_count: 0, deduped_count: 0 };
+    if (media_type !== 'article' && media_type !== 'story' && item.id) {
+      sponsorshipResult = await buildSponsorshipsForTarget(base44, 'MediaAsset', item.id, {});
+    }
+
     return Response.json({
       media_type,
       id: item.id,
@@ -94,6 +101,8 @@ Deno.serve(async (req) => {
       featured: item.featured || item.featured_on_media_home || false,
       visibility: 'public',
       canonical_url: canonicalUrl,
+      sponsorships: sponsorshipResult.sponsorships,
+      sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count },
       seo,
     });
   } catch (err) {

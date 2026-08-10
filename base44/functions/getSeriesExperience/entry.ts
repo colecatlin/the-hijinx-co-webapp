@@ -13,6 +13,7 @@ import {
   getAllSeasonYears, getCurrentSeasonYear,
   type SeriesContext,
 } from '../../shared/seriesExperienceHelpers.ts';
+import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
 
 function buildPublicFields(series: any) {
   return {
@@ -647,6 +648,13 @@ export default async function(req) {
     const allSeasons = getAllSeasonYears(ctx);
     const seo = buildSEO(series, statistics, currentSeason);
 
+    // Phase 17B: Unified sponsorship read (modern Sponsorship + legacy fallback)
+    const legacyEntrySponsors = ctx.entrySponsors.map((es: any) => normalizeEntrySponsorLegacy(es));
+    const sponsorshipResult = await buildSponsorshipsForTarget(base44, 'Series', series.id, {
+      legacySponsors: legacyEntrySponsors,
+      seriesForTitleFallback: series,
+    });
+
     return Response.json({
       series: publicFields,
       current_season: currentSeason,
@@ -665,6 +673,14 @@ export default async function(req) {
       history,
       tracks,
       sponsors,
+      sponsorships: sponsorshipResult.sponsorships,
+      title_sponsorship: sponsorshipResult.title_sponsorship,
+      has_title_conflict: sponsorshipResult.has_title_conflict,
+      sponsorship_counts: {
+        modern: sponsorshipResult.modern_count,
+        legacy: sponsorshipResult.legacy_count,
+        deduped: sponsorshipResult.deduped_count,
+      },
       media,
       seo,
     });

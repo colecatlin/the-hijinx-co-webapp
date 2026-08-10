@@ -13,6 +13,7 @@ import {
   getAllSeasonYears,
   type TrackContext,
 } from '../../shared/trackExperienceHelpers.ts';
+import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
 
 function buildPublicFields(track: any) {
   return {
@@ -620,6 +621,12 @@ export default async function(req) {
     const allSeasons = getAllSeasonYears(ctx);
     const seo = buildSEO(track, statistics);
 
+    // Phase 17B: Unified sponsorship read (modern Sponsorship + legacy EntrySponsor fallback)
+    const legacyEntrySponsors = ctx.entrySponsors.map((es: any) => normalizeEntrySponsorLegacy(es));
+    const sponsorshipResult = await buildSponsorshipsForTarget(base44, 'Track', track.id, {
+      legacySponsors: legacyEntrySponsors,
+    });
+
     return Response.json({
       track: publicFields,
       event_history: eventHistory,
@@ -635,6 +642,8 @@ export default async function(req) {
       statistics,
       completeness,
       all_seasons: allSeasons,
+      sponsorships: sponsorshipResult.sponsorships,
+      sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count },
       seo,
     });
   } catch (err) {

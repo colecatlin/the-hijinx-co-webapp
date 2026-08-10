@@ -17,6 +17,7 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveRacerProfile, loadRacerProfileContext } from '../../shared/racerProfileExperienceHelpers.ts';
+import { buildSponsorshipsForTarget, normalizeDriverSponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
 
 export default async function(req) {
   const base44 = createClientFromRequest(req);
@@ -324,6 +325,12 @@ export default async function(req) {
     },
   };
 
+  // Phase 17B: Unified sponsorship read (modern Sponsorship + legacy DriverSponsor fallback)
+  const legacyDriverSponsors = driverSponsors.map((s: any) => normalizeDriverSponsorLegacy(s));
+  const sponsorshipResult = await buildSponsorshipsForTarget(base44, 'RacerProfile', rp.id, {
+    legacySponsors: legacyDriverSponsors,
+  });
+
   return Response.json({
     racerProfile: {
       id: rp.id, slug: rp.slug, display_name: fullName, racecore_id: rp.racecore_id,
@@ -341,6 +348,12 @@ export default async function(req) {
     statistics, achievements, achievements_unlocked_count: achievements.filter((a: any) => a.unlocked).length,
     team_history: teamHistory, vehicle_history: vehicleHistory,
     media_ecosystem: mediaEcosystem, sponsor_presentation: sponsorPresentation,
+    sponsorships: sponsorshipResult.sponsorships,
+    sponsorship_counts: {
+      modern: sponsorshipResult.modern_count,
+      legacy: sponsorshipResult.legacy_count,
+      deduped: sponsorshipResult.deduped_count,
+    },
     profile_completeness: { score: Math.round((earnedWeight / totalWeight) * 100), checks: completenessChecks, earned_weight: earnedWeight, total_weight: totalWeight },
     seo, computed_at: new Date().toISOString(),
   });

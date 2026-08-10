@@ -7,6 +7,7 @@
  * Read-only — never creates or modifies Event state.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
 
 async function resolveEvent(base44, slug, event_id) {
   if (slug) {
@@ -544,11 +545,19 @@ export default async function(req) {
     const history = buildHistory(ctx);
     const seo = buildSEO(event, ctx.track, ctx.series, statistics);
 
+    // Phase 17B: Unified sponsorship read (modern Sponsorship + legacy EntrySponsor fallback)
+    const legacyEntrySponsors = ctx.entrySponsors.map(es => normalizeEntrySponsorLegacy(es));
+    const sponsorshipResult = await buildSponsorshipsForTarget(base44, 'Event', event.id, {
+      legacySponsors: legacyEntrySponsors,
+    });
+
     return Response.json({
       event: publicFields, series: ctx.series ? { id: ctx.series.id, name: ctx.series.name, slug: ctx.series.slug || ctx.series.canonical_slug || null, discipline: ctx.series.discipline || null, profile_url: ctx.series.slug ? `/series/${ctx.series.slug}` : (ctx.series.canonical_slug ? `/series/${ctx.series.canonical_slug}` : null) } : null,
       track: venueInfo, schedule, classes, entries, racers, teams, vehicles, sessions,
       qualifying, heat_feature_results: heatFeatureResults, standings_impact: standingsImpact,
       timeline, statistics, sponsors, media, history, spectator_info: event.spectator_info || null,
+      sponsorships: sponsorshipResult.sponsorships,
+      sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count },
       seo,
     });
   } catch (err) {
