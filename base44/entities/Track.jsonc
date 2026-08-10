@@ -156,6 +156,161 @@
     "archive_reason": {
       "type": "string",
       "description": "R9CS: Reason for archiving"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Phase 15: Full public biography for the track"
+    },
+    "tagline": {
+      "type": "string",
+      "description": "Phase 15: Short headline or identity statement"
+    },
+    "hero_image_url": {
+      "type": "string",
+      "description": "Phase 15: Hero banner image for profile page (falls back to image_url)"
+    },
+    "map_image_url": {
+      "type": "string",
+      "description": "Phase 15: Track layout / configuration map image"
+    },
+    "gallery_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Phase 15: Gallery of track image URLs"
+    },
+    "social_facebook": {
+      "type": "string",
+      "description": "Phase 15: Facebook URL"
+    },
+    "social_instagram": {
+      "type": "string",
+      "description": "Phase 15: Instagram handle or URL"
+    },
+    "social_x": {
+      "type": "string",
+      "description": "Phase 15: X (Twitter) handle or URL"
+    },
+    "social_youtube": {
+      "type": "string",
+      "description": "Phase 15: YouTube channel URL"
+    },
+    "social_tiktok": {
+      "type": "string",
+      "description": "Phase 15: TikTok handle or URL"
+    },
+    "address_line1": {
+      "type": "string",
+      "description": "Phase 15: Street address line 1"
+    },
+    "address_line2": {
+      "type": "string",
+      "description": "Phase 15: Street address line 2"
+    },
+    "zip_code": {
+      "type": "string",
+      "description": "Phase 15: Postal / ZIP code"
+    },
+    "elevation": {
+      "type": "string",
+      "description": "Phase 15: Elevation (e.g. '2,300 ft')"
+    },
+    "capacity": {
+      "type": "number",
+      "description": "Phase 15: Spectator capacity"
+    },
+    "configuration": {
+      "type": "string",
+      "description": "Phase 15: Track configuration description (e.g. '1.5-mile D-shaped oval, 17 turns road course')"
+    },
+    "time_zone": {
+      "type": "string",
+      "description": "Phase 15: IANA time zone (e.g. 'America/Chicago')"
+    },
+    "sanctioning_bodies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Phase 15: Sanctioning bodies that operate at this track"
+    },
+    "visitor_info": {
+      "type": "object",
+      "description": "Phase 15: Spectator and visitor information",
+      "properties": {
+        "camping": {
+          "type": "string"
+        },
+        "parking": {
+          "type": "string"
+        },
+        "hotels": {
+          "type": "string"
+        },
+        "directions": {
+          "type": "string"
+        },
+        "food": {
+          "type": "string"
+        },
+        "accessibility": {
+          "type": "string"
+        },
+        "amenities": {
+          "type": "string"
+        },
+        "tickets_url": {
+          "type": "string"
+        },
+        "weather": {
+          "type": "string"
+        }
+      }
+    },
+    "timeline_milestones": {
+      "type": "array",
+      "default": [],
+      "description": "Phase 15: Facility milestones (opened, expansions, renovations, ownership changes, historic races)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "opened",
+              "expansion",
+              "renovation",
+              "ownership",
+              "historic_race",
+              "anniversary",
+              "national_event",
+              "international_event",
+              "milestone"
+            ]
+          }
+        }
+      }
+    },
+    "seo_title": {
+      "type": "string",
+      "description": "Phase 15: Optional SEO title override"
+    },
+    "seo_description": {
+      "type": "string",
+      "description": "Phase 15: Optional SEO meta description override"
     }
   },
   "required": [
