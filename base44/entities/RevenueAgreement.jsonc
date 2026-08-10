@@ -1,6 +1,7 @@
 {
   "name": "RevenueAgreement",
   "type": "object",
+  "description": "Phase 17C: RevenueAgreement now optionally supports a 'sponsorship' agreement_type with linked_sponsorship_id. All existing agreement types and behavior are preserved unchanged. Sponsorship agreements are an OPTIONAL new agreement type \u2014 linked_sponsorship_id is only required when agreement_type == 'sponsorship'.",
   "properties": {
     "agreement_type": {
       "type": "string",
@@ -10,9 +11,10 @@
         "merch_revenue_share",
         "creator_fund",
         "outlet_revenue_share",
-        "sponsored_content"
+        "sponsored_content",
+        "sponsorship"
       ],
-      "description": "Type of revenue agreement"
+      "description": "Type of revenue agreement. Phase 17C adds 'sponsorship' for commercial sponsorship agreements linked to a Sponsorship record."
     },
     "linked_asset_id": {
       "type": "string",
@@ -37,6 +39,10 @@
     "linked_request_id": {
       "type": "string",
       "description": "Optional MediaRequest ID"
+    },
+    "linked_sponsorship_id": {
+      "type": "string",
+      "description": "Phase 17C: Optional Sponsorship ID. Required when agreement_type == 'sponsorship'. References Sponsorship.id. Must point to a non-archived Sponsorship with a valid Organization."
     },
     "creator_profile_id": {
       "type": "string",

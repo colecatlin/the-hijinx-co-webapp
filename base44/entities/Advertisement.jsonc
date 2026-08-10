@@ -1,6 +1,7 @@
 {
   "name": "Advertisement",
   "type": "object",
+  "description": "Phase 17C: Advertisement now optionally supports linked_sponsorship_id to identify advertisements funded by a Sponsorship. Advertisement remains a delivery asset \u2014 not every Advertisement belongs to a Sponsorship. linked_sponsorship_id is optional and does not change any existing behavior.",
   "properties": {
     "title": {
       "type": "string",
@@ -51,6 +52,10 @@
     "text_color": {
       "type": "string",
       "description": "Optional text color for the ad card"
+    },
+    "linked_sponsorship_id": {
+      "type": "string",
+      "description": "Phase 17C: Optional Sponsorship ID. Identifies advertisements funded by a Sponsorship. Advertisement remains a delivery asset \u2014 not every Advertisement belongs to a Sponsorship."
     },
     "status": {
       "type": "string",

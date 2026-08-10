@@ -1,6 +1,7 @@
 {
   "name": "RevenueEvent",
   "type": "object",
+  "description": "Phase 17C: RevenueEvent now optionally supports linked_sponsorship_id. This is an additional reference \u2014 the existing buyer polymorphism (linked_buyer_entity_type + linked_buyer_entity_id) remains unchanged and continues to be used. linked_sponsorship_id is simply an extra reference for sponsorship-related revenue events.",
   "properties": {
     "revenue_type": {
       "type": "string",
@@ -29,6 +30,10 @@
     "linked_agreement_id": {
       "type": "string",
       "description": "RevenueAgreement ID governing this event"
+    },
+    "linked_sponsorship_id": {
+      "type": "string",
+      "description": "Phase 17C: Optional Sponsorship ID. Additional reference for sponsorship-related revenue events. The existing buyer polymorphism (linked_buyer_entity_type + linked_buyer_entity_id) remains unchanged."
     },
     "linked_buyer_entity_type": {
       "type": "string",

@@ -1,6 +1,7 @@
 {
   "name": "MediaAssignment",
   "type": "object",
+  "description": "Phase 17C: MediaAssignment now optionally supports linked_sponsorship_id for sponsored editorial assignments. Editorial assignments remain independent \u2014 normal editorial work continues functioning exactly as today. linked_sponsorship_id is only used when compensation_type == 'sponsored' and is always optional.",
   "properties": {
     "assignment_title": {
       "type": "string",
@@ -98,6 +99,10 @@
     "linked_research_packet_id": {
       "type": "string",
       "description": "Optional linked StoryResearchPacket ID"
+    },
+    "linked_sponsorship_id": {
+      "type": "string",
+      "description": "Phase 17C: Optional Sponsorship ID. Sponsored editorial assignments reference Sponsorship. Only used when compensation_type == 'sponsored'. Editorial assignments remain independent \u2014 normal editorial work continues functioning exactly as today."
     },
     "deliverables": {
       "type": "array",

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { validateAgreementCompatibility } from '../../shared/sponsorshipCommercialHelpers.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -14,10 +15,23 @@ Deno.serve(async (req) => {
       flat_fee_amount, currency = 'usd',
       linked_asset_id, linked_assignment_id, linked_story_id,
       linked_outlet_id, linked_profile_id, linked_request_id,
+      linked_sponsorship_id,
       effective_start_date, effective_end_date, notes
     } = body;
 
     if (!agreement_type) return Response.json({ error: 'agreement_type required' }, { status: 400 });
+
+    // Phase 17C: Validate Sponsorship compatibility if agreement_type == 'sponsorship'
+    // or if linked_sponsorship_id is supplied for any agreement type.
+    const compatibility = await validateAgreementCompatibility(
+      base44,
+      agreement_type,
+      linked_sponsorship_id,
+      { effective_start_date, effective_end_date }
+    );
+    if (!compatibility.valid) {
+      return Response.json({ error: compatibility.errors.join('; ') }, { status: 400 });
+    }
 
     // Validate percentages (unless flat fee)
     if (!flat_fee_amount) {

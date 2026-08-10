@@ -55,6 +55,9 @@ export default async function(req: Request): Promise<Response> {
       entrySponsors,
       revenueAgreements,
       allSeries,
+      revenueEvents,
+      advertisements,
+      mediaAssignments,
     ] = await Promise.all([
       base44.asServiceRole.entities.Organization.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.Sponsorship.list('-created_date', 500).catch(() => []),
@@ -63,6 +66,9 @@ export default async function(req: Request): Promise<Response> {
       base44.asServiceRole.entities.EntrySponsor.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.RevenueAgreement.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.Series.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.RevenueEvent.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.Advertisement.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.MediaAssignment.list('-created_date', 500).catch(() => []),
     ]);
 
     const orgs = organizations || [];
@@ -72,6 +78,9 @@ export default async function(req: Request): Promise<Response> {
     const esRecords = entrySponsors || [];
     const raRecords = revenueAgreements || [];
     const seriesRecords = allSeries || [];
+    const reRecords = revenueEvents || [];
+    const adRecords = advertisements || [];
+    const maRecords = mediaAssignments || [];
 
     // ── Organization audits ──────────────────────────────────────────
     const orgsByType: Record<string, number> = {};
@@ -321,6 +330,73 @@ export default async function(req: Request): Promise<Response> {
       }
     });
 
+    // ── Commercial relationship counts (Phase 17C) ───────────────────────
+    const sponsorshipIds = new Set(spons.map((s: any) => s.id));
+
+    // Index commercial records by linked_sponsorship_id
+    const commercialCounts: Record<string, { agreements: number; events: number; ads: number; assignments: number }> = {};
+    const ensureEntry = (id: string) => {
+      if (!commercialCounts[id]) commercialCounts[id] = { agreements: 0, events: 0, ads: 0, assignments: 0 };
+    };
+
+    raRecords.forEach((a: any) => {
+      if (a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)) {
+        ensureEntry(a.linked_sponsorship_id);
+        commercialCounts[a.linked_sponsorship_id].agreements++;
+      }
+    });
+    reRecords.forEach((e: any) => {
+      if (e.linked_sponsorship_id && sponsorshipIds.has(e.linked_sponsorship_id)) {
+        ensureEntry(e.linked_sponsorship_id);
+        commercialCounts[e.linked_sponsorship_id].events++;
+      }
+    });
+    adRecords.forEach((a: any) => {
+      if (a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)) {
+        ensureEntry(a.linked_sponsorship_id);
+        commercialCounts[a.linked_sponsorship_id].ads++;
+      }
+    });
+    maRecords.forEach((a: any) => {
+      if (a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)) {
+        ensureEntry(a.linked_sponsorship_id);
+        commercialCounts[a.linked_sponsorship_id].assignments++;
+      }
+    });
+
+    // Sponsorships with commercial relationships
+    const sponsorshipsWithCommercial = spons.filter((s: any) => commercialCounts[s.id]).map((s: any) => ({
+      sponsorship_id: s.id,
+      target_entity_type: s.target_entity_type,
+      target_entity_id: s.target_entity_id,
+      status: s.status,
+      is_archived: s.is_archived,
+      agreement_count: commercialCounts[s.id].agreements,
+      revenue_event_count: commercialCounts[s.id].events,
+      advertisement_count: commercialCounts[s.id].ads,
+      media_assignment_count: commercialCounts[s.id].assignments,
+      total_commercial: commercialCounts[s.id].agreements + commercialCounts[s.id].events +
+                        commercialCounts[s.id].ads + commercialCounts[s.id].assignments,
+    }));
+
+    // Archived Sponsorships with active commercial records (orphan risk)
+    const archivedSponsorshipsWithActiveCommercial = spons.filter((s: any) => {
+      if (!s.is_archived) return false;
+      const c = commercialCounts[s.id];
+      if (!c) return false;
+      // Check if any active commercial records exist
+      const activeAgreements = raRecords.filter((a: any) => a.linked_sponsorship_id === s.id && a.status === 'active').length;
+      const activeAds = adRecords.filter((a: any) => a.linked_sponsorship_id === s.id && a.status === 'published').length;
+      const activeAssignments = maRecords.filter((a: any) => a.linked_sponsorship_id === s.id && !['cancelled', 'completed'].includes(a.status)).length;
+      return activeAgreements > 0 || activeAds > 0 || activeAssignments > 0;
+    }).map((s: any) => ({
+      sponsorship_id: s.id,
+      is_archived: true,
+      active_agreements: raRecords.filter((a: any) => a.linked_sponsorship_id === s.id && a.status === 'active').length,
+      active_advertisements: adRecords.filter((a: any) => a.linked_sponsorship_id === s.id && a.status === 'published').length,
+      active_assignments: maRecords.filter((a: any) => a.linked_sponsorship_id === s.id && !['cancelled', 'completed'].includes(a.status)).length,
+    }));
+
     // ── Build report ──────────────────────────────────────────────────
     const report = {
       status: 'complete',
@@ -334,6 +410,10 @@ export default async function(req: Request): Promise<Response> {
         total_driver_sponsors: dsRecords.length,
         total_entry_sponsors: esRecords.length,
         total_revenue_agreements: raRecords.length,
+        total_revenue_events: reRecords.length,
+        total_advertisements: adRecords.length,
+        total_media_assignments: maRecords.length,
+        sponsorships_with_commercial: sponsorshipsWithCommercial.length,
       },
       organization_issues: {
         without_normalized_name: orgsWithoutNormalizedName.map((o: any) => o.id),
@@ -368,6 +448,14 @@ export default async function(req: Request): Promise<Response> {
         revenue_agreement_missing: revenueAgreementMissing,
       },
       title_sponsor_issues: titleSponsorshipIssues,
+      commercial_relationships: {
+        sponsorships_with_commercial: sponsorshipsWithCommercial,
+        archived_with_active_commercial: archivedSponsorshipsWithActiveCommercial,
+        total_agreement_links: raRecords.filter((a: any) => a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)).length,
+        total_event_links: reRecords.filter((e: any) => e.linked_sponsorship_id && sponsorshipIds.has(e.linked_sponsorship_id)).length,
+        total_advertisement_links: adRecords.filter((a: any) => a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)).length,
+        total_assignment_links: maRecords.filter((a: any) => a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)).length,
+      },
     };
 
     return Response.json(report, { status: 200 });

@@ -17,7 +17,7 @@ import {
   resolveGalleryItems,
   buildMediaSeo,
 } from '../../shared/mediaExperienceHelpers.ts';
-import { buildSponsorshipsForTarget } from '../../shared/sponsorshipReadHelpers.ts';
+import { buildSponsorshipsForTargetWithCommercial } from '../../shared/sponsorshipCommercialHelpers.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -65,10 +65,10 @@ Deno.serve(async (req) => {
     // Build SEO + structured data
     const seo = buildMediaSeo(media_type, item, publisher, author, canonicalUrl);
 
-    // Phase 17B: Unified sponsorship read (modern Sponsorship only for MediaAsset targets)
-    let sponsorshipResult: any = { sponsorships: [], modern_count: 0, legacy_count: 0, deduped_count: 0 };
+    // Phase 17C: Unified sponsorship read with commercial counts (modern Sponsorship only for MediaAsset targets)
+    let sponsorshipResult: any = { sponsorships: [], modern_count: 0, legacy_count: 0, deduped_count: 0, sponsorship_counts: { agreement_count: 0, advertisement_count: 0, media_assignment_count: 0, revenue_event_count: 0 } };
     if (media_type !== 'article' && media_type !== 'story' && item.id) {
-      sponsorshipResult = await buildSponsorshipsForTarget(base44, 'MediaAsset', item.id, {});
+      sponsorshipResult = await buildSponsorshipsForTargetWithCommercial(base44, 'MediaAsset', item.id, {});
     }
 
     return Response.json({
@@ -103,6 +103,7 @@ Deno.serve(async (req) => {
       canonical_url: canonicalUrl,
       sponsorships: sponsorshipResult.sponsorships,
       sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count },
+      commercial_counts: sponsorshipResult.sponsorship_counts || { agreement_count: 0, advertisement_count: 0, media_assignment_count: 0, revenue_event_count: 0 },
       seo,
     });
   } catch (err) {
