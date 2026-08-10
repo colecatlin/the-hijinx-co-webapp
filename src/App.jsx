@@ -23,6 +23,7 @@ import ManageMediaApplications from './pages/ManageMediaApplications';
 import ManageAssignments from './pages/ManageAssignments';
 import ManageRequests from './pages/ManageRequests';
 import ManageRevenue from './pages/ManageRevenue';
+import ManageSponsorshipActivations from './pages/ManageSponsorshipActivations';
 import MediaHome from './pages/MediaHome';
 import CreatorProfile from './pages/CreatorProfile';
 import MediaOutletProfile from './pages/MediaOutletProfile';
@@ -406,6 +407,9 @@ const AuthenticatedApp = () => {
       </Route>
 
       {/* Legacy /Manage* routes remain alive via the pagesConfig loop above — unchanged */}
+
+      {/* Phase 17D: Sponsorship Activations & Deliverables management */}
+      <Route path="/ManageSponsorshipActivations" element={<LayoutWrapper currentPageName="ManageSponsorshipActivations"><ManageSponsorshipActivations /></LayoutWrapper>} />
       
       {/* R9BI: /race-control/events/* → redirect to canonical /racecore/event-files/* */}
       <Route path="/race-control/events" element={<Navigate to="/racecore/event-files" replace />} />

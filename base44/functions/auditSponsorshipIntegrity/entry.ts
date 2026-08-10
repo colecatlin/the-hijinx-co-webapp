@@ -58,6 +58,8 @@ export default async function(req: Request): Promise<Response> {
       revenueEvents,
       advertisements,
       mediaAssignments,
+      allActivations,
+      allDeliverables,
     ] = await Promise.all([
       base44.asServiceRole.entities.Organization.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.Sponsorship.list('-created_date', 500).catch(() => []),
@@ -69,6 +71,8 @@ export default async function(req: Request): Promise<Response> {
       base44.asServiceRole.entities.RevenueEvent.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.Advertisement.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.MediaAssignment.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.Activation.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.SponsorshipDeliverable.list('-created_date', 500).catch(() => []),
     ]);
 
     const orgs = organizations || [];
@@ -81,6 +85,8 @@ export default async function(req: Request): Promise<Response> {
     const reRecords = revenueEvents || [];
     const adRecords = advertisements || [];
     const maRecords = mediaAssignments || [];
+    const actRecords = allActivations || [];
+    const delRecords = allDeliverables || [];
 
     // ── Organization audits ──────────────────────────────────────────
     const orgsByType: Record<string, number> = {};
@@ -414,6 +420,18 @@ export default async function(req: Request): Promise<Response> {
         total_advertisements: adRecords.length,
         total_media_assignments: maRecords.length,
         sponsorships_with_commercial: sponsorshipsWithCommercial.length,
+        // Phase 17D execution counts
+        total_activations: actRecords.length,
+        total_deliverables: delRecords.length,
+        activations_with_sponsorship: actRecords.filter((a: any) => a.sponsorship_id && sponsorshipIds.has(a.sponsorship_id)).length,
+        deliverables_with_sponsorship: delRecords.filter((d: any) => d.sponsorship_id && sponsorshipIds.has(d.sponsorship_id)).length,
+        orphaned_activations: actRecords.filter((a: any) => !a.sponsorship_id || !sponsorshipIds.has(a.sponsorship_id)).length,
+        orphaned_deliverables: delRecords.filter((d: any) => !d.sponsorship_id || !sponsorshipIds.has(d.sponsorship_id)).length,
+        inconsistent_public_execution: spons.filter((s: any) => {
+          const hasPublicExec = actRecords.some((a: any) => a.sponsorship_id === s.id && a.public_visibility === 'public') ||
+                                delRecords.some((d: any) => d.sponsorship_id === s.id && d.public_visibility === 'public');
+          return s.public_visibility === 'private' && hasPublicExec;
+        }).length,
       },
       organization_issues: {
         without_normalized_name: orgsWithoutNormalizedName.map((o: any) => o.id),
@@ -455,6 +473,30 @@ export default async function(req: Request): Promise<Response> {
         total_event_links: reRecords.filter((e: any) => e.linked_sponsorship_id && sponsorshipIds.has(e.linked_sponsorship_id)).length,
         total_advertisement_links: adRecords.filter((a: any) => a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)).length,
         total_assignment_links: maRecords.filter((a: any) => a.linked_sponsorship_id && sponsorshipIds.has(a.linked_sponsorship_id)).length,
+      },
+      execution_relationships: {
+        sponsorships_with_activations: spons.filter((s: any) => actRecords.some((a: any) => a.sponsorship_id === s.id)).map((s: any) => ({
+          sponsorship_id: s.id,
+          activation_count: actRecords.filter((a: any) => a.sponsorship_id === s.id).length,
+          active_activation_count: actRecords.filter((a: any) => a.sponsorship_id === s.id && a.status === 'active').length,
+        })),
+        sponsorships_with_deliverables: spons.filter((s: any) => delRecords.some((d: any) => d.sponsorship_id === s.id)).map((s: any) => ({
+          sponsorship_id: s.id,
+          deliverable_count: delRecords.filter((d: any) => d.sponsorship_id === s.id).length,
+          completed_count: delRecords.filter((d: any) => d.sponsorship_id === s.id && d.status === 'completed').length,
+        })),
+        orphaned_activations: actRecords.filter((a: any) => !a.sponsorship_id || !sponsorshipIds.has(a.sponsorship_id)).map((a: any) => ({
+          activation_id: a.id,
+          sponsorship_id: a.sponsorship_id || null,
+          title: a.title,
+        })),
+        orphaned_deliverables: delRecords.filter((d: any) => !d.sponsorship_id || !sponsorshipIds.has(d.sponsorship_id)).map((d: any) => ({
+          deliverable_id: d.id,
+          sponsorship_id: d.sponsorship_id || null,
+          title: d.title,
+        })),
+        total_activation_links: actRecords.filter((a: any) => a.sponsorship_id && sponsorshipIds.has(a.sponsorship_id)).length,
+        total_deliverable_links: delRecords.filter((d: any) => d.sponsorship_id && sponsorshipIds.has(d.sponsorship_id)).length,
       },
     };
 

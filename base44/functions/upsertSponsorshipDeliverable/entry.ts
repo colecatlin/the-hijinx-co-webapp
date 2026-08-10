@@ -56,15 +56,15 @@ export default async function(req: Request): Promise<Response> {
     if (operation === 'archive') {
       return await archiveEntityById(base44, user, base44.asServiceRole.entities.SponsorshipDeliverable, {
         entity_id: deliverableInput.deliverable_id,
-        dry_run: dryRun,
+        dry_run,
       }, { entityIdField: 'deliverable_id', keyField: 'normalized_deliverable_key', label: 'deliverable' });
     }
 
     if (operation === 'complete') {
-      return await handleComplete(base44, user, deliverableInput, dryRun);
+      return await handleComplete(base44, user, deliverableInput, dry_run);
     }
 
-    return await handleUpsert(base44, user, deliverableInput, dryRun);
+    return await handleUpsert(base44, user, deliverableInput, dry_run);
   } catch (error) {
     return Response.json({ error: error?.message || 'upsertSponsorshipDeliverable failed' }, { status: 500 });
   }
