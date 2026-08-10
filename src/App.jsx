@@ -41,6 +41,8 @@ import RaceCoreEventEditor from './pages/RaceCoreEventEditor';
 import VehicleProfile from './pages/VehicleProfile';
 import EventProfileRouteWrapper from './pages/EventProfileRouteWrapper';
 import { TrackProfileRouteWrapper } from './pages/TrackProfile';
+import MediaProfilePage from './pages/MediaProfilePage';
+import GalleryPage from './pages/GalleryPage';
 import ProfileSetup from './pages/ProfileSetup';
 import ClaimUsername from './pages/ClaimUsername';
 import UsernameRequiredGuard from '@/components/onboarding/UsernameRequiredGuard';
@@ -235,6 +237,10 @@ const AuthenticatedApp = () => {
       <Route path="/vehicles/:slug" element={<LayoutWrapper currentPageName="VehicleProfile"><VehicleProfile /></LayoutWrapper>} />
       {/* Phase 15: Canonical Track profile route — /tracks/:slug */}
       <Route path="/tracks/:slug" element={<LayoutWrapper currentPageName="TrackProfile"><TrackProfileRouteWrapper /></LayoutWrapper>} />
+      {/* Phase 16: Canonical Media profile route — /media/:slug */}
+      <Route path="/media/:slug" element={<LayoutWrapper currentPageName="MediaProfilePage"><MediaProfilePage /></LayoutWrapper>} />
+      {/* Phase 16: Gallery route — /galleries/:slug */}
+      <Route path="/galleries/:slug" element={<LayoutWrapper currentPageName="GalleryPage"><GalleryPage /></LayoutWrapper>} />
       {/* Phase 13: Canonical Event profile route — /events/:slug */}
       <Route path="/events/:slug" element={<LayoutWrapper currentPageName="EventProfile"><EventProfileRouteWrapper /></LayoutWrapper>} />
       <Route path="/VehicleProfile" element={<LayoutWrapper currentPageName="VehicleProfile"><VehicleProfile /></LayoutWrapper>} />
