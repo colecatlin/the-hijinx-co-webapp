@@ -1,0 +1,156 @@
+{
+  "name": "Activation",
+  "type": "object",
+  "description": "Phase 17D: One execution of a Sponsorship \u2014 a real-world or digital activation tied to a commercial relationship. Activation answers 'what did we actually do for the partner?' Examples: sponsor booth at an event, VIP hospitality, driver meet-and-greet, product giveaway, social media campaign, vehicle branding campaign. Activation is the execution layer; SponsorshipDeliverable is the obligation layer. Budget is operational planning metadata stored in cents (NOT recognized revenue \u2014 no RevenueEvent is created from budget).",
+  "properties": {
+    "sponsorship_id": {
+      "type": "string",
+      "description": "Reference to Sponsorship.id. Required \u2014 every Activation belongs to exactly one Sponsorship."
+    },
+    "activation_type": {
+      "type": "string",
+      "enum": [
+        "EventExperience",
+        "Hospitality",
+        "FanActivation",
+        "Giveaway",
+        "Display",
+        "Booth",
+        "VehicleBranding",
+        "MediaIntegration",
+        "SocialCampaign",
+        "ContentCampaign",
+        "DriverAppearance",
+        "TeamAppearance",
+        "ProductSampling",
+        "Merchandise",
+        "Digital",
+        "Community",
+        "Other"
+      ],
+      "description": "Type of activation execution."
+    },
+    "title": {
+      "type": "string",
+      "description": "Activation title / display name."
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the activation."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "approved",
+        "active",
+        "completed",
+        "cancelled",
+        "archived"
+      ],
+      "default": "planned",
+      "description": "Lifecycle status. planned \u2192 approved \u2192 active \u2192 completed. Any non-archived state \u2192 cancelled. Any finished state \u2192 archived."
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Activation start date/time."
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Activation end date/time."
+    },
+    "linked_event_id": {
+      "type": "string",
+      "description": "Optional linked Event ID."
+    },
+    "linked_track_id": {
+      "type": "string",
+      "description": "Optional linked Track ID."
+    },
+    "linked_media_id": {
+      "type": "string",
+      "description": "Optional linked MediaAsset ID."
+    },
+    "linked_advertisement_id": {
+      "type": "string",
+      "description": "Optional linked Advertisement ID."
+    },
+    "linked_media_assignment_id": {
+      "type": "string",
+      "description": "Optional linked MediaAssignment ID."
+    },
+    "location": {
+      "type": "string",
+      "description": "Free-text location (e.g. 'Bark River International Raceway')."
+    },
+    "url": {
+      "type": "string",
+      "description": "Optional URL (e.g. campaign landing page, livestream link)."
+    },
+    "budget_amount": {
+      "type": "number",
+      "description": "Operational planning budget in CENTS (smallest currency unit). NOT recognized revenue \u2014 no RevenueEvent is created from budget. Must be >= 0."
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "ISO currency code for budget_amount."
+    },
+    "estimated_reach": {
+      "type": "number",
+      "description": "Manually entered foundation metric \u2014 estimated audience reach. Must be >= 0. Not automatically inferred."
+    },
+    "actual_reach": {
+      "type": "number",
+      "description": "Manually entered foundation metric \u2014 actual audience reach. Must be >= 0. May exceed estimated_reach. Not automatically inferred."
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display ordering (lower = earlier)."
+    },
+    "public_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "private",
+      "description": "Controls whether this activation is visible on public surfaces. Phase 17D defaults to private \u2014 Phase 17E owns public exposure."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes."
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archive flag."
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Archive timestamp."
+    },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "User ID who created this activation."
+    },
+    "updated_by_user_id": {
+      "type": "string",
+      "description": "User ID who last updated this activation."
+    },
+    "normalized_activation_key": {
+      "type": "string",
+      "description": "Application-level deduplication key: sponsorship_id:activation_type:linked_event_id_or_none:start_date_or_none:normalized_title. Used because Base44 does not support compound unique constraints."
+    }
+  },
+  "required": [
+    "sponsorship_id",
+    "activation_type",
+    "title",
+    "status"
+  ]
+}

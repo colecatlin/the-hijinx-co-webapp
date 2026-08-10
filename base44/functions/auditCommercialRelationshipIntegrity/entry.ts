@@ -28,19 +28,23 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     if (user.role !== 'admin') return Response.json({ error: 'Forbidden — admin only' }, { status: 403 });
 
-    // Load all commercial records
+    // Load all commercial records + Phase 17D execution records
     const [
       allAgreements,
       allRevenueEvents,
       allAdvertisements,
       allAssignments,
       allSponsorships,
+      allActivations,
+      allDeliverables,
     ] = await Promise.all([
       base44.asServiceRole.entities.RevenueAgreement.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.RevenueEvent.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.Advertisement.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.MediaAssignment.list('-created_date', 500).catch(() => []),
       base44.asServiceRole.entities.Sponsorship.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.Activation.list('-created_date', 500).catch(() => []),
+      base44.asServiceRole.entities.SponsorshipDeliverable.list('-created_date', 500).catch(() => []),
     ]);
 
     const orgMap = await loadOrganizationMap(base44);
@@ -286,6 +290,19 @@ Deno.serve(async (req) => {
         events_with_sponsorship: (allRevenueEvents as any[]).filter((e: any) => e.linked_sponsorship_id).length,
         ads_with_sponsorship: (allAdvertisements as any[]).filter((a: any) => a.linked_sponsorship_id).length,
         assignments_with_sponsorship: (allAssignments as any[]).filter((a: any) => a.linked_sponsorship_id).length,
+        // Phase 17D execution counts
+        total_activations: (allActivations as any[]).length,
+        total_deliverables: (allDeliverables as any[]).length,
+        activations_with_sponsorship: (allActivations as any[]).filter((a: any) => a.sponsorship_id).length,
+        deliverables_with_sponsorship: (allDeliverables as any[]).filter((d: any) => d.sponsorship_id).length,
+        orphaned_activations: (allActivations as any[]).filter((a: any) => {
+          if (!a.sponsorship_id) return true;
+          return !sponsorshipMap.has(a.sponsorship_id);
+        }).length,
+        orphaned_deliverables: (allDeliverables as any[]).filter((d: any) => {
+          if (!d.sponsorship_id) return true;
+          return !sponsorshipMap.has(d.sponsorship_id);
+        }).length,
       },
       issues: {
         revenue_agreement: {

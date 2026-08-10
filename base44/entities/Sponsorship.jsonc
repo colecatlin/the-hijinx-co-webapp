@@ -142,7 +142,7 @@
         "type": "object"
       },
       "default": [],
-      "description": "Phase 17A foundation: Simple JSON array for deliverable placeholders. Full deliverable entity is Phase 17D."
+      "description": "DEPRECATED (Phase 17D): This JSON array was a Phase 17A foundation placeholder. Phase 17D replaces it with the first-class SponsorshipDeliverable entity. This field is retained for backward compatibility only \u2014 no new code should write to it. A future migration may remove it entirely once all placeholder data (currently 0 records use it) is migrated to SponsorshipDeliverable records. Do NOT remove this field \u2014 additive compatibility may be required for existing readers."
     },
     "is_archived": {
       "type": "boolean",

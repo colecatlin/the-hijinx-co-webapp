@@ -1,0 +1,159 @@
+{
+  "name": "SponsorshipDeliverable",
+  "type": "object",
+  "description": "Phase 17D: One promised obligation tied to a Sponsorship (and optionally an Activation). A Deliverable represents a specific item that must be completed as part of the partnership. Examples: logo on vehicle, 4 Instagram posts, 10 VIP passes, 1 media article, sponsor mention in livestream, event signage. Deliverables are separate from Activations \u2014 an Activation is the execution, a Deliverable is the obligation. No financial values are stored on Deliverable \u2014 those belong to RevenueAgreement/RevenueEvent/Activation budget.",
+  "properties": {
+    "sponsorship_id": {
+      "type": "string",
+      "description": "Reference to Sponsorship.id. Required \u2014 every Deliverable belongs to exactly one Sponsorship."
+    },
+    "activation_id": {
+      "type": "string",
+      "description": "Optional reference to Activation.id. A Deliverable may belong to a specific Activation, or stand alone under the Sponsorship."
+    },
+    "deliverable_type": {
+      "type": "string",
+      "enum": [
+        "LogoPlacement",
+        "SocialPost",
+        "VideoIntegration",
+        "MediaArticle",
+        "Newsletter",
+        "LivestreamMention",
+        "EventSignage",
+        "VehicleBranding",
+        "HospitalityPass",
+        "VIPExperience",
+        "DriverAppearance",
+        "TeamAppearance",
+        "ProductDisplay",
+        "ProductSampling",
+        "Giveaway",
+        "MerchandiseInclusion",
+        "Booth",
+        "PhotoContent",
+        "VideoContent",
+        "PodcastIntegration",
+        "DigitalPlacement",
+        "Other"
+      ],
+      "description": "Type of promised deliverable."
+    },
+    "title": {
+      "type": "string",
+      "description": "Deliverable title / display name."
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the deliverable."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "submitted",
+        "approved",
+        "completed",
+        "cancelled",
+        "archived"
+      ],
+      "default": "planned",
+      "description": "Lifecycle status. planned \u2192 in_progress \u2192 submitted \u2192 approved \u2192 completed. Any non-archived state \u2192 cancelled. Completed/cancelled \u2192 archived."
+    },
+    "quantity_required": {
+      "type": "number",
+      "default": 1,
+      "description": "Required quantity. Must be >= 1 when supplied."
+    },
+    "quantity_completed": {
+      "type": "number",
+      "default": 0,
+      "description": "Completed quantity. Must be >= 0. May exceed quantity_required (over-delivery reported but not blocked)."
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Deadline for the deliverable."
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the deliverable was marked completed. Set once on first completion \u2014 not changed on idempotent repeat."
+    },
+    "linked_event_id": {
+      "type": "string",
+      "description": "Optional linked Event ID."
+    },
+    "linked_track_id": {
+      "type": "string",
+      "description": "Optional linked Track ID."
+    },
+    "linked_media_id": {
+      "type": "string",
+      "description": "Optional linked MediaAsset ID."
+    },
+    "linked_advertisement_id": {
+      "type": "string",
+      "description": "Optional linked Advertisement ID. If linked Advertisement has linked_sponsorship_id, it must equal this Deliverable's sponsorship_id."
+    },
+    "linked_media_assignment_id": {
+      "type": "string",
+      "description": "Optional linked MediaAssignment ID. If linked MediaAssignment has linked_sponsorship_id, it must equal this Deliverable's sponsorship_id."
+    },
+    "evidence_url": {
+      "type": "string",
+      "description": "URL to evidence of completion (e.g. screenshot, post link, photo)."
+    },
+    "evidence_notes": {
+      "type": "string",
+      "description": "Free-text evidence notes."
+    },
+    "public_visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "default": "private",
+      "description": "Controls whether this deliverable is visible on public surfaces. Phase 17D defaults to private \u2014 Phase 17E owns public exposure."
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display ordering (lower = earlier)."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes."
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archive flag."
+    },
+    "archived_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Archive timestamp."
+    },
+    "created_by_user_id": {
+      "type": "string",
+      "description": "User ID who created this deliverable."
+    },
+    "updated_by_user_id": {
+      "type": "string",
+      "description": "User ID who last updated this deliverable."
+    },
+    "normalized_deliverable_key": {
+      "type": "string",
+      "description": "Application-level deduplication key: sponsorship_id:activation_id_or_none:deliverable_type:linked_event_id_or_none:normalized_title. Used because Base44 does not support compound unique constraints."
+    }
+  },
+  "required": [
+    "sponsorship_id",
+    "deliverable_type",
+    "title",
+    "status"
+  ]
+}

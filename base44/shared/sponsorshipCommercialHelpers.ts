@@ -23,6 +23,10 @@ import {
   loadOrganizationMap,
   isSponsorshipPublicActive,
 } from './sponsorshipReadHelpers.ts';
+import {
+  loadSponsorshipExecutionCountsBatch,
+  type SponsorshipExecutionCounts,
+} from './sponsorshipActivationHelpers.ts';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VALIDATION RESULT TYPE
@@ -447,6 +451,14 @@ export interface SponsorshipWithCommercialCounts extends PublicSponsorship {
   advertisement_count: number;
   media_assignment_count: number;
   revenue_event_count: number;
+  // Phase 17D execution counts
+  activation_count: number;
+  active_activation_count: number;
+  completed_activation_count: number;
+  deliverable_count: number;
+  deliverables_completed: number;
+  deliverables_outstanding: number;
+  deliverable_completion_percent: number;
 }
 
 /**
@@ -488,17 +500,28 @@ export async function buildSponsorshipsForTargetWithCommercial(
     .filter(s => s.is_modern && s.sponsorship_id)
     .map(s => s.sponsorship_id!) as string[];
 
-  const countsMap = await loadSponsorshipCommercialCountsBatch(base44, modernSponsorshipIds);
+  const [countsMap, executionCountsMap] = await Promise.all([
+    loadSponsorshipCommercialCountsBatch(base44, modernSponsorshipIds),
+    loadSponsorshipExecutionCountsBatch(base44, modernSponsorshipIds),
+  ]);
 
-  // Enrich each sponsorship with commercial counts
+  // Enrich each sponsorship with commercial counts + execution counts
   const enrichedSponsorships: SponsorshipWithCommercialCounts[] = base.sponsorships.map(s => {
     const counts = s.sponsorship_id ? countsMap.get(s.sponsorship_id) : undefined;
+    const execCounts = s.sponsorship_id ? executionCountsMap.get(s.sponsorship_id) : undefined;
     return {
       ...s,
       agreement_count: counts?.agreement_count || 0,
       advertisement_count: counts?.advertisement_count || 0,
       media_assignment_count: counts?.media_assignment_count || 0,
       revenue_event_count: counts?.revenue_event_count || 0,
+      activation_count: execCounts?.activation_count || 0,
+      active_activation_count: execCounts?.active_activation_count || 0,
+      completed_activation_count: execCounts?.completed_activation_count || 0,
+      deliverable_count: execCounts?.deliverable_count || 0,
+      deliverables_completed: execCounts?.deliverables_completed || 0,
+      deliverables_outstanding: execCounts?.deliverables_outstanding || 0,
+      deliverable_completion_percent: execCounts?.deliverable_completion_percent || 0,
     };
   });
 
