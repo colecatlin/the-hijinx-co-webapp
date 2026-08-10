@@ -24,6 +24,7 @@ import ManageAssignments from './pages/ManageAssignments';
 import ManageRequests from './pages/ManageRequests';
 import ManageRevenue from './pages/ManageRevenue';
 import ManageSponsorshipActivations from './pages/ManageSponsorshipActivations';
+import ManageSponsorAnalytics from './pages/ManageSponsorAnalytics';
 import MediaHome from './pages/MediaHome';
 import CreatorProfile from './pages/CreatorProfile';
 import MediaOutletProfile from './pages/MediaOutletProfile';
@@ -410,6 +411,9 @@ const AuthenticatedApp = () => {
 
       {/* Phase 17D: Sponsorship Activations & Deliverables management */}
       <Route path="/ManageSponsorshipActivations" element={<LayoutWrapper currentPageName="ManageSponsorshipActivations"><ManageSponsorshipActivations /></LayoutWrapper>} />
+      
+      {/* Phase 17F: Sponsor Analytics & ROI — admin only */}
+      <Route path="/ManageSponsorAnalytics" element={<LayoutWrapper currentPageName="ManageSponsorAnalytics"><ManageSponsorAnalytics /></LayoutWrapper>} />
       
       {/* R9BI: /race-control/events/* → redirect to canonical /racecore/event-files/* */}
       <Route path="/race-control/events" element={<Navigate to="/racecore/event-files" replace />} />
