@@ -14,7 +14,7 @@ import { clearTabScrollCache } from '@/hooks/useTabKeepAlive';
  */
 const TABS = [
   { name: 'Home', to: '/Home', icon: Home },
-  { name: 'Directory', to: '/DriverDirectory', icon: Compass },
+  { name: 'Directory', to: '/Directory', icon: Compass },
   { name: 'Dashboard', to: '/MyDashboard', icon: LayoutGrid },
   { name: 'Profile', to: '/Profile', icon: User },
 ];

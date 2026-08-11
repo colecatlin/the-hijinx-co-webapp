@@ -1,75 +1,79 @@
-import { useLocation } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Search, Compass, Mail } from 'lucide-react';
 
 export default function PageNotFound({}) {
-    const location = useLocation();
-    const pageName = location.pathname.substring(1);
+  const location = useLocation();
 
-    const { data: authData, isFetched } = useQuery({
-        queryKey: ['user'],
-        queryFn: async () => {
-            try {
-                const user = await base44.auth.me();
-                return { user, isAuthenticated: true };
-            } catch (error) {
-                return { user: null, isAuthenticated: false };
-            }
-        }
-    });
-    
-    return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-            <div className="max-w-md w-full">
-                <div className="text-center space-y-6">
-                    {/* 404 Error Code */}
-                    <div className="space-y-2">
-                        <h1 className="text-7xl font-light text-slate-300">404</h1>
-                        <div className="h-0.5 w-16 bg-slate-200 mx-auto"></div>
-                    </div>
-                    
-                    {/* Main Message */}
-                    <div className="space-y-3">
-                        <h2 className="text-2xl font-medium text-slate-800">
-                            Page Not Found
-                        </h2>
-                        <p className="text-slate-600 leading-relaxed">
-                            The page <span className="font-medium text-slate-700">"{pageName}"</span> could not be found in this application.
-                        </p>
-                    </div>
-                    
-                    {/* Admin Note */}
-                    {isFetched && authData.isAuthenticated && authData.user?.role === 'admin' && (
-                        <div className="mt-8 p-4 bg-slate-100 rounded-lg border border-slate-200">
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mt-0.5">
-                                    <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-                                </div>
-                                <div className="text-left space-y-1">
-                                    <p className="text-sm font-medium text-slate-700">Admin Note</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        This could mean that the AI hasn't implemented this page yet. Ask it to implement it in the chat.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {/* Action Button */}
-                    <div className="pt-6">
-                        <button 
-                            onClick={() => window.location.href = '/'} 
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            Go Home
-                        </button>
-                    </div>
-                </div>
-            </div>
+  const navOptions = [
+    { label: 'Home', to: '/Home', icon: Home, description: 'Back to the homepage' },
+    { label: 'Directory', to: '/Directory', icon: Compass, description: 'Browse racers, teams, tracks & series' },
+    { label: 'Contact', to: '/Contact', icon: Mail, description: 'Reach out to our team' },
+  ];
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'hsl(var(--canvas))' }}>
+      <div className="max-w-lg w-full text-center">
+        {/* Hijinx brand mark */}
+        <img
+          src="https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/857494da6_Asset444x.png"
+          alt="Hijinx"
+          className="h-8 w-auto mx-auto mb-10"
+          style={{ opacity: 0.7 }}
+        />
+
+        {/* 404 */}
+        <h1 className="text-7xl font-black tracking-tight mb-3" style={{ color: 'hsl(var(--foreground))' }}>
+          404
+        </h1>
+        <div className="h-0.5 w-16 mx-auto mb-6" style={{ background: 'hsl(var(--motion))' }} />
+
+        {/* Message */}
+        <h2 className="text-xl font-bold mb-2" style={{ color: 'hsl(var(--foreground))' }}>
+          Page Not Found
+        </h2>
+        <p className="text-sm leading-relaxed mb-10 max-w-sm mx-auto" style={{ color: 'hsl(var(--foreground-secondary))' }}>
+          The page you're looking for doesn't exist or may have moved.
+          Let's get you back on track.
+        </p>
+
+        {/* Navigation options */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {navOptions.map((opt) => {
+            const Icon = opt.icon;
+            return (
+              <Link
+                key={opt.label}
+                to={opt.to}
+                className="flex flex-col items-center gap-2 p-5 rounded-xl transition-all"
+                style={{
+                  background: 'hsl(var(--surface-elevated))',
+                  border: '1px solid hsl(var(--divider))',
+                  color: 'hsl(var(--foreground-secondary))',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'hsl(var(--motion) / 0.4)';
+                  e.currentTarget.style.color = 'hsl(var(--foreground))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'hsl(var(--divider))';
+                  e.currentTarget.style.color = 'hsl(var(--foreground-secondary))';
+                }}
+              >
+                <Icon className="w-5 h-5" style={{ color: 'hsl(var(--motion))' }} />
+                <span className="text-sm font-bold">{opt.label}</span>
+                <span className="text-[10px] font-mono uppercase tracking-wider" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+                  {opt.description}
+                </span>
+              </Link>
+            );
+          })}
         </div>
-    )
+
+        {/* Search hint */}
+        <p className="mt-10 text-xs font-mono uppercase tracking-widest" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+          Tip: Use the search icon in the header to find what you're looking for.
+        </p>
+      </div>
+    </div>
+  );
 }

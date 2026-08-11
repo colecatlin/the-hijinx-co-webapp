@@ -68,7 +68,7 @@ const PERKS = [
   'Official HIJINX verification badge once reviewed',
   'Full control of your bio, imagery, sponsors and career history',
   'Live entry, results and standings linkage across all your events',
-  'Early access to RaceCore operations tools as they roll out',
+  'Priority access to RaceCore operations tools as they become available',
 ];
 
 export default function JoinIndex46() {

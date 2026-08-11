@@ -29,8 +29,16 @@ const footerLinks = [
     links: [
       { name: 'About', page: 'About' },
       { name: 'Contact', page: 'Contact' },
+      { name: 'Help', page: 'Help' },
       { name: 'Advertise', page: 'OutletAdvertising' },
       { name: 'Submit a Story', page: 'OutletSubmit' },
+    ]
+  },
+  {
+    label: 'Legal',
+    links: [
+      { name: 'Privacy Policy', page: 'Privacy' },
+      { name: 'Terms of Service', page: 'Terms' },
     ]
   },
 ];

@@ -65,6 +65,9 @@ import JoinIndex46 from './pages/JoinIndex46';
 import JoinSignUp from './pages/JoinSignUp';
 import ManageMotorsportsHome from './pages/ManageMotorsportsHome';
 import UserPublicProfile from './pages/UserPublicProfile';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Help from './pages/Help';
 import StorefrontHome from './pages/StorefrontHome';
 import MarketplaceHome from './pages/MarketplaceHome';
 import Cart from './pages/Cart';
@@ -288,6 +291,11 @@ const AuthenticatedApp = () => {
       } />
       {/* Public user profile route */}
       <Route path="/u/:username" element={<LayoutWrapper currentPageName="UserPublicProfile"><UserPublicProfile /></LayoutWrapper>} />
+
+      {/* Legal & Help pages */}
+      <Route path="/Privacy" element={<LayoutWrapper currentPageName="Privacy"><Privacy /></LayoutWrapper>} />
+      <Route path="/Terms" element={<LayoutWrapper currentPageName="Terms"><Terms /></LayoutWrapper>} />
+      <Route path="/Help" element={<LayoutWrapper currentPageName="Help"><Help /></LayoutWrapper>} />
 
       {/* Organization Platform — one reusable shell for every org type */}
       {/* Username on-demand: creating an org requires a public handle */}

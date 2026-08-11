@@ -39,7 +39,7 @@ export default function AnnouncementBar() {
   // Always show the beta bar (with dynamic message if available, else default)
   const betaMessage = announcements.length > 0
     ? announcements[currentIndex]?.message
-    : 'WELCOME TO HIJINX BETA — THE PLATFORM IS EVOLVING IN REAL TIME';
+    : 'FRIENDS & FAMILY PREVIEW — BUILDING TOGETHER';
 
   return (
     <div
