@@ -213,9 +213,20 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
                 acc[key].push(s);
                 return acc;
               }, {})
-            ).map(([groupKey, entries]) => (
+            ).map(([groupKey, entries]) => {
+              const seriesId = entries[0]?.series_id;
+              const seasonYear = entries[0]?.season_year;
+              const standingsLink = seriesId ? `/racecore/standings/${seriesId}${seasonYear ? `/${seasonYear}` : ''}` : null;
+              return (
               <div key={groupKey}>
-                <h3 className="text-sm font-bold text-[#232323] mb-3">{groupKey}</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-[#232323]">{groupKey}</h3>
+                  {standingsLink && (
+                    <Link to={standingsLink} className="text-xs font-semibold text-[#20ACAC] hover:underline flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3" /> View Full Standings
+                    </Link>
+                  )}
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -260,7 +271,8 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
                   </table>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </TabsContent>

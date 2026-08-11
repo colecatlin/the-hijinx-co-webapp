@@ -15,9 +15,18 @@ const footerLinks = [
     ]
   },
   {
+    label: 'Get Started',
+    links: [
+      { name: 'Join / Claim Profile', href: '/join' },
+      { name: 'Directory', href: '/Directory' },
+      { name: 'Racers', href: '/Directory?cat=drivers' },
+      { name: 'Sponsors', href: '/Directory?cat=sponsors' },
+      { name: 'Vehicles', href: '/Directory?cat=vehicles' },
+    ]
+  },
+  {
     label: 'Ventures',
     links: [
-      { name: 'Creative Services', page: 'CreativeServices' },
       { name: 'Tech', page: 'TechHome' },
       { name: 'Learning', page: 'Learning' },
       { name: 'Hospitality', page: 'Hospitality' },
@@ -69,7 +78,7 @@ export default function Footer() {
                 {col.links.map((link) => (
                   <li key={link.name}>
                     <Link
-                      to={createPageUrl(link.page)}
+                      to={link.href || createPageUrl(link.page)}
                       className="text-sm transition-colors hover:text-motion"
                       style={{ color: 'hsl(var(--foreground-secondary))' }}
                     >
