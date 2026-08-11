@@ -6,13 +6,18 @@ import { base44 } from '@/api/base44Client';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import CommandPalette from '@/components/management/CommandPalette';
-import DataHealthPanel from '@/components/management/DataHealthPanel';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ShieldOff, ArrowRight, AlertCircle, FileText, ListChecks,
-  Handshake, ShoppingBag, BarChart3, MonitorPlay, Users,
+  ShieldOff, ArrowRight, MonitorPlay,
+  FileText, Users, Building2, Handshake, Image as ImageIcon,
+  ShoppingBag, MessageSquare, AlertCircle,
 } from 'lucide-react';
+import OperationsStatCard from '@/components/management/operationsHub/OperationsStatCard';
+import OperationsQuickActions from '@/components/management/operationsHub/OperationsQuickActions';
+import OperationsPlatformHealth from '@/components/management/operationsHub/OperationsPlatformHealth';
+import OperationsRecentActivity from '@/components/management/operationsHub/OperationsRecentActivity';
+import OperationsReadiness from '@/components/management/operationsHub/OperationsReadiness';
 
 export default function Management() {
   const navigate = useNavigate();
@@ -24,34 +29,52 @@ export default function Management() {
 
   const enabled = !userLoading && !!user && user.role === 'admin';
 
-  // Platform-only data queries — no racing entities
-  const { data: driverClaims = [] } = useQuery({
+  // ── Platform data queries ──
+  const { data: driverClaims = [], isLoading: claimsLoading } = useQuery({
     queryKey: ['mgmt_driver_claims'],
     queryFn: () => base44.entities.DriverClaim.filter({ status: 'pending' }),
     enabled,
   });
 
-  const { data: entityClaims = [] } = useQuery({
+  const { data: entityClaims = [], isLoading: entityClaimsLoading } = useQuery({
     queryKey: ['mgmt_entity_claims'],
     queryFn: () => base44.entities.EntityClaimRequest.filter({ status: 'pending' }),
     enabled,
   });
 
-  const { data: mediaApplications = [] } = useQuery({
-    queryKey: ['mgmt_media_apps_pending'],
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['mgmt_users_list'],
+    queryFn: () => base44.entities.User.list('-created_date', 100),
+    enabled,
+  });
+
+  const { data: orgs = [], isLoading: orgsLoading } = useQuery({
+    queryKey: ['mgmt_orgs_list'],
+    queryFn: () => base44.entities.Organization.filter({ is_archived: { $ne: true } }),
+    enabled,
+  });
+
+  const { data: mediaApps = [], isLoading: mediaAppsLoading } = useQuery({
+    queryKey: ['mgmt_media_apps'],
     queryFn: () => base44.entities.MediaApplication.filter({ status: 'pending' }),
     enabled,
   });
 
-  const { data: storySubmissions = [] } = useQuery({
-    queryKey: ['mgmt_story_submissions'],
+  const { data: storySubs = [], isLoading: storySubsLoading } = useQuery({
+    queryKey: ['mgmt_story_subs'],
     queryFn: () => base44.entities.StorySubmission.filter({ status: 'pending' }),
     enabled,
   });
 
-  const { data: recentOrders = [] } = useQuery({
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['mgmt_recent_orders'],
     queryFn: () => base44.entities.Order.list('-created_date', 20),
+    enabled,
+  });
+
+  const { data: messages = [], isLoading: messagesLoading } = useQuery({
+    queryKey: ['mgmt_contact_messages'],
+    queryFn: () => base44.entities.ContactMessage.list('-created_date', 50),
     enabled,
   });
 
@@ -64,7 +87,7 @@ export default function Management() {
             <Skeleton className="h-8 w-48" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {[...Array(4)].map((_, i) => (
+            {[...Array(8)].map((_, i) => (
               <Skeleton key={i} className="h-28 rounded-xl" />
             ))}
           </div>
@@ -84,169 +107,190 @@ export default function Management() {
       <ManagementLayout currentPage="Management">
         <ManagementShell title="Access Denied" subtitle="">
           <div className="py-24 flex flex-col items-center gap-4 text-center">
-            <ShieldOff className="w-10 h-10 text-gray-300" />
-            <p className="text-gray-600 font-medium">Access denied</p>
-            <p className="text-gray-400 text-sm max-w-sm">You do not currently have permission to access this area.</p>
-            <Button size="sm" onClick={() => navigate(createPageUrl('MyDashboard'))}>Go to My Dashboard</Button>
+            <ShieldOff className="w-10 h-10 text-foreground-quiet" />
+            <p className="text-foreground-secondary font-medium">Access denied</p>
+            <p className="text-foreground-quiet text-sm max-w-sm">
+              You do not currently have permission to access this area.
+            </p>
+            <Button size="sm" onClick={() => navigate(createPageUrl('MyDashboard'))}>
+              Go to My Dashboard
+            </Button>
           </div>
         </ManagementShell>
       </ManagementLayout>
     );
   }
 
-  const pendingOrders = recentOrders.filter(o => o.status === 'pending' || o.status === 'processing').length;
   const totalClaims = driverClaims.length + entityClaims.length;
+  const pendingOrders = orders.filter(o => o.status === 'pending' || o.status === 'processing').length;
+  const unreadMessages = messages.filter(m => !m.read).length;
 
   return (
     <>
       <CommandPalette />
       <ManagementLayout currentPage="Management">
         <ManagementShell
-          title="Management"
-          subtitle="Platform administration — website, content, store, access control, and diagnostics"
-          maxWidth="max-w-5xl"
+          title="Operations Hub"
+          subtitle="The operating system for Hijinx — platform status, quick actions, and administrative overview"
+          maxWidth="max-w-7xl"
         >
-
-          {/* RaceCore primary link */}
-          <div className="mb-8 flex items-start gap-3 p-4 rounded-lg border border-teal-800/40 bg-teal-950/20">
-            <MonitorPlay className="w-5 h-5 text-teal-400 mt-0.5 shrink-0" />
+          {/* RaceCore link */}
+          <div className="mb-6 flex items-start gap-3 p-4 rounded-xl border border-motion/20 bg-motion/5">
+            <MonitorPlay className="w-5 h-5 text-motion mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-black">Motorsports Operations → RaceCore</p>
-              <p className="text-xs text-black/70 mt-0.5 leading-snug">
-                Drivers, Teams, Series, Tracks, Events, Results, Standings, Media, and Data tools all live in RaceCore.
+              <p className="text-sm font-bold text-foreground">Race Operations → RaceCore</p>
+              <p className="text-xs text-foreground-quiet mt-0.5 leading-snug">
+                Drivers, Teams, Series, Tracks, Events, Results, Standings, and Data tools live in RaceCore.
               </p>
             </div>
             <Link
               to="/racecore"
-              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-teal-700/60 bg-teal-900/30 text-teal-300 hover:bg-teal-900/50 transition-colors"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-motion/30 bg-motion/10 text-motion hover:bg-motion/20 transition-colors"
             >
               Open RaceCore <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          {/* Admin quick actions */}
-          <div className="mb-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Actions</p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: 'Review Queue',   to: createPageUrl('management/editorial/review-queue'), icon: ListChecks },
-                { label: 'Driver Claims',  to: createPageUrl('ManageDriverClaims'),                icon: AlertCircle },
-                { label: 'Entity Claims',  to: createPageUrl('ManageEntityClaims'),                icon: FileText },
-                { label: 'Access Mgmt',   to: createPageUrl('ManageAccess'),                       icon: Handshake },
-                { label: 'Analytics',     to: createPageUrl('AnalyticsDashboard'),                 icon: BarChart3 },
-                { label: 'Storefront',    to: '/admin/storefront',                                  icon: ShoppingBag },
-              ].map(({ label, to, icon: ItemIcon }) => (
-                <Link
-                  key={label}
-                  to={to}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-                >
-                  <ItemIcon className="w-3 h-3" /> {label}
-                </Link>
-              ))}
+          {/* Quick Actions */}
+          <div className="mb-6">
+            <p className="text-xs font-bold text-foreground-quiet uppercase tracking-wider mb-3">Quick Actions</p>
+            <OperationsQuickActions />
+          </div>
+
+          {/* Release Readiness */}
+          <div className="mb-6">
+            <OperationsReadiness />
+          </div>
+
+          {/* Platform Health */}
+          <div className="mb-6">
+            <OperationsPlatformHealth />
+          </div>
+
+          {/* Stat Cards Grid */}
+          <div className="mb-6">
+            <p className="text-xs font-bold text-foreground-quiet uppercase tracking-wider mb-3">Platform Overview</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <OperationsStatCard
+                icon={FileText}
+                label="Pending Claims"
+                value={totalClaims}
+                sublabel={`${driverClaims.length} driver · ${entityClaims.length} entity`}
+                href={createPageUrl('ManageDriverClaims')}
+                alert={totalClaims > 0}
+                loading={claimsLoading || entityClaimsLoading}
+              />
+              <OperationsStatCard
+                icon={Users}
+                label="Users"
+                value={users.length}
+                sublabel={`${users.filter(u => u.role === 'admin').length} admin`}
+                loading={usersLoading}
+              />
+              <OperationsStatCard
+                icon={Building2}
+                label="Organizations"
+                value={orgs.length}
+                sublabel="Non-archived"
+                href="/Directory?cat=sponsors"
+                loading={orgsLoading}
+              />
+              <OperationsStatCard
+                icon={Handshake}
+                label="Media Applications"
+                value={mediaApps.length}
+                sublabel="Pending review"
+                href={createPageUrl('MediaPortal')}
+                alert={mediaApps.length > 0}
+                loading={mediaAppsLoading}
+              />
+              <OperationsStatCard
+                icon={ImageIcon}
+                label="Story Submissions"
+                value={storySubs.length}
+                sublabel="Pending review"
+                href={createPageUrl('management/editorial/review-queue')}
+                alert={storySubs.length > 0}
+                loading={storySubsLoading}
+              />
+              <OperationsStatCard
+                icon={ShoppingBag}
+                label="Recent Orders"
+                value={orders.length}
+                sublabel={pendingOrders > 0 ? `${pendingOrders} need action` : 'All fulfilled'}
+                href="/admin/orders"
+                alert={pendingOrders > 0}
+                loading={ordersLoading}
+              />
+              <OperationsStatCard
+                icon={MessageSquare}
+                label="Contact Messages"
+                value={messages.length}
+                sublabel={unreadMessages > 0 ? `${unreadMessages} unread` : 'All read'}
+                href={createPageUrl('Contact')}
+                alert={unreadMessages > 0}
+                loading={messagesLoading}
+              />
+              <OperationsStatCard
+                icon={AlertCircle}
+                label="Bug Reports"
+                value="—"
+                sublabel="No reports"
+                loading={false}
+              />
             </div>
           </div>
 
-          {/* Platform admin widgets */}
-          <div className="mb-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Platform Overview</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-
-              {/* Access Control */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
-                      <Handshake className="w-3.5 h-3.5 text-gray-600" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-900">Access Control</p>
+          {/* Recent Activity + Secondary widgets */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <OperationsRecentActivity />
+            <div className="space-y-4">
+              {/* Editorial Summary */}
+              <div className="bg-surface-elevated border border-divider rounded-xl p-5">
+                <h3 className="text-sm font-bold text-foreground mb-3">Editorial Pipeline</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground-secondary">Pending Submissions</span>
+                    <span className="font-bold text-foreground">{storySubs.length}</span>
                   </div>
-                  <Link to={createPageUrl('ManageAccess')} className="text-xs text-gray-400 hover:text-gray-700 flex items-center gap-0.5">
-                    Manage <ArrowRight className="w-3 h-3" />
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground-secondary">Media Applications</span>
+                    <span className="font-bold text-foreground">{mediaApps.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground-secondary">Pending Claims</span>
+                    <span className="font-bold text-foreground">{totalClaims}</span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-divider/60 flex flex-col gap-1">
+                  <Link to={createPageUrl('management/editorial/review-queue')} className="text-xs text-motion hover:underline">
+                    → Review Queue
                   </Link>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{driverClaims.length}</p>
-                    <p className="text-xs text-gray-400">Driver claims</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{entityClaims.length}</p>
-                    <p className="text-xs text-gray-400">Entity claims</p>
-                  </div>
-                </div>
-                {totalClaims > 0 && (
-                  <Link to={createPageUrl('ManageDriverClaims')} className="mt-3 flex items-center gap-1.5 text-xs text-amber-600 font-medium">
-                    <AlertCircle className="w-3.5 h-3.5" /> {totalClaims} claim{totalClaims !== 1 ? 's' : ''} need review
+                  <Link to={createPageUrl('management/editorial/story-radar')} className="text-xs text-motion hover:underline">
+                    → Story Radar
                   </Link>
-                )}
-              </div>
-
-              {/* Editorial */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
-                      <FileText className="w-3.5 h-3.5 text-gray-600" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-900">Editorial</p>
-                  </div>
-                  <Link to={createPageUrl('ManageStories')} className="text-xs text-gray-400 hover:text-gray-700 flex items-center gap-0.5">
-                    Manage <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{storySubmissions.length}</p>
-                    <p className="text-xs text-gray-400">Pending submissions</p>
-                  </div>
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{mediaApplications.length}</p>
-                    <p className="text-xs text-gray-400">Media applications</p>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1 mt-3">
-                  <Link to={createPageUrl('management/editorial/review-queue')} className="text-xs text-blue-600 hover:underline">→ Review Queue</Link>
-                  <Link to={createPageUrl('management/editorial/story-radar')} className="text-xs text-blue-600 hover:underline">→ Story Radar</Link>
                 </div>
               </div>
 
-              {/* Store */}
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
-                      <ShoppingBag className="w-3.5 h-3.5 text-gray-600" />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-900">Store</p>
+              {/* Store Summary */}
+              <div className="bg-surface-elevated border border-divider rounded-xl p-5">
+                <h3 className="text-sm font-bold text-foreground mb-3">Store Summary</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground-secondary">Recent Orders</span>
+                    <span className="font-bold text-foreground">{orders.length}</span>
                   </div>
-                  <Link to="/admin/storefront" className="text-xs text-gray-400 hover:text-gray-700 flex items-center gap-0.5">
-                    Manage <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-xl font-black text-gray-900">{recentOrders.length}</p>
-                    <p className="text-xs text-gray-400">Recent orders</p>
-                  </div>
-                  <div>
-                    <p className={`text-xl font-black ${pendingOrders > 0 ? 'text-amber-500' : 'text-gray-900'}`}>{pendingOrders}</p>
-                    <p className="text-xs text-gray-400">Needs action</p>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground-secondary">Needs Action</span>
+                    <span className={`font-bold ${pendingOrders > 0 ? 'text-warning' : 'text-foreground'}`}>{pendingOrders}</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 mt-3">
-                  <Link to="/admin/products" className="text-xs text-blue-600 hover:underline">→ Products</Link>
-                  <Link to="/admin/orders" className="text-xs text-blue-600 hover:underline">→ Orders</Link>
+                <div className="mt-3 pt-3 border-t border-divider/60 flex flex-col gap-1">
+                  <Link to="/admin/products" className="text-xs text-motion hover:underline">→ Products</Link>
+                  <Link to="/admin/orders" className="text-xs text-motion hover:underline">→ Orders</Link>
                 </div>
               </div>
-
             </div>
-          </div>
-
-          {/* Data health */}
-          <div className="mb-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Data Health</p>
-            <DataHealthPanel />
           </div>
 
         </ManagementShell>
