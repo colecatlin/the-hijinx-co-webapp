@@ -44,13 +44,13 @@ export default function SeriesSchedule({ schedule, allSeasons, selectedSeason, o
                       <Badge className={statusColors[event.status] || statusColors.Draft}>{event.status}</Badge>
                     </div>
                     <div className="text-sm text-foreground-secondary flex flex-wrap gap-3">
-                      {event.track?.name && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{event.track.name}{event.track.location_state ? `, ${event.track.location_state}` : ''}</span>}
+                      {event.track?.name && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{event.track.profile_url ? <Link to={event.track.profile_url} className="hover:text-motion transition-colors">{event.track.name}{event.track.location_state ? `, ${event.track.location_state}` : ''}</Link> : <>{event.track.name}{event.track.location_state ? `, ${event.track.location_state}` : ''}</>}</span>}
                       <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{event.event_date}{event.end_date && event.end_date !== event.event_date ? ` — ${event.end_date}` : ''}</span>
                       {event.entry_count > 0 && <span>{event.entry_count} entries</span>}
                     </div>
                     {event.winner && (
                       <div className="text-xs text-motion mt-2 flex items-center gap-1">
-                        <Trophy className="w-3 h-3" />Winner: {event.winner.racer.display_name}
+                        <Trophy className="w-3 h-3" />Winner: {event.winner.racer?.profile_url ? <Link to={event.winner.racer.profile_url} className="hover:underline">{event.winner.racer.display_name}</Link> : event.winner.racer?.display_name}
                         {event.winner.team?.name && ` — ${event.winner.team.name}`}
                       </div>
                     )}

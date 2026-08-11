@@ -51,6 +51,7 @@ import TeamHistoryPanel from '@/components/racerprofile/TeamHistoryPanel';
 import VehicleHistoryPanel from '@/components/racerprofile/VehicleHistoryPanel';
 import ProfileCompletenessIndicator from '@/components/racerprofile/ProfileCompletenessIndicator';
 import StatisticsBreakdown from '@/components/racerprofile/StatisticsBreakdown';
+import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -322,9 +323,7 @@ export default function RacerProfile() {
       <div className="max-w-7xl mx-auto px-6">
         {/* ACTION ROW */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-4 pb-2">
-          <Link to="/Directory?cat=racers" className="text-xs text-gray-400 hover:text-[#232323] flex items-center gap-1">
-            <ArrowLeft className="w-3.5 h-3.5" /><span>Racers</span>
-          </Link>
+          <EntityBreadcrumbs entityType="Racer" entityName={fullName} />
           <div className="flex items-center gap-2 ml-auto">
             <ClaimProfileButton identity={identity} racerProfileSlug={racerProfile.slug} />
             <SocialShareButtons url={window.location.href} title={`${fullName} - Racer Profile`} description="" />

@@ -8,7 +8,9 @@ import PageShell from '@/components/shared/PageShell';
 import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, Calendar, Flag, Users, TrendingUp, Trophy, AlertCircle, ExternalLink, Camera } from 'lucide-react';
+import { MapPin, Calendar, Flag, Users, TrendingUp, Trophy, AlertCircle, ExternalLink, Camera, Handshake } from 'lucide-react';
+import EntitySponsorsTab from '@/components/shared/EntitySponsorsTab';
+import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
 import { format, isValid } from 'date-fns';
 import { Link } from 'react-router-dom';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
@@ -40,6 +42,7 @@ const TABS = [
   { id: 'programs', label: 'Programs', icon: Flag },
   { id: 'schedule', label: 'Schedule & Results', icon: Calendar },
   { id: 'media', label: 'Media', icon: Camera },
+  { id: 'sponsors', label: 'Sponsors', icon: Handshake },
 ];
 
 export default function TeamProfile() {
@@ -182,7 +185,7 @@ export default function TeamProfile() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2 pb-0">
-            <Link to={createPageUrl('TeamDirectory')} className="text-xs text-gray-500 hover:text-[#232323] mr-4">← Teams</Link>
+            <EntityBreadcrumbs entityType="Team" entityName={team?.name} />
           </div>
           <div className="flex gap-1 overflow-x-auto">
             {TABS.map(tab => {
@@ -421,6 +424,11 @@ export default function TeamProfile() {
           <div className="bg-white rounded-lg border border-gray-200 p-8">
             <PublicMediaGallery targetType="team_gallery" targetEntityId={team?.id} title="Media" />
           </div>
+        )}
+
+        {/* SPONSORS */}
+        {activeTab === 'sponsors' && team?.id && (
+          <EntitySponsorsTab targetEntityType="Team" targetEntityId={team.id} />
         )}
 
         <ProfileClaimFooter entityType="Team" entityId={team?.id} entityName={team.name} />

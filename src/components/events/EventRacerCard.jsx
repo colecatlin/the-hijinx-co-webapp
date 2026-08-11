@@ -5,10 +5,7 @@ import { MapPin } from 'lucide-react';
 export default function EventRacerCard({ racer, car_number, class_name, team, vehicle, result }) {
   if (!racer) return null;
   return (
-    <Link
-      to={racer.profile_url || '#'}
-      className="flex items-center gap-3 p-3 rounded-lg border border-divider hover:border-motion/40 transition-colors group"
-    >
+    <div className="flex items-center gap-3 p-3 rounded-lg border border-divider hover:border-motion/40 transition-colors group">
       <div className="relative flex-shrink-0">
         {racer.profile_image_url ? (
           <img src={racer.profile_image_url} alt={racer.display_name} className="w-10 h-10 rounded-full object-cover" />
@@ -22,15 +19,34 @@ export default function EventRacerCard({ racer, car_number, class_name, team, ve
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-foreground group-hover:text-motion transition-colors truncate">{racer.display_name}</div>
+        {racer.profile_url ? (
+          <Link to={racer.profile_url} className="text-sm font-semibold text-foreground group-hover:text-motion transition-colors truncate block">
+            {racer.display_name}
+          </Link>
+        ) : (
+          <div className="text-sm font-semibold text-foreground truncate">{racer.display_name}</div>
+        )}
         <div className="flex items-center gap-2 text-xs text-foreground-quiet">
           {class_name && <span>{class_name}</span>}
-          {team?.name && <span className="truncate">· {team.name}</span>}
+          {team?.name && (
+            <span className="truncate">
+              · {team.profile_url
+                ? <Link to={team.profile_url} className="hover:text-motion transition-colors" onClick={e => e.stopPropagation()}>{team.name}</Link>
+                : team.name}
+            </span>
+          )}
+          {vehicle?.nickname && (
+            <span className="truncate">
+              · {vehicle.profile_url
+                ? <Link to={vehicle.profile_url} className="hover:text-motion transition-colors" onClick={e => e.stopPropagation()}>{vehicle.nickname}</Link>
+                : vehicle.nickname}
+            </span>
+          )}
         </div>
         {result?.position && (
           <div className="text-xs font-mono text-motion mt-0.5">P{result.position}{result.points ? ` · ${result.points}pts` : ''}</div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }

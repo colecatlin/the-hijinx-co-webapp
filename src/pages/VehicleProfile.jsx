@@ -7,9 +7,12 @@ import PageShell from '@/components/shared/PageShell';
 import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, Calendar, Flag, Truck, TrendingUp, Trophy, AlertCircle, Wrench, Users, Camera, Cog } from 'lucide-react';
+import { MapPin, Calendar, Flag, Truck, TrendingUp, Trophy, AlertCircle, Wrench, Users, Camera, Cog, Handshake, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { format, isValid } from 'date-fns';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import EntitySponsorsTab from '@/components/shared/EntitySponsorsTab';
+import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
 import VehicleTimeline from '@/components/vehicles/VehicleTimeline';
 import VehicleAchievementsGrid from '@/components/vehicles/VehicleAchievementsGrid';
 import VehicleStatisticsBreakdown from '@/components/vehicles/VehicleStatisticsBreakdown';
@@ -27,7 +30,15 @@ const TABS = [
   { id: 'stats', label: 'Statistics', icon: TrendingUp },
   { id: 'achievements', label: 'Achievements', icon: Trophy },
   { id: 'media', label: 'Media', icon: Camera },
+  { id: 'events', label: 'Events', icon: List },
+  { id: 'sponsors', label: 'Sponsors', icon: Handshake },
 ];
+
+function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
+  if (!dateStr) return 'TBA';
+  const d = new Date(dateStr);
+  return isValid(d) ? format(d, fmt) : 'TBA';
+}
 
 export default function VehicleProfile() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -123,7 +134,7 @@ export default function VehicleProfile() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2 pb-0">
-            <Link to="/Directory?cat=vehicles" className="text-xs text-gray-500 hover:text-[#232323] mr-4">← Vehicles</Link>
+            <EntityBreadcrumbs entityType="Vehicle" entityName={vehicleName} />
           </div>
           <div className="flex gap-1 overflow-x-auto">
             {TABS.map(tab => {
@@ -302,6 +313,51 @@ export default function VehicleProfile() {
               </div>
             )}
           </div>
+        )}
+
+        {/* EVENTS — events this vehicle participated in (from experience timeline) */}
+        {activeTab === 'events' && (
+          <div className="bg-white rounded-lg border border-gray-200 p-8">
+            <h2 className="text-2xl font-black text-[#232323] mb-6">Events</h2>
+            {experience?.timeline?.length > 0 ? (
+              <div className="space-y-3">
+                {experience.timeline
+                  .filter(t => t.event_id || t.event?.id)
+                  .map((t, i) => {
+                    const event = t.event || { id: t.event_id, name: t.event_name, event_date: t.date, profile_url: t.event?.profile_url };
+                    return (
+                      <Link
+                        key={t.event_id || t.event?.id || i}
+                        to={event.profile_url || (event.slug ? `/events/${event.slug}` : `/EventProfile?id=${event.id}`)}
+                        className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-sm transition-all"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-semibold text-[#232323]">{event.name || t.event_name || 'Unnamed Event'}</h4>
+                            <p className="text-sm text-gray-500">
+                              {t.date ? safeDateFormat(t.date) : event.event_date ? safeDateFormat(event.event_date) : 'TBA'}
+                              {t.series?.name && ` · ${t.series.name}`}
+                              {t.track?.name && ` · ${t.track.name}`}
+                            </p>
+                          </div>
+                          {t.result?.position && <Badge className="bg-blue-100 text-blue-800 text-xs">P{t.result.position}</Badge>}
+                        </div>
+                      </Link>
+                    );
+                  })}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 text-gray-600">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <p>No event history available. Events this vehicle participated in will appear here.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SPONSORS */}
+        {activeTab === 'sponsors' && vehicle?.id && (
+          <EntitySponsorsTab targetEntityType="Vehicle" targetEntityId={vehicle.id} />
         )}
       </div>
     </PageShell>

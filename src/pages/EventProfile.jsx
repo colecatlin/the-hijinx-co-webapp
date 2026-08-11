@@ -9,7 +9,9 @@ import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, Calendar, Trophy, Flag, AlertCircle, ExternalLink, List, Users, Clock, Award, Image, BarChart } from 'lucide-react';
+import { MapPin, Calendar, Trophy, Flag, AlertCircle, ExternalLink, List, Users, Clock, Award, Image, BarChart, Handshake } from 'lucide-react';
+import EntitySponsorsTab from '@/components/shared/EntitySponsorsTab';
+import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
 import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
 import { Link } from 'react-router-dom';
 import { format, differenceInCalendarDays, parseISO, isValid } from 'date-fns';
@@ -46,6 +48,7 @@ const TABS = [
   { id: 'timeline', label: 'Timeline', icon: Clock },
   { id: 'venue', label: 'Venue', icon: MapPin },
   { id: 'media', label: 'Media', icon: Image },
+  { id: 'sponsors', label: 'Sponsors', icon: Handshake },
 ];
 
 export default function EventProfile({ routeSlug }) {
@@ -174,7 +177,7 @@ export default function EventProfile({ routeSlug }) {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2">
-            <Link to={createPageUrl('EventDirectory')} className="text-xs text-gray-500 hover:text-black mr-4">← Events</Link>
+            <EntityBreadcrumbs entityType="Event" entityName={event.name} />
           </div>
           <div className="flex gap-1 overflow-x-auto">
             {TABS.map(tab => {
@@ -234,6 +237,10 @@ export default function EventProfile({ routeSlug }) {
 
         {activeTab === 'media' && (
           <EventMediaSection media={media} sponsors={sponsors} history={history} />
+        )}
+
+        {activeTab === 'sponsors' && event?.id && (
+          <EntitySponsorsTab targetEntityType="Event" targetEntityId={event.id} />
         )}
 
         <ProfileClaimFooter entityType="Event" entityId={event?.id} entityName={event.name} />

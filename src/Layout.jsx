@@ -35,6 +35,8 @@ const navItems = [
     { name: 'Teams', href: '/Directory?cat=teams' },
     { name: 'Tracks', href: '/Directory?cat=tracks' },
     { name: 'Series', href: '/Directory?cat=series' },
+    { name: 'Vehicles', href: '/Directory?cat=vehicles' },
+    { name: 'Sponsors', href: '/Directory?cat=sponsors' },
     { name: '— Events —', page: null, disabled: true },
     { name: 'Events', href: '/Directory?cat=events' },
     { name: '— Registration —', page: null, disabled: true },
@@ -288,7 +290,7 @@ export default function Layout({ children, currentPageName }) {
                   <ThemeToggle />
                   <button
                     onClick={() => { setSearchOpen(!searchOpen); setHoveredItem(null); }}
-                    className="p-2 rounded-lg transition-colors hidden lg:flex items-center justify-center"
+                    className="p-2 rounded-lg transition-colors flex items-center justify-center"
                     style={{ color: searchOpen ? 'hsl(var(--motion))' : isHeaderHovered ? 'hsl(var(--foreground-quiet))' : 'hsl(var(--foreground-quiet))' }}
                     onMouseEnter={e => e.currentTarget.style.color = 'hsl(var(--foreground))'}
                     onMouseLeave={e => e.currentTarget.style.color = searchOpen ? 'hsl(var(--motion))' : isHeaderHovered ? 'hsl(var(--foreground-quiet))' : 'hsl(var(--foreground-quiet))'}
@@ -624,6 +626,27 @@ export default function Layout({ children, currentPageName }) {
                   <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ color: 'hsl(var(--foreground-quiet))' }}>Menu</span>
                 </div>
                 <nav className="px-6 py-6">
+                  {/* Mobile search */}
+                  <div className="mb-5">
+                    <button
+                      onClick={() => { setSearchOpen(!searchOpen); setMobileOpen(false); }}
+                      className="w-full flex items-center gap-2 py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
+                      style={{ color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface-interactive) / 0.4)' }}
+                    >
+                      <Search className="w-4 h-4" /> Search the ecosystem
+                    </button>
+                  </div>
+                  {!isAuthenticated && (
+                    <div className="mb-5 space-y-2">
+                      <Link
+                        to="/join"
+                        className="block py-3 px-4 text-sm font-bold rounded-lg transition-colors text-center"
+                        style={{ color: '#fff', background: 'hsl(var(--motion))' }}
+                      >
+                        Join / Claim Your Profile
+                      </Link>
+                    </div>
+                  )}
                   {isAuthenticated && (
                     <div className="mb-5 space-y-2">
                       <Link

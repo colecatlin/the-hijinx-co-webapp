@@ -53,7 +53,11 @@ export default function SeriesRacerRoster({ racers }) {
               </div>
             )}
             {racer.team?.name && (
-              <div className="text-xs text-foreground-quiet mt-1">{racer.team.name}</div>
+              <div className="text-xs text-foreground-quiet mt-1">
+                {racer.team.profile_url
+                  ? <Link to={racer.team.profile_url} className="hover:text-motion transition-colors">{racer.team.name}</Link>
+                  : racer.team.name}
+              </div>
             )}
           </div>
         ))}

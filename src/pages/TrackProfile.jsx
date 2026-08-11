@@ -9,7 +9,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
-import { MapPin, Calendar, Trophy, Flag, BarChart3, Users, Car, Clock, History, Award, Image as ImageIcon, Info, Globe, Phone, Mail, Ruler, Navigation } from 'lucide-react';
+import { MapPin, Calendar, Trophy, Flag, BarChart3, Users, Car, Clock, History, Award, Image as ImageIcon, Info, Globe, Phone, Mail, Ruler, Navigation, Handshake } from 'lucide-react';
+import EntitySponsorsTab from '@/components/shared/EntitySponsorsTab';
+import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
 
 import TrackTimeline from '@/components/tracks/TrackTimeline';
 import TrackRecordsGrid from '@/components/tracks/TrackRecordsGrid';
@@ -36,6 +38,7 @@ const TABS = [
   { id: 'media', label: 'Gallery', icon: ImageIcon },
   { id: 'visitor', label: 'Visitor Info', icon: Info },
   { id: 'statistics', label: 'Statistics', icon: BarChart3 },
+  { id: 'sponsors', label: 'Sponsors', icon: Handshake },
 ];
 
 export function TrackProfileRouteWrapper() {
@@ -126,9 +129,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Share bar */}
         <div className="flex items-center justify-between mb-4">
-          <Link to="/Directory?cat=tracks" className="text-sm text-foreground-quiet hover:text-foreground transition-colors">
-            ← Back to Tracks
-          </Link>
+          <EntityBreadcrumbs entityType="Track" entityName={track.name} />
           <SocialShareButtons url={window.location.href} title={`${track.name} — Track Profile`} description={experienceData.seo?.description || track.bio || track.description || ''} />
         </div>
 
@@ -279,6 +280,11 @@ export default function TrackProfile({ overrideSlug } = {}) {
 
             {/* Statistics */}
             {activeTab === 'statistics' && <TrackStatisticsBreakdown statistics={experienceData.statistics || {}} />}
+
+            {/* Sponsors */}
+            {activeTab === 'sponsors' && track?.id && (
+              <EntitySponsorsTab targetEntityType="Track" targetEntityId={track.id} />
+            )}
           </div>
 
           {/* Sidebar */}

@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import SeoMeta from '@/components/system/seoMeta';
 import {
-  Users, Building2, MapPin, Trophy, CalendarDays, Database, ArrowRight, Camera, Newspaper,
+  Users, Building2, MapPin, Trophy, CalendarDays, Database, ArrowRight, Camera, Newspaper, Truck, Handshake,
 } from 'lucide-react';
 import RacerDirectory from './RacerDirectory';
 import TeamDirectory from './TeamDirectory';
@@ -14,6 +14,8 @@ import SeriesHome from './SeriesHome';
 import EventDirectory from './EventDirectory';
 import CreatorDirectory from './CreatorDirectory';
 import MediaOutletDirectory from './MediaOutletDirectory';
+import VehicleDirectory from './VehicleDirectory';
+import SponsorDirectory from './SponsorDirectory';
 import { isEventPublic } from '@/components/system/publishHelpers';
 
 const ACCENT = 'hsl(var(--motion))';
@@ -31,6 +33,8 @@ const CATEGORIES = [
   { key: 'tracks',  label: 'Tracks',  icon: MapPin,       Component: TrackDirectory },
   { key: 'series',  label: 'Series',  icon: Trophy,       Component: SeriesHome },
   { key: 'events',  label: 'Events',  icon: CalendarDays, Component: EventDirectory },
+  { key: 'vehicles', label: 'Vehicles', icon: Truck,       Component: VehicleDirectory },
+  { key: 'sponsors', label: 'Sponsors', icon: Handshake,    Component: SponsorDirectory },
   { key: 'creators', label: 'Creators', icon: Camera,      Component: CreatorDirectory },
   { key: 'outlets',  label: 'Outlets',  icon: Newspaper,    Component: MediaOutletDirectory },
 ];
@@ -57,6 +61,8 @@ export default function Directory() {
   const tracks    = useCount('Track');
   const series    = useCount('Series');
   const events    = useCount('Event');
+  const vehicles  = useCount('Vehicle');
+  const sponsors  = useQuery({ queryKey: ['directory-count', 'SponsorOrg'], queryFn: async () => { const all = await base44.entities.Organization.list('-created_date', 500); return all.filter(o => o.type === 'Sponsor' && !o.is_archived); }, staleTime: 10 * 60 * 1000 });
   const creators  = useCount('MediaProfile');
   const outlets   = useCount('MediaOutlet');
   const counts = useMemo(() => ({
@@ -65,9 +71,11 @@ export default function Directory() {
     tracks: tracks.data?.length,
     series: series.data?.length,
     events: events.data?.filter(isEventPublic).length,
+    vehicles: vehicles.data?.filter(v => v.visibility_status !== 'draft' && !v.is_archived)?.length,
+    sponsors: sponsors.data?.length,
     creators: creators.data?.length,
     outlets: outlets.data?.length,
-  }), [drivers.data, teams.data, tracks.data, series.data, events.data, creators.data, outlets.data]);
+  }), [drivers.data, teams.data, tracks.data, series.data, events.data, vehicles.data, sponsors.data, creators.data, outlets.data]);
 
   const totalCount = Object.values(counts).reduce((a, n) => a + (n || 0), 0);
 
