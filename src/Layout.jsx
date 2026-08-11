@@ -12,6 +12,7 @@ import ErrorBoundary from '@/components/system/errorBoundary';
 import UserMenu from '@/components/layout/UserMenu';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { SEARCH_STALE_TIME_MS } from '@/components/utils/queryDefaults';
 import { getLaunchModeConfig } from '@/components/system/launchConfig';
 import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
 import { useTabKeepAlive } from '@/hooks/useTabKeepAlive';
@@ -95,6 +96,20 @@ export default function Layout({ children, currentPageName }) {
     enabled: isAuthenticated,
   });
 
+  // Sprint 1E: Search entity lists cached with 5min staleTime — no re-fetch on every keystroke
+  const searchQueryOpts = { staleTime: SEARCH_STALE_TIME_MS, gcTime: 10 * 60 * 1000, enabled: searchOpen };
+  const { data: searchStories } = useQuery({ queryKey: ['searchStories'], queryFn: () => base44.entities.OutletStory.list('-published_date', 200), ...searchQueryOpts });
+  const { data: searchRacerProfiles } = useQuery({ queryKey: ['searchRacerProfiles'], queryFn: () => base44.entities.RacerProfile.list('-created_date', 200), ...searchQueryOpts });
+  const { data: searchEvents } = useQuery({ queryKey: ['searchEvents'], queryFn: () => base44.entities.Event.list('-event_date', 200), ...searchQueryOpts });
+  const { data: searchTracks } = useQuery({ queryKey: ['searchTracks'], queryFn: () => base44.entities.Track.list('-created_date', 200), ...searchQueryOpts });
+  const { data: searchSeries } = useQuery({ queryKey: ['searchSeries'], queryFn: () => base44.entities.Series.list('-created_date', 200), ...searchQueryOpts });
+  const { data: searchTeams } = useQuery({ queryKey: ['searchTeams'], queryFn: () => base44.entities.Team.list('-created_date', 200), ...searchQueryOpts });
+  const { data: searchVehicles } = useQuery({ queryKey: ['searchVehicles'], queryFn: () => base44.entities.Vehicle.list('-created_date', 200), ...searchQueryOpts });
+  const { data: searchMediaAssets } = useQuery({ queryKey: ['searchMediaAssets'], queryFn: () => base44.entities.MediaAsset.list('-created_date', 200), ...searchQueryOpts });
+  const { data: searchSponsorOrgs } = useQuery({ queryKey: ['searchSponsorOrgs'], queryFn: () => base44.entities.Organization.filter({ type: 'Sponsor' }), ...searchQueryOpts });
+  // Sprint 1E: Show loading indicator only when search data is still fetching
+  const searchQueriesLoading = searchOpen && !searchStories && !searchRacerProfiles && !searchEvents;
+
   // Encapsulated keep-alive (mount + per-tab scroll restoration).
   const { mountedTabs } = useTabKeepAlive(TAB_ROUTES, location);
 
@@ -114,25 +129,24 @@ export default function Layout({ children, currentPageName }) {
     setTimeout(() => searchInputRef.current?.focus(), 50);
   }, [searchOpen]);
 
+  // Sprint 1E: Search now filters cached React Query data — no fetch on every keystroke
   useEffect(() => {
     if (searchQuery.length < 2) {
       setSearchResults(EMPTY_RESULTS);
       return;
     }
-    const timer = setTimeout(async () => {
-      setSearchLoading(true);
+    const timer = setTimeout(() => {
       const q = searchQuery.toLowerCase();
-      const [allStories, allRacerProfiles, allEvents, allTracks, allSeries, allTeams, allVehicles, allMediaAssets, allSponsorOrgs = []] = await Promise.all([
-        base44.entities.OutletStory.list('-published_date', 200),
-        base44.entities.RacerProfile.list('-created_date', 200),
-        base44.entities.Event.list('-event_date', 200),
-        base44.entities.Track.list('-created_date', 200),
-        base44.entities.Series.list('-created_date', 200),
-        base44.entities.Team.list('-created_date', 200),
-        base44.entities.Vehicle.list('-created_date', 200),
-        base44.entities.MediaAsset.list('-created_date', 200),
-        base44.entities.Organization.filter({ type: 'Sponsor' }),
-      ]);
+      const allStories = searchStories || [];
+      const allRacerProfiles = searchRacerProfiles || [];
+      const allEvents = searchEvents || [];
+      const allTracks = searchTracks || [];
+      const allSeries = searchSeries || [];
+      const allTeams = searchTeams || [];
+      const allVehicles = searchVehicles || [];
+      const allMediaAssets = searchMediaAssets || [];
+      const allSponsorOrgs = searchSponsorOrgs || [];
+
       setSearchResults({
         stories: allStories.filter(s =>
           s.status === 'published' &&
@@ -186,9 +200,9 @@ export default function Layout({ children, currentPageName }) {
         ).slice(0, 4),
       });
       setSearchLoading(false);
-    }, 300);
+    }, 200); // Sprint 1E: Reduced debounce from 300ms to 200ms — data is cached, filtering is instant
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, searchStories, searchRacerProfiles, searchEvents, searchTracks, searchSeries, searchTeams, searchVehicles, searchMediaAssets, searchSponsorOrgs]);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10);
@@ -373,7 +387,7 @@ export default function Layout({ children, currentPageName }) {
                         )}
                       </div>
                       {/* Results */}
-                      {searchLoading && (
+                      {(searchLoading || searchQueriesLoading) && (
                         <p className="font-mono text-[10px] tracking-widest" style={{ color: 'hsl(var(--foreground-quiet) / 0.6)' }}>SEARCHING...</p>
                       )}
                       {!searchLoading && searchQuery.length >= 2 &&

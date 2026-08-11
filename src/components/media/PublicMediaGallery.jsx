@@ -41,15 +41,21 @@ export default function PublicMediaGallery({
     return [...new Set(publishTargets.map((pt) => pt.asset_id).filter(Boolean))];
   }, [publishTargets]);
 
-  // Step 3: Load MediaAssets for those ids
+  // Step 3: Load only the needed MediaAssets by ID (Sprint 1E — was MediaAsset.list() + client filter)
   const { data: assets = [] } = useQuery({
     queryKey: ['publicMediaAssets', assetIds],
     queryFn: async () => {
       if (assetIds.length === 0) return [];
-      const all = await base44.entities.MediaAsset.list();
-      return all.filter((a) => assetIds.includes(a.id));
+      // Fetch only the assets we need by ID — avoids downloading the entire media library
+      const settled = await Promise.allSettled(
+        assetIds.map((id) => base44.entities.MediaAsset.get(id).catch(() => null))
+      );
+      return settled
+        .filter((r) => r.status === 'fulfilled' && r.value)
+        .map((r) => r.value);
     },
     enabled: assetIds.length > 0,
+    staleTime: 2 * 60 * 1000, // 2 min cache — published media rarely changes
   });
 
   // Merge publish targets with their asset data, preserving sort order
@@ -88,6 +94,8 @@ export default function PublicMediaGallery({
               <img
                 src={asset.drive_file_id || asset.file_name}
                 alt={asset.title || asset.file_name}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
                   e.target.style.display = 'none';

@@ -8,6 +8,7 @@ import ManagementShell from '@/components/management/ManagementShell';
 import CommandPalette from '@/components/management/CommandPalette';
 import DataHealthPanel from '@/components/management/DataHealthPanel';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ShieldOff, ArrowRight, AlertCircle, FileText, ListChecks,
   Handshake, ShoppingBag, BarChart3, MonitorPlay, Users,
@@ -54,7 +55,24 @@ export default function Management() {
     enabled,
   });
 
-  if (userLoading) return null;
+  if (userLoading) {
+    return (
+      <ManagementLayout>
+        <div className="p-6 max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <Skeleton className="h-8 w-8 rounded-lg" />
+            <Skeleton className="h-8 w-48" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-64 rounded-xl" />
+        </div>
+      </ManagementLayout>
+    );
+  }
 
   if (!user) {
     base44.auth.redirectToLogin(createPageUrl('Management'));

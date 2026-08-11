@@ -3,6 +3,7 @@ import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/sys
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import { getTeamProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
 import { EntityNotFound } from '@/components/data/EntityNotFoundState';
@@ -50,17 +51,20 @@ export default function TeamProfile() {
   const teamSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Sprint 1E: Profile data uses 5min staleTime — public content rarely changes
   const { data: profileData, isLoading } = useQuery({
     queryKey: ['teamProfileData', teamSlug],
     queryFn: () => getTeamProfileData({ id: teamSlug, slug: teamSlug }),
     enabled: !!teamSlug,
+    ...applyExperienceQueryOptions(),
   });
 
-  // Phase 11 — Computed team experience data
+  // Phase 11 — Computed team experience data (Sprint 1E: 5min staleTime for server-aggregated data)
   const { data: experienceData } = useQuery({
     queryKey: ['teamExperience', teamSlug],
     queryFn: () => base44.functions.invoke('getTeamExperience', { slug: teamSlug, allow_draft: true }),
     enabled: !!teamSlug,
+    ...applyExperienceQueryOptions(),
   });
   const experience = experienceData?.data || experienceData || null;
 

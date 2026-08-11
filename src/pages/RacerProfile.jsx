@@ -20,7 +20,7 @@ import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/sys
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
+import { applyDefaultQueryOptions, applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import { getRacerProfilePageData, isRacerProfilePublic } from '@/components/racerprofile/publicRacerProfileApi';
 import { racerProfileToDriverShape, getRacerProfileUrl } from '@/components/racerprofile/racerProfileAdapter';
 import PageShell from '@/components/shared/PageShell';
@@ -97,19 +97,21 @@ export default function RacerProfile() {
   const { data: isAuthenticated } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), ...DQ });
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), enabled: !!isAuthenticated, ...DQ });
 
+  // Sprint 1E: Profile data uses longer staleTime — public content rarely changes
   const { data: profileData, isLoading } = useQuery({
     queryKey: ['racerProfileData', routeSlug],
     queryFn: () => getRacerProfilePageData({ slug: routeSlug, allowDraft: user?.role === 'admin' }),
     enabled: !!routeSlug,
-    ...DQ,
+    ...applyExperienceQueryOptions(),
   });
 
   // Phase 10 — Computed experience data (timeline, stats, achievements, team/vehicle history, completeness)
+  // Sprint 1E: Experience engine is server-aggregated — use 5min staleTime for instant return visits
   const { data: experienceData } = useQuery({
     queryKey: ['racerProfileExperience', routeSlug],
     queryFn: () => base44.functions.invoke('getRacerProfileExperience', { slug: routeSlug, allow_draft: user?.role === 'admin' }),
     enabled: !!routeSlug,
-    ...DQ,
+    ...applyExperienceQueryOptions(),
   });
   const experience = experienceData?.data || experienceData || null;
 

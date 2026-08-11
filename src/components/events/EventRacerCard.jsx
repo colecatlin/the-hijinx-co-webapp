@@ -8,7 +8,7 @@ export default function EventRacerCard({ racer, car_number, class_name, team, ve
     <div className="flex items-center gap-3 p-3 rounded-lg border border-divider hover:border-motion/40 transition-colors group">
       <div className="relative flex-shrink-0">
         {racer.profile_image_url ? (
-          <img src={racer.profile_image_url} alt={racer.display_name} className="w-10 h-10 rounded-full object-cover" />
+          <img src={racer.profile_image_url} alt={racer.display_name} className="w-10 h-10 rounded-full object-cover" loading="lazy" decoding="async" />
         ) : (
           <div className="w-10 h-10 rounded-full bg-surface-interactive flex items-center justify-center text-sm font-bold text-foreground-secondary">
             {racer.display_name?.charAt(0) || '?'}
