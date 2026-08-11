@@ -4,6 +4,7 @@ import Analytics from '@/components/system/analyticsTracker';
 import { useSearchParams, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import PageShell from '@/components/shared/PageShell';
 import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
@@ -58,7 +59,7 @@ export default function SeriesDetail({ overrideSlug } = {}) {
   const [selectedSeason, setSelectedSeason] = useState('');
 
   // Phase 14: Use getSeriesExperience backend function
-  const { data: experienceData, isLoading } = useQuery({
+  const { data: experienceData, isLoading } = useQuery(applyExperienceQueryOptions({
     queryKey: ['seriesExperience', seriesSlug],
     queryFn: async () => {
       try {
@@ -69,7 +70,7 @@ export default function SeriesDetail({ overrideSlug } = {}) {
       }
     },
     enabled: !!seriesSlug,
-  });
+  }));
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), retry: false });
   const { data: isAuthenticated } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), retry: false });
@@ -178,7 +179,7 @@ export default function SeriesDetail({ overrideSlug } = {}) {
       {/* HERO */}
       {heroImg && heroImg !== SITE_FALLBACK_IMAGE ? (
         <div className="hero-dark relative w-full h-[300px] bg-[#0A0A0A] overflow-hidden">
-          <img src={heroImg} alt={series.name} className="w-full h-full object-cover opacity-50" />
+          <img src={heroImg} alt={series.name} className="w-full h-full object-cover opacity-50" decoding="async" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/30 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 pb-8">
             <div className="flex items-end gap-4">
@@ -202,7 +203,7 @@ export default function SeriesDetail({ overrideSlug } = {}) {
           <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 pb-8 flex items-end gap-5">
             {series.logo_url && (
               <div className="flex-shrink-0 hidden sm:flex w-20 h-20 rounded-xl bg-white/10 border border-white/20 items-center justify-center p-2">
-                <img src={series.logo_url} alt={series.name} className="max-w-full max-h-full object-contain" />
+                <img src={series.logo_url} alt={series.name} className="max-w-full max-h-full object-contain" loading="lazy" decoding="async" />
               </div>
             )}
             <div className="flex-1 pb-1">

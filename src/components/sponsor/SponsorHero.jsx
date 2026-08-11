@@ -25,6 +25,7 @@ export default function SponsorHero({ org, settings, statistics, sharing }) {
         <div className="flex items-end gap-4 -mt-12">
           {logo ? (
             <img src={logo} alt={org.name} className="w-24 h-24 rounded-2xl object-cover flex-shrink-0"
+              loading="lazy" decoding="async"
               style={{ border: '3px solid hsl(var(--surface-elevated))' }} />
           ) : (
             <div className="w-24 h-24 rounded-2xl flex items-center justify-center flex-shrink-0"

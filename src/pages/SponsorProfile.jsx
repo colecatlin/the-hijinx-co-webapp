@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import SeoMeta from '@/components/system/seoMeta';
+import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import SponsorHero from '@/components/sponsor/SponsorHero';
 import SponsorSidebar from '@/components/sponsor/SponsorSidebar';
@@ -23,14 +24,14 @@ export default function SponsorProfile() {
 
   useEffect(() => { setActiveSection(section); }, [section]);
 
-  const expQ = useQuery({
+  const expQ = useQuery(applyExperienceQueryOptions({
     queryKey: ['sponsorExperience', entityId],
     queryFn: async () => {
       const res = await base44.functions.invoke('getSponsorExperience', { organization_id: entityId });
       return res.data;
     },
     enabled: Boolean(entityId),
-  });
+  }));
 
   if (expQ.isLoading) {
     return (

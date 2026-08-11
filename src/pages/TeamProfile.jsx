@@ -155,7 +155,7 @@ export default function TeamProfile() {
           <div className="flex items-end gap-5">
             <div className="flex-shrink-0 hidden sm:flex w-24 h-24 rounded-xl bg-white/10 border border-white/20 items-center justify-center p-3">
               {team.logo_url
-                ? <img src={team.logo_url} alt={team.name} className="max-w-full max-h-full object-contain" />
+                ? <img src={team.logo_url} alt={team.name} className="max-w-full max-h-full object-contain" loading="lazy" decoding="async" />
                 : <Users className="w-10 h-10 text-white/40" />}
             </div>
             <div className="flex-1 pb-1">

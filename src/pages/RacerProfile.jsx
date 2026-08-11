@@ -259,7 +259,7 @@ export default function RacerProfile() {
       <div className="relative w-full h-[380px] bg-[#0A0A0A] overflow-hidden">
         {heroImg ? (
           <>
-            <img src={heroImg} alt={fullName} className="w-full h-full object-cover opacity-60" />
+            <img src={heroImg} alt={fullName} className="w-full h-full object-cover opacity-60" decoding="async" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent" />
           </>
         ) : (
@@ -269,7 +269,7 @@ export default function RacerProfile() {
           <div className="flex items-end gap-5">
             <div className="flex-shrink-0 hidden sm:block">
               {profileImg ? (
-                <img src={profileImg} alt={fullName} className="w-28 h-28 rounded-xl object-cover border-2 border-white/20 shadow-xl" />
+                <img src={profileImg} alt={fullName} className="w-28 h-28 rounded-xl object-cover border-2 border-white/20 shadow-xl" loading="lazy" decoding="async" />
               ) : (
                 <div className="w-28 h-28 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
                   <User className="w-10 h-10 text-white/40" />

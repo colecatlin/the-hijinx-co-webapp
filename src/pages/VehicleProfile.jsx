@@ -3,6 +3,7 @@ import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/sys
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import PageShell from '@/components/shared/PageShell';
 import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
@@ -45,11 +46,11 @@ export default function VehicleProfile() {
   const vehicleSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
 
-  const { data: experienceData, isLoading } = useQuery({
+  const { data: experienceData, isLoading } = useQuery(applyExperienceQueryOptions({
     queryKey: ['vehicleExperience', vehicleSlug],
     queryFn: () => base44.functions.invoke('getVehicleExperience', { slug: vehicleSlug, vehicle_id: vehicleSlug?.length === 24 ? vehicleSlug : undefined, allow_draft: true }),
     enabled: !!vehicleSlug,
-  });
+  }));
   const experience = experienceData?.data || experienceData || null;
   const vehicle = experience?.vehicle || null;
 
@@ -98,7 +99,7 @@ export default function VehicleProfile() {
           <div className="flex items-end gap-5">
             <div className="flex-shrink-0 hidden sm:flex w-24 h-24 rounded-xl bg-white/10 border border-white/20 items-center justify-center p-3">
               {vehicle.profile_image_url
-                ? <img src={vehicle.profile_image_url} alt={vehicleName} className="max-w-full max-h-full object-contain" />
+                ? <img src={vehicle.profile_image_url} alt={vehicleName} className="max-w-full max-h-full object-contain" loading="lazy" decoding="async" />
                 : <Truck className="w-10 h-10 text-white/40" />}
             </div>
             <div className="flex-1 pb-1">

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import PageShell from '@/components/shared/PageShell';
 import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
@@ -51,7 +52,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
   const trackSlug = overrideSlug || (searchParams.get('slug') || searchParams.get('id') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
 
-  const { data: experienceData, isLoading } = useQuery({
+  const { data: experienceData, isLoading } = useQuery(applyExperienceQueryOptions({
     queryKey: ['trackExperience', trackSlug],
     queryFn: async () => {
       try {
@@ -62,7 +63,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
       }
     },
     enabled: !!trackSlug,
-  });
+  }));
 
   useEffect(() => {
     if (experienceData?.track) {
@@ -102,7 +103,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
       {/* Hero */}
       {heroImage ? (
         <div className="relative h-[340px] overflow-hidden">
-          <img src={heroImage} alt={track.name} className="w-full h-full object-cover" />
+          <img src={heroImage} alt={track.name} className="w-full h-full object-cover" decoding="async" />
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, hsl(var(--canvas) / 0.95) 0%, hsl(var(--canvas) / 0.3) 60%, transparent 100%)' }} />
           <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 pb-6">
             <h1 className="text-4xl font-black text-foreground drop-shadow-lg">{track.name}</h1>

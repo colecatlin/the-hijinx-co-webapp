@@ -3,6 +3,7 @@ import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/sys
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import { getEventProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
 import MobileBackHeader from '@/components/shared/MobileBackHeader';
@@ -62,7 +63,7 @@ export default function EventProfile({ routeSlug }) {
   const { data: isAuthenticated } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), retry: false });
 
   // Phase 13: Try getEventExperience backend function first, fall back to legacy data loader
-  const { data: experienceData, isLoading: isLoadingExp } = useQuery({
+  const { data: experienceData, isLoading: isLoadingExp } = useQuery(applyExperienceQueryOptions({
     queryKey: ['eventExperience', eventId, eventSlug],
     queryFn: async () => {
       try {
@@ -73,7 +74,7 @@ export default function EventProfile({ routeSlug }) {
       }
     },
     enabled: !!(eventId || eventSlug),
-  });
+  }));
 
   // Fallback: legacy data loader
   const { data: legacyData, isLoading: isLoadingLegacy } = useQuery({
@@ -149,7 +150,7 @@ export default function EventProfile({ routeSlug }) {
       <div className="hero-dark relative w-full h-[300px] bg-[#0A0A0A] overflow-hidden">
         {heroImg ? (
           <>
-            <img src={heroImg} alt={event.name} className="w-full h-full object-cover opacity-50" />
+            <img src={heroImg} alt={event.name} className="w-full h-full object-cover opacity-50" decoding="async" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/30 to-transparent" />
           </>
         ) : (
