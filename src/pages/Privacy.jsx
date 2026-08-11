@@ -1,4 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/components/utils';
+import { ChevronRight } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 import SeoMeta from '@/components/system/seoMeta';
 
@@ -77,6 +80,24 @@ export default function Privacy() {
               Questions about this Privacy Policy? Reach out through our Contact page.
             </p>
           </section>
+        </div>
+
+        {/* Cross-links */}
+        <div className="mt-12 pt-8 grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
+          <Link to={createPageUrl('Terms')} className="flex items-center justify-between p-4 rounded-xl transition-all" style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))' }}>
+            <div>
+              <p className="text-xs font-mono uppercase tracking-wider mb-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>Also read</p>
+              <p className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>Terms of Service</p>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: 'hsl(var(--foreground-quiet))' }} />
+          </Link>
+          <Link to={createPageUrl('Help')} className="flex items-center justify-between p-4 rounded-xl transition-all" style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))' }}>
+            <div>
+              <p className="text-xs font-mono uppercase tracking-wider mb-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>Need help?</p>
+              <p className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>Help Center</p>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: 'hsl(var(--foreground-quiet))' }} />
+          </Link>
         </div>
       </div>
     </PageShell>

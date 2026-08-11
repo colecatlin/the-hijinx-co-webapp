@@ -21,7 +21,7 @@ import { getValidPrimaryEntity } from '@/components/entities/entityPrimary';
 import { getUserMode, getPublicProfileType } from '@/components/system/userModeResolver';
 import {
   ChevronRight, Gauge, KeyRound, Star, Shield, Flag,
-  BarChart3, AlertCircle, ListChecks
+  BarChart3, AlertCircle, ListChecks, ShieldCheck, HelpCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -255,6 +255,41 @@ export default function MyDashboard() {
                   index={i}
                 />
               ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── Welcome education (no entities, non-admin) ───────────── */}
+        {!hasEntities && mode !== 'admin' && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+            className="px-5 py-5 rounded-2xl space-y-3"
+            style={{ background: 'rgba(8,12,14,0.72)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.06)' }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              Welcome to Hijinx
+            </p>
+            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              This is your dashboard. Once you claim a racing profile — or connect with an invite code — your entities,
+              claims, and tools will appear here. Not sure where to start?
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Link to={createPageUrl('JoinIndex46')}>
+                <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all"
+                  style={{ background: TEAL, color: '#fff' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#158080'}
+                  onMouseLeave={e => e.currentTarget.style.background = TEAL}>
+                  <ShieldCheck className="w-3.5 h-3.5" /> Claim a Profile
+                </button>
+              </Link>
+              <Link to={createPageUrl('Help')}>
+                <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}>
+                  <HelpCircle className="w-3.5 h-3.5" /> Help Center
+                </button>
+              </Link>
             </div>
           </motion.div>
         )}

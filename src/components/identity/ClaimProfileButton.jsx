@@ -146,7 +146,7 @@ export default function ClaimProfileButton({ identity, racerProfileSlug }) {
         },
       };
       const result = await submitIdentityClaim(payload);
-      toast({ title: 'Claim submitted', description: result.message || 'An admin will review your evidence.' });
+      toast({ title: 'Claim submitted', description: result.message || 'Your claim is pending review. Most claims are reviewed within 48 hours.' });
       setDialogOpen(false);
       setEvidence({ license_number: '', date_of_birth: '', contact_email: '', notes: '' });
       queryClient.invalidateQueries({ queryKey: ['racerProfileData'] });
@@ -165,10 +165,17 @@ function ClaimDialog({ open, setOpen, evidence, setEvidence, submitting, onSubmi
         <DialogHeader>
           <DialogTitle>Claim This Racer Profile</DialogTitle>
           <DialogDescription>
-            Submit evidence of your identity. An admin will review your claim before ownership is granted. False claims may result in loss of platform access.
+            Submit evidence verifying your relationship to this racer profile. Our team reviews every claim manually — most are reviewed within 48 hours.
+            False claims may result in loss of platform access.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
+          <div className="p-3 rounded-lg bg-muted/50 border border-border">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              <strong>What we need:</strong> Any combination of the fields below that helps us verify you are the rightful owner.
+              You don't need to fill in every field — just enough for us to confirm your identity.
+            </p>
+          </div>
           <div>
             <Label htmlFor="claim-license">Racing License Number</Label>
             <Input id="claim-license" value={evidence.license_number} onChange={(e) => setEvidence({ ...evidence, license_number: e.target.value })} placeholder="e.g. SCCA-12345" />
@@ -183,7 +190,7 @@ function ClaimDialog({ open, setOpen, evidence, setEvidence, submitting, onSubmi
           </div>
           <div>
             <Label htmlFor="claim-notes">Additional Evidence / Notes</Label>
-            <Textarea id="claim-notes" value={evidence.notes} onChange={(e) => setEvidence({ ...evidence, notes: e.target.value })} placeholder="Any additional information that helps verify your identity" rows={3} />
+            <Textarea id="claim-notes" value={evidence.notes} onChange={(e) => setEvidence({ ...evidence, notes: e.target.value })} placeholder="e.g. team affiliation, social media handles, links to results pages, or any other information that helps verify your identity" rows={3} />
           </div>
         </div>
         <DialogFooter>

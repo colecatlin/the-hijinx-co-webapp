@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { format, isValid } from 'date-fns';
 import { invalidateDataGroups } from '@/components/data/invalidationContract';
+import OwnershipGuide from '@/components/shared/OwnershipGuide';
 
 const ENTITY_ICONS = { Driver: User, Team: Users, Track: MapPin, Series: Trophy };
 const ENTITY_COLORS = {
@@ -127,7 +128,7 @@ function ClaimForm({ user, prefill, onSuccess }) {
       return;
     }
     invalidateDataGroups(qc, ['access']);
-    toast.success(isDispute ? 'Ownership review request submitted.' : 'Claim submitted! An admin will review it shortly.');
+    toast.success(isDispute ? 'Ownership review request submitted. Most reviews are completed within 48 hours.' : 'Claim submitted! Most claims are reviewed within 48 hours.');
     setSubmitting(false);
     onSuccess?.();
   };
@@ -146,7 +147,7 @@ function ClaimForm({ user, prefill, onSuccess }) {
                   key={t}
                   onClick={() => { setEntityType(t); setSearchResults([]); }}
                   className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                    entityType === t ? 'bg-[#232323] text-white border-[#232323]' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                    entityType === t ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
                   }`}
                 >
                   {t}
@@ -164,7 +165,7 @@ function ClaimForm({ user, prefill, onSuccess }) {
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
                 placeholder={`Search ${entityType} profiles…`}
               />
-              <Button onClick={handleSearch} disabled={searching || !search.trim()} className="bg-[#232323]">
+              <Button onClick={handleSearch} disabled={searching || !search.trim()} className="bg-gray-900">
                 {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               </Button>
             </div>
@@ -233,7 +234,7 @@ function ClaimForm({ user, prefill, onSuccess }) {
                       type="button"
                       onClick={() => setDisputeReason(r)}
                       className={`w-full text-left px-3 py-2 text-sm rounded-lg border transition-colors ${
-                        disputeReason === r ? 'bg-[#232323] text-white border-[#232323]' : 'border-gray-200 text-gray-600 hover:border-gray-400'
+                        disputeReason === r ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 hover:border-gray-400'
                       }`}
                     >
                       {r}
@@ -266,7 +267,7 @@ function ClaimForm({ user, prefill, onSuccess }) {
             {!prefill?.entityId && (
               <Button variant="outline" onClick={() => setStep('search')}>Back</Button>
             )}
-            <Button onClick={handleSubmit} disabled={submitting} className="bg-[#232323] text-white gap-1.5">
+            <Button onClick={handleSubmit} disabled={submitting} className="bg-gray-900 text-white gap-1.5">
               {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <><ShieldCheck className="w-4 h-4" /> {isDispute ? 'Submit Ownership Review' : 'Submit Claim'}</>}
             </Button>
           </div>
@@ -291,7 +292,8 @@ function MyClaims({ userId }) {
       <div className="py-10 text-center border-2 border-dashed border-gray-200 rounded-xl">
         <ShieldCheck className="w-8 h-8 mx-auto mb-3 text-gray-300" />
         <p className="font-semibold text-gray-500 text-sm">No claims submitted yet</p>
-        <p className="text-xs text-gray-400 mt-1">Use the form above to start a claim.</p>
+        <p className="text-xs text-gray-400 mt-1">Search for a profile above and submit your first claim.</p>
+        <p className="text-xs text-gray-400 mt-2">Most claims are reviewed within 48 hours.</p>
       </div>
     );
   }
@@ -392,6 +394,15 @@ export default function ClaimsCenter() {
           </div>
         </div>
 
+        {/* Ownership Education */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldCheck className="w-5 h-5 text-gray-700" />
+            <h2 className="text-base font-semibold text-gray-900">How Profile Ownership Works</h2>
+          </div>
+          <OwnershipGuide variant="full" showReviewTimeline={true} />
+        </div>
+
         <div className="space-y-6">
           {/* Claim Form Card */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
@@ -409,8 +420,11 @@ export default function ClaimsCenter() {
             {formSuccess ? (
               <div className="flex flex-col items-center gap-3 py-8">
                 <CheckCircle2 className="w-12 h-12 text-green-500" />
-                <p className="font-semibold text-gray-900">Claim submitted successfully!</p>
-                <p className="text-sm text-gray-500 text-center">An admin will review your request and notify you. Track your status below.</p>
+                <p className="font-semibold text-gray-900">Claim Submitted</p>
+                <p className="text-sm text-gray-500 text-center max-w-sm">
+                  Your claim is now pending review. Most claims are reviewed within <strong className="text-gray-700">48 hours</strong>.
+                  You'll be notified when a decision is made. Track your claim status below.
+                </p>
                 <Button variant="outline" size="sm" onClick={() => setFormSuccess(false)}>Submit Another Claim</Button>
               </div>
             ) : (

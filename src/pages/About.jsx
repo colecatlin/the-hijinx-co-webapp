@@ -55,6 +55,31 @@ export default function About() {
             </ul>
           </div>
 
+          <div className="pt-8">
+            <h2 className="text-xl font-black tracking-tight mb-3">The Platform</h2>
+            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+              The Hijinx platform has three connected surfaces that work together as one ecosystem:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <h3 className="text-sm font-bold mb-1.5">INDEX46</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Our public directory — the searchable home for every racer, team, track, and series on the platform.</p>
+              </div>
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <h3 className="text-sm font-bold mb-1.5">RaceCore</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Our operational management system for race events — entries, sessions, results, and standings.</p>
+              </div>
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <h3 className="text-sm font-bold mb-1.5">The Outlet</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Our editorial and media surface — stories, features, and coverage from the motorsports world.</p>
+              </div>
+              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <h3 className="text-sm font-bold mb-1.5">Hijinx</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">The platform company connecting all of these surfaces into one ecosystem for motorsports.</p>
+              </div>
+            </div>
+          </div>
+
           <div className="pt-8 border-t border-gray-200">
             <p className="font-mono text-xs text-gray-400 tracking-wider">BUILT ON PURPOSE.</p>
           </div>

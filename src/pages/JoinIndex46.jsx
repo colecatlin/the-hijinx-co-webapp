@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight, User, Users, MapPin, Trophy, ShieldCheck,
-  Clock, FileCheck, Sparkles, CheckCircle2, LogIn, Search,
+  Clock, FileCheck, Sparkles, CheckCircle2, LogIn, Search, XCircle,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -239,6 +239,81 @@ export default function JoinIndex46() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* OWNERSHIP EDUCATION */}
+      <section className="relative z-[3] px-5 sm:px-8 md:px-12 lg:px-20 py-16 md:py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-5 h-[1px] bg-[#1DA1A1]" />
+            <span className="font-mono text-[9px] tracking-[0.45em] text-[#1DA1A1] uppercase">What Ownership Means</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white uppercase mb-4 leading-[0.95]">
+            Owner vs. Editor.
+          </h2>
+          <p className="text-white/55 text-sm sm:text-base max-w-xl mb-10">
+            When your claim is approved, you become the <strong className="text-white">Owner</strong> of that profile.
+            Owners have full editing control and can invite others as <strong className="text-white">Editors</strong>.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="p-6 rounded-2xl" style={{ background: 'rgba(8,14,14,0.6)', backdropFilter: 'blur(16px)', border: '1px solid rgba(29,161,161,0.15)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldCheck className="w-5 h-5" style={{ color: '#1DA1A1' }} />
+                <h3 className="text-lg font-black text-white uppercase">Owner</h3>
+              </div>
+              <ul className="space-y-2">
+                {[
+                  'Edit all profile content (bio, photos, stats, sponsors)',
+                  'Add or remove editors',
+                  'Manage media uploads and galleries',
+                  'Manage schedule, entries, and results (tracks/series)',
+                  'Display the verified owner badge',
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: '#1DA1A1' }} />
+                    <span className="text-sm text-white/65 leading-snug">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="p-6 rounded-2xl" style={{ background: 'rgba(8,14,14,0.6)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.5)' }} />
+                <h3 className="text-lg font-black text-white uppercase">Editor</h3>
+              </div>
+              <ul className="space-y-2">
+                {[
+                  'Edit profile content (bio, photos, stats)',
+                  'Upload and manage media',
+                  'Manage sponsors (as permitted by owner)',
+                  'View and update schedule entries',
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: '#1DA1A1' }} />
+                    <span className="text-sm text-white/65 leading-snug">{item}</span>
+                  </li>
+                ))}
+                <li className="flex items-start gap-2">
+                  <XCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'rgba(255,100,100,0.7)' }} />
+                  <span className="text-sm text-white/65 leading-snug">Cannot transfer ownership or remove other editors</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-2xl" style={{ background: 'rgba(8,14,14,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="w-4 h-4" style={{ color: '#1DA1A1' }} />
+              <span className="font-mono text-[10px] tracking-[0.35em] text-[#1DA1A1] uppercase">Review & Evidence</span>
+            </div>
+            <p className="text-sm text-white/55 leading-relaxed">
+              We manually review every claim to keep the platform trustworthy. Evidence verifies your relationship to the entity —
+              this protects racers, teams, tracks, and series from false claims. Most claims are reviewed within <strong className="text-white/80">48 hours</strong>.
+              If your claim is denied, you can resubmit with additional evidence — there is no penalty for trying again.
+            </p>
           </div>
         </div>
       </section>
