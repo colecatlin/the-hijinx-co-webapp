@@ -358,5 +358,23 @@
       "description": "Phase 12: Immutable RaceCore ID (VEHC + 9 digits). Backend-generated. Nullable in Phase 1 \u2014 not generated yet."
     }
   },
-  "required": []
+  "required": [],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
