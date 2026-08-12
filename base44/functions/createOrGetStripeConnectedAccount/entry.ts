@@ -15,6 +15,27 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Invalid ownerType' }, { status: 400 });
     }
 
+    // Authorization: caller must own/manage the target entity or be a platform admin
+    if (user.role !== 'admin') {
+      if (ownerType === 'media_profile') {
+        const profiles = await base44.asServiceRole.entities.MediaProfile.filter({ id: ownerId }).catch(() => []);
+        if (!profiles.length || profiles[0].user_id !== user.id) {
+          return Response.json({ error: 'Forbidden: only the profile owner or a platform admin can manage payment accounts' }, { status: 403 });
+        }
+      } else if (ownerType === 'media_outlet') {
+        const outlets = await base44.asServiceRole.entities.MediaOutlet.filter({ id: ownerId }).catch(() => []);
+        if (!outlets.length) {
+          return Response.json({ error: 'Forbidden: target outlet not found' }, { status: 403 });
+        }
+        const outlet = outlets[0];
+        const isPrimary = outlet.primary_contact_user_id === user.id;
+        const isContributor = Array.isArray(outlet.contributor_user_ids) && outlet.contributor_user_ids.includes(user.id);
+        if (!isPrimary && !isContributor) {
+          return Response.json({ error: 'Forbidden: only an outlet manager or a platform admin can manage payment accounts' }, { status: 403 });
+        }
+      }
+    }
+
     // Find or create PaymentAccount record
     const existing = await base44.asServiceRole.entities.PaymentAccount.filter({ owner_type: ownerType, owner_id: ownerId });
     let paymentAccount = existing && existing.length > 0 ? existing[0] : null;

@@ -28,6 +28,11 @@ Deno.serve(async (req) => {
 
   const ownerRecord = owners[0];
 
+  // Authorization: caller must be the owner of this entity or a platform admin
+  if (user.role !== 'admin' && !owners.some(o => o.user_id === user.id)) {
+    return Response.json({ error: 'Forbidden: only the entity owner or a platform admin can access access codes' }, { status: 403 });
+  }
+
   // Already has a code — return it
   if (ownerRecord.access_code) {
     return Response.json({ collaborator: ownerRecord, generated: false });

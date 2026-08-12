@@ -82,6 +82,23 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, session, transition, note: 'no_change' });
     }
 
+    // Authorization: non-admin callers must be an event official or approved collaborator for this session's event
+    if (user.role !== 'admin') {
+      const eventId = session.event_id;
+      if (!eventId) {
+        return Response.json({ error: 'Forbidden: session has no associated event' }, { status: 403 });
+      }
+      const [officials, collaborators] = await Promise.all([
+        base44.asServiceRole.entities.EventOfficial.filter({ event_id: eventId, user_id: user.id }).catch(() => []),
+        base44.asServiceRole.entities.EntityCollaborator.filter({ entity_type: 'Event', entity_id: eventId, user_id: user.id }).catch(() => []),
+      ]);
+      const isOfficial = officials.some(o => ['Invited', 'Confirmed', 'Active'].includes(o.status) && !o.is_archived);
+      const isCollaborator = collaborators.some(c => c.status === 'approved');
+      if (!isOfficial && !isCollaborator) {
+        return Response.json({ error: 'Forbidden: must be an event official or approved collaborator for this event' }, { status: 403 });
+      }
+    }
+
     // Validate transition is allowed
     const allowed = ALLOWED_TRANSITIONS[currentStatus] || [];
     if (!allowed.includes(new_status)) {

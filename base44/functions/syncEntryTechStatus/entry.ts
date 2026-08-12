@@ -28,6 +28,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'entry_id and event_id required' }, { status: 400 });
     }
 
+    // Authorization: caller must be a platform admin or an event official with tech inspection privileges
+    const TECH_AUTHORIZED_ROLES = new Set([
+      'Race Director',
+      'Competition Director',
+      'Technical Director',
+      'Technical Inspector',
+    ]);
+    if (user.role !== 'admin') {
+      const officials = await base44.asServiceRole.entities.EventOfficial.filter({
+        event_id,
+        user_id: user.id,
+      }).catch(() => []);
+      const isTechAuthorized = officials.some(o =>
+        ['Confirmed', 'Active'].includes(o.status) &&
+        !o.is_archived &&
+        TECH_AUTHORIZED_ROLES.has(o.role)
+      );
+      if (!isTechAuthorized) {
+        return Response.json({ error: 'Forbidden: only a platform admin or an authorized tech official can sync tech inspection status' }, { status: 403 });
+      }
+    }
+
     // Find existing TechInspectionRecord for this entry+event (Pre-Race phase)
     const existing = await base44.asServiceRole.entities.TechInspectionRecord.filter({
       entry_id,
