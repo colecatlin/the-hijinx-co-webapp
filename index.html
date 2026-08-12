@@ -8,6 +8,9 @@
     <meta name="description" content="Hijinx — the motorsports platform for drivers, teams, tracks, and series. Claim your profile, manage your race operations, and connect with the community." />
     <meta name="theme-color" content="#20ACAC" />
     <meta name="application-name" content="Hijinx" />
+    <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'none'" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
     <!-- Open Graph -->
     <meta property="og:site_name" content="Hijinx" />
@@ -34,6 +37,12 @@
           el.classList.add(t === 'dark' ? 'theme-dark' : 'theme-light');
         } catch (e) {}
       })();
+    </script>
+    <script>
+      // Frame-busting defense-in-depth (CSP frame-ancestors is primary protection)
+      if (window.top !== window.self) {
+        try { window.top.location = window.self.location; } catch (e) {}
+      }
     </script>
   </head>
   <body>
