@@ -68,10 +68,17 @@ async function ensureSlugForDriver(db, driver) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Auth: accept both user-initiated and automation (service role) calls
     const user = await base44.auth.me().catch(() => null);
 
     const body = await req.json().catch(() => ({}));
+
+    // Auth: entity automation calls (body.event present) are server-side and
+    // allowed without user context. Manual HTTP calls require admin authentication.
+    const isAutomationCall = !!body?.event;
+    if (!isAutomationCall) {
+      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
 
     const db = base44.asServiceRole;
 
