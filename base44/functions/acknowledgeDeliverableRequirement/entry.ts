@@ -15,6 +15,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'request_id, requirement_id, holder_media_user_id required' }, { status: 400 });
     }
 
+    // Authorization: caller must own the holder_media_user_id or be admin
+    if (user.id !== holder_media_user_id && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: you may only acknowledge deliverables for yourself' }, { status: 403 });
+    }
+
     // Validate requirement is active
     const requirement = await base44.entities.DeliverableRequirement.get(requirement_id);
     if (!requirement || !requirement.active) {
