@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ThemeToggle from '@/components/shared/ThemeToggle';
 
 export default function AnnouncementBar() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -49,15 +50,24 @@ export default function AnnouncementBar() {
         borderBottom: '1px solid hsl(var(--divider) / 0.6)',
       }}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-3">
-        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'hsl(var(--motion))', boxShadow: '0 0 6px hsl(var(--motion) / 0.8)' }} />
-        <span
-          className="font-mono text-[9px] tracking-[0.45em] uppercase"
-          style={{ color: 'hsl(var(--foreground))' }}
-        >
-          {betaMessage}
-        </span>
-        <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'hsl(var(--motion))', boxShadow: '0 0 6px hsl(var(--motion) / 0.8)' }} />
+      <div className="max-w-7xl mx-auto grid grid-cols-4 items-center">
+        {/* Left 25% — empty */}
+        <div className="col-span-1" />
+        {/* Middle 50% — announcement */}
+        <div className="col-span-2 flex items-center justify-center gap-3">
+          <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'hsl(var(--motion))', boxShadow: '0 0 6px hsl(var(--motion) / 0.8)' }} />
+          <span
+            className="font-mono text-[9px] tracking-[0.45em] uppercase"
+            style={{ color: 'hsl(var(--foreground))' }}
+          >
+            {betaMessage}
+          </span>
+          <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'hsl(var(--motion))', boxShadow: '0 0 6px hsl(var(--motion) / 0.8)' }} />
+        </div>
+        {/* Right 25% — theme toggle */}
+        <div className="col-span-1 flex justify-end">
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   );

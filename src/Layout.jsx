@@ -289,7 +289,6 @@ export default function Layout({ children, currentPageName }) {
                 </nav>
 
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <ThemeToggle />
                   <button
                     onClick={() => { setSearchOpen(!searchOpen); setHoveredItem(null); }}
                     className="p-2 rounded-lg transition-colors flex items-center justify-center"
