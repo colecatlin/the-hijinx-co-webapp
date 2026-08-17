@@ -26,8 +26,8 @@
 @layer base {
   :root {
     /* ── Canvas ─────────────────────────────────────────── */
-    --canvas: 180 38% 3%;
-    --canvas-hex: #050B0B;
+    --canvas: 0 0% 0%;
+    --canvas-hex: #000000;
 
     /* ── Surfaces ───────────────────────────────────────── */
     --surface: 180 27% 6%;
@@ -131,8 +131,8 @@
      is kept for shadcn components that gate on `darkMode: ["class"]`
      but it simply re-asserts the same canonical token set. */
   .dark, .theme-dark {
-    --canvas: 180 38% 3%;
-    --canvas-hex: #050B0B;
+    --canvas: 0 0% 0%;
+    --canvas-hex: #000000;
     --surface: 180 27% 6%;
     --surface-hex: #0C1515;
     --surface-elevated: 180 20% 9%;
@@ -190,8 +190,8 @@
      ════════════════════════════════════════════════════════════ */
   .theme-light {
     /* ── Foundation ─────────────────────────────────────── */
-    --canvas: 42 24% 96%;
-    --canvas-hex: #F7F5F2;
+    --canvas: 0 0% 100%;
+    --canvas-hex: #FFFFFF;
     --surface: 40 18% 93%;
     --surface-hex: #F0EEE9;
     --surface-elevated: 0 0% 100%;

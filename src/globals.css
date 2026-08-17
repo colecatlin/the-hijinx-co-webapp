@@ -22,7 +22,7 @@
   --hijinx-teal: #20ACAC;        /* → Motion */
   --hijinx-accent: #E5FF00;
   /* Hijinx Design System v1.0 raw mirrors (for legacy --hijinx-* consumers) */
-  --hijinx-canvas: #050B0B;
+  --hijinx-canvas: #000000;
   --hijinx-surface: #0C1515;
   --hijinx-surface-elevated: #121B1B;
   --hijinx-surface-interactive: #1A2929;
@@ -59,7 +59,7 @@
     --hijinx-gray-900: #131314;
     --hijinx-teal: #1E9E9E;
     --hijinx-accent: #E5FF00;
-    --hijinx-canvas: #F7F5F2;
+    --hijinx-canvas: #FFFFFF;
     --hijinx-surface: #FFFFFF;
     --hijinx-surface-elevated: #FFFFFF;
     --hijinx-surface-interactive: #E6E4DF;
@@ -172,15 +172,8 @@ body {
   height: 1px;
 }
 
-/* Hijinx canvas surface — ivory paper in light, branded hero image in dark */
+/* Hijinx canvas surface — solid white in light, solid black in dark */
 .hijinx-canvas-bg { background-color: hsl(var(--canvas)); }
-:root:not(.theme-light) .hijinx-canvas-bg {
-  background-image: url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/801616d83_HijinxBackgroundtestimage.png');
-  background-size: cover;
-  background-position: top center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-}
 
 /* Hijinx mono tag utility */
 .index-mono-tag {
