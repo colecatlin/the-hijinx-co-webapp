@@ -44,7 +44,7 @@ export default function AnnouncementBar() {
 
   return (
     <div
-      className="py-1 px-4"
+      className="py-[1px] px-4"
       style={{
         background: 'hsl(var(--surface) / 0.85)',
         borderBottom: '1px solid hsl(var(--divider) / 0.6)',
