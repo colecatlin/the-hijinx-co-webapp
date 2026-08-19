@@ -41,7 +41,10 @@ import { getValidPrimaryEntity, isPrimaryEntityStale, setPrimaryEntityOnUser } f
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
-const TEAL = '#1DA1A1';
+const MOTION = 'hsl(var(--motion))';
+const MOTION_HOVER = 'hsl(var(--motion-hover))';
+const DANGER = 'hsl(var(--danger))';
+const WARNING = 'hsl(var(--warning))';
 
 const ENTITY_TYPE_LABELS = {
   Driver: 'Driver Page', Team: 'Team Page', Track: 'Track Page', Series: 'Series Page',
@@ -63,37 +66,37 @@ function resolveTab(param) {
 
 function SectionLabel({ children }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+    <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3" style={{ color: 'hsl(var(--foreground-quiet))' }}>
       {children}
     </p>
   );
 }
 
-// ─── Dark input ───────────────────────────────────────────────────────────────
+// ─── Themed input ─────────────────────────────────────────────────────────────
 
-function DarkInput({ label, hint, id, ...props }) {
+function ThemedInput({ label, hint, id, ...props }) {
   return (
     <div>
-      {label && <label htmlFor={id} className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</label>}
+      {label && <label htmlFor={id} className="text-xs font-medium block mb-1.5" style={{ color: 'hsl(var(--foreground-secondary))' }}>{label}</label>}
       <input
         id={id}
-        className="flex h-9 w-full rounded-lg px-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1DA1A1] transition-all"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
+        className="flex h-9 w-full rounded-lg px-3 text-sm focus-visible:outline-none focus-visible:ring-1 transition-all"
+        style={{ background: 'hsl(var(--surface-interactive) / 0.4)', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}
         {...props}
       />
-      {hint && <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>{hint}</p>}
+      {hint && <p className="text-xs mt-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>{hint}</p>}
     </div>
   );
 }
 
-function DarkTextarea({ label, id, ...props }) {
+function ThemedTextarea({ label, id, ...props }) {
   return (
     <div>
-      {label && <label htmlFor={id} className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</label>}
+      {label && <label htmlFor={id} className="text-xs font-medium block mb-1.5" style={{ color: 'hsl(var(--foreground-secondary))' }}>{label}</label>}
       <textarea
         id={id}
-        className="flex w-full rounded-lg px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1DA1A1] transition-all"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.85)' }}
+        className="flex w-full rounded-lg px-3 py-2 text-sm resize-none focus-visible:outline-none focus-visible:ring-1 transition-all"
+        style={{ background: 'hsl(var(--surface-interactive) / 0.4)', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}
         {...props}
       />
     </div>
@@ -106,11 +109,11 @@ function GlassPanel({ children, className = '' }) {
   return (
     <div className={`rounded-2xl p-6 ${className}`}
       style={{
-        background: 'rgba(8,12,14,0.72)',
+        background: 'hsl(var(--surface-elevated) / 0.7)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        boxShadow: '0 4px 32px rgba(0,0,0,0.3)',
+        border: '1px solid hsl(var(--divider) / 0.6)',
+        boxShadow: '0 4px 32px hsl(0 0% 0% / 0.15)',
       }}>
       {children}
     </div>
@@ -234,9 +237,6 @@ export default function Profile() {
         favorite_tracks: data.favorite_tracks || [],
       });
     },
-    // Optimistic update: reflect the new profile fields in the auth.me cache
-    // immediately so the header/identity UI transitions before the server
-    // confirms; roll back on error.
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: QueryKeys.auth.me() });
       const prev = queryClient.getQueryData(QueryKeys.auth.me());
@@ -325,10 +325,10 @@ export default function Profile() {
 
   const SaveButton = ({ label = 'Save Changes' }) => (
     <button type="submit" disabled={updateMutation.isPending}
-      className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl text-white transition-all"
-      style={{ background: TEAL }}
-      onMouseEnter={e => e.currentTarget.style.background = '#158080'}
-      onMouseLeave={e => e.currentTarget.style.background = TEAL}
+      className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl transition-all"
+      style={{ background: MOTION, color: 'hsl(var(--canvas))' }}
+      onMouseEnter={e => e.currentTarget.style.background = MOTION_HOVER}
+      onMouseLeave={e => e.currentTarget.style.background = MOTION}
     >
       <Save className="w-4 h-4" />
       {updateMutation.isPending ? 'Saving…' : label}
@@ -342,21 +342,21 @@ export default function Profile() {
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Profile</p>
-            <h1 className="text-2xl font-black text-white">
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>Profile</p>
+            <h1 className="text-2xl font-black" style={{ color: 'hsl(var(--foreground))' }}>
               {formData.display_name || formData.first_name || user?.full_name?.split(' ')[0] || 'My Profile'}
             </h1>
             {user?.username && (
-              <p className="text-sm font-mono mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>@{user.username}</p>
+              <p className="text-sm font-mono mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>@{user.username}</p>
             )}
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {user?.username && (
               <Link to={`/u/${user.username}`}>
                 <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl transition-all"
-                  style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
-                  onMouseEnter={e => { e.currentTarget.style.color = TEAL; e.currentTarget.style.borderColor = 'rgba(29,161,161,0.3)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                  style={{ background: 'hsl(var(--surface-interactive) / 0.4)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = MOTION; e.currentTarget.style.borderColor = `${MOTION} / 0.3)`; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary))'; e.currentTarget.style.borderColor = 'hsl(var(--divider))'; }}
                 >
                   <Globe className="w-3 h-3" /> Public Profile
                 </button>
@@ -364,18 +364,18 @@ export default function Profile() {
             )}
             <Link to={createPageUrl('MyDashboard')}>
               <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl transition-all"
-                style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.08)' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; }}
+                style={{ background: 'hsl(var(--surface-interactive) / 0.4)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary))'; }}
               >
                 <ChevronRight className="w-3 h-3 rotate-180" /> My Garage
               </button>
             </Link>
             <button onClick={handleLogout}
               className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-xl transition-colors"
-              style={{ background: 'rgba(239,68,68,0.08)', color: 'rgba(239,68,68,0.7)', border: '1px solid rgba(239,68,68,0.15)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(239,68,68,0.7)'; }}
+              style={{ background: `hsl(var(--danger) / 0.08)`, color: DANGER, border: `1px solid ${DANGER} / 0.15)` }}
+              onMouseEnter={e => { e.currentTarget.style.color = DANGER; }}
+              onMouseLeave={e => { e.currentTarget.style.color = DANGER; }}
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -393,19 +393,19 @@ export default function Profile() {
         {user && !user.username && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             className="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
-            style={{ background: 'rgba(29,161,161,0.07)', border: '1px solid rgba(29,161,161,0.2)' }}>
+            style={{ background: `hsl(var(--motion) / 0.07)`, border: `1px solid ${MOTION} / 0.2)` }}>
             <div className="flex items-center gap-2.5">
-              <AtSign className="w-4 h-4 flex-shrink-0" style={{ color: TEAL }} />
+              <AtSign className="w-4 h-4 flex-shrink-0" style={{ color: MOTION }} />
               <div>
-                <p className="text-sm font-semibold text-white">Claim your public username</p>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>Claim your public username</p>
+                <p className="text-xs" style={{ color: 'hsl(var(--foreground-secondary))' }}>
                   You skipped this at sign-up. Grab one so people can find you at /u/yourname.
                 </p>
               </div>
             </div>
             <Link to="/ClaimUsername?return_to=/Profile&feature=set%20up%20your%20public%20profile"
               className="flex-shrink-0 px-3 py-2 text-xs font-bold rounded-lg transition-all"
-              style={{ background: TEAL, color: '#050A0A' }}>
+              style={{ background: MOTION, color: 'hsl(var(--canvas))' }}>
               Claim
             </Link>
           </motion.div>
@@ -414,13 +414,13 @@ export default function Profile() {
         {/* Feedback */}
         {updateMutation.isSuccess && (
           <div className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5"
-            style={{ background: 'rgba(29,161,161,0.1)', color: '#00FFDA', border: '1px solid rgba(29,161,161,0.2)' }}>
+            style={{ background: `hsl(var(--motion) / 0.1)`, color: MOTION, border: `1px solid ${MOTION} / 0.2)` }}>
             <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> Saved successfully.
           </div>
         )}
         {updateMutation.isError && (
           <div className="flex items-center gap-2 text-sm rounded-xl px-4 py-2.5"
-            style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }}>
+            style={{ background: `hsl(var(--danger) / 0.1)`, color: DANGER, border: `1px solid ${DANGER} / 0.2)` }}>
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             {updateMutation.error?.message || 'Save failed. Please try again.'}
           </div>
@@ -432,13 +432,13 @@ export default function Profile() {
             {/* Tab bar */}
             <div className="overflow-x-auto whitespace-nowrap">
               <TabsList className="inline-flex gap-1 p-1 rounded-2xl w-auto"
-                style={{ background: 'rgba(8,12,14,0.7)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                style={{ background: 'hsl(var(--surface-elevated) / 0.7)', backdropFilter: 'blur(16px)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                 {tabs.map(tab => (
                   <TabsTrigger key={tab.value} value={tab.value}
                     className="flex-1 min-w-max rounded-xl px-3 py-2 text-xs font-bold transition-all whitespace-nowrap data-[state=active]:shadow-none"
                     style={{
                       '--tw-ring-shadow': 'none',
-                      color: 'rgba(255,255,255,0.4)',
+                      color: 'hsl(var(--foreground-quiet))',
                     }}
                   >
                     {tab.label}
@@ -453,20 +453,20 @@ export default function Profile() {
                 <SectionLabel>Your Identity</SectionLabel>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DarkInput id="first_name" label="First Name" value={formData.first_name}
+                    <ThemedInput id="first_name" label="First Name" value={formData.first_name}
                       onChange={e => setFormData({ ...formData, first_name: e.target.value })} />
-                    <DarkInput id="last_name" label="Last Name" value={formData.last_name}
+                    <ThemedInput id="last_name" label="Last Name" value={formData.last_name}
                       onChange={e => setFormData({ ...formData, last_name: e.target.value })} />
                   </div>
-                  <DarkInput id="display_name" label="Display Name" value={formData.display_name}
+                  <ThemedInput id="display_name" label="Display Name" value={formData.display_name}
                     placeholder="How you want to be known publicly"
                     onChange={e => setFormData({ ...formData, display_name: e.target.value })} />
                   <div>
-                    <label htmlFor="profile_username" className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                      Username {user?.username && <span style={{ color: TEAL }}>· @{user.username}</span>}
+                    <label htmlFor="profile_username" className="text-xs font-medium block mb-1.5" style={{ color: 'hsl(var(--foreground-secondary))' }}>
+                      Username {user?.username && <span style={{ color: MOTION }}>· @{user.username}</span>}
                     </label>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>@</span>
+                      <span className="text-sm font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>@</span>
                       <input
                         id="profile_username"
                         name="profile_username"
@@ -474,42 +474,42 @@ export default function Profile() {
                         value={formData.username}
                         onChange={e => { setFormData({ ...formData, username: e.target.value.toLowerCase() }); setUsernameError(''); }}
                         placeholder="yourhandle"
-                        className="flex h-9 flex-1 rounded-lg px-3 text-sm font-mono focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1DA1A1] transition-all"
+                        className="flex h-9 flex-1 rounded-lg px-3 text-sm font-mono focus-visible:outline-none focus-visible:ring-1 transition-all"
                         style={{
-                          background: 'rgba(255,255,255,0.04)',
-                          border: usernameError ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.1)',
-                          color: 'rgba(255,255,255,0.85)',
+                          background: 'hsl(var(--surface-interactive) / 0.4)',
+                          border: usernameError ? `1px solid ${DANGER} / 0.5)` : '1px solid hsl(var(--divider))',
+                          color: 'hsl(var(--foreground))',
                         }}
                       />
                     </div>
-                    {usernameError && <p className="text-xs mt-1" style={{ color: '#f87171' }}>{usernameError}</p>}
-                    <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                    {usernameError && <p className="text-xs mt-1" style={{ color: DANGER }}>{usernameError}</p>}
+                    <p className="text-xs mt-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>
                       3–24 characters. Letters, numbers, underscores. Your URL: /u/yourhandle
                     </p>
                   </div>
-                  <DarkTextarea id="bio" label="Bio" value={formData.bio} rows={3}
+                  <ThemedTextarea id="bio" label="Bio" value={formData.bio} rows={3}
                     placeholder="A quick line about you and your scene"
                     onChange={e => setFormData({ ...formData, bio: e.target.value })} />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DarkInput id="location_display" label="Location" value={formData.location_display}
+                    <ThemedInput id="location_display" label="Location" value={formData.location_display}
                       placeholder="e.g. Phoenix, AZ"
                       onChange={e => setFormData({ ...formData, location_display: e.target.value })} />
-                    <DarkInput id="website_url" label="Website" value={formData.website_url}
+                    <ThemedInput id="website_url" label="Website" value={formData.website_url}
                       placeholder="https://yoursite.com"
                       onChange={e => setFormData({ ...formData, website_url: e.target.value })} />
                   </div>
                   <div>
-                    <label htmlFor="profile_email" className="text-xs font-medium block mb-1.5" style={{ color: 'rgba(255,255,255,0.45)' }}>Email</label>
+                    <label htmlFor="profile_email" className="text-xs font-medium block mb-1.5" style={{ color: 'hsl(var(--foreground-secondary))' }}>Email</label>
                     <input id="profile_email" value={user?.email || ''} disabled
                       className="flex h-9 w-full rounded-lg px-3 text-sm"
-                      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }} />
+                      style={{ background: 'hsl(var(--surface-interactive) / 0.2)', border: '1px solid hsl(var(--divider) / 0.6)', color: 'hsl(var(--foreground-quiet))' }} />
                   </div>
 
-                  <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
                     <SectionLabel>Profile Visibility</SectionLabel>
                     <Label htmlFor="profile_visibility" className="sr-only">Profile visibility</Label>
                     <Select value={formData.profile_visibility} onValueChange={v => setFormData({ ...formData, profile_visibility: v })}>
-                      <SelectTrigger id="profile_visibility" className="h-9 text-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)' }}>
+                      <SelectTrigger id="profile_visibility" className="h-9 text-sm" style={{ background: 'hsl(var(--surface-interactive) / 0.4)', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -523,7 +523,7 @@ export default function Profile() {
                   <div className="flex items-center gap-3 pt-3">
                     <Switch id="newsletter_subscriber" checked={formData.newsletter_subscriber || false}
                       onCheckedChange={checked => setFormData({ ...formData, newsletter_subscriber: checked })} />
-                    <Label htmlFor="newsletter_subscriber" className="cursor-pointer text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                    <Label htmlFor="newsletter_subscriber" className="cursor-pointer text-sm" style={{ color: 'hsl(var(--foreground-secondary))' }}>
                       Subscribe to the Index46 newsletter
                     </Label>
                   </div>
@@ -531,39 +531,39 @@ export default function Profile() {
                   <SaveButton />
 
                   {/* Account controls */}
-                  <div className="pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div className="pt-3" style={{ borderTop: '1px solid hsl(var(--divider) / 0.6)' }}>
                     <button type="button" onClick={() => setShowAccountControls(v => !v)}
                       className="text-xs transition-colors"
-                      style={{ color: 'rgba(255,255,255,0.2)' }}
-                      onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.2)'}
+                      style={{ color: 'hsl(var(--foreground-quiet))' }}
+                      onMouseEnter={e => e.currentTarget.style.color = 'hsl(var(--foreground-secondary))'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'hsl(var(--foreground-quiet))'}
                     >
                       {showAccountControls ? 'Hide account controls ↑' : 'Account controls ↓'}
                     </button>
                     {showAccountControls && (
-                      <div className="mt-4 space-y-3 p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                      <div className="mt-4 space-y-3 p-4 rounded-xl" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div>
-                            <p className="text-sm font-semibold text-white">Reset Onboarding</p>
-                            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Re-run setup to update your identity or role.</p>
+                            <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>Reset Onboarding</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>Re-run setup to update your identity or role.</p>
                           </div>
                           <button type="button"
                             className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex-shrink-0"
-                            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
+                            style={{ background: 'hsl(var(--surface-interactive) / 0.5)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}
                             onClick={async () => { await base44.auth.updateMe({ onboarding_complete: false }).catch(() => {}); window.location.href = createPageUrl('MyDashboard'); }}>
                             Reset
                           </button>
                         </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-3" style={{ borderTop: '1px solid hsl(var(--divider) / 0.6)' }}>
                           <div>
-                            <p className="text-sm font-semibold text-white">Delete My Account</p>
-                            <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                            <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>Delete My Account</p>
+                            <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
                               Permanently removes your driver, team, and operational associations.
                             </p>
                           </div>
                           <button type="button"
                             className="px-3 py-1.5 text-xs font-bold rounded-lg flex-shrink-0 transition-all"
-                            style={{ background: 'rgba(239,68,68,0.08)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}
+                            style={{ background: `hsl(var(--danger) / 0.08)`, color: DANGER, border: `1px solid ${DANGER} / 0.25)` }}
                             onClick={() => setShowDeleteModal(true)}>
                             Delete Account
                           </button>
@@ -579,11 +579,11 @@ export default function Profile() {
             <TabsContent value="identity">
               <GlassPanel>
                 <SectionLabel>Motorsports Identity</SectionLabel>
-                <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-quiet))' }}>
                   Select all that apply. Your primary identity shapes how your Garage is organized.
                 </p>
                 <IdentitySection formData={formData} setFormData={setFormData} />
-                <div className="mt-6 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="mt-6 pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
                   <SaveButton label="Save Identity" />
                 </div>
               </GlassPanel>
@@ -593,7 +593,7 @@ export default function Profile() {
             <TabsContent value="socials">
               <GlassPanel>
                 <SectionLabel>Social Links</SectionLabel>
-                <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-quiet))' }}>
                   Add your socials. Toggle visibility to control what appears on your public profile.
                 </p>
                 <SocialLinksEditor
@@ -610,8 +610,8 @@ export default function Profile() {
             <TabsContent value="follows">
               <GlassPanel>
                 <SectionLabel>My Follows</SectionLabel>
-                <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.3)' }}>Drivers, teams, tracks and series you follow.</p>
-                <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-quiet))' }}>Drivers, teams, tracks and series you follow.</p>
+                <div className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                   <FavoritesTab formData={formData} />
                 </div>
                 <div className="mt-5">
@@ -624,25 +624,25 @@ export default function Profile() {
             <TabsContent value="contributions">
               <GlassPanel>
                 <SectionLabel>Story Submissions</SectionLabel>
-                <div className="rounded-xl p-4 mb-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="rounded-xl p-4 mb-5" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                   <StorySubmissionForm user={user} />
                 </div>
-                <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Your Submissions</p>
+                <div className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: 'hsl(var(--foreground-quiet))' }}>Your Submissions</p>
                   <ManageStorySubmissions user={user} />
                 </div>
 
                 {isMediaUser && (
                   <div className="mt-5 space-y-3">
-                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }} className="pt-5">
+                    <div style={{ borderTop: '1px solid hsl(var(--divider))' }} className="pt-5">
                       <SectionLabel>Media Profile</SectionLabel>
                     </div>
-                    <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                       <MediaProfileTab user={user} />
                     </div>
-                    <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <p className="text-sm font-bold text-white mb-1">Contributor Access</p>
-                      <p className="text-xs mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Apply to become an approved media contributor.</p>
+                    <div className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
+                      <p className="text-sm font-bold mb-1" style={{ color: 'hsl(var(--foreground))' }}>Contributor Access</p>
+                      <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-quiet))' }}>Apply to become an approved media contributor.</p>
                       {isApprovedContributor(user) ? (
                         <MediaApplicationStatus application={mediaApplication} isContributor={true} />
                       ) : (mediaAppSubmitted || mediaApplication) ? (
@@ -663,14 +663,14 @@ export default function Profile() {
                 {!hasRacingProfileSection && (
                   <div className="text-center py-8 space-y-4">
                     <div className="w-12 h-12 rounded-2xl mx-auto flex items-center justify-center"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                      <Flag className="w-5 h-5" style={{ color: 'rgba(255,255,255,0.25)' }} />
+                      style={{ background: 'hsl(var(--surface-interactive) / 0.4)', border: '1px solid hsl(var(--divider))' }}>
+                      <Flag className="w-5 h-5" style={{ color: 'hsl(var(--foreground-quiet))' }} />
                     </div>
                     <div>
-                      <p className="text-base font-bold text-white">No profiles linked yet</p>
-                      <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Enter your invite code to link a driver, team, track, or series.</p>
+                      <p className="text-base font-bold" style={{ color: 'hsl(var(--foreground))' }}>No profiles linked yet</p>
+                      <p className="text-sm mt-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>Enter your invite code to link a driver, team, track, or series.</p>
                     </div>
-                    <div className="rounded-xl p-4 max-w-sm mx-auto text-left" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="rounded-xl p-4 max-w-sm mx-auto text-left" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                       <CodeInputTab user={user} />
                     </div>
                   </div>
@@ -680,7 +680,7 @@ export default function Profile() {
                   <div className="space-y-4">
                     {primaryStale && (
                       <div className="flex items-center gap-2 text-sm rounded-xl px-3 py-2"
-                        style={{ background: 'rgba(245,158,11,0.1)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)' }}>
+                        style={{ background: `hsl(var(--warning) / 0.1)`, color: WARNING, border: `1px solid ${WARNING} / 0.2)` }}>
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
                         Your primary profile is no longer linked.
                       </div>
@@ -694,17 +694,17 @@ export default function Profile() {
                           <div key={entity.collaboration_id}
                             className="p-4 rounded-xl transition-all"
                             style={{
-                              background: isThisPrimary ? 'rgba(29,161,161,0.08)' : 'rgba(255,255,255,0.03)',
-                              border: isThisPrimary ? '1px solid rgba(29,161,161,0.25)' : '1px solid rgba(255,255,255,0.07)',
+                              background: isThisPrimary ? `hsl(var(--motion) / 0.08)` : 'hsl(var(--surface-interactive) / 0.3)',
+                              border: isThisPrimary ? `1px solid ${MOTION} / 0.25)` : '1px solid hsl(var(--divider) / 0.6)',
                             }}>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                               <div>
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="font-bold text-white text-sm">{entity.entity_name}</p>
+                                  <p className="font-bold text-sm" style={{ color: 'hsl(var(--foreground))' }}>{entity.entity_name}</p>
                                   {isThisPrimary && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                    style={{ background: 'rgba(29,161,161,0.15)', color: '#00FFDA' }}>Primary</span>}
+                                    style={{ background: `hsl(var(--motion) / 0.15)`, color: MOTION }}>Primary</span>}
                                 </div>
-                                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                                <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
                                   {label} · {isOwner ? 'Page Owner' : 'Page Editor'}
                                 </p>
                               </div>
@@ -712,7 +712,7 @@ export default function Profile() {
                                 {!isThisPrimary && (
                                   <button type="button" disabled={settingPrimary === entity.entity_id}
                                     className="flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-lg transition-all"
-                                    style={{ color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+                                    style={{ color: 'hsl(var(--foreground-quiet))', background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}
                                     onClick={() => handleSetPrimary(entity)}>
                                     <Star className="w-3 h-3" />
                                     {settingPrimary === entity.entity_id ? 'Setting…' : 'Set Primary'}
@@ -721,14 +721,14 @@ export default function Profile() {
                                 {entity.is_racecore_entity && (
                                   <button type="button"
                                     className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
-                                    style={{ background: TEAL, color: '#fff' }}
+                                    style={{ background: MOTION, color: 'hsl(var(--canvas))' }}
                                     onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}>
                                     <Gauge className="w-3 h-3" /> Race Core
                                   </button>
                                 )}
                                 <button type="button"
                                   className="px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
-                                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
+                                  style={{ background: 'hsl(var(--surface-interactive) / 0.5)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}
                                   onClick={() => window.location.href = buildEditorUrl(entity)}>
                                   Open Editor
                                 </button>
@@ -740,23 +740,23 @@ export default function Profile() {
                     </div>
 
                     {resolvedEntities.some(e => e.permission_level === 'admin' || e.role === 'owner') && (
-                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                        <p className="text-sm font-bold text-white mb-1">Manage Collaborators</p>
-                        <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.35)' }}>Invite others to help manage your profiles.</p>
+                      <div className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
+                        <p className="text-sm font-bold mb-1" style={{ color: 'hsl(var(--foreground))' }}>Manage Collaborators</p>
+                        <p className="text-xs mb-3" style={{ color: 'hsl(var(--foreground-quiet))' }}>Invite others to help manage your profiles.</p>
                         <ManageTab user={user} />
                       </div>
                     )}
 
                     {raceCoreEntities.length > 0 && (
-                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                         <RaceCoreAccessTab user={user} />
                       </div>
                     )}
 
-                    <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                      <p className="text-sm font-bold text-white mb-1">Have another invite code?</p>
-                      <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>Link additional profiles to your account.</p>
-                      <div className="rounded-xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div className="pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
+                      <p className="text-sm font-bold mb-1" style={{ color: 'hsl(var(--foreground))' }}>Have another invite code?</p>
+                      <p className="text-xs mb-3" style={{ color: 'hsl(var(--foreground-quiet))' }}>Link additional profiles to your account.</p>
+                      <div className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
                         <CodeInputTab user={user} />
                       </div>
                     </div>
@@ -764,22 +764,22 @@ export default function Profile() {
                 )}
 
                 {claimRequests.length > 0 && (
-                  <div className="space-y-3 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-sm font-bold text-white">Claim Requests</p>
+                  <div className="space-y-3 pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
+                    <p className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>Claim Requests</p>
                     {claimRequests.map(claim => {
                       const statusMap = {
-                        pending: { color: 'rgba(245,158,11,0.15)', text: '#fbbf24', label: 'Under review', Icon: Clock },
-                        approved: { color: 'rgba(29,161,161,0.12)', text: TEAL, label: 'Approved', Icon: CheckCircle2 },
-                        rejected: { color: 'rgba(239,68,68,0.1)', text: '#f87171', label: 'Not approved', Icon: XCircle },
-                      }[claim.status] || { color: 'rgba(255,255,255,0.04)', text: 'rgba(255,255,255,0.4)', label: claim.status, Icon: Clock };
+                        pending: { color: `hsl(var(--warning) / 0.15)`, text: WARNING, label: 'Under review', Icon: Clock },
+                        approved: { color: `hsl(var(--motion) / 0.12)`, text: MOTION, label: 'Approved', Icon: CheckCircle2 },
+                        rejected: { color: `hsl(var(--danger) / 0.1)`, text: DANGER, label: 'Not approved', Icon: XCircle },
+                      }[claim.status] || { color: 'hsl(var(--surface-interactive) / 0.4)', text: 'hsl(var(--foreground-quiet))', label: claim.status, Icon: Clock };
                       const StatusIcon = statusMap.Icon;
                       return (
                         <div key={claim.id} className="flex items-center gap-3 p-3 rounded-xl"
                           style={{ background: statusMap.color, border: `1px solid ${statusMap.text}33` }}>
                           <StatusIcon className="w-4 h-4 flex-shrink-0" style={{ color: statusMap.text }} />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-white">{claim.entity_name}</p>
-                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{claim.entity_type}</p>
+                            <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{claim.entity_name}</p>
+                            <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>{claim.entity_type}</p>
                           </div>
                           <span className="text-xs font-bold flex-shrink-0" style={{ color: statusMap.text }}>{statusMap.label}</span>
                         </div>
@@ -789,18 +789,18 @@ export default function Profile() {
                 )}
 
                 {invitations.length > 0 && (
-                  <div className="space-y-3 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-sm font-bold text-white">Pending Invitations</p>
+                  <div className="space-y-3 pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
+                    <p className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>Pending Invitations</p>
                     {invitations.map(inv => (
                       <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl"
-                        style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)' }}>
+                        style={{ background: `hsl(var(--warning) / 0.06)`, border: `1px solid ${WARNING} / 0.2)` }}>
                         <div>
-                          <p className="font-semibold text-white text-sm">{inv.entity_name}</p>
-                          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{inv.entity_type}</p>
+                          <p className="font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>{inv.entity_name}</p>
+                          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>{inv.entity_type}</p>
                         </div>
                         <button type="button"
                           className="px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
-                          style={{ background: TEAL, color: '#fff' }}
+                          style={{ background: MOTION, color: 'hsl(var(--canvas))' }}
                           onClick={() => window.location.href = `${createPageUrl('AcceptInvitation')}?code=${inv.code}`}>
                           Accept
                         </button>

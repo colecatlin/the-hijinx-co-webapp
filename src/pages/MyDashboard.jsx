@@ -25,7 +25,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const TEAL = '#1DA1A1';
+const MOTION = 'hsl(var(--motion))';
+const MOTION_HOVER = 'hsl(var(--motion-hover))';
 const ENTITY_TYPE_LABELS = {
   Driver: 'Driver Page',
   Team: 'Team Page',
@@ -43,7 +44,7 @@ function computeProfileCompletion(user) {
   return Math.round((filled / fields.length) * 100);
 }
 
-// ─── Racing Profile Card (dark) ───────────────────────────────────────────────
+// ─── Racing Profile Card ──────────────────────────────────────────────────────
 
 function RacingProfileCard({ entity, isPrimary, index }) {
   const label = ENTITY_TYPE_LABELS[entity.entity_type] || entity.entity_type;
@@ -56,21 +57,21 @@ function RacingProfileCard({ entity, isPrimary, index }) {
       transition={{ delay: 0.1 + index * 0.05 }}
       className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-4 rounded-xl transition-all duration-200 gap-2"
       style={{
-        background: isPrimary ? 'rgba(29,161,161,0.08)' : 'rgba(255,255,255,0.03)',
-        border: isPrimary ? '1px solid rgba(29,161,161,0.25)' : '1px solid rgba(255,255,255,0.06)',
+        background: isPrimary ? `hsl(var(--motion) / 0.08)` : 'hsl(var(--surface-interactive) / 0.3)',
+        border: isPrimary ? `1px solid ${MOTION} / 0.25)` : '1px solid hsl(var(--divider) / 0.6)',
       }}
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: isPrimary ? 'rgba(29,161,161,0.2)' : 'rgba(255,255,255,0.05)' }}>
-          <Flag className="w-4 h-4" style={{ color: isPrimary ? TEAL : 'rgba(255,255,255,0.4)' }} />
+          style={{ background: isPrimary ? `hsl(var(--motion) / 0.2)` : 'hsl(var(--surface-interactive) / 0.5)' }}>
+          <Flag className="w-4 h-4" style={{ color: isPrimary ? MOTION : 'hsl(var(--foreground-quiet))' }} />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-bold text-white truncate">{entity.entity_name}</p>
-            {isPrimary && <Star className="w-3 h-3 flex-shrink-0" style={{ color: '#00FFDA' }} />}
+            <p className="text-sm font-bold truncate" style={{ color: 'hsl(var(--foreground))' }}>{entity.entity_name}</p>
+            {isPrimary && <Star className="w-3 h-3 flex-shrink-0" style={{ color: MOTION }} />}
           </div>
-          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+          <p className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             {label} · {isOwner ? 'Page Owner' : 'Page Editor'}
           </p>
         </div>
@@ -79,20 +80,20 @@ function RacingProfileCard({ entity, isPrimary, index }) {
         {entity.is_racecore_entity && (
           <button
             className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
-            style={{ background: TEAL, color: '#fff' }}
+            style={{ background: MOTION, color: 'hsl(var(--canvas))' }}
             onClick={() => window.location.href = buildRaceCoreLaunchUrl(entity)}
-            onMouseEnter={e => e.currentTarget.style.background = '#158080'}
-            onMouseLeave={e => e.currentTarget.style.background = TEAL}
+            onMouseEnter={e => e.currentTarget.style.background = MOTION_HOVER}
+            onMouseLeave={e => e.currentTarget.style.background = MOTION}
           >
             <Gauge className="w-3 h-3" /> Race Core
           </button>
         )}
         <button
           className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
-          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ background: 'hsl(var(--surface-interactive) / 0.5)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}
           onClick={() => window.location.href = buildEditorUrl(entity)}
-          onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive))'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
         >
           Edit <ChevronRight className="w-3 h-3 inline" />
         </button>
@@ -107,17 +108,17 @@ function AdminControlCenter() {
   return (
     <div className="px-5 py-5 rounded-2xl"
       style={{
-        background: 'rgba(139,0,255,0.06)',
-        border: '1px solid rgba(139,0,255,0.2)',
-        boxShadow: '0 0 40px rgba(139,0,255,0.05)',
+        background: `hsl(var(--motion) / 0.06)`,
+        border: `1px solid ${MOTION} / 0.2)`,
+        boxShadow: `0 0 40px ${MOTION} / 0.05)`,
       }}>
       <div className="flex items-center gap-2 mb-2">
-        <Shield className="w-3.5 h-3.5" style={{ color: 'rgba(200,150,255,0.7)' }} />
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(200,150,255,0.7)' }}>
+        <Shield className="w-3.5 h-3.5" style={{ color: MOTION }} />
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: MOTION }}>
           Control Center
         </p>
       </div>
-      <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+      <p className="text-sm mb-4" style={{ color: 'hsl(var(--foreground-secondary))' }}>
         Full platform admin access active.
       </p>
       <div className="flex flex-wrap gap-2">
@@ -129,9 +130,9 @@ function AdminControlCenter() {
         ].map(({ label, to, icon: Icon }) => (
           <Link key={label} to={to}>
             <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all"
-              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}>
+              style={{ background: 'hsl(var(--surface-interactive) / 0.4)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive))'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.4)'; }}>
               <Icon className="w-3 h-3" /> {label}
             </button>
           </Link>
@@ -230,17 +231,17 @@ export default function MyDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
             className="px-5 py-5 rounded-2xl space-y-3"
-            style={{ background: 'rgba(8,12,14,0.72)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.06)' }}
+            style={{ background: 'hsl(var(--surface-elevated) / 0.7)', backdropFilter: 'blur(20px)', border: '1px solid hsl(var(--divider) / 0.6)' }}
           >
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'hsl(var(--foreground-quiet))' }}>
                 My Racing Profiles
               </p>
               <Link to={createPageUrl('Profile') + '?tab=racing_profiles'}>
                 <span className="text-xs transition-colors flex items-center gap-1"
-                  style={{ color: 'rgba(255,255,255,0.3)' }}
-                  onMouseEnter={e => e.currentTarget.style.color = TEAL}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+                  style={{ color: 'hsl(var(--foreground-quiet))' }}
+                  onMouseEnter={e => e.currentTarget.style.color = MOTION}
+                  onMouseLeave={e => e.currentTarget.style.color = 'hsl(var(--foreground-quiet))'}
                 >
                   Manage <ChevronRight className="w-3 h-3" />
                 </span>
@@ -264,29 +265,29 @@ export default function MyDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
             className="px-5 py-5 rounded-2xl space-y-3"
-            style={{ background: 'rgba(8,12,14,0.72)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.06)' }}
+            style={{ background: 'hsl(var(--surface-elevated) / 0.7)', backdropFilter: 'blur(20px)', border: '1px solid hsl(var(--divider) / 0.6)' }}
           >
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'hsl(var(--foreground-quiet))' }}>
               Welcome to Hijinx
             </p>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--foreground-secondary))' }}>
               This is your dashboard. Once you claim a racing profile — or connect with an invite code — your entities,
               claims, and tools will appear here. Not sure where to start?
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
               <Link to={createPageUrl('JoinIndex46')}>
                 <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all"
-                  style={{ background: TEAL, color: '#fff' }}
-                  onMouseEnter={e => e.currentTarget.style.background = '#158080'}
-                  onMouseLeave={e => e.currentTarget.style.background = TEAL}>
+                  style={{ background: MOTION, color: 'hsl(var(--canvas))' }}
+                  onMouseEnter={e => e.currentTarget.style.background = MOTION_HOVER}
+                  onMouseLeave={e => e.currentTarget.style.background = MOTION}>
                   <ShieldCheck className="w-3.5 h-3.5" /> Claim a Profile
                 </button>
               </Link>
               <Link to={createPageUrl('Help')}>
                 <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg transition-all"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }}
-                  onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}>
+                  style={{ background: 'hsl(var(--surface-interactive) / 0.5)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive))'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}>
                   <HelpCircle className="w-3.5 h-3.5" /> Help Center
                 </button>
               </Link>
@@ -299,10 +300,10 @@ export default function MyDashboard() {
           <motion.div
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="flex items-start sm:items-center justify-between gap-3 px-5 py-4 rounded-2xl"
-            style={{ background: 'rgba(29,161,161,0.05)', border: '1px dashed rgba(29,161,161,0.2)' }}
+            style={{ background: `hsl(var(--motion) / 0.05)`, border: `1px dashed ${MOTION} / 0.2)` }}
           >
             <div>
-              <p className="text-sm font-bold text-white">{(() => {
+              <p className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>{(() => {
                 const t = primaryProfileType;
                 if (t === 'driver') return 'Race under HIJINX?';
                 if (t === 'team') return 'Running a team?';
@@ -311,7 +312,7 @@ export default function MyDashboard() {
                 if (['media', 'photographer', 'creator'].includes(t)) return 'Got media access?';
                 return 'Have an invite code?';
               })()}</p>
-              <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{(() => {
+              <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>{(() => {
                 const t = primaryProfileType;
                 if (t === 'driver') return 'Enter your invite code or claim your driver profile.';
                 if (t === 'team') return 'Enter your invite code to connect your team profile.';
@@ -323,9 +324,9 @@ export default function MyDashboard() {
             </div>
             <Link to={createPageUrl('Profile') + '?tab=racing_profiles'}>
               <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all flex-shrink-0"
-                style={{ background: TEAL, color: '#fff' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#158080'}
-                onMouseLeave={e => e.currentTarget.style.background = TEAL}
+                style={{ background: MOTION, color: 'hsl(var(--canvas))' }}
+                onMouseEnter={e => e.currentTarget.style.background = MOTION_HOVER}
+                onMouseLeave={e => e.currentTarget.style.background = MOTION}
               >
                 <KeyRound className="w-3.5 h-3.5" /> Enter Code
               </button>

@@ -1,8 +1,8 @@
 import React from 'react';
 import { PROFILE_TYPE_CONFIG, ALL_PROFILE_TYPES } from '@/components/system/userCapabilities';
 
-const TEAL = '#1DA1A1';
-const CYAN = '#00FFDA';
+const MOTION = 'hsl(var(--motion))';
+const MOTION_HOVER = 'hsl(var(--motion-hover))';
 
 export default function IdentitySection({ formData, setFormData }) {
   const profileTypes = formData.profile_types || ['fan'];
@@ -37,17 +37,17 @@ export default function IdentitySection({ formData, setFormData }) {
               onClick={() => toggleType(type)}
               className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200"
               style={isPrimary ? {
-                background: 'rgba(0,255,218,0.12)',
-                color: CYAN,
-                border: '1px solid rgba(0,255,218,0.35)',
+                background: `hsl(var(--motion) / 0.18)`,
+                color: MOTION,
+                border: `1px solid ${MOTION} / 0.4)`,
               } : selected ? {
-                background: 'rgba(29,161,161,0.12)',
-                color: TEAL,
-                border: '1px solid rgba(29,161,161,0.3)',
+                background: `hsl(var(--motion) / 0.12)`,
+                color: MOTION,
+                border: `1px solid ${MOTION} / 0.3)`,
               } : {
-                background: 'rgba(255,255,255,0.03)',
-                color: 'rgba(255,255,255,0.35)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'hsl(var(--surface-interactive) / 0.3)',
+                color: 'hsl(var(--foreground-quiet))',
+                border: '1px solid hsl(var(--divider))',
               }}
             >
               {config.label}
@@ -59,7 +59,7 @@ export default function IdentitySection({ formData, setFormData }) {
       {/* Primary picker */}
       {profileTypes.length > 1 && (
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             Which role do you want front and center in your Garage?
           </p>
           <div className="flex flex-wrap gap-2">
@@ -73,17 +73,17 @@ export default function IdentitySection({ formData, setFormData }) {
                   onClick={() => setPrimary(type)}
                   className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5"
                   style={isPrimary ? {
-                    background: TEAL,
-                    color: '#fff',
-                    border: `1px solid ${TEAL}`,
-                    boxShadow: '0 0 12px rgba(29,161,161,0.3)',
+                    background: MOTION,
+                    color: 'hsl(var(--canvas))',
+                    border: `1px solid ${MOTION}`,
+                    boxShadow: `0 0 12px ${MOTION} / 0.3)`,
                   } : {
-                    background: 'rgba(255,255,255,0.04)',
-                    color: 'rgba(255,255,255,0.4)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'hsl(var(--surface-interactive) / 0.4)',
+                    color: 'hsl(var(--foreground-quiet))',
+                    border: '1px solid hsl(var(--divider))',
                   }}
                 >
-                  {isPrimary && <span className="w-1.5 h-1.5 rounded-full bg-white inline-block flex-shrink-0" />}
+                  {isPrimary && <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: 'hsl(var(--canvas))' }} />}
                   {config.label}
                 </button>
               );

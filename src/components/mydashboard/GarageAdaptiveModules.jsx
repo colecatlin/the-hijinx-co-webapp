@@ -6,24 +6,24 @@ import {
   Flag, Users, Wrench, Image, MapPin, Trophy, Handshake, Star,
 } from 'lucide-react';
 
-const TEAL = '#1DA1A1';
+const MOTION = 'hsl(var(--motion))';
 
 function ModuleCard({ icon: Icon, label, sub, to }) {
   return (
     <Link to={to}>
       <div
         className="flex items-center gap-3 p-4 rounded-2xl transition-all duration-200"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(29,161,161,0.06)'; e.currentTarget.style.border = '1px solid rgba(29,161,161,0.2)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.border = '1px solid rgba(255,255,255,0.06)'; }}
+        style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}
+        onMouseEnter={e => { e.currentTarget.style.background = `hsl(var(--motion) / 0.08)`; e.currentTarget.style.border = `1px solid ${MOTION} / 0.25)`; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.3)'; e.currentTarget.style.border = '1px solid hsl(var(--divider) / 0.6)'; }}
       >
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: 'rgba(29,161,161,0.12)', color: TEAL }}>
+          style={{ background: `hsl(var(--motion) / 0.12)`, color: MOTION }}>
           <Icon className="w-4 h-4" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white">{label}</p>
-          <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.4)' }}>{sub}</p>
+          <p className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>{label}</p>
+          <p className="text-xs truncate" style={{ color: 'hsl(var(--foreground-quiet))' }}>{sub}</p>
         </div>
       </div>
     </Link>
@@ -125,7 +125,7 @@ export default function GarageAdaptiveModules({ primaryProfileType, mode }) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'hsl(var(--foreground-quiet))' }}>
         {sectionLabel}
       </p>
       <div className="grid grid-cols-2 gap-2">

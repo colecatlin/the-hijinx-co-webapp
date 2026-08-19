@@ -5,38 +5,41 @@ import { Clock, Mail, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
 import { createPageUrl } from '@/components/utils';
 import { format } from 'date-fns';
 
-const TEAL = '#1DA1A1';
+const MOTION = 'hsl(var(--motion))';
+const MOTION_HOVER = 'hsl(var(--motion-hover))';
+const WARNING = 'hsl(var(--warning))';
+const DANGER = 'hsl(var(--danger))';
 
 const STATUS_STYLES = {
   invitation: {
-    bg: 'rgba(29,161,161,0.08)',
-    border: 'rgba(29,161,161,0.25)',
-    iconColor: TEAL,
-    textColor: TEAL,
+    bg: `hsl(var(--motion) / 0.08)`,
+    border: `hsl(var(--motion) / 0.25)`,
+    iconColor: MOTION,
+    textColor: MOTION,
     Icon: Mail,
     label: 'Invitation',
   },
   pending: {
-    bg: 'rgba(245,158,11,0.08)',
-    border: 'rgba(245,158,11,0.25)',
-    iconColor: '#fbbf24',
-    textColor: '#fbbf24',
+    bg: `hsl(var(--warning) / 0.08)`,
+    border: `hsl(var(--warning) / 0.25)`,
+    iconColor: WARNING,
+    textColor: WARNING,
     Icon: Clock,
     label: 'Under Review',
   },
   approved: {
-    bg: 'rgba(29,161,161,0.08)',
-    border: 'rgba(29,161,161,0.2)',
-    iconColor: TEAL,
-    textColor: TEAL,
+    bg: `hsl(var(--motion) / 0.08)`,
+    border: `hsl(var(--motion) / 0.2)`,
+    iconColor: MOTION,
+    textColor: MOTION,
     Icon: CheckCircle2,
     label: 'Approved',
   },
   rejected: {
-    bg: 'rgba(239,68,68,0.08)',
-    border: 'rgba(239,68,68,0.2)',
-    iconColor: '#f87171',
-    textColor: '#f87171',
+    bg: `hsl(var(--danger) / 0.08)`,
+    border: `hsl(var(--danger) / 0.2)`,
+    iconColor: DANGER,
+    textColor: DANGER,
     Icon: XCircle,
     label: 'Not Approved',
   },
@@ -94,7 +97,7 @@ export default function PendingAccessSection({ user }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: 'hsl(var(--foreground-quiet))' }}>
         Pending Access
       </p>
 
@@ -103,17 +106,17 @@ export default function PendingAccessSection({ user }) {
           action={
             <button type="button"
               className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg transition-all"
-              style={{ background: TEAL, color: '#fff' }}
+              style={{ background: MOTION, color: 'hsl(var(--canvas))' }}
               onClick={() => window.location.href = `${createPageUrl('AcceptInvitation')}?code=${inv.code}`}
-              onMouseEnter={e => e.currentTarget.style.background = '#158080'}
-              onMouseLeave={e => e.currentTarget.style.background = TEAL}
+              onMouseEnter={e => e.currentTarget.style.background = MOTION_HOVER}
+              onMouseLeave={e => e.currentTarget.style.background = MOTION}
             >
               Accept <ChevronRight className="w-3 h-3" />
             </button>
           }
         >
-          <p className="text-sm font-semibold text-white">{inv.entity_name}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{inv.entity_name}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             {inv.entity_type} · Invitation to join as editor
             {inv.expiration_date && (() => {
               try { return ` · Expires ${format(new Date(inv.expiration_date), 'MMM d')}`; }
@@ -125,8 +128,8 @@ export default function PendingAccessSection({ user }) {
 
       {pendingClaims.map(claim => (
         <AccessRow key={claim.id} style={STATUS_STYLES.pending}>
-          <p className="text-sm font-semibold text-white">{claim.entity_name}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{claim.entity_name}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             {claim.entity_type} · Ownership claim pending admin review
             {claim.created_date && (() => {
               try { return ` · Submitted ${format(new Date(claim.created_date), 'MMM d')}`; }
@@ -138,8 +141,8 @@ export default function PendingAccessSection({ user }) {
 
       {approvedClaims.map(claim => (
         <AccessRow key={claim.id} style={STATUS_STYLES.approved} badge="Approved">
-          <p className="text-sm font-semibold text-white">{claim.entity_name}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{claim.entity_name}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             {claim.entity_type} · Claim approved · access is active
           </p>
         </AccessRow>
@@ -147,8 +150,8 @@ export default function PendingAccessSection({ user }) {
 
       {rejectedClaims.map(claim => (
         <AccessRow key={claim.id} style={STATUS_STYLES.rejected} badge="Rejected">
-          <p className="text-sm font-semibold text-white">{claim.entity_name}</p>
-          <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{claim.entity_name}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             {claim.entity_type} · Not approved · contact support if this is an error
           </p>
         </AccessRow>
