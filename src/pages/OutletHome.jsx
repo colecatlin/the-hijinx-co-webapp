@@ -267,7 +267,7 @@ export default function OutletHome() {
                   <StoryCard story={heroStory} hero />
                 </div>
                 <div style={{ background: 'hsl(var(--surface-elevated))', borderLeft: '1px solid hsl(var(--divider))' }} className="px-5">
-                  <div className="py-4 mb-1" style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
+                  <div className="pt-0 pb-3 mb-1" style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
                     <span className="font-mono text-[9px] tracking-[0.45em] uppercase" style={{ color: OUTLET_CYAN }}>Latest</span>
                   </div>
                   {sidebarStories.map(s => <SmallStoryRow key={s.id} story={s} />)}
