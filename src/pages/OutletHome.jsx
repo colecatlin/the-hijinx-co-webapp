@@ -146,7 +146,7 @@ export default function OutletHome() {
   const heroStory = activePrimary === 'All' ? filtered[0] : null;
   const secondaryStories = heroStory ? filtered.slice(1, 4) : filtered.slice(0, 3);
   const remainingStories = heroStory ? filtered.slice(4) : filtered.slice(3);
-  const sidebarStories = activePrimary === 'All' ? filtered.slice(1, 8) : [];
+  const sidebarStories = activePrimary === 'All' ? filtered.slice(1, 6) : [];
 
   return (
     <PullToRefresh onRefresh={refetchStories}>
