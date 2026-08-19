@@ -128,7 +128,7 @@ export default function OutletHome() {
   const [activePrimary, setActivePrimary] = useState('All');
   const [activeSub, setActiveSub] = useState('All');
   const [sidebarTab, setSidebarTab] = useState('latest');
-  const [popularRange, setPopularRange] = useState('week');
+  const [popularRange, setPopularRange] = useState('week'); // Popular tab defaults to Week
 
   const { data: stories = [], isLoading, refetch: refetchStories } = useQuery({
     queryKey: ['outletStories'],
