@@ -127,11 +127,19 @@ function SmallStoryRow({ story }) {
 export default function OutletHome() {
   const [activePrimary, setActivePrimary] = useState('All');
   const [activeSub, setActiveSub] = useState('All');
+  const [sidebarTab, setSidebarTab] = useState('latest');
+  const [popularRange, setPopularRange] = useState('week');
 
   const { data: stories = [], isLoading, refetch: refetchStories } = useQuery({
     queryKey: ['outletStories'],
     queryFn: () => base44.entities.OutletStory.filter({ status: 'published' }, '-published_date', 50),
     staleTime: 3 * 60 * 1000,
+  });
+
+  const { data: metrics = [] } = useQuery({
+    queryKey: ['outletStoryMetrics'],
+    queryFn: () => base44.entities.StoryPerformanceMetrics.list('-views_total', 100),
+    staleTime: 5 * 60 * 1000,
   });
 
   const handlePrimaryClick = (cat) => { setActivePrimary(cat); setActiveSub('All'); };
@@ -147,6 +155,37 @@ export default function OutletHome() {
   const secondaryStories = heroStory ? filtered.slice(1, 4) : filtered.slice(0, 3);
   const remainingStories = heroStory ? filtered.slice(4) : filtered.slice(3);
   const sidebarStories = activePrimary === 'All' ? filtered.slice(1, 6) : [];
+
+  // Popular stories: sort metrics by the selected time range, take top 5, join to full stories
+  const RANGE_SORT_FIELD = {
+    all: 'views_total',
+    year: 'views_total',
+    month: 'views_first_30_days',
+    week: 'views_first_7_days',
+    day: 'views_first_24h',
+  };
+  const RANGE_LABELS = {
+    all: 'All Time', year: 'Year', month: 'Month', week: 'Week', day: 'Day',
+  };
+
+  const popularStories = React.useMemo(() => {
+    if (!metrics.length || !stories.length) return [];
+    const sortField = RANGE_SORT_FIELD[popularRange];
+    const now = new Date();
+    const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
+    let sorted = [...metrics].sort((a, b) => (b[sortField] || 0) - (a[sortField] || 0));
+
+    // For "year", filter to stories published within the last year
+    if (popularRange === 'year') {
+      sorted = sorted.filter(m => m.published_date && new Date(m.published_date) >= yearAgo);
+    }
+
+    const topIds = sorted.slice(0, 5).map(m => m.story_id);
+    return topIds
+      .map(id => stories.find(s => s.id === id))
+      .filter(Boolean);
+  }, [metrics, stories, popularRange]);
 
   return (
     <PullToRefresh onRefresh={refetchStories}>
@@ -266,11 +305,52 @@ export default function OutletHome() {
                 <div className="lg:col-span-2">
                   <StoryCard story={heroStory} hero />
                 </div>
-                <div style={{ background: 'hsl(var(--surface-elevated))', borderLeft: '1px solid hsl(var(--divider))' }} className="px-5">
-                  <div className="pt-0 pb-3 mb-1" style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
-                    <span className="font-mono text-[9px] tracking-[0.45em] uppercase" style={{ color: OUTLET_CYAN }}>Latest</span>
+                <div style={{ background: 'hsl(var(--surface-elevated))', borderLeft: '1px solid hsl(var(--divider))' }} className="px-5 flex flex-col">
+                  {/* Tab switcher */}
+                  <div className="flex gap-0 pt-0 mb-1" style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
+                    {['latest', 'popular'].map(tab => (
+                      <button
+                        key={tab}
+                        onClick={() => setSidebarTab(tab)}
+                        className="px-0 pb-3 pr-4 text-[9px] font-bold uppercase tracking-[0.45em] transition-colors relative"
+                        style={{
+                          color: sidebarTab === tab ? OUTLET_CYAN : 'hsl(var(--foreground-quiet))',
+                          borderBottom: sidebarTab === tab ? `2px solid ${OUTLET_CYAN}` : '2px solid transparent',
+                          marginBottom: '-1px',
+                        }}
+                      >
+                        {tab}
+                      </button>
+                    ))}
                   </div>
-                  {sidebarStories.map(s => <SmallStoryRow key={s.id} story={s} />)}
+
+                  {/* Range selector for Popular */}
+                  {sidebarTab === 'popular' && (
+                    <div className="flex gap-1 py-3 overflow-x-auto no-scrollbar">
+                      {Object.entries(RANGE_LABELS).map(([key, label]) => (
+                        <button
+                          key={key}
+                          onClick={() => setPopularRange(key)}
+                          className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider whitespace-nowrap transition-all"
+                          style={{
+                            color: popularRange === key ? '#fff' : 'hsl(var(--foreground-quiet))',
+                            background: popularRange === key ? OUTLET_CYAN : 'transparent',
+                            border: `1px solid ${popularRange === key ? OUTLET_CYAN : 'hsl(var(--divider))'}`,
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Story list */}
+                  {sidebarTab === 'latest' && sidebarStories.map(s => <SmallStoryRow key={s.id} story={s} />)}
+                  {sidebarTab === 'popular' && (
+                    popularStories.length > 0
+                      ? popularStories.map(s => <SmallStoryRow key={s.id} story={s} />)
+                      : <p className="text-xs py-8 text-center" style={{ color: 'hsl(var(--foreground-quiet))' }}>No data yet.</p>
+                  )}
                 </div>
               </div>
             )}
