@@ -5,7 +5,7 @@ import {
   Book, ListChecks, PenLine, Radar, BookOpen, FlaskConical,
   Sparkles, TrendingUp, Map, Home, Megaphone, Image as ImageIcon,
   Building2, DollarSign, Package, ShoppingCart, Tag, Star, Settings,
-  MessageSquare, Mail,
+  MessageSquare, Mail, CreditCard,
   LineChart, BarChart3,
   Shield, FileCheck,
 } from 'lucide-react';
@@ -74,6 +74,7 @@ export const MANAGEMENT_SECTIONS = [
     title: 'Commercial',
     description: 'Organizations, sponsors, activations, marketplace, and revenue',
     items: [
+      { name: 'Memberships',        page: 'ManageMemberships',             icon: CreditCard,   description: 'Configure tiers, manage members, and review entitlements' },
       { name: 'Sponsor Activations', page: 'ManageSponsorshipActivations', icon: Building2,    description: 'Manage sponsorship activations and deliverables' },
       { name: 'Food & Beverage',     page: 'ManageFoodBeverage',           icon: Package,      description: 'Manage F&B offerings' },
       { name: 'Tech',                 page: 'ManageTech',                   icon: Cpu,          description: 'Manage tech solutions and offerings' },

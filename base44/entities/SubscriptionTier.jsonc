@@ -1,0 +1,97 @@
+{
+  "name": "SubscriptionTier",
+  "type": "object",
+  "description": "Admin-managed tier definition. Each tier maps a price to a set of entitlement keys. The features array controls what members on that tier can access. Admins edit these live from the Membership Management page.",
+  "properties": {
+    "tier_key": {
+      "type": "string",
+      "enum": [
+        "free",
+        "core",
+        "pro",
+        "elite"
+      ],
+      "description": "Unique tier identifier \u2014 referenced by Membership.tier_key"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Public display name (e.g. 'Core', 'Pro', 'Elite')"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short marketing description shown on the paywall"
+    },
+    "price_cents": {
+      "type": "number",
+      "default": 0,
+      "description": "Price in cents per billing interval. 0 = free tier."
+    },
+    "currency": {
+      "type": "string",
+      "default": "usd",
+      "description": "ISO currency code"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "month",
+        "year"
+      ],
+      "default": "month",
+      "description": "Billing interval"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Entitlement keys included in this tier. Keys from the controlled vocabulary in src/config/entitlements.js."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this tier is available for new subscriptions"
+    },
+    "display_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display ordering on the paywall (lower = earlier)"
+    },
+    "stripe_price_id": {
+      "type": "string",
+      "description": "Stripe Price ID for this tier. Null for the free tier. Set after creating the price in Stripe."
+    },
+    "highlight": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to highlight this tier on the paywall (e.g. 'Most Popular')"
+    }
+  },
+  "required": [
+    "tier_key",
+    "display_name",
+    "price_cents",
+    "currency",
+    "interval",
+    "is_active"
+  ],
+  "rls": {
+    "read": null,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

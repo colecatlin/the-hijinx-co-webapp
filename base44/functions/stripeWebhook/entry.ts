@@ -191,6 +191,91 @@ Deno.serve(async (req) => {
         break;
       }
 
+      // ── Subscription lifecycle: Membership sync ──────────────────────────
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated': {
+        const sub = obj;
+        const subMeta = sub.metadata || {};
+        let subUserId = subMeta.user_id;
+        let subTierKey = subMeta.tier_key;
+
+        // If no tier in metadata, resolve from the price ID
+        if (!subTierKey && sub.items?.data?.[0]?.price?.id) {
+          const priceId = sub.items.data[0].price.id;
+          const tiersByPrice = await base44.asServiceRole.entities.SubscriptionTier.filter({ stripe_price_id: priceId });
+          if (tiersByPrice?.[0]) subTierKey = tiersByPrice[0].tier_key;
+        }
+
+        // If no user_id in metadata, find existing membership by subscription ID
+        if (!subUserId) {
+          const bySubId = await base44.asServiceRole.entities.Membership.filter({ stripe_subscription_id: sub.id });
+          if (bySubId?.[0]) subUserId = bySubId[0].user_id;
+        }
+
+        if (!subUserId || !subTierKey) break;
+
+        const stripeStatusMap = {
+          active: 'active', trialing: 'active', past_due: 'past_due',
+          unpaid: 'past_due', canceled: 'canceled', incomplete: 'past_due',
+          incomplete_expired: 'canceled', paused: 'past_due',
+        };
+        const membershipStatus = stripeStatusMap[sub.status] || 'past_due';
+
+        const existingMems = await base44.asServiceRole.entities.Membership.filter({ user_id: subUserId });
+        const existingMem = (existingMems || [])[0];
+
+        const membershipData = {
+          tier_key: subTierKey,
+          status: membershipStatus,
+          stripe_customer_id: sub.customer,
+          stripe_subscription_id: sub.id,
+          current_period_end: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
+        };
+
+        if (existingMem) {
+          await base44.asServiceRole.entities.Membership.update(existingMem.id, membershipData);
+        } else {
+          const users = await base44.asServiceRole.entities.User.filter({ id: subUserId });
+          const targetUser = (users || [])[0];
+          await base44.asServiceRole.entities.Membership.create({
+            user_id: subUserId,
+            user_email: targetUser?.email || subMeta.user_email || null,
+            ...membershipData,
+          });
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const delSub = obj;
+        const bySub = await base44.asServiceRole.entities.Membership.filter({ stripe_subscription_id: delSub.id });
+        for (const m of (bySub || [])) {
+          await base44.asServiceRole.entities.Membership.update(m.id, {
+            status: 'canceled',
+            canceled_at: new Date().toISOString(),
+          });
+        }
+        break;
+      }
+
+      case 'invoice.paid': {
+        const invoice = obj;
+        if (invoice.subscription) {
+          const bySub = await base44.asServiceRole.entities.Membership.filter({ stripe_subscription_id: invoice.subscription });
+          for (const m of (bySub || [])) {
+            if (m.status !== 'comp') {
+              await base44.asServiceRole.entities.Membership.update(m.id, {
+                status: 'active',
+                current_period_end: invoice.lines?.data?.[0]?.period?.end
+                  ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
+                  : m.current_period_end,
+              });
+            }
+          }
+        }
+        break;
+      }
+
       default:
         // Unhandled event type — acknowledge receipt
         break;

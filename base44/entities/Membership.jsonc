@@ -1,0 +1,104 @@
+{
+  "name": "Membership",
+  "type": "object",
+  "description": "Per-user membership record tracking subscription tier and status. The source of truth for what a user can access. Status is synced from Stripe webhooks; 'comp' memberships are admin-granted and have no Stripe link.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID this membership belongs to"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "User email at time of membership creation (denormalized for admin list view)"
+    },
+    "tier_key": {
+      "type": "string",
+      "enum": [
+        "free",
+        "core",
+        "pro",
+        "elite"
+      ],
+      "description": "Subscription tier key \u2014 references SubscriptionTier.tier_key"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "past_due",
+        "canceled",
+        "expired",
+        "comp"
+      ],
+      "default": "active",
+      "description": "Membership lifecycle status. 'comp' = admin-granted complimentary access (no Stripe link)."
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe Customer ID (null for free/comp memberships)"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe Subscription ID (null for free/comp memberships)"
+    },
+    "current_period_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the current billing period ends. Null for free/comp."
+    },
+    "canceled_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the membership was canceled (if applicable)"
+    },
+    "granted_by": {
+      "type": "string",
+      "description": "Admin user ID who granted a comp membership (comp only)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Admin notes"
+    }
+  },
+  "required": [
+    "user_id",
+    "tier_key",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

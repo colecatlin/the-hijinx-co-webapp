@@ -116,6 +116,9 @@ import IdentityReviewPage from './pages/IdentityReviewPage';
 import DataQualityDashboard from './pages/DataQualityDashboard';
 import IdentityOwnershipAudit from './pages/IdentityOwnershipAudit';
 import { Navigate, useParams } from 'react-router-dom';
+import MembershipGuard from '@/components/membership/MembershipGuard';
+import Membership from './pages/Membership';
+import ManageMemberships from './pages/ManageMemberships';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
 function RaceCoreEditorRedirect({ base }) {
@@ -358,6 +361,7 @@ const AuthenticatedApp = () => {
       <Route path="/RegistrationDashboard" element={<Navigate to="/racecore" replace />} />
 
       {/* R9BI: All /racecore/* routes inside RaceCoreLayout — no public LayoutWrapper */}
+      <Route element={<MembershipGuard />}>
       <Route element={<RaceCoreLayout />}>
         <Route path="/racecore" element={<RaceCoreDashboard />} />
         <Route path="/racecore/standings" element={<RaceCoreStandings />} />
@@ -414,6 +418,7 @@ const AuthenticatedApp = () => {
         <Route path="/racecore/data/csv"         element={<Navigate to="/racecore/data/imports"       replace />} />
         <Route path="/racecore/diagnostics"      element={<Navigate to="/racecore/data/diagnostics"   replace />} />
       </Route>
+      </Route>
 
       {/* Legacy /Manage* routes remain alive via the pagesConfig loop above — unchanged */}
 
@@ -422,6 +427,10 @@ const AuthenticatedApp = () => {
       
       {/* Phase 17F: Sponsor Analytics & ROI — admin only */}
       <Route path="/ManageSponsorAnalytics" element={<LayoutWrapper currentPageName="ManageSponsorAnalytics"><ManageSponsorAnalytics /></LayoutWrapper>} />
+      
+      {/* Membership: admin management + member self-service */}
+      <Route path="/ManageMemberships" element={<LayoutWrapper currentPageName="ManageMemberships"><ManageMemberships /></LayoutWrapper>} />
+      <Route path="/membership" element={<LayoutWrapper currentPageName="Membership"><Membership /></LayoutWrapper>} />
       
       {/* R9BI: /race-control/events/* → redirect to canonical /racecore/event-files/* */}
       <Route path="/race-control/events" element={<Navigate to="/racecore/event-files" replace />} />
