@@ -72,18 +72,20 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
 
-    // Auth: entity automation calls (body.event present) are server-side and
-    // allowed without user context. Manual HTTP calls require admin authentication.
-    const isAutomationCall = !!body?.event;
-    if (!isAutomationCall) {
+    // Resolve the target driver id from either an automation payload or a
+    // manual call. The batch backfill path (no id, or '*all') is a powerful
+    // bulk operation and MUST require admin auth — an unauthenticated caller
+    // must never be able to trigger mass service-role writes, regardless of
+    // whether they forge an `event` field in the body.
+    const entityId = body?.event?.entity_id || body?.data?.id || body?.driver_id;
+    const isBatch = !entityId || entityId === '*all';
+
+    if (isBatch) {
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
     const db = base44.asServiceRole;
-
-    // --- Entity automation path: payload has event.entity_id ---
-    const entityId = body?.event?.entity_id || body?.data?.id || body?.driver_id;
 
     if (entityId && entityId !== '*all') {
       // Single driver

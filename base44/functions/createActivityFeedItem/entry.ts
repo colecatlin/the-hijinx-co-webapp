@@ -8,23 +8,55 @@
  * Triggered by automations on:
  *   Driver (create), OutletStory (create, update), Event (create),
  *   Results (create), Track (create), Series (update)
+ *
+ * SECURITY: This endpoint is reachable over public HTTP with no user context
+ * (automations run server-side). To prevent unauthenticated callers from
+ * injecting fabricated feed content, we NEVER trust the client-supplied
+ * `data` payload. We re-fetch the real entity record from the database via
+ * asServiceRole and build the feed item from the trusted record. If the
+ * referenced entity does not exist, the request is rejected. An anonymous
+ * caller can therefore only reproduce the exact feed item the automation
+ * itself would produce for a real record — they cannot inject arbitrary
+ * titles, descriptions, or thumbnails.
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+async function fetchEntity(db, entityName, id) {
+  if (!id) return null;
+  try {
+    const list = await db.entities[entityName].filter({ id });
+    return list?.[0] || null;
+  } catch (_) {
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
-    const { event, data, old_data } = body;
+    const body = await req.json().catch(() => ({}));
+    const { event, old_data } = body;
 
-    if (!event || !data) {
+    if (!event || !event.entity_name || !event.type || !event.entity_id) {
       return Response.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
+    const db = base44.asServiceRole;
     const entityName = event.entity_name;
     const eventType  = event.type;
-    let feedItem     = null;
+
+    // Re-fetch the real record so feed content is never built from
+    // attacker-supplied data. For update events, old_data is still trusted
+    // from the automation payload only for the status-comparison check
+    // (it does not flow into the feed item content).
+    const record = await fetchEntity(db, entityName, event.entity_id);
+    if (!record) {
+      return Response.json({ error: 'Entity not found' }, { status: 404 });
+    }
+
+    const data = record;
+    let feedItem = null;
 
     // ── Driver created ───────────────────────────────────────────────────
     if (entityName === 'Driver' && eventType === 'create') {
@@ -144,7 +176,7 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true, reason: 'No feed item needed for this event' });
     }
 
-    const created = await base44.asServiceRole.entities.ActivityFeed.create(feedItem);
+    const created = await db.entities.ActivityFeed.create(feedItem);
     return Response.json({ success: true, id: created.id });
 
   } catch (error) {

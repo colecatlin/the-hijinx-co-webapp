@@ -129,11 +129,14 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me().catch(() => null);
     const body = await req.json().catch(() => ({}));
 
-    // Auth: entity automation calls (body.event present) are server-side and
-    // allowed without user context. Manual HTTP calls (including batch mode)
-    // require admin authentication.
-    const isAutomationCall = !!body?.event;
-    if (!isAutomationCall) {
+    // Resolve target result id. Batch mode (no id, or body.batch=true) is a
+    // powerful bulk operation and MUST require admin auth — do not let a
+    // forged `event` field in the body bypass admin authorization for mass
+    // service-role writes.
+    const entityId = body?.event?.entity_id || body?.data?.id || body?.result_id;
+    const isBatch = !entityId || !!body?.batch;
+
+    if (isBatch) {
       if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
       if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
@@ -144,8 +147,7 @@ Deno.serve(async (req) => {
     const allDrivers = await db.entities.Driver.list('-created_date', 2000);
     const index = buildDriverIndex(allDrivers);
 
-    // --- Entity automation path ---
-    const entityId = body?.event?.entity_id || body?.data?.id || body?.result_id;
+    // --- Entity automation path (single result) ---
     if (entityId && !body?.batch) {
       const results = await db.entities.Results.filter({ id: entityId }).catch(() => []);
       const result = results?.[0];
