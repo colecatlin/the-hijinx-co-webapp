@@ -17,6 +17,14 @@ Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   let payload = {};
 
+  // Admin only — this endpoint writes arbitrary content to the public
+  // ActivityFeed via asServiceRole, so unauthenticated callers must be
+  // rejected to prevent public feed defacement.
+  const user = await base44.auth.me().catch(() => null);
+  if (!user || user.role !== 'admin') {
+    return Response.json({ ok: false, error: 'Forbidden: admin only' }, { status: 403 });
+  }
+
   try {
     payload = await req.json();
 

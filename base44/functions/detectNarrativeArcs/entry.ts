@@ -389,8 +389,8 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me().catch(() => null);
 
-    // Allow scheduled/system calls (no user) or admin
-    if (user !== null && !ALLOWED_ROLES.includes(user.role)) {
+    // Admin only — unauthenticated callers are rejected
+    if (!user || !ALLOWED_ROLES.includes(user.role)) {
       return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
     }
 
