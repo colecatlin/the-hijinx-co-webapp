@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 import { createPageUrl } from '@/components/utils';
@@ -24,6 +24,19 @@ export default function MobileMenuDrawer({
 
   const isActive = (page) => currentPageName === page;
   const close = () => onOpenChange(false);
+
+  // vaul (shadcn Drawer) has a known bug where it leaves `pointer-events: none`
+  // on <body> after the drawer closes, making the rest of the page (e.g. the
+  // cart button) unclickable. Clear it once the close transition finishes.
+  useEffect(() => {
+    if (open) return;
+    const t = setTimeout(() => {
+      if (document.body.style.pointerEvents === 'none') {
+        document.body.style.pointerEvents = '';
+      }
+    }, 350);
+    return () => clearTimeout(t);
+  }, [open]);
 
   const handleLogout = () => {
     close();
