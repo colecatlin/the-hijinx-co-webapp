@@ -45,7 +45,7 @@ export default function MobileMenuDrawer({
           <DrawerDescription className="sr-only">Site navigation, profile, and account actions</DrawerDescription>
         </DrawerHeader>
 
-        <div className="overflow-y-auto px-5 pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 pb-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
           {/* Auth actions */}
           <div className="mb-4">
             {!isAuthenticated ? (
