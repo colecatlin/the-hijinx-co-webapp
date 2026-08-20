@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
-import { Search, Menu, X, ChevronDown, User } from 'lucide-react';
+import { Search, X, ChevronDown } from 'lucide-react';
 import CartIcon from '@/components/cart/CartIcon';
 import { AnimatePresence, motion } from 'framer-motion';
 import Footer from '@/components/shared/Footer';
 import AnnouncementBar from '@/components/shared/AnnouncementBar';
 import GoogleMapsInitializer from '@/components/shared/GoogleMapsInitializer';
 import MobileBottomNav from '@/components/layout/MobileBottomNav';
+import MobileSearchOverlay from '@/components/layout/MobileSearchOverlay';
+import MobileMenuDrawer from '@/components/layout/MobileMenuDrawer';
+import SearchResultsGrid from '@/components/layout/SearchResultsGrid';
 import ErrorBoundary from '@/components/system/errorBoundary';
 import UserMenu from '@/components/layout/UserMenu';
 import { base44 } from '@/api/base44Client';
@@ -65,7 +68,7 @@ const TAB_PAGES = [
 const isTabRoute = (p) => TAB_ROUTES.includes(p);
 
 export default function Layout({ children, currentPageName }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const EMPTY_RESULTS = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [], vehicles: [], media: [], sponsors: [] };
@@ -114,7 +117,7 @@ export default function Layout({ children, currentPageName }) {
   const { mountedTabs } = useTabKeepAlive(TAB_ROUTES, location);
 
   useEffect(() => {
-    setMobileOpen(false);
+    setMenuOpen(false);
     setSearchOpen(false);
     setSearchQuery('');
     setSearchResults(EMPTY_RESULTS);
@@ -224,6 +227,13 @@ export default function Layout({ children, currentPageName }) {
     <GoogleMapsInitializer>
       <div className="flex flex-col min-h-screen relative hijinx-canvas-bg">
         <div className="sticky top-0 z-50 relative" style={{ background: 'hsl(var(--canvas))', paddingTop: 'env(safe-area-inset-top)' }}>
+          {/* Mobile/tablet static top bar — logo + cart only */}
+          <div className="lg:hidden flex items-center justify-between px-4 h-14" style={{ borderBottom: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface) / 0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
+            <HijinxLogo to={createPageUrl('Home')} iconClassName="h-5 w-auto" wordmarkClassName="h-7 w-auto" className="gap-2" />
+            <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />
+          </div>
+          {/* Desktop chrome — hidden on mobile/tablet */}
+          <div className="hidden lg:block">
           <AnnouncementBar />
           {/* Floating glass header */}
           <div className="px-3 py-2">
@@ -333,13 +343,6 @@ export default function Layout({ children, currentPageName }) {
                     </button>
                   )}
                   <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />
-                  <button
-                    onClick={() => setMobileOpen(!mobileOpen)}
-                    className="p-2 rounded-lg transition-colors lg:hidden"
-                    style={{ color: 'hsl(var(--foreground-secondary))' }}
-                  >
-                    {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-                  </button>
                 </div>
               </div>
 
@@ -381,163 +384,7 @@ export default function Layout({ children, currentPageName }) {
                         Object.values(searchResults).every(arr => arr.length === 0) && (
                         <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet) / 0.6)' }}>No results for "{searchQuery}"</p>
                       )}
-                      {Object.values(searchResults).some(arr => arr.length > 0) && (
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
-                          {searchResults.stories.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>STORIES</p>
-                              <div className="space-y-0.5">
-                                {searchResults.stories.map(story => (
-                                  <Link key={story.id} to={story.slug ? `/story/${story.slug}` : `/OutletStoryPage?id=${story.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {story.title}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.drivers.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>RACERS</p>
-                              <div className="space-y-0.5">
-                                {searchResults.drivers.map(rp => (
-                                  <Link key={rp.id} to={rp.slug ? `/racers/${rp.slug}` : `/Directory?cat=racers`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {rp.display_name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.events.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>EVENTS</p>
-                              <div className="space-y-0.5">
-                                {searchResults.events.map(event => (
-                                  <Link key={event.id} to={event.slug || event.canonical_slug ? `/events/${event.slug || event.canonical_slug}` : `/EventProfile?id=${event.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {event.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.tracks.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>TRACKS</p>
-                              <div className="space-y-0.5">
-                                {searchResults.tracks.map(track => (
-                                  <Link key={track.id} to={track.slug || track.canonical_slug ? `/tracks/${track.slug || track.canonical_slug}` : `/TrackProfile?id=${track.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {track.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.series.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>SERIES</p>
-                              <div className="space-y-0.5">
-                                {searchResults.series.map(s => (
-                                  <Link key={s.id} to={s.slug ? `/series/${s.slug}` : `/SeriesDetail?id=${s.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {s.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.teams.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>TEAMS</p>
-                              <div className="space-y-0.5">
-                                {searchResults.teams.map(team => (
-                                  <Link key={team.id} to={`/TeamProfile?id=${team.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {team.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.vehicles.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>VEHICLES</p>
-                              <div className="space-y-0.5">
-                                {searchResults.vehicles.map(vehicle => (
-                                  <Link key={vehicle.id} to={vehicle.slug ? `/vehicles/${vehicle.slug}` : `/VehicleProfile?id=${vehicle.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {vehicle.nickname || `${vehicle.manufacturer || ''} ${vehicle.model || ''}`.trim() || 'Vehicle'}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.media.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>MEDIA</p>
-                              <div className="space-y-0.5">
-                                {searchResults.media.map(asset => (
-                                  <Link key={asset.id} to={`/media/${asset.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {asset.title || asset.file_name || 'Untitled'} <span className="text-[9px] uppercase opacity-50">· {asset.asset_type}</span>
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {searchResults.sponsors.length > 0 && (
-                            <div>
-                              <p className="font-mono text-[9px] tracking-[0.35em] mb-2" style={{ color: 'hsl(var(--motion))' }}>SPONSORS</p>
-                              <div className="space-y-0.5">
-                                {searchResults.sponsors.map(org => (
-                                  <Link key={org.id} to={`/organization/Sponsor/${org.id}`}
-                                    onClick={() => setSearchOpen(false)}
-                                    className="block px-2 py-1.5 rounded-lg text-xs transition-all truncate"
-                                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                                    onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.5)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary) / 0.75)'; e.currentTarget.style.background = 'transparent'; }}>
-                                    {org.name} {org.industry ? <span className="text-[9px] uppercase opacity-50">· {org.industry}</span> : null}
-                                  </Link>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      <SearchResultsGrid results={searchResults} onNavigate={() => setSearchOpen(false)} />
                     </div>
                   </motion.div>
                 )}
@@ -588,138 +435,26 @@ export default function Layout({ children, currentPageName }) {
 
             </header>
           </div>
+          </div>
         </div>
 
-        {/* Mobile nav */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="fixed inset-0 z-[55] bg-black/20 lg:hidden"
-                onClick={() => setMobileOpen(false)}
-              />
-              <motion.div
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'tween', duration: 0.3 }}
-                className="fixed top-0 right-0 bottom-0 w-[80%] max-w-sm z-[56] overflow-y-auto lg:hidden"
-                style={{
-                  background: 'hsl(var(--surface) / 0.97)',
-                  backdropFilter: 'blur(24px)',
-                  WebkitBackdropFilter: 'blur(24px)',
-                  borderLeft: '1px solid hsl(var(--divider))',
-                  boxShadow: '-16px 0 48px hsl(0 0% 0% / 0.6)',
-                }}
-              >
-                <div className="sticky top-0 px-6 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid hsl(var(--divider) / 0.8)', background: 'hsl(var(--surface) / 0.9)' }}>
-                  <button
-                    onClick={() => setMobileOpen(false)}
-                    className="p-2 rounded-lg transition-colors"
-                    style={{ color: 'hsl(var(--foreground-secondary) / 0.75)' }}
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                  <span className="text-sm font-bold tracking-[0.2em] uppercase" style={{ color: 'hsl(var(--foreground-quiet))' }}>Menu</span>
-                </div>
-                <nav className="px-6 py-6">
-                  {/* Mobile search */}
-                  <div className="mb-5">
-                    <button
-                      onClick={() => { setSearchOpen(!searchOpen); setMobileOpen(false); }}
-                      className="w-full flex items-center gap-2 py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                      style={{ color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface-interactive) / 0.4)' }}
-                    >
-                      <Search className="w-4 h-4" /> Search the ecosystem
-                    </button>
-                  </div>
-                  {!isAuthenticated && (
-                    <div className="mb-5 space-y-2">
-                      <Link
-                        to="/join"
-                        className="block py-3 px-4 text-sm font-bold rounded-lg transition-colors text-center"
-                        style={{ color: '#fff', background: 'hsl(var(--motion))' }}
-                      >
-                        Join / Claim Your Profile
-                      </Link>
-                    </div>
-                  )}
-                  {isAuthenticated && (
-                    <div className="mb-5 space-y-2">
-                      <Link
-                        to={createPageUrl('MyDashboard')}
-                        className="block py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface-interactive) / 0.4)' }}
-                      >
-                        Dashboard
-                      </Link>
-                      <Link
-                        to={createPageUrl('Profile')}
-                        className="block py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface-interactive) / 0.4)' }}
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        onClick={() => base44.auth.logout(createPageUrl('Home'))}
-                        className="w-full text-left py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                        style={{ color: 'hsl(var(--danger) / 0.85)', border: '1px solid hsl(var(--danger) / 0.2)', background: 'hsl(var(--danger) / 0.08)' }}
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                  {user?.role === 'admin' && (
-                    <div className="mb-5">
-                      <Link
-                        to={createPageUrl('Management')}
-                        className="block py-3 px-4 text-sm font-bold rounded-lg transition-colors"
-                        style={{ color: 'hsl(var(--motion))', border: '1px solid hsl(var(--motion) / 0.3)', background: 'hsl(var(--motion) / 0.1)' }}
-                      >
-                        Management
-                      </Link>
-                    </div>
-                  )}
-                  {navItems.map((item) => (
-                    <div key={item.name} className="mb-1" style={{ borderBottom: '1px solid hsl(var(--divider) / 0.6)' }}>
-                      <Link
-                        to={item.href || createPageUrl(item.page)}
-                        className="block py-3 text-base font-bold tracking-[0.1em] uppercase transition-colors"
-                        style={{ color: isActive(item.page) ? 'hsl(var(--motion))' : 'hsl(var(--foreground-secondary))' }}
-                      >
-                        {item.name}
-                      </Link>
-                      {item.sub && (
-                        <div className="pl-4 mb-2">
-                          {item.sub.map((sub) => (
-                            sub.disabled ? (
-                              <div key={sub.name} className="pt-3 pb-1 text-[9px] font-bold uppercase tracking-[0.4em]" style={{ color: 'hsl(var(--foreground-quiet) / 0.5)' }}>
-                                {sub.name.replace(/^— | —$/g, '')}
-                              </div>
-                            ) : (
-                              <Link
-                                key={sub.name}
-                                to={sub.href || createPageUrl(sub.page)}
-                                className="block py-2 text-sm transition-colors"
-                                style={{ color: 'hsl(var(--foreground-quiet))' }}
-                              >
-                                {sub.name}
-                              </Link>
-                            )
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </nav>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+        {/* Mobile/tablet app shell — full-screen search overlay + menu drawer */}
+        <MobileSearchOverlay
+          open={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          searchResults={searchResults}
+          loading={searchLoading || searchQueriesLoading}
+        />
+        <MobileMenuDrawer
+          open={menuOpen}
+          onOpenChange={setMenuOpen}
+          navItems={navItems}
+          user={user}
+          isAuthenticated={isAuthenticated}
+          currentPageName={currentPageName}
+        />
 
         {/* Page content */}
         <main className="flex-1 relative z-[1] pb-16 lg:pb-0">
@@ -749,7 +484,11 @@ export default function Layout({ children, currentPageName }) {
         </main>
 
         {(!location.pathname.startsWith('/race-core') && !location.pathname.startsWith('/racecore') && !location.pathname.startsWith('/race-control')) && <Footer />}
-        <MobileBottomNav />
+        <MobileBottomNav
+          isAuthenticated={isAuthenticated}
+          onOpenSearch={() => setSearchOpen(true)}
+          onOpenMenu={() => setMenuOpen(true)}
+        />
       </div>
     </GoogleMapsInitializer>
   );

@@ -1,27 +1,22 @@
 import React, { useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Compass, LayoutGrid, User } from 'lucide-react';
+import { Home, Compass, Search, LayoutGrid, Menu } from 'lucide-react';
 import { clearTabScrollCache } from '@/hooks/useTabKeepAlive';
 
 /**
- * Mobile-only bottom tab navigation.
- * Visible only on viewports < 1024px (`lg:hidden`).
- * Padded with env(safe-area-inset-bottom) to clear iOS notches / home indicators.
+ * Mobile/tablet bottom tab navigation (lg:hidden).
  *
- * Double-tap the active tab: resets the active route to its root (stripping
- * query/hash) and scrolls to the top — the familiar mobile "tap to go home"
- * gesture.
+ * Tabs: Home · Directory · Search (center, emphasized) · Dashboard (auth
+ * only) · Menu (rightmost). Search and Menu are action tabs that open an
+ * overlay / drawer rather than navigating. A spacer keeps Search visually
+ * centered when the Dashboard tab is hidden for logged-out visitors.
+ *
+ * Double-tap the active content tab: resets the route to its root and
+ * scrolls to the top — the familiar mobile "tap to go home" gesture.
  */
-const TABS = [
-  { name: 'Home', to: '/Home', icon: Home },
-  { name: 'Directory', to: '/Directory', icon: Compass },
-  { name: 'Dashboard', to: '/MyDashboard', icon: LayoutGrid },
-  { name: 'Profile', to: '/Profile', icon: User },
-];
-
 const DOUBLE_TAP_MS = 300;
 
-export default function MobileBottomNav() {
+export default function MobileBottomNav({ isAuthenticated, onOpenSearch, onOpenMenu }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const lastTap = useRef(0);
@@ -34,8 +29,6 @@ export default function MobileBottomNav() {
   const handleTap = (to) => {
     const now = Date.now();
     if (isActive(to) && now - lastTap.current < DOUBLE_TAP_MS) {
-      // Double-tap on the active tab: reset to root (clearing the cached
-      // scroll offset for that tab) + scroll top.
       clearTabScrollCache(to);
       navigate(to);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -43,8 +36,51 @@ export default function MobileBottomNav() {
       return;
     }
     lastTap.current = now;
-    // Let the <Link> handle the single-tap navigation.
   };
+
+  const tabClass = "flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition-colors";
+
+  const renderContentTab = (name, to, Icon) => {
+    const active = isActive(to);
+    return (
+      <Link
+        key={name}
+        to={to}
+        onClick={() => handleTap(to)}
+        aria-label={name}
+        className={tabClass}
+        style={{ color: active ? 'hsl(var(--motion))' : 'hsl(var(--foreground-quiet))' }}
+      >
+        <Icon className="w-5 h-5" style={{ filter: active ? 'drop-shadow(0 0 8px hsl(var(--motion) / 0.5))' : 'none' }} />
+        <span className="text-[9px] font-bold tracking-[0.12em] uppercase">{name}</span>
+      </Link>
+    );
+  };
+
+  const renderActionTab = (name, Icon, onClick, emphasized) => (
+    <button
+      key={name}
+      onClick={onClick}
+      aria-label={name}
+      className={tabClass}
+      style={{ color: emphasized ? 'hsl(var(--motion))' : 'hsl(var(--foreground-quiet))' }}
+    >
+      <span
+        className="flex items-center justify-center w-11 h-11 -mt-5 rounded-full"
+        style={{
+          background: emphasized ? 'hsl(var(--motion))' : 'hsl(var(--surface-elevated))',
+          border: emphasized ? 'none' : '1px solid hsl(var(--divider))',
+          boxShadow: emphasized
+            ? '0 4px 18px hsl(var(--motion) / 0.45)'
+            : '0 4px 14px hsl(0 0% 0% / 0.35)',
+          color: emphasized ? 'hsl(var(--canvas))' : 'hsl(var(--foreground-secondary))',
+        }}
+      >
+        <Icon className="w-5 h-5" />
+      </span>
+      <span className="text-[9px] font-bold tracking-[0.12em] uppercase mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>{name}</span>
+    </button>
+  );
 
   return (
     <nav
@@ -57,28 +93,15 @@ export default function MobileBottomNav() {
         borderTop: '1px solid hsl(var(--divider))',
         boxShadow: '0 -8px 32px hsl(0 0% 0% / 0.5)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}
     >
-      {TABS.map(({ name, to, icon: Icon }) => {
-        const active = isActive(to);
-        return (
-          <Link
-            key={name}
-            to={to}
-            onClick={() => handleTap(to)}
-            aria-label={name}
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition-colors"
-            style={{ color: active ? 'hsl(var(--motion))' : 'hsl(var(--foreground-quiet))' }}
-          >
-            <Icon
-              className="w-5 h-5"
-              style={{ filter: active ? 'drop-shadow(0 0 8px hsl(var(--motion) / 0.5))' : 'none' }}
-            />
-            <span className="text-[9px] font-bold tracking-[0.12em] uppercase">{name}</span>
-          </Link>
-        );
-      })}
+      {renderContentTab('Home', '/Home', Home)}
+      {renderContentTab('Directory', '/Directory', Compass)}
+      {renderActionTab('Search', Search, onOpenSearch, true)}
+      {isAuthenticated
+        ? renderContentTab('Dashboard', '/MyDashboard', LayoutGrid)
+        : <div className="flex-1" aria-hidden="true" />}
+      {renderActionTab('Menu', Menu, onOpenMenu, false)}
     </nav>
   );
 }
