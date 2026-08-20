@@ -457,7 +457,7 @@ export default function Layout({ children, currentPageName }) {
         />
 
         {/* Page content */}
-        <main className="flex-1 relative z-[1] pb-16 lg:pb-0">
+        <main className="flex-1 relative z-[1] pb-32 lg:pb-0">
           <ErrorBoundary>
             {isTabRoute(location.pathname) ? (
               <div className="relative">
