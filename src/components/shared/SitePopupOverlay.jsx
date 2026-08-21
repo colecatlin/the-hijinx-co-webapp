@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { X, Mail } from 'lucide-react';
 
 const DISMISS_KEY_PREFIX = 'hijinx_popup_dismissed_';
@@ -197,10 +198,8 @@ export default function SitePopupOverlay() {
 
               {/* CTA button */}
               {activePopup.cta_text && activePopup.cta_url && (
-                <a
-                  href={activePopup.cta_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to={activePopup.cta_url}
                   onClick={handleCtaClick}
                   className="inline-flex items-center justify-center w-full px-4 py-3 rounded-lg text-sm font-bold transition-colors"
                   style={{
@@ -212,7 +211,7 @@ export default function SitePopupOverlay() {
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--foreground))'; e.currentTarget.style.color = 'hsl(var(--canvas))'; }}
                 >
                   {activePopup.cta_text}
-                </a>
+                </Link>
               )}
             </div>
           </motion.div>
