@@ -108,25 +108,22 @@ export default function SitePopupOverlay() {
               boxShadow: '0 24px 80px hsl(0 0% 0% / 0.6), 0 0 48px hsl(var(--motion) / 0.08)',
             }}
           >
-            {/* VERY VISIBLE RED EXIT BUTTON — top right */}
+            {/* Close button — top right (compact, black & white) */}
             <button
               onClick={() => dismiss(activePopup.id)}
               aria-label="Close pop-up"
-              className="absolute top-3 right-3 z-10 flex items-center justify-center rounded-xl transition-all"
+              className="absolute top-2.5 right-2.5 z-10 flex items-center justify-center rounded-lg transition-all"
               style={{
-                background: 'hsl(var(--danger))',
-                color: '#FFFFFF',
-                minWidth: '44px',
-                minHeight: '44px',
-                width: '44px',
-                height: '44px',
-                border: '2px solid hsl(0 0% 100% / 0.25)',
-                boxShadow: '0 4px 16px hsl(0 72% 51% / 0.45), 0 0 0 1px hsl(0 0% 0% / 0.2)',
+                background: 'hsl(var(--foreground))',
+                color: 'hsl(var(--canvas))',
+                width: '30px',
+                height: '30px',
+                border: '1px solid hsl(var(--foreground))',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(0 72% 58%)'; e.currentTarget.style.transform = 'scale(1.06)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--danger))'; e.currentTarget.style.transform = 'scale(1)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(var(--canvas))'; e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--foreground))'; e.currentTarget.style.color = 'hsl(var(--canvas))'; }}
             >
-              <X className="w-5 h-5" strokeWidth={3} />
+              <X className="w-4 h-4" strokeWidth={2.5} />
             </button>
 
             {/* Cover image */}
@@ -179,11 +176,12 @@ export default function SitePopupOverlay() {
                       disabled={subscribeMutation.isPending}
                       className="px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors"
                       style={{
-                        background: 'hsl(var(--motion))',
+                        background: 'hsl(var(--foreground))',
                         color: 'hsl(var(--canvas))',
+                        border: '1px solid hsl(var(--foreground))',
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(var(--motion-hover))'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--motion))'; }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(var(--canvas))'; e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--foreground))'; e.currentTarget.style.color = 'hsl(var(--canvas))'; }}
                     >
                       {subscribeMutation.isPending ? '...' : 'Subscribe'}
                     </button>
@@ -192,7 +190,7 @@ export default function SitePopupOverlay() {
               )}
 
               {activePopup.subscribe_enabled && subscribed && (
-                <div className="mb-4 p-3 rounded-lg text-sm font-medium" style={{ background: 'hsl(var(--success) / 0.15)', color: 'hsl(var(--success))' }}>
+                <div className="mb-4 p-3 rounded-lg text-sm font-medium" style={{ background: 'hsl(var(--foreground) / 0.08)', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--divider))' }}>
                   You're subscribed — thanks for following along!
                 </div>
               )}
@@ -206,11 +204,12 @@ export default function SitePopupOverlay() {
                   onClick={handleCtaClick}
                   className="inline-flex items-center justify-center w-full px-4 py-3 rounded-lg text-sm font-bold transition-colors"
                   style={{
-                    background: 'hsl(var(--motion))',
+                    background: 'hsl(var(--foreground))',
                     color: 'hsl(var(--canvas))',
+                    border: '1px solid hsl(var(--foreground))',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(var(--motion-hover))'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--motion))'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'hsl(var(--canvas))'; e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'hsl(var(--foreground))'; e.currentTarget.style.color = 'hsl(var(--canvas))'; }}
                 >
                   {activePopup.cta_text}
                 </a>
