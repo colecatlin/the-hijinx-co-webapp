@@ -12,6 +12,23 @@ Deno.serve(async (req) => {
     const { ownerType, ownerId, returnUrl, refreshUrl } = await req.json();
     if (!ownerType || !ownerId) return Response.json({ error: 'ownerType and ownerId required' }, { status: 400 });
 
+    // Authorization: verify the caller owns/manages the target owner record
+    // before touching its PaymentAccount. Admins bypass.
+    if (user.role !== 'admin') {
+      let authorized = false;
+      if (ownerType === 'MediaProfile') {
+        const profile = await base44.asServiceRole.entities.MediaProfile.get(ownerId).catch(() => null);
+        authorized = !!profile && profile.user_id === user.id;
+      } else if (ownerType === 'MediaOutlet') {
+        const outlet = await base44.asServiceRole.entities.MediaOutlet.get(ownerId).catch(() => null);
+        authorized = !!outlet && (
+          outlet.primary_contact_user_id === user.id ||
+          Array.isArray(outlet.contributor_user_ids) && outlet.contributor_user_ids.includes(user.id)
+        );
+      }
+      if (!authorized) return Response.json({ error: 'Forbidden: not authorized for this account' }, { status: 403 });
+    }
+
     // Get payment account
     const existing = await base44.asServiceRole.entities.PaymentAccount.filter({ owner_type: ownerType, owner_id: ownerId });
     if (!existing || existing.length === 0) {

@@ -12,11 +12,13 @@ Deno.serve(async (req) => {
     const VALID = ['uploaded', 'in_review', 'approved', 'rejected', 'flagged'];
     if (!VALID.includes(status)) return Response.json({ error: 'Invalid status' }, { status: 400 });
 
-    // Validate authority
+    // Validate authority — always check the server-verified caller identity,
+    // never a client-supplied reviewer_user_id (which could spoof another
+    // user's collaborator record to bypass the authority check).
     if (user.role !== 'admin') {
       const collaborators = await base44.asServiceRole.entities.EntityCollaborator.filter({
         entity_id,
-        user_id: reviewer_user_id || user.id,
+        user_id: user.id,
       });
       if (!collaborators.length) return Response.json({ error: 'Forbidden: no authority on this entity' }, { status: 403 });
     }
