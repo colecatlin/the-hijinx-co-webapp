@@ -119,6 +119,7 @@ import { Navigate, useParams } from 'react-router-dom';
 import MembershipGuard from '@/components/membership/MembershipGuard';
 import Membership from './pages/Membership';
 import ManageMemberships from './pages/ManageMemberships';
+import ManagePopUps from './pages/ManagePopUps';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
 function RaceCoreEditorRedirect({ base }) {
@@ -431,6 +432,7 @@ const AuthenticatedApp = () => {
       {/* Membership: admin management + member self-service */}
       <Route path="/ManageMemberships" element={<LayoutWrapper currentPageName="ManageMemberships"><ManageMemberships /></LayoutWrapper>} />
       <Route path="/membership" element={<LayoutWrapper currentPageName="Membership"><Membership /></LayoutWrapper>} />
+      <Route path="/ManagePopUps" element={<LayoutWrapper currentPageName="ManagePopUps"><ManagePopUps /></LayoutWrapper>} />
       
       {/* R9BI: /race-control/events/* → redirect to canonical /racecore/event-files/* */}
       <Route path="/race-control/events" element={<Navigate to="/racecore/event-files" replace />} />

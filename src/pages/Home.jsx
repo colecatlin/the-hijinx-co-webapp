@@ -12,6 +12,7 @@ import RaceCoreSection from '@/components/home/RaceCoreSection';
 import RaceCoreBridge from '@/components/home/RaceCoreBridge';
 import SocialsSection from '@/components/home/SocialsSection';
 import GetInvolvedCTA from '@/components/home/GetInvolvedCTA';
+import SitePopupOverlay from '@/components/shared/SitePopupOverlay';
 
 
 export default function Home() {
@@ -66,6 +67,8 @@ export default function Home() {
       <SocialsSection media={hp.featured_media || []} />
 
       <GetInvolvedCTA />
+
+      <SitePopupOverlay />
     </div>
   );
 }

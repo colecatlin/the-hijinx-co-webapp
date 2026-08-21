@@ -54,6 +54,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Homepage',         href: '/ManageHomepage?tab=hero',                icon: Home,         description: 'Hero slides, culture blocks, apparel, social links' },
       { name: 'Motorsports Home', page: 'ManageMotorsportsHome',                   icon: Gauge,        description: 'Trending drivers, teams, tracks, events' },
       { name: 'Announcements',    page: 'ManageAnnouncements',                     icon: Megaphone,    description: 'Manage rotating announcement bar' },
+      { name: 'Pop-Ups',          page: 'ManagePopUps',                            icon: Megaphone,    description: 'Manage landing pop-ups shown on the Home page' },
       { name: 'Advertising',      page: 'ManageAdvertising',                       icon: Megaphone,    description: 'Manage advertising inquiries and placements' },
       { name: 'Review Queue',     page: 'management/editorial/review-queue',       icon: ListChecks,   description: 'Prioritized editorial work queue' },
       { name: 'Writer Workspace', page: 'management/editorial/writer-workspace',   icon: PenLine,      description: 'Writer assignments, drafts, and research packets' },
