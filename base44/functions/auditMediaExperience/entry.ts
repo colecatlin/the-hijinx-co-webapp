@@ -12,6 +12,27 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // ── AUTHORIZATION GATE (mandatory, before any data access) ───────
+    // This is an internal administrative audit tool. It must NOT be
+    // publicly executable. Authentication alone is NOT sufficient — the
+    // trusted server-side caller must be an admin.
+    //
+    // The role is read ONLY from the trusted authenticated server-side
+    // identity (base44.auth.me()) — never from the request body, query
+    // string, or any client-supplied value. No media records, related
+    // entities, diagnostic queries, or service-role calls happen before
+    // this gate passes. Both the single-item and audit_all paths flow
+    // through this single gate.
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
+
     const body = await req.json().catch(() => ({}));
     const { media_type, slug, id, audit_all = false } = body;
     const entities = base44.asServiceRole.entities;
