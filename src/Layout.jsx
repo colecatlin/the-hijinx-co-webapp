@@ -235,14 +235,13 @@ export default function Layout({ children, currentPageName }) {
           {/* Desktop chrome — hidden on mobile/tablet */}
           <div className="hidden lg:block">
           <AnnouncementBar />
-          {/* Solid header bar — white, full width */}
+          {/* Solid header bar — full width, follows active theme */}
           <div>
             <header
-              className="theme-light"
               onMouseEnter={() => setIsHeaderHovered(true)}
               onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); if (!searchQuery && !searchLoading) setSearchOpen(false); }}
               style={{
-                background: '#FFFFFF',
+                background: 'hsl(var(--surface-elevated))',
                 borderBottom: '1px solid hsl(var(--divider))',
               }}
             >
