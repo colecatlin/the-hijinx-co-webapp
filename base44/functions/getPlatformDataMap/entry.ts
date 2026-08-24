@@ -107,9 +107,33 @@ const DATA_MAP = {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // In a real scenario, you might check for user auth here
-    // const user = await base44.auth.me();
-    // if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
+
+    // ── AUTHORIZATION GATE (mandatory, before any data access) ───────
+    // This is an internal platform diagnostic/architecture tool. It must
+    // NOT be publicly accessible. Authentication alone is NOT sufficient —
+    // the trusted server-side caller must be an admin. The role is read
+    // ONLY from the trusted authenticated identity (base44.auth.me()) —
+    // never from the request body, query string, or any client-supplied
+    // value. No platform metadata, entity maps, or diagnostic data is
+    // returned before this gate passes.
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (user.role !== 'admin') {
+      return new Response(JSON.stringify({ error: 'Admin access required' }), {
+        status: 403, headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(JSON.stringify(DATA_MAP), {
       status: 200,
