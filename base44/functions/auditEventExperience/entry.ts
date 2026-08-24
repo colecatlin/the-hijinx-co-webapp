@@ -28,10 +28,30 @@ function isEventPublic(event) {
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+
+    // ── AUTHORIZATION GATE (mandatory, before any data access) ───────
+    // This is an internal diagnostic/administrative tool. It must NOT be
+    // publicly executable. Authentication alone is NOT sufficient — the
+    // trusted server-side caller must be an admin.
+    //
+    // The role is read ONLY from the trusted authenticated server-side
+    // identity (base44.auth.me()) — never from the request body, query
+    // string, or any client-supplied value. No Event records, diagnostic
+    // queries, or service-role calls happen before this gate passes.
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
+
     const body = await req.json().catch(() => ({}));
     const { slug, event_id, allow_draft = false } = body;
     if (!slug && !event_id) return Response.json({ error: 'slug or event_id is required' }, { status: 400 });
 
+    // Event lookup + all diagnostic queries run only after admin authz.
     const event = await resolveEvent(base44, slug, event_id);
     if (!event) return Response.json({ error: 'Event not found' }, { status: 404 });
 
