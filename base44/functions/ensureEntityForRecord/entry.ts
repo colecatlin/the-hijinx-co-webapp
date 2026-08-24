@@ -7,6 +7,12 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    // This function performs service-role writes on the central Entity
+    // collection (creating/updating records and granting owner/manager
+    // access). It is an internal platform operation — require admin.
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
 
     const { entity_type, source_entity_id, name, slug, owner_user_id, manager_user_ids } = await req.json();
 

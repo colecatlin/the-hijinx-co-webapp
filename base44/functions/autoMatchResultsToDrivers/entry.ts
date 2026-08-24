@@ -126,20 +126,28 @@ async function processResult(db, result, index) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
+
+    // ── AUTHORIZATION GATE (mandatory, before any service-role access) ──
+    // This function performs service-role writes on official Results records
+    // (re-linking driver IDs, mutating normalized keys). Both the single-result
+    // and batch paths MUST pass authentication + admin authorization before
+    // any database access. A specific result_id must NOT bypass this gate.
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
 
-    // Resolve target result id. Batch mode (no id, or body.batch=true) is a
-    // powerful bulk operation and MUST require admin auth — do not let a
-    // forged `event` field in the body bypass admin authorization for mass
-    // service-role writes.
+    // Resolve target result id. Batch mode (no id, or body.batch=true).
     const entityId = body?.event?.entity_id || body?.data?.id || body?.result_id;
     const isBatch = !entityId || !!body?.batch;
-
-    if (isBatch) {
-      if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-      if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
 
     const db = base44.asServiceRole;
 

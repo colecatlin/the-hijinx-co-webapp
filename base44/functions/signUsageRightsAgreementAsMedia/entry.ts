@@ -19,6 +19,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden: holder_media_user_id mismatch' }, { status: 403 });
     }
 
+    // Verify the authenticated caller actually owns this MediaUser record.
+    // Comparing the agreement's holder_media_user_id to a client-supplied
+    // value is not enough — an attacker could pass the victim's
+    // holder_media_user_id. Admin bypasses; otherwise the MediaUser record
+    // must be linked to the authenticated caller.
+    if (user.role !== 'admin') {
+      const mediaUsers = await base44.asServiceRole.entities.MediaUser.filter({ id: holder_media_user_id });
+      const mediaUser = mediaUsers?.[0];
+      if (!mediaUser || mediaUser.user_id !== user.id) {
+        return Response.json({ error: 'Forbidden: you do not own this media user record' }, { status: 403 });
+      }
+    }
+
     if (agreement.status === 'expired') {
       return Response.json({ error: 'Agreement has expired' }, { status: 400 });
     }

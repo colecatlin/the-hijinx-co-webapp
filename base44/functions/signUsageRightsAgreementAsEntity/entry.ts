@@ -6,20 +6,23 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { agreement_id, signing_user_id } = await req.json();
-    if (!agreement_id || !signing_user_id) {
-      return Response.json({ error: 'agreement_id and signing_user_id are required' }, { status: 400 });
+    const { agreement_id } = await req.json();
+    if (!agreement_id) {
+      return Response.json({ error: 'agreement_id is required' }, { status: 400 });
     }
 
     const agreements = await base44.asServiceRole.entities.UsageRightsAgreement.filter({ id: agreement_id });
     const agreement = agreements[0];
     if (!agreement) return Response.json({ error: 'Agreement not found' }, { status: 404 });
 
-    // Check authority: admin or EntityCollaborator on this entity
+    // Check authority against the AUTHENTICATED caller — never a client-
+    // supplied signing_user_id, which would let a caller spoof another
+    // collaborator's identity to sign agreements for entities they don't
+    // control. Admin bypasses; otherwise the caller must be a collaborator.
     if (user.role !== 'admin') {
       const collaborators = await base44.asServiceRole.entities.EntityCollaborator.filter({
         entity_id: agreement.entity_id,
-        user_id: signing_user_id,
+        user_id: user.id,
       });
       if (!collaborators.length) {
         return Response.json({ error: 'Forbidden: no authority on this entity' }, { status: 403 });
