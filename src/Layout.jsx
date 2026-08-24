@@ -235,26 +235,14 @@ export default function Layout({ children, currentPageName }) {
           {/* Desktop chrome — hidden on mobile/tablet */}
           <div className="hidden lg:block">
           <AnnouncementBar />
-          {/* Floating glass header */}
-          <div className="px-3 py-2">
+          {/* Solid header bar */}
+          <div className="px-3">
             <header
               onMouseEnter={() => setIsHeaderHovered(true)}
               onMouseLeave={() => { setIsHeaderHovered(false); setHoveredItem(null); if (!searchQuery && !searchLoading) setSearchOpen(false); }}
-              className="transition-all duration-300 rounded-[20px]"
               style={{
-                background: isHeaderHovered
-                  ? 'hsl(var(--surface-elevated) / 0.82)'
-                  : scrolled
-                    ? 'hsl(var(--canvas) / 0.55)'
-                    : 'hsl(var(--canvas) / 0.25)',
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                border: isHeaderHovered
-                  ? '1.5px solid hsl(var(--motion) / 0.25)'
-                  : '1.5px solid hsl(var(--divider))',
-                boxShadow: isHeaderHovered
-                  ? '0 0 48px hsl(var(--motion) / 0.15), 0 16px 64px hsl(0 0% 0% / 0.7), inset 0 1px 0 hsl(var(--foreground) / 0.08)'
-                  : '0 0 32px hsl(var(--foreground) / 0.08), 0 8px 40px hsl(0 0% 0% / 0.35), inset 0 1px 0 hsl(var(--foreground) / 0.12)',
+                background: 'hsl(var(--surface))',
+                borderBottom: '1px solid hsl(var(--divider))',
               }}
             >
               {/* Top row — logo + nav + actions */}
