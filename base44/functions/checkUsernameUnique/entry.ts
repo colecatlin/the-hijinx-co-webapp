@@ -35,11 +35,27 @@ function bad(reason: string, available = false) {
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   try {
+    // ── AUTHENTICATION GATE (mandatory, before any service-role access) ──
+    // Username availability is an authenticated-only operation. An
+    // unauthenticated caller must never reach the service-role User query —
+    // doing so would enable account enumeration. The caller's identity is
+    // resolved exclusively from the trusted server-side auth context, never
+    // from the request body.
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
     const body = await req.json().catch(() => ({}));
     const raw = (typeof body.username === 'string' ? body.username : '').trim().toLowerCase();
     if (!raw) return bad('Username is required.');
 
-    // Strict format mirror of the onboarding client rules.
+    // Strict format mirror of the onboarding client rules. These are input
+    // validation checks that run BEFORE any service-role query and disclose
+    // no account information.
     if (raw.length < 3 || raw.length > 24) {
       return bad('Username must be 3–24 characters.');
     }
@@ -50,10 +66,14 @@ Deno.serve(async (req) => {
       return bad('That username is reserved.');
     }
 
-    const currentUserId =
-      typeof body.current_user_id === 'string' ? body.current_user_id : null;
+    // Ownership: the authenticated user may retain their own current username.
+    // The current user id comes exclusively from the trusted auth context —
+    // never from a client-supplied body value, which would let a caller spoof
+    // another account's id to bypass the uniqueness check.
+    const currentUserId = user.id;
 
-    // Service-role read; clients (non-admins) cannot query other users.
+    // Service-role read occurs ONLY after authentication succeeds. Clients
+    // (non-admins) cannot query other users directly.
     const matches = await base44.asServiceRole.entities.User.filter({
       username_slug: raw,
     });
@@ -61,14 +81,15 @@ Deno.serve(async (req) => {
     if (Array.isArray(matches) && matches.length > 0) {
       const takenByOther = matches.some((m: any) => m.id !== currentUserId);
       if (takenByOther) {
-        return bad('That username is already taken.');
+        // Minimum disclosure: do not reveal why the username is unavailable
+        // or which account owns it. Return only the availability result.
+        return Response.json({ available: false });
       }
     }
 
     return Response.json({ available: true, slug: raw });
   } catch (error) {
-    return Response.json(
-      { available: false, reason: error?.message || 'Could not verify username.' },
-    );
+    // Do not leak internal error details. Return a generic unavailable result.
+    return Response.json({ available: false, reason: 'Could not verify username.' });
   }
 });
