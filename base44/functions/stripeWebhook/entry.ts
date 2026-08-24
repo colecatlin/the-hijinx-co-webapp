@@ -3,6 +3,22 @@ import Stripe from 'npm:stripe@14.25.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
+// Server-side revenue split calculator (mirrors createAssetLicenseCheckout).
+// Used to re-derive authoritative amounts in the webhook — never trusts
+// client/metadata financial values for fulfillment.
+function calculateRevenueSplit(grossAmountCents, agreement) {
+  const { platform_share_percent, creator_share_percent, outlet_share_percent, flat_fee_amount } = agreement;
+  if (flat_fee_amount != null && flat_fee_amount > 0) {
+    return { platformAmount: 0, creatorAmount: flat_fee_amount, outletAmount: 0, grossAmount: flat_fee_amount };
+  }
+  const total = (platform_share_percent || 0) + (creator_share_percent || 0) + (outlet_share_percent || 0);
+  if (Math.abs(total - 100) > 0.01) throw new Error(`Revenue split must sum to 100. Got: ${total}`);
+  const platformAmount = Math.round(grossAmountCents * (platform_share_percent / 100));
+  const outletAmount = Math.round(grossAmountCents * (outlet_share_percent / 100));
+  const creatorAmount = grossAmountCents - platformAmount - outletAmount;
+  return { platformAmount, creatorAmount, outletAmount, grossAmount: grossAmountCents };
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -27,55 +43,101 @@ Deno.serve(async (req) => {
       case 'checkout.session.completed': {
         const meta = obj.metadata || {};
         if (meta.revenue_type === 'asset_license_sale') {
-          // Create RevenueEvent for the completed license sale
+          // ── WEBHOOK SAFETY: verify before granting the license ──────────
+          // Do not grant a license simply because a checkout session
+          // completed. Re-derive the expected amount from authoritative
+          // server-side records and confirm the Stripe payment matches
+          // before fulfilling. Metadata is treated as untrusted hints;
+          // the agreement + Stripe amount_total are the source of truth.
+
+          // 1. Verify the payment was successful
+          if (obj.payment_status !== 'paid') break;
+
+          // 2. Verify the asset exists
+          const assetId = meta.asset_id;
+          if (!assetId) break;
+          const assets = await base44.asServiceRole.entities.MediaAsset.filter({ id: assetId });
+          if (!assets || assets.length === 0) break;
+          const asset = assets[0];
+          if (asset.status === 'archived') break; // cannot license an archived asset
+
+          // 3. Verify the agreement exists, is active, and is associated with the asset
+          const agreementId = meta.agreement_id;
+          if (!agreementId) break;
+          const agreements = await base44.asServiceRole.entities.RevenueAgreement.filter({ id: agreementId });
+          if (!agreements || agreements.length === 0) break;
+          const agreement = agreements[0];
+          if (agreement.status !== 'active') break;
+          if (agreement.agreement_type !== 'media_asset_license') break;
+          if (!agreement.linked_asset_id || agreement.linked_asset_id !== assetId) break;
+
+          // 4. Re-derive the authoritative expected amount + currency
+          const expectedGross = (typeof agreement.flat_fee_amount === 'number' && agreement.flat_fee_amount > 0)
+            ? agreement.flat_fee_amount
+            : null;
+          if (!expectedGross) break;
+          const expectedCurrency = (agreement.currency || 'usd').toLowerCase();
+
+          // 5. Verify the amount paid + currency match the authoritative expected values
+          const paidAmount = obj.amount_total || 0;
+          const paidCurrency = (obj.currency || '').toLowerCase();
+          if (paidAmount !== expectedGross || paidCurrency !== expectedCurrency) break;
+
+          // 6. Idempotency — the license must not already have been fulfilled
+          const existingEvents = await base44.asServiceRole.entities.RevenueEvent.filter({ stripe_checkout_session_id: obj.id });
+          if (existingEvents && existingEvents.length > 0) break;
+
+          // 7. Verify the buyer matches the checkout record
+          const buyerUserId = meta.buyer_user_id;
+          const buyerEntityType = meta.buyer_entity_type;
+          const buyerEntityId = meta.buyer_entity_id;
+          if (!buyerUserId) break;
+
+          // 8. Recompute the split from the authoritative agreement
+          const split = calculateRevenueSplit(expectedGross, agreement);
+
+          // All checks passed — grant the license (create RevenueEvent)
           const revenueEvent = await base44.asServiceRole.entities.RevenueEvent.create({
             revenue_type: 'asset_license_sale',
-            linked_asset_id: meta.asset_id,
-            linked_agreement_id: meta.agreement_id,
-            linked_buyer_entity_type: meta.buyer_entity_type,
-            linked_buyer_entity_id: meta.buyer_entity_id,
-            gross_amount: parseInt(meta.gross_amount || obj.amount_total || 0),
-            platform_amount: parseInt(meta.platform_amount || 0),
-            creator_amount: parseInt(meta.creator_amount || 0),
-            outlet_amount: parseInt(meta.outlet_amount || 0),
-            currency: meta.currency || obj.currency || 'usd',
+            linked_asset_id: assetId,
+            linked_agreement_id: agreementId,
+            linked_buyer_entity_type: buyerEntityType,
+            linked_buyer_entity_id: buyerEntityId,
+            gross_amount: expectedGross,
+            platform_amount: split.platformAmount,
+            creator_amount: split.creatorAmount,
+            outlet_amount: split.outletAmount,
+            currency: expectedCurrency,
             status: 'paid',
             stripe_checkout_session_id: obj.id,
             stripe_payment_intent_id: obj.payment_intent || null,
             payment_provider: 'stripe',
             occurred_at: new Date().toISOString(),
-            notes: 'Created via Stripe checkout.session.completed webhook'
+            notes: 'Created via Stripe checkout.session.completed webhook (verified)'
           });
 
-          // Create payout record for creator
-          if (meta.agreement_id) {
-            const agreements = await base44.asServiceRole.entities.RevenueAgreement.filter({ id: meta.agreement_id });
-            if (agreements && agreements.length > 0) {
-              const agreement = agreements[0];
-              const creatorAmount = parseInt(meta.creator_amount || 0);
-              if (agreement.creator_profile_id && creatorAmount > 0) {
-                const paymentAccounts = await base44.asServiceRole.entities.PaymentAccount.filter({
-                  owner_type: 'media_profile',
-                  owner_id: agreement.creator_profile_id
-                });
-                await base44.asServiceRole.entities.PayoutRecord.create({
-                  payout_recipient_type: 'media_profile',
-                  payout_recipient_id: agreement.creator_profile_id,
-                  linked_revenue_event_id: revenueEvent.id,
-                  linked_payment_account_id: paymentAccounts?.[0]?.id || null,
-                  amount: creatorAmount,
-                  currency: meta.currency || 'usd',
-                  status: 'pending'
-                });
-              }
-            }
+          // Create payout record for creator (only if the authoritative split grants a creator share)
+          if (agreement.creator_profile_id && split.creatorAmount > 0) {
+            const paymentAccounts = await base44.asServiceRole.entities.PaymentAccount.filter({
+              owner_type: 'media_profile',
+              owner_id: agreement.creator_profile_id
+            });
+            await base44.asServiceRole.entities.PayoutRecord.create({
+              payout_recipient_type: 'media_profile',
+              payout_recipient_id: agreement.creator_profile_id,
+              linked_revenue_event_id: revenueEvent.id,
+              linked_payment_account_id: paymentAccounts?.[0]?.id || null,
+              amount: split.creatorAmount,
+              currency: expectedCurrency,
+              status: 'pending'
+            });
           }
 
           await base44.asServiceRole.entities.OperationLog.create({
             entity_type: 'RevenueEvent',
             entity_id: revenueEvent.id,
             action: 'asset_license_sale_completed',
-            metadata: JSON.stringify({ media_asset_id: meta.asset_id, stripe_checkout_session_id: obj.id, revenue_event_id: revenueEvent.id }),
+            metadata: JSON.stringify({ media_asset_id: assetId, stripe_checkout_session_id: obj.id, revenue_event_id: revenueEvent.id }),
             created_at: new Date().toISOString()
           });
         }
