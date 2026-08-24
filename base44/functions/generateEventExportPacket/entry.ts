@@ -21,13 +21,28 @@ function toCSV(rows, headers) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+
+    // ── AUTHORIZATION GATE ───────────────────────────────────────────
+    // This CSV export is an ADMINISTRATIVE function. Authentication alone
+    // is NOT sufficient — the trusted server-side caller must be an admin.
+    // Authorization happens BEFORE any data access: no Event records are
+    // loaded, no service-role call is made, until this gate passes.
+    // Role is read from the trusted authenticated server-side identity
+    // (base44.auth.me()) — never from the request body, query string, or
+    // any client-supplied value.
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (user.role !== 'admin') return Response.json({ error: 'Admin access required' }, { status: 403 });
 
     const { event_id } = await req.json();
     if (!event_id) return Response.json({ error: 'event_id required' }, { status: 400 });
 
-    // Fetch all event data in parallel
+    // Fetch all event data in parallel — only reached after admin authz
     const [event, entries, sessions, results, officials, incidents] = await Promise.all([
       base44.asServiceRole.entities.Event.filter({ id: event_id }).then(r => r[0]),
       base44.asServiceRole.entities.Entry.filter({ event_id }),
