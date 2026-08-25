@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Calendar, Flag, Users, TrendingUp, Trophy, AlertCircle, ExternalLink, Camera, Handshake } from 'lucide-react';
 import EntitySponsorsTab from '@/components/shared/EntitySponsorsTab';
 import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
+import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import { format, isValid } from 'date-fns';
 import { Link } from 'react-router-dom';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
@@ -147,6 +148,8 @@ export default function TeamProfile() {
       {experience?.seo?.structured_data && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(experience.seo.structured_data) }} />
       )}
+
+      <MobileBackHeader tone="light" title={team.name} to="/Directory?cat=teams" />
 
       {/* ── HERO ── */}
       <div className="relative w-full h-[280px] bg-[#0A0A0A] overflow-hidden">

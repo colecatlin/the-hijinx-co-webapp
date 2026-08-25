@@ -6,6 +6,8 @@ import { Loader2, AlertTriangle } from 'lucide-react';
 import SeoMeta from '@/components/system/seoMeta';
 import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
+import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
+import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import SponsorHero from '@/components/sponsor/SponsorHero';
 import SponsorSidebar from '@/components/sponsor/SponsorSidebar';
 import SponsorOverview from '@/components/sponsor/SponsorOverview';
@@ -62,6 +64,8 @@ export default function SponsorProfile() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <MobileBackHeader tone="light" title={org?.name || 'Sponsor'} to="/Directory?cat=sponsors" />
+        <EntityBreadcrumbs entityType="Sponsor" entityName={org?.name} />
         <SponsorHero org={org} settings={data.settings} statistics={data.statistics} sharing={data.sharing} />
 
         <div className="flex flex-col lg:flex-row gap-6">

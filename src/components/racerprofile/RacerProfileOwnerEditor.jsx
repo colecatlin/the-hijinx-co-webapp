@@ -11,6 +11,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,7 +38,8 @@ const EDITABLE_FIELDS = [
   { key: 'racing_base_country', label: 'Racing Base Country', type: 'text', placeholder: 'Country' },
 ];
 
-export default function RacerProfileOwnerEditor({ racerProfile, identity, user, onUpdated }) {
+export default function RacerProfileOwnerEditor({ racerProfile, identity, user, onUpdated, routeSlug }) {
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
@@ -68,6 +70,27 @@ export default function RacerProfileOwnerEditor({ racerProfile, identity, user, 
     setError(null);
     setSuccess(null);
 
+    // Optimistic update: reflect the edited fields in the cached experience
+    // data immediately so the UI updates before the server responds.
+    const queryKey = ['racerProfileExperience', routeSlug];
+    const previous = routeSlug ? queryClient.getQueryData(queryKey) : null;
+    if (routeSlug && previous) {
+      queryClient.setQueryData(queryKey, (old) => {
+        const data = old?.data || old;
+        if (!data?.page_data?.racerProfile) return old;
+        return {
+          ...old,
+          data: {
+            ...data,
+            page_data: {
+              ...data.page_data,
+              racerProfile: { ...data.page_data.racerProfile, ...formData },
+            },
+          },
+        };
+      });
+    }
+
     try {
       const response = await base44.functions.invoke('updateOwnedRacerProfile', {
         racer_profile_id: racerProfile.id,
@@ -83,8 +106,12 @@ export default function RacerProfileOwnerEditor({ racerProfile, identity, user, 
         setTimeout(() => setSuccess(null), 3000);
       } else {
         setError(result.message || 'Update failed.');
+        // Revert optimistic update on failure
+        if (previous) queryClient.setQueryData(queryKey, previous);
       }
     } catch (err) {
+      // Revert optimistic update on error
+      if (previous) queryClient.setQueryData(queryKey, previous);
       const errData = err?.response?.data || err;
       if (errData?.rejected_fields) {
         setError(`Cannot edit: ${errData.rejected_fields.join(', ')}. Only approved public fields are editable.`);
@@ -139,27 +166,32 @@ export default function RacerProfileOwnerEditor({ racerProfile, identity, user, 
 
       {isEditing ? (
         <div className="space-y-3">
-          {EDITABLE_FIELDS.map(field => (
-            <div key={field.key}>
-              <Label className="text-xs font-semibold text-gray-600 mb-1 block">{field.label}</Label>
-              {field.type === 'textarea' ? (
-                <Textarea
-                  value={formData[field.key] || ''}
-                  onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                  placeholder={field.placeholder}
-                  className="text-sm"
-                  rows={3}
-                />
-              ) : (
-                <Input
-                  value={formData[field.key] || ''}
-                  onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                  placeholder={field.placeholder}
-                  className="text-sm"
-                />
-              )}
-            </div>
-          ))}
+          {EDITABLE_FIELDS.map(field => {
+            const fieldId = `owner-edit-${field.key}`;
+            return (
+              <div key={field.key}>
+                <Label htmlFor={fieldId} className="text-xs font-semibold text-gray-600 mb-1 block">{field.label}</Label>
+                {field.type === 'textarea' ? (
+                  <Textarea
+                    id={fieldId}
+                    value={formData[field.key] || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                    placeholder={field.placeholder}
+                    className="text-sm"
+                    rows={3}
+                  />
+                ) : (
+                  <Input
+                    id={fieldId}
+                    value={formData[field.key] || ''}
+                    onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                    placeholder={field.placeholder}
+                    className="text-sm"
+                  />
+                )}
+              </div>
+            );
+          })}
           <div className="flex gap-2 pt-2">
             <Button size="sm" onClick={handleSave} disabled={saving}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}

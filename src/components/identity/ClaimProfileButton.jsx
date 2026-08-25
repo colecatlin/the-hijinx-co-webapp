@@ -135,6 +135,32 @@ export default function ClaimProfileButton({ identity, racerProfileSlug }) {
 
   async function handleSubmit() {
     setSubmitting(true);
+
+    // Optimistic update: immediately mark the identity as having a pending
+    // claim in the cached experience data so the badge switches without
+    // waiting for the server round-trip.
+    const queryKey = ['racerProfileExperience', racerProfileSlug];
+    const previous = racerProfileSlug ? queryClient.getQueryData(queryKey) : null;
+    const nowIso = new Date().toISOString();
+    if (racerProfileSlug && previous) {
+      queryClient.setQueryData(queryKey, (old) => {
+        const data = old?.data || old;
+        if (!data) return old;
+        const patchIdentity = (id) => id ? { ...id, claim_status: 'pending', claim_submitted_at: nowIso } : id;
+        return {
+          ...old,
+          data: {
+            ...data,
+            identity: patchIdentity(data.identity),
+            page_data: data.page_data ? {
+              ...data.page_data,
+              identity: patchIdentity(data.page_data.identity),
+            } : data.page_data,
+          },
+        };
+      });
+    }
+
     try {
       const payload = {
         racerProfileSlug,
@@ -149,8 +175,10 @@ export default function ClaimProfileButton({ identity, racerProfileSlug }) {
       toast({ title: 'Claim submitted', description: result.message || 'Your claim is pending review. Most claims are reviewed within 48 hours.' });
       setDialogOpen(false);
       setEvidence({ license_number: '', date_of_birth: '', contact_email: '', notes: '' });
-      queryClient.invalidateQueries({ queryKey: ['racerProfileData'] });
+      queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', racerProfileSlug] });
     } catch (err) {
+      // Revert optimistic update on error
+      if (previous) queryClient.setQueryData(queryKey, previous);
       toast({ title: 'Claim failed', description: err?.message || 'Could not submit claim.', variant: 'destructive' });
     } finally {
       setSubmitting(false);

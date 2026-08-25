@@ -14,6 +14,7 @@ import { format, isValid } from 'date-fns';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import EntitySponsorsTab from '@/components/shared/EntitySponsorsTab';
 import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
+import MobileBackHeader from '@/components/shared/MobileBackHeader';
 import VehicleTimeline from '@/components/vehicles/VehicleTimeline';
 import VehicleAchievementsGrid from '@/components/vehicles/VehicleAchievementsGrid';
 import VehicleStatisticsBreakdown from '@/components/vehicles/VehicleStatisticsBreakdown';
@@ -87,6 +88,8 @@ export default function VehicleProfile() {
       {experience?.seo?.structured_data && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(experience.seo.structured_data) }} />
       )}
+
+      <MobileBackHeader tone="light" title={vehicleName} to="/Directory?cat=vehicles" />
 
       {/* HERO */}
       <div className="relative w-full h-[280px] bg-[#0A0A0A] overflow-hidden">

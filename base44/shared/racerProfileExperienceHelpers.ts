@@ -13,6 +13,9 @@ export interface RacerProfileContext {
   identity: any | null;
   identityId: string | null;
   legacyDriverId: string | null;
+  legacyDriver: any | null;
+  careerStats: any | null;
+  careerEntries: any[];
   participations: any[];
   participationIds: string[];
   entries: any[];
@@ -65,6 +68,7 @@ export async function loadRacerProfileContext(base44: any, racerProfile: any): P
     identity, participations, entries, results, standings,
     allSeries, allClasses, allEvents, allTracks, allSessions, allTeams,
     allVehicles, driverPrograms, driverMedia, driverSponsors, outletStories,
+    legacyDriverList, careerStatsList, careerEntriesList,
   ] = await Promise.all([
     identityId ? base44.asServiceRole.entities.PersonIdentity.filter({ id: identityId }).catch(() => []) : Promise.resolve([]),
     base44.asServiceRole.entities.SeasonParticipation.filter({ racer_profile_id: racerProfile.id }).catch(() => []),
@@ -82,6 +86,9 @@ export async function loadRacerProfileContext(base44: any, racerProfile: any): P
     legacyDriverId ? base44.asServiceRole.entities.DriverMedia.filter({ driver_id: legacyDriverId }).catch(() => []) : Promise.resolve([]),
     legacyDriverId ? base44.asServiceRole.entities.DriverSponsor.filter({ driver_id: legacyDriverId }).catch(() => []) : Promise.resolve([]),
     base44.asServiceRole.entities.OutletStory.list('-published_date', 200).catch(() => []),
+    legacyDriverId ? base44.asServiceRole.entities.Driver.filter({ id: legacyDriverId }).catch(() => []) : Promise.resolve([]),
+    identityId ? base44.asServiceRole.entities.DriverCareerStats.filter({ identity_id: identityId }).catch(() => []) : Promise.resolve([]),
+    legacyDriverId ? base44.asServiceRole.entities.DriverCareerEntry.filter({ driver_id: legacyDriverId }).catch(() => []) : Promise.resolve([]),
   ]);
 
   const identityRecord = (identity as any[])?.[0] || null;
@@ -123,6 +130,9 @@ export async function loadRacerProfileContext(base44: any, racerProfile: any): P
     identity: identityRecord,
     identityId,
     legacyDriverId,
+    legacyDriver: (legacyDriverList as any[])?.[0] || null,
+    careerStats: (careerStatsList as any[])?.[0] || null,
+    careerEntries: careerEntriesList as any[],
     participations: participations as any[],
     participationIds,
     entries: entries as any[],

@@ -360,3 +360,55 @@ img, video, canvas, svg {
 article {
   overflow-wrap: anywhere;
 }
+
+/* ── Custom scrollbar styling (theme-aware) ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--divider));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground-quiet));
+  background-clip: padding-box;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--divider)) transparent;
+}
+
+/* ── Mobile: native dropdown fields render as drawer-sheet-style tappable rows ──
+   On small viewports, <select> elements adopt a full-width, touch-friendly
+   card-like appearance with a chevron affordance, mirroring the Vaul bottom
+   sheet select pattern used elsewhere in the app. */
+@media (max-width: 640px) {
+  select,
+  select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--divider));
+    background-color: hsl(var(--surface-elevated));
+    color: hsl(var(--foreground));
+    font-size: 0.95rem;
+    line-height: 1.4;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238C8C8C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+  }
+  select:disabled {
+    opacity: 0.6;
+  }
+}

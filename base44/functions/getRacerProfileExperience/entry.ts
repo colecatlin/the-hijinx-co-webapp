@@ -356,5 +356,28 @@ export default async function(req) {
     },
     profile_completeness: { score: Math.round((earnedWeight / totalWeight) * 100), checks: completenessChecks, earned_weight: earnedWeight, total_weight: totalWeight },
     seo, computed_at: new Date().toISOString(),
+    // Phase 7 mobile optimization: return the full raw page dataset so the
+    // public RacerProfile page can render from a single backend call instead
+    // of issuing 17 client-side list queries.
+    page_data: {
+      racerProfile: rp,
+      identity: identityRecord,
+      legacyDriver: ctx.legacyDriver,
+      media: ctx.driverMedia?.[0] || null,
+      careerStats: ctx.careerStats,
+      participations: ctx.participations,
+      entries: ctx.racerEntries,
+      results: ctx.racerResults,
+      standings: ctx.racerStandings,
+      programs: ctx.driverPrograms,
+      careerEntries: ctx.careerEntries,
+      sponsors: ctx.driverSponsors,
+      series: ctx.allSeries,
+      classes: ctx.allClasses,
+      events: ctx.allEvents,
+      tracks: ctx.allTracks,
+      sessions: ctx.allSessions,
+      teams: ctx.allTeams,
+    },
   });
 }

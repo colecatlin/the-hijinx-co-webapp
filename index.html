@@ -31,10 +31,23 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('hijinx-theme') || 'light';
           var el = document.documentElement;
-          el.classList.remove('theme-light', 'theme-dark');
-          el.classList.add(t === 'dark' ? 'theme-dark' : 'theme-light');
+          var apply = function (theme) {
+            el.classList.remove('theme-light', 'theme-dark');
+            el.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+          };
+          var stored = localStorage.getItem('hijinx-theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          apply(stored ? stored : (prefersDark ? 'dark' : 'light'));
+          // Sync with OS theme changes dynamically when no explicit choice is stored
+          if (window.matchMedia) {
+            var mq = window.matchMedia('(prefers-color-scheme: dark)');
+            var handler = function (e) {
+              if (!localStorage.getItem('hijinx-theme')) apply(e.matches ? 'dark' : 'light');
+            };
+            if (mq.addEventListener) mq.addEventListener('change', handler);
+            else if (mq.addListener) mq.addListener(handler);
+          }
         } catch (e) {}
       })();
     </script>

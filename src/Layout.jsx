@@ -230,7 +230,17 @@ export default function Layout({ children, currentPageName }) {
           {/* Mobile/tablet static top bar — logo + cart only */}
           <div className="lg:hidden flex items-center justify-between px-4 h-14" style={{ borderBottom: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface) / 0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
             <HijinxLogo to={createPageUrl('Home')} iconClassName="h-5 w-auto" wordmarkClassName="h-7 w-auto" className="gap-2" />
-            <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search"
+                className="p-2 rounded-lg flex items-center justify-center transition-colors"
+                style={{ color: 'hsl(var(--foreground-secondary))' }}
+              >
+                <Search className="w-5 h-5" />
+              </button>
+              <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />
+            </div>
           </div>
           {/* Desktop chrome — hidden on mobile/tablet */}
           <div className="hidden lg:block">

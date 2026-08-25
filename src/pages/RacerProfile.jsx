@@ -21,7 +21,6 @@ import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { applyDefaultQueryOptions, applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
-import { getRacerProfilePageData, isRacerProfilePublic } from '@/components/racerprofile/publicRacerProfileApi';
 import { racerProfileToDriverShape, getRacerProfileUrl } from '@/components/racerprofile/racerProfileAdapter';
 import PageShell from '@/components/shared/PageShell';
 import MobileBackHeader from '@/components/shared/MobileBackHeader';
@@ -97,42 +96,37 @@ export default function RacerProfile() {
   const { data: isAuthenticated } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), ...DQ });
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), enabled: !!isAuthenticated, ...DQ });
 
-  // Sprint 1E: Profile data uses longer staleTime — public content rarely changes
-  const { data: profileData, isLoading } = useQuery({
-    queryKey: ['racerProfileData', routeSlug],
-    queryFn: () => getRacerProfilePageData({ slug: routeSlug, allowDraft: user?.role === 'admin' }),
-    enabled: !!routeSlug,
-    ...applyExperienceQueryOptions(),
-  });
-
-  // Phase 10 — Computed experience data (timeline, stats, achievements, team/vehicle history, completeness)
-  // Sprint 1E: Experience engine is server-aggregated — use 5min staleTime for instant return visits
-  const { data: experienceData } = useQuery({
+  // Single source of truth: getRacerProfileExperience returns both the
+  // computed experience (timeline, stats, achievements) AND the raw page
+  // dataset (profile, identity, entries, results, etc.) so the page renders
+  // from one backend call instead of 17 client-side list queries.
+  const { data: experienceData, isLoading } = useQuery({
     queryKey: ['racerProfileExperience', routeSlug],
     queryFn: () => base44.functions.invoke('getRacerProfileExperience', { slug: routeSlug, allow_draft: user?.role === 'admin' }),
     enabled: !!routeSlug,
     ...applyExperienceQueryOptions(),
   });
   const experience = experienceData?.data || experienceData || null;
+  const pageData = experience?.page_data || null;
 
-  const racerProfile = profileData?.racerProfile ?? null;
-  const identity = profileData?.identity ?? null;
-  const legacyDriver = profileData?.legacyDriver ?? null;
-  const media = profileData?.media ?? null;
-  const careerStats = profileData?.careerStats ?? null;
-  const participations = profileData?.participations ?? [];
-  const entries = profileData?.entries ?? [];
-  const results = profileData?.results ?? [];
-  const standings = profileData?.standings ?? [];
-  const programs = profileData?.programs ?? [];
-  const careerEntries = profileData?.careerEntries ?? [];
-  const sponsors = profileData?.sponsors ?? [];
-  const allSeries = profileData?.series ?? [];
-  const allClasses = profileData?.classes ?? [];
-  const allEvents = profileData?.events ?? [];
-  const allTracks = profileData?.tracks ?? [];
-  const allSessions = profileData?.sessions ?? [];
-  const allTeams = profileData?.teams ?? [];
+  const racerProfile = pageData?.racerProfile ?? null;
+  const identity = pageData?.identity ?? null;
+  const legacyDriver = pageData?.legacyDriver ?? null;
+  const media = pageData?.media ?? null;
+  const careerStats = pageData?.careerStats ?? null;
+  const participations = pageData?.participations ?? [];
+  const entries = pageData?.entries ?? [];
+  const results = pageData?.results ?? [];
+  const standings = pageData?.standings ?? [];
+  const programs = pageData?.programs ?? [];
+  const careerEntries = pageData?.careerEntries ?? [];
+  const sponsors = pageData?.sponsors ?? [];
+  const allSeries = pageData?.series ?? [];
+  const allClasses = pageData?.classes ?? [];
+  const allEvents = pageData?.events ?? [];
+  const allTracks = pageData?.tracks ?? [];
+  const allSessions = pageData?.sessions ?? [];
+  const allTeams = pageData?.teams ?? [];
 
   // Build Driver-shaped object for compatibility with existing components
   const driverShape = useMemo(
@@ -173,8 +167,10 @@ export default function RacerProfile() {
     );
   }
 
-  if (!racerProfile) return <EntityNotFound entityType="Racer" />;
-  if (!isRacerProfilePublic(racerProfile) && user?.role !== 'admin') return <EntityUnavailable entityType="Racer" />;
+  if (!racerProfile) {
+    if (experience?.error === 'Profile not public') return <EntityUnavailable entityType="Racer" />;
+    return <EntityNotFound entityType="Racer" />;
+  }
 
   const fullName = racerProfile.display_name || `${legacyDriver?.first_name || ''} ${legacyDriver?.last_name || ''}`;
   const hometown = [racerProfile.hometown_city, racerProfile.hometown_state, racerProfile.hometown_country].filter(Boolean).join(', ');
@@ -338,8 +334,9 @@ export default function RacerProfile() {
             racerProfile={racerProfile}
             identity={identity}
             user={user}
+            routeSlug={routeSlug}
             onUpdated={() => {
-              queryClient.invalidateQueries({ queryKey: ['racerProfileData', routeSlug] });
+              queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', routeSlug] });
             }}
           />
         )}
