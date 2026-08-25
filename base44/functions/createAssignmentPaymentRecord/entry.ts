@@ -13,6 +13,16 @@ Deno.serve(async (req) => {
     if (!assignments || assignments.length === 0) return Response.json({ error: 'Assignment not found' }, { status: 404 });
     const assignment = assignments[0];
 
+    // Authorization: only admins or the assignment's assigner/outlet manager may trigger payout creation.
+    let isAuthorized = user.role === 'admin' || user.id === assignment.assigned_by_user_id || user.id === assignment.created_by_id;
+    if (!isAuthorized && assignment.assigned_to_outlet_id) {
+      const outlets = await base44.asServiceRole.entities.MediaOutlet.filter({ id: assignment.assigned_to_outlet_id });
+      if (outlets && outlets.length > 0 && outlets[0].primary_contact_user_id === user.id) {
+        isAuthorized = true;
+      }
+    }
+    if (!isAuthorized) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
     if (assignment.compensation_type === 'unpaid') {
       return Response.json({ message: 'Assignment is unpaid — no payment record needed', skipped: true });
     }
