@@ -15,6 +15,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'event_id is required' }, { status: 400 });
     }
 
+    // Authorization: only admins or track/series collaborators (owner/editor) may publish.
+    if (user.role !== 'admin') {
+      const events = await base44.asServiceRole.entities.Event.filter({ id: event_id });
+      if (events.length === 0) return Response.json({ error: 'Event not found' }, { status: 404 });
+      const evt = events[0];
+      let isAuthorized = false;
+      if (evt.track_id) {
+        const trackCollabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ entity_type: 'Track', entity_id: evt.track_id }).catch(() => []);
+        isAuthorized = trackCollabs.some(c => (c.user_id === user.id || c.user_email === user.email) && ['owner', 'editor'].includes(c.role));
+      }
+      if (!isAuthorized && evt.series_id) {
+        const seriesCollabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ entity_type: 'Series', entity_id: evt.series_id }).catch(() => []);
+        isAuthorized = seriesCollabs.some(c => (c.user_id === user.id || c.user_email === user.email) && ['owner', 'editor'].includes(c.role));
+      }
+      if (!isAuthorized) return Response.json({ error: 'Forbidden: must be admin or a track/series owner or editor' }, { status: 403 });
+    }
+
     // Check if publish is allowed
     const canPublishResponse = await base44.functions.invoke('canPublishEvent', {
       event_id,
