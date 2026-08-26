@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CheckCircle2, Loader2, Upload, X } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { useSlugField, generateEntitySlug } from '@/hooks/useSlugField';
 
 const CATEGORY_MAP = {
   Racing: ['Race Reports', 'Results', 'Standings', 'Championship Watch', 'Track Profiles'],
@@ -22,8 +21,6 @@ const CATEGORY_MAP = {
 const PRIMARY_CATEGORIES = Object.keys(CATEGORY_MAP);
 
 export default function StoryForm({ story, onClose }) {
-  const { slug, syncSlugFromSource, setSlugManually } = useSlugField(story?.slug || '');
-
   const [formData, setFormData] = useState({
     title: story?.title || '',
     subtitle: story?.subtitle || '',
@@ -63,8 +60,7 @@ export default function StoryForm({ story, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const finalSlug = slug || generateEntitySlug(formData.title) || 'story';
-    mutation.mutate({ ...formData, slug: finalSlug });
+    mutation.mutate(formData);
   };
 
   const handleChange = (field, value) => {
@@ -74,9 +70,6 @@ export default function StoryForm({ story, onClose }) {
       setFormData({ ...formData, [field]: value, scheduled_publish_date: new Date().toISOString() });
     } else {
       setFormData({ ...formData, [field]: value });
-    }
-    if (field === 'title' && !story) {
-      syncSlugFromSource(value);
     }
   };
 
@@ -126,17 +119,6 @@ export default function StoryForm({ story, onClose }) {
               onChange={(e) => handleChange('subtitle', e.target.value)}
               placeholder="Subheadline or deck"
             />
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-sm font-medium mb-1">URL Slug</label>
-            <Input
-              value={slug}
-              onChange={(e) => setSlugManually(e.target.value)}
-              placeholder="auto-generated from title"
-              className="font-mono text-sm"
-            />
-            <p className="text-xs text-gray-400 mt-1">Public URL: /story/<span className="text-gray-600">{slug || '…'}</span></p>
           </div>
 
           <div>
