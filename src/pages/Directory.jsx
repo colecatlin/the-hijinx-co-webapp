@@ -16,6 +16,7 @@ import CreatorDirectory from './CreatorDirectory';
 import MediaOutletDirectory from './MediaOutletDirectory';
 import VehicleDirectory from './VehicleDirectory';
 import SponsorDirectory from './SponsorDirectory';
+import ComingSoonPlaceholder from '@/components/directory/ComingSoonPlaceholder';
 import { isEventPublic } from '@/components/system/publishHelpers';
 
 const ACCENT = 'hsl(var(--motion))';
@@ -26,27 +27,30 @@ const FG_QUIET = 'hsl(var(--foreground-quiet))';
 const DIV = 'hsl(var(--divider))';
 const SURF = 'hsl(var(--surface-elevated))';
 
-// Category registry — order = display order in the switcher
+// Category registry — order = display order in the switcher.
+// Phase rollout: only Racers (drivers) and Events are live; all other
+// categories render a Coming Soon placeholder until their phase ships.
 const CATEGORIES = [
   { key: 'drivers', label: 'Racers',  icon: Users,        Component: RacerDirectory },
-  { key: 'teams',   label: 'Teams',   icon: Building2,    Component: TeamDirectory },
-  { key: 'tracks',  label: 'Tracks',  icon: MapPin,       Component: TrackDirectory },
-  { key: 'series',  label: 'Series',  icon: Trophy,       Component: SeriesHome },
+  { key: 'teams',   label: 'Teams',   icon: Building2,    Component: TeamDirectory,   comingSoon: true },
+  { key: 'tracks',  label: 'Tracks',  icon: MapPin,       Component: TrackDirectory,  comingSoon: true },
+  { key: 'series',  label: 'Series',  icon: Trophy,       Component: SeriesHome,      comingSoon: true },
   { key: 'events',  label: 'Events',  icon: CalendarDays, Component: EventDirectory },
-  { key: 'vehicles', label: 'Vehicles', icon: Truck,       Component: VehicleDirectory },
-  { key: 'sponsors', label: 'Sponsors', icon: Handshake,    Component: SponsorDirectory },
-  { key: 'creators', label: 'Creators', icon: Camera,      Component: CreatorDirectory },
-  { key: 'outlets',  label: 'Outlets',  icon: Newspaper,    Component: MediaOutletDirectory },
+  { key: 'vehicles', label: 'Vehicles', icon: Truck,       Component: VehicleDirectory, comingSoon: true },
+  { key: 'sponsors', label: 'Sponsors', icon: Handshake,    Component: SponsorDirectory, comingSoon: true },
+  { key: 'creators', label: 'Creators', icon: Camera,      Component: CreatorDirectory, comingSoon: true },
+  { key: 'outlets',  label: 'Outlets',  icon: Newspaper,    Component: MediaOutletDirectory, comingSoon: true },
 ];
 
 const VALID_KEYS = new Set(CATEGORIES.map(c => c.key));
 
-function useCount(entityName) {
+function useCount(entityName, options = {}) {
   return useQuery({
     queryKey: ['directory-count', entityName],
     queryFn: () => base44.entities[entityName].list('-created_date', 500),
     staleTime: 10 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
+    enabled: options.enabled !== false,
   });
 }
 
@@ -55,31 +59,33 @@ export default function Directory() {
   const rawCat = searchParams.get('cat');
   const [active, setActive] = useState(VALID_KEYS.has(rawCat) ? rawCat : 'drivers');
 
-  // Live counts for the switcher pills (+ monthly nuance skipped for simplicity here)
+  // Live counts for the switcher pills. Coming Soon categories skip their
+  // count query entirely (enabled: false) and show 'Soon' instead of a number.
   const drivers   = useCount('RacerProfile');
-  const teams     = useCount('Team');
-  const tracks    = useCount('Track');
-  const series    = useCount('Series');
+  const teams     = useCount('Team',     { enabled: false });
+  const tracks    = useCount('Track',    { enabled: false });
+  const series    = useCount('Series',   { enabled: false });
   const events    = useCount('Event');
-  const vehicles  = useCount('Vehicle');
-  const sponsors  = useQuery({ queryKey: ['directory-count', 'SponsorOrg'], queryFn: async () => { const all = await base44.entities.Organization.list('-created_date', 500); return all.filter(o => o.type === 'Sponsor' && !o.is_archived); }, staleTime: 10 * 60 * 1000 });
-  const creators  = useCount('MediaProfile');
-  const outlets   = useCount('MediaOutlet');
+  const vehicles  = useCount('Vehicle',  { enabled: false });
+  const sponsors  = useQuery({ queryKey: ['directory-count', 'SponsorOrg'], queryFn: async () => { const all = await base44.entities.Organization.list('-created_date', 500); return all.filter(o => o.type === 'Sponsor' && !o.is_archived); }, staleTime: 10 * 60 * 1000, enabled: false });
+  const creators  = useCount('MediaProfile', { enabled: false });
+  const outlets   = useCount('MediaOutlet', { enabled: false });
   const counts = useMemo(() => ({
     drivers: drivers.data?.length,
-    teams: teams.data?.length,
-    tracks: tracks.data?.length,
-    series: series.data?.length,
+    teams: 'Soon',
+    tracks: 'Soon',
+    series: 'Soon',
     events: events.data?.filter(isEventPublic).length,
-    vehicles: vehicles.data?.filter(v => v.visibility_status !== 'draft' && !v.is_archived)?.length,
-    sponsors: sponsors.data?.length,
-    creators: creators.data?.length,
-    outlets: outlets.data?.length,
-  }), [drivers.data, teams.data, tracks.data, series.data, events.data, vehicles.data, sponsors.data, creators.data, outlets.data]);
+    vehicles: 'Soon',
+    sponsors: 'Soon',
+    creators: 'Soon',
+    outlets: 'Soon',
+  }), [drivers.data, events.data]);
 
-  const totalCount = Object.values(counts).reduce((a, n) => a + (n || 0), 0);
+  const totalCount = Object.values(counts).reduce((a, n) => a + (typeof n === 'number' ? n : 0), 0);
 
-  const ActiveComponent = CATEGORIES.find(c => c.key === active)?.Component;
+  const activeCategory = CATEGORIES.find(c => c.key === active);
+  const ActiveComponent = activeCategory?.Component;
 
   const selectCategory = (key) => {
     setActive(key);
@@ -131,21 +137,34 @@ export default function Directory() {
             const Icon = cat.icon;
             const isActive = cat.key === active;
             const count = counts[cat.key];
+            const isSoon = cat.comingSoon;
             return (
               <button
                 key={cat.key}
                 onClick={() => selectCategory(cat.key)}
                 className="relative flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs font-black tracking-[0.12em] uppercase whitespace-nowrap transition-all duration-200 flex-shrink-0"
                 style={{
-                  background: isActive ? ACCENT : 'transparent',
-                  color: isActive ? '#fff' : FG_SEC,
+                  background: isActive ? (isSoon ? 'hsl(var(--surface-interactive))' : ACCENT) : 'transparent',
+                  color: isActive
+                    ? (isSoon ? FG : '#fff')
+                    : (isSoon ? FG_QUIET : FG_SEC),
                 }}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = ACCENT_MUTED; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{cat.label}</span>
-                {count != null && (
+                {isSoon ? (
+                  <span
+                    className="font-mono text-[8px] tracking-[0.2em] px-1.5 py-0.5 rounded-md uppercase"
+                    style={{
+                      background: isActive ? ACCENT : 'hsl(var(--motion-muted))',
+                      color: isActive ? '#fff' : ACCENT,
+                    }}
+                  >
+                    Soon
+                  </span>
+                ) : count != null && (
                   <span
                     className="font-mono text-[9px] tracking-normal px-1.5 py-0.5 rounded-md"
                     style={{
@@ -165,7 +184,11 @@ export default function Directory() {
       {/* ── ACTIVE CATEGORY CONTENT ── */}
       <div className="px-5 sm:px-8 md:px-12 lg:px-20 pt-6 pb-20">
         <div key={active} className="-mx-5 sm:-mx-8 md:-mx-12 lg:-mx-20">
-          {ActiveComponent && <ActiveComponent />}
+          {activeCategory?.comingSoon ? (
+            <ComingSoonPlaceholder category={activeCategory} />
+          ) : (
+            ActiveComponent && <ActiveComponent />
+          )}
         </div>
       </div>
     </div>
