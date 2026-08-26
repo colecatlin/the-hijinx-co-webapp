@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/components/utils';
 import { getOutletStoryUrl } from '@/lib/storyUrl';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowRight, PenLine } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import PullToRefresh from '@/components/shared/PullToRefresh';
 
 const OUTLET_CYAN = 'hsl(var(--motion))';
@@ -201,15 +200,7 @@ export default function OutletHome() {
               <div className="font-mono text-[9px] tracking-[0.4em] uppercase mt-0.5" style={{ color: OUTLET_CYAN }}>Motorsports Editorials, Culture, and News</div>
             </div>
           </div>
-          <Link
-            to={createPageUrl('OutletSubmit')}
-            className="hidden md:flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors"
-            style={{ border: `1px solid ${OUTLET_CYAN}`, color: OUTLET_CYAN }}
-            onMouseEnter={e => { e.currentTarget.style.background = OUTLET_CYAN; e.currentTarget.style.color = '#fff'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = OUTLET_CYAN; }}
-          >
-            <PenLine className="w-3.5 h-3.5" /> Submit a Story
-          </Link>
+
         </div>
       </div>
 
@@ -285,13 +276,7 @@ export default function OutletHome() {
               <p className="text-base max-w-xl mb-8" style={{ color: 'hsl(var(--foreground-secondary))' }}>
                 Motorsports coverage — stories, stats, standings, and culture from across the sport.
               </p>
-              <Link
-                to={createPageUrl('OutletSubmit')}
-                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors"
-                style={{ background: OUTLET_CYAN, color: '#fff' }}
-              >
-                <PenLine className="w-4 h-4" /> Submit a Story
-              </Link>
+
             </div>
           </div>
         )}
@@ -402,13 +387,7 @@ export default function OutletHome() {
             <img src={LOGO_URL} alt="The Outlet" className="w-7 h-7 opacity-60" />
             <span className="font-mono text-[9px] tracking-[0.4em] uppercase" style={{ color: 'hsl(var(--foreground-quiet))' }}>The Outlet · HIJINX CO</span>
           </div>
-          <Link
-            to={createPageUrl('OutletSubmit')}
-            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-colors"
-            style={{ color: OUTLET_CYAN }}
-          >
-            <PenLine className="w-3.5 h-3.5" /> Submit a Story
-          </Link>
+
         </div>
       </div>
     </div>
