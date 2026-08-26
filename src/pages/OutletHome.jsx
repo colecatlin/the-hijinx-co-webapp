@@ -74,7 +74,7 @@ function StoryCard({ story, hero = false, imageHeight = 'h-48' }) {
           </div>
         )}
       </div>
-      <div className="pt-4 pb-6" style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
+      <div className="pt-4 pb-6 flex flex-col" style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
         <div className="flex items-center gap-2 mb-2">
           <span className="font-mono text-[9px] tracking-[0.35em] uppercase" style={{ color: OUTLET_CYAN }}>{story.primary_category}</span>
           {story.sub_category && <>
@@ -87,10 +87,8 @@ function StoryCard({ story, hero = false, imageHeight = 'h-48' }) {
             onMouseLeave={e => e.currentTarget.style.color = 'hsl(var(--foreground))'}>
           {story.title}
         </h3>
-        {story.subtitle && (
-          <p className="text-xs line-clamp-2 mb-3 min-h-[2.25rem]" style={{ color: 'hsl(var(--foreground-secondary))' }}>{story.subtitle}</p>
-        )}
-        <div className="flex items-center gap-3">
+        <p className="text-xs line-clamp-2 mb-3 min-h-[2.25rem]" style={{ color: 'hsl(var(--foreground-secondary))' }}>{story.subtitle || ''}</p>
+        <div className="flex items-center gap-3 mt-auto">
           {story.author && <span className="text-[10px] font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>{story.author}</span>}
           {story.published_date && <span className="text-[10px] font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>{format(new Date(story.published_date), 'MMM d')}</span>}
         </div>
