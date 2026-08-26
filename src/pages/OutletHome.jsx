@@ -82,13 +82,13 @@ function StoryCard({ story, hero = false, imageHeight = 'h-48' }) {
             <span className="font-mono text-[9px] tracking-[0.2em] uppercase" style={{ color: 'hsl(var(--foreground-quiet))' }}>{story.sub_category}</span>
           </>}
         </div>
-        <h3 className="text-base font-bold tracking-tight leading-snug mb-2 line-clamp-3 transition-colors" style={{ color: 'hsl(var(--foreground))' }}
+        <h3 className="text-base font-bold tracking-tight leading-snug mb-2 line-clamp-3 min-h-[4.5rem] transition-colors" style={{ color: 'hsl(var(--foreground))' }}
             onMouseEnter={e => e.currentTarget.style.color = 'hsl(var(--motion))'}
             onMouseLeave={e => e.currentTarget.style.color = 'hsl(var(--foreground))'}>
           {story.title}
         </h3>
         {story.subtitle && (
-          <p className="text-xs line-clamp-2 mb-3" style={{ color: 'hsl(var(--foreground-secondary))' }}>{story.subtitle}</p>
+          <p className="text-xs line-clamp-2 mb-3 min-h-[2.25rem]" style={{ color: 'hsl(var(--foreground-secondary))' }}>{story.subtitle}</p>
         )}
         <div className="flex items-center gap-3">
           {story.author && <span className="text-[10px] font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>{story.author}</span>}
