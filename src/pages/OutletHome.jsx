@@ -21,7 +21,7 @@ const CATEGORY_MAP = {
 
 const PRIMARY_CATEGORIES = Object.keys(CATEGORY_MAP);
 
-function StoryCard({ story, hero = false }) {
+function StoryCard({ story, hero = false, imageHeight = 'h-48' }) {
   if (hero) {
     return (
       <Link to={getOutletStoryUrl(story)} className="group block relative overflow-hidden" style={{ background: 'hsl(var(--surface-elevated))' }}>
@@ -65,7 +65,7 @@ function StoryCard({ story, hero = false }) {
 
   return (
     <Link to={getOutletStoryUrl(story)} className="group block" style={{ background: 'hsl(var(--surface-elevated))' }}>
-      <div className="overflow-hidden aspect-[3/2] relative">
+      <div className={`overflow-hidden ${imageHeight} relative`}>
         {story.cover_image ? (
           <img src={story.cover_image} alt={story.title} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" loading="lazy" />
         ) : (
@@ -82,7 +82,7 @@ function StoryCard({ story, hero = false }) {
             <span className="font-mono text-[9px] tracking-[0.2em] uppercase" style={{ color: 'hsl(var(--foreground-quiet))' }}>{story.sub_category}</span>
           </>}
         </div>
-        <h3 className="text-base font-bold tracking-tight leading-snug mb-2 transition-colors" style={{ color: 'hsl(var(--foreground))' }}
+        <h3 className="text-base font-bold tracking-tight leading-snug mb-2 line-clamp-3 transition-colors" style={{ color: 'hsl(var(--foreground))' }}
             onMouseEnter={e => e.currentTarget.style.color = 'hsl(var(--motion))'}
             onMouseLeave={e => e.currentTarget.style.color = 'hsl(var(--foreground))'}>
           {story.title}
@@ -359,7 +359,7 @@ export default function OutletHome() {
             {/* Remaining grid */}
             {remainingStories.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0.5">
-                {remainingStories.map(s => <StoryCard key={s.id} story={s} />)}
+                {remainingStories.map(s => <StoryCard key={s.id} story={s} imageHeight="h-40" />)}
               </div>
             )}
           </div>
