@@ -26,19 +26,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Collaboration not found' }, { status: 404 });
     }
 
+    // Authorization: only an admin or an owner/editor collaborator for the
+    // relevant track or series may respond on its behalf.
+    const isAdmin = user.role === 'admin';
+    if (!isAdmin) {
+      const targetEntityId = entity_type === 'track'
+        ? collaboration.track_id
+        : collaboration.series_id;
+      const collaborators = await base44.entities.EntityCollaborator.filter({
+        user_id: user.id,
+        entity_id: targetEntityId,
+      });
+      const hasAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
+      if (!hasAccess) {
+        return Response.json({ error: 'Not authorized to respond for this entity' }, { status: 403 });
+      }
+    }
+
     // Update acceptance status
     const updateData = {};
 
     if (entity_type === 'track') {
       updateData.track_acceptance_status = response;
       if (response === 'accepted') {
-        updateData.accepted_track_user_id = user_id || user.email;
+        updateData.accepted_track_user_id = user.id;
         updateData.accepted_track_date = new Date().toISOString();
       }
     } else if (entity_type === 'series') {
       updateData.series_acceptance_status = response;
       if (response === 'accepted') {
-        updateData.accepted_series_user_id = user_id || user.email;
+        updateData.accepted_series_user_id = user.id;
         updateData.accepted_series_date = new Date().toISOString();
       }
     }

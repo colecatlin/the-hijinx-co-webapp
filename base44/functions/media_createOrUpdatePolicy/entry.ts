@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
       const collaborators = await base44.entities.EntityCollaborator.filter({
-        user_id,
+        user_id: user.id,
         entity_id,
       });
       const hasAccess = collaborators.some(c => c.role === 'owner');
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
       metadata: {
         policy_id: policy.id,
         entity_id,
-        user_id,
+        user_id: user.id,
         policy_type,
       },
       notes: `Policy ${policy_id ? 'updated' : 'created'} by ${user.email}`,

@@ -4,9 +4,16 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // The credential applicant is always the authenticated user — ignore any
+    // client-supplied holder_user_id to prevent overwriting another user's
+    // MediaUser profile.
+    const holder_user_id = user.id;
 
     const {
-      holder_user_id,
       applicant,
       target,
       requested,

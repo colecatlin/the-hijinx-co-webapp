@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
       const collaborators = await base44.entities.EntityCollaborator.filter({
-        user_id: requester_user_id,
+        user_id: user.id,
         entity_id: credential.issuer_entity_id,
       });
       const hasAccess = collaborators.some(c => c.role === 'owner');
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     const updatedCredential = await base44.entities.MediaCredential.update(credential_id, {
       status: 'revoked',
       revoked_at: now,
-      revoked_by_user_id: requester_user_id,
+      revoked_by_user_id: user.id,
       notes: (credential.notes ? credential.notes + ' | ' : '') + revoke_notes,
     });
 
@@ -53,9 +53,9 @@ Deno.serve(async (req) => {
         credential_id,
         holder_media_user_id: credential.holder_media_user_id,
         issuer_entity_id: credential.issuer_entity_id,
-        requester_user_id,
-      },
-      notes: `Credential revoked by ${user.email}`,
+        requester_user_id: user.id,
+        },
+        notes: `Credential revoked by ${user.email}`,
     });
 
     return Response.json({ credential: updatedCredential });

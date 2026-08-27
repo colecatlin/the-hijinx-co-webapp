@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
       const collaborators = await base44.entities.EntityCollaborator.filter({
-        user_id: reviewer_user_id,
+        user_id: user.id,
         entity_id: issuer_entity_id,
       });
       const hasAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     if (action === 'under_review') {
       updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
         status: 'under_review',
-        reviewed_by_user_id: reviewer_user_id,
+        reviewed_by_user_id: user.id,
         reviewed_at: now,
         review_notes: review_notes,
       });
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
       const infoNote = `INFO_REQUEST: ${review_notes}`;
       updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
         status: 'under_review',
-        reviewed_by_user_id: reviewer_user_id,
+        reviewed_by_user_id: user.id,
         reviewed_at: now,
         review_notes: infoNote,
       });
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
     if (action === 'deny') {
       updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
         status: 'denied',
-        reviewed_by_user_id: reviewer_user_id,
+        reviewed_by_user_id: user.id,
         reviewed_at: now,
         review_notes: review_notes,
       });
@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
       // Update request
       updatedRequest = await base44.entities.CredentialRequest.update(request_id, {
         status: 'approved',
-        reviewed_by_user_id: reviewer_user_id,
+        reviewed_by_user_id: user.id,
         reviewed_at: now,
         review_notes: review_notes,
       });

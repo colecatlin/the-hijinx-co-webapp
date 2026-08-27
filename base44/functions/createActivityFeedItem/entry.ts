@@ -176,6 +176,18 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true, reason: 'No feed item needed for this event' });
     }
 
+    // Idempotency: prevent public feed pollution from replayed requests. If
+    // a feed item for this entity + activity type already exists, skip the
+    // duplicate. An anonymous caller can only reproduce the single feed
+    // item the automation itself would emit — never manufacture spam.
+    const existing = await db.entities.ActivityFeed.filter({
+      entity_id: feedItem.entity_id,
+      activity_type: feedItem.activity_type,
+    });
+    if (existing && existing.length > 0) {
+      return Response.json({ skipped: true, reason: 'duplicate_feed_item' });
+    }
+
     const created = await db.entities.ActivityFeed.create(feedItem);
     return Response.json({ success: true, id: created.id });
 

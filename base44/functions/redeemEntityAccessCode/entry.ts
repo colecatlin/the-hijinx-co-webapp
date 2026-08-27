@@ -90,11 +90,17 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
-    const { user_id, user_email, code } = await req.json();
+    const { code } = await req.json();
 
-    if (!user_id || !user_email || !code) {
-      return Response.json({ ok: false, error: 'Missing required fields: user_id, user_email, code' }, { status: 400 });
+    if (!code) {
+      return Response.json({ ok: false, error: 'Missing required field: code' }, { status: 400 });
     }
+
+    // Trust the authenticated session only — never client-supplied identity.
+    // This prevents an attacker from redeeming a victim's invitation code by
+    // supplying the victim's email alongside their own user_id.
+    const user_id = user.id;
+    const user_email = user.email;
 
     const normalizedCode = code.trim();
 
