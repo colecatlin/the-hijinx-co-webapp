@@ -168,7 +168,7 @@ export default function RacerDirectory() {
         description="Browse the INDEX46 racer directory — public racing profiles across all series and disciplines."
       />
       <PullToRefresh onRefresh={refetch}>
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="max-w-7xl mx-auto px-6 pt-3 pb-12">
           <DirectoryFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}

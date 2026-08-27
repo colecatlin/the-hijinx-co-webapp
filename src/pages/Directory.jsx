@@ -142,7 +142,7 @@ export default function Directory() {
               <button
                 key={cat.key}
                 onClick={() => selectCategory(cat.key)}
-                className="relative flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-black tracking-[0.12em] uppercase whitespace-nowrap transition-all duration-200 flex-shrink-0"
+                className="relative flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-black tracking-[0.12em] uppercase whitespace-nowrap transition-all duration-200 flex-shrink-0"
                 style={{
                   background: isActive ? (isSoon ? 'hsl(var(--surface-interactive))' : ACCENT) : 'transparent',
                   color: isActive
@@ -182,7 +182,7 @@ export default function Directory() {
       </div>
 
       {/* ── ACTIVE CATEGORY CONTENT ── */}
-      <div className="px-5 sm:px-8 md:px-12 lg:px-20 pt-6 pb-20">
+      <div className="px-5 sm:px-8 md:px-12 lg:px-20 pt-2 pb-20">
         <div key={active} className="-mx-5 sm:-mx-8 md:-mx-12 lg:-mx-20">
           {activeCategory?.comingSoon ? (
             <ComingSoonPlaceholder category={activeCategory} />
