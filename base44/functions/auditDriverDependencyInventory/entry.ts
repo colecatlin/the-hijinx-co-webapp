@@ -21,6 +21,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 export default async function(req) {
   const base44 = createClientFromRequest(req);
 
+  // Admin only — unauthenticated requests are rejected
+  let user;
+  try {
+    user = await base44.auth.me();
+  } catch (_) {
+    return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+  }
+  if (!user || user.role !== 'admin') {
+    return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+  }
+
   const [
     drivers, racerProfiles, entries, results, standings,
     careerStats, collaborators, driverMedia, driverPrograms,

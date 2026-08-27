@@ -63,6 +63,18 @@ async function findBestArc(base44, rec) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Admin only — unauthenticated requests are rejected
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch (_) {
+      return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+    }
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const recId = body.recommendation_id;
     if (!recId) return Response.json({ error: 'recommendation_id is required' }, { status: 400 });
