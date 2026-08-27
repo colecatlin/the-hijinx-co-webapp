@@ -22,6 +22,7 @@
  * Safety: never auto-publishes, never creates StoryRecommendation.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { INTERNAL_SIGNAL_TOKEN } from '../../shared/contentSignalAuth.ts';
 
 // ─── INLINED POLICY ───────────────────────────────────────────────
 // Keep in sync with storyRadarTriggerPolicy.js
@@ -248,21 +249,24 @@ async function logOp(base44, event_type, meta) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const payload = await req.json();
 
-    // Auth: admin users OR internal/service calls (no user context)
+    // Auth: admin users, OR internal service-role calls verified via a shared
+    // internal token (scheduled automations run without a user session). The
+    // token is server-side only and never exposed to public callers, so
+    // unauthenticated HTTP requests are rejected.
     let isAuthorized = false;
     try {
       const user = await base44.auth.me();
       if (user?.role === 'admin') isAuthorized = true;
-    } catch (_) {
-      // No user context — treat as internal service call
+    } catch (_) { /* no user context — fall through to internal token check */ }
+    if (!isAuthorized && payload?._internal_token === INTERNAL_SIGNAL_TOKEN) {
       isAuthorized = true;
     }
     if (!isAuthorized) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const payload = await req.json();
     const {
       source_entity_type,
       source_entity_id,

@@ -23,12 +23,13 @@
  * Safety: never auto-publishes, never creates StoryRecommendation.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { INTERNAL_SIGNAL_TOKEN } from '../../shared/contentSignalAuth.ts';
 
 // ─── HELPERS ──────────────────────────────────────────────────────
 
 async function dispatch(base44, payload, dryRun) {
   if (dryRun) return { data: { created: false, skipped: true, dry_run: true, reason: 'dry_run' } };
-  return await base44.asServiceRole.functions.invoke('createContentSignalFromUpdate', payload);
+  return await base44.asServiceRole.functions.invoke('createContentSignalFromUpdate', { ...payload, _internal_token: INTERNAL_SIGNAL_TOKEN });
 }
 
 function recordResult(stats, source, entityId, res) {
