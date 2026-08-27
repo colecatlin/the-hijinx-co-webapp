@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import DOMPurify from 'dompurify';
 
 export default function PolicyAcceptancePanel({
   mediaUserId,
@@ -326,7 +327,7 @@ function PolicyCard({
 
       {expanded && (
         <div className="bg-white rounded p-3 mb-3 max-h-48 overflow-y-auto">
-          <div className="text-xs text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{__html: policy.body_rich_text}} />
+          <div className="text-xs text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(policy.body_rich_text || '')}} />
         </div>
       )}
 
