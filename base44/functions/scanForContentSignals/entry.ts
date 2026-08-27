@@ -23,13 +23,15 @@
  * Safety: never auto-publishes, never creates StoryRecommendation.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { INTERNAL_SIGNAL_TOKEN } from '../../shared/contentSignalAuth.ts';
+import { createContentSignal } from '../../shared/contentSignalCore.ts';
 
 // ─── HELPERS ──────────────────────────────────────────────────────
 
 async function dispatch(base44, payload, dryRun) {
   if (dryRun) return { data: { created: false, skipped: true, dry_run: true, reason: 'dry_run' } };
-  return await base44.asServiceRole.functions.invoke('createContentSignalFromUpdate', { ...payload, _internal_token: INTERNAL_SIGNAL_TOKEN });
+  // Call the shared server-side core directly — no cross-function HTTP
+  // invoke and no shared internal token.
+  return { data: await createContentSignal(base44, payload) };
 }
 
 function recordResult(stats, source, entityId, res) {
@@ -262,9 +264,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Admin only
-    const user = await base44.auth.me().catch(() => null);
-    if (user !== null && user?.role !== 'admin') {
+    // Admin only — unauthenticated requests are rejected
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch (_) {
+      return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+    }
+    if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
     }
 
