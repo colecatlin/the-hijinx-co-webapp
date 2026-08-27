@@ -142,7 +142,7 @@ export default function Directory() {
               <button
                 key={cat.key}
                 onClick={() => selectCategory(cat.key)}
-                className="relative flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs font-black tracking-[0.12em] uppercase whitespace-nowrap transition-all duration-200 flex-shrink-0"
+                className="relative flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-xs font-black tracking-[0.12em] uppercase whitespace-nowrap transition-all duration-200 flex-shrink-0"
                 style={{
                   background: isActive ? (isSoon ? 'hsl(var(--surface-interactive))' : ACCENT) : 'transparent',
                   color: isActive
