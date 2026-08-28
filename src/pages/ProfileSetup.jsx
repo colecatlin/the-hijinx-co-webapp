@@ -13,6 +13,7 @@ import {
   ONBOARDING_STAGES,
 } from '@/components/onboarding/onboardingConfig';
 import { useAuth } from '@/lib/AuthContext';
+import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import { Loader2 } from 'lucide-react';
 
 const STAGE_COMPONENTS = {
@@ -25,9 +26,17 @@ const STAGE_COMPONENTS = {
 
 function WizardShell() {
   const { stage: requested } = useParams();
-  const { user, isLoadingAuth } = useAuth();
+  const { user: staleUser, isLoadingAuth } = useAuth();
+  const { user: freshUser, isLoading } = useOnboardingWizard();
 
-  if (isLoadingAuth || !user) {
+  // Prefer the wizard's React-Query user (invalidated/refetched after every
+  // advanceTo) so the clamp guard sees the updated onboarding_stage
+  // immediately after a save — instead of the stale AuthContext user that
+  // never refreshes post-updateMe. Falls back to the AuthContext user until
+  // the wizard query resolves.
+  const user = freshUser || staleUser;
+
+  if (isLoadingAuth || (!user && isLoading) || !user) {
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#060A0A' }}>
         <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#1DA1A1' }} />
