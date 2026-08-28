@@ -1,14 +1,15 @@
 /**
  * REVISION 7A Part 2 — EventSchedulePanel
- * Read-only schedule view inside the event workspace.
- * Renders WeekendProgressionTimeline as a black box.
- * No create/edit/delete/publish actions.
+ * Schedule view inside the event workspace.
+ * Admins can create/edit EventDay records (the weekend day structure)
+ * via EventDayManager. The timeline below remains a visual progression.
  */
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useEventWorkspace } from '../EventWorkspaceContext';
 import SessionTimelinePolished from '../SessionTimelinePolished';
+import EventDayManager from '@/components/registrationdashboard/EventDayManager';
 import { applyDefaultQueryOptions } from '@/components/utils/queryDefaults';
 import { Calendar } from 'lucide-react';
 import { REG_QK } from '@/components/registrationdashboard/queryKeys';
@@ -16,7 +17,7 @@ import { REG_QK } from '@/components/registrationdashboard/queryKeys';
 const DQ = applyDefaultQueryOptions();
 
 export default function EventSchedulePanel() {
-  const { selectedEvent, eventId } = useEventWorkspace();
+  const { selectedEvent, eventId, isAdmin } = useEventWorkspace();
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['sessions', eventId],
@@ -67,10 +68,12 @@ export default function EventSchedulePanel() {
       <div className="flex items-center justify-between mb-1">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-foreground-quiet">Weekend Schedule</p>
-          <p className="text-[11px] text-foreground-quiet mt-0.5">Read-only view · {sessions.length} sessions · {results.length} results entered</p>
+          <p className="text-[11px] text-foreground-quiet mt-0.5">{sessions.length} sessions · {results.length} results entered</p>
         </div>
-        <span className="text-[10px] px-2 py-1 rounded border border-divider text-foreground-quiet font-mono">READ ONLY</span>
       </div>
+
+      {/* EventDayManager — create/edit the weekend day structure (admin only) */}
+      <EventDayManager event={selectedEvent} isAdmin={isAdmin} />
 
       {/* SessionTimelinePolished — enhanced visual progression */}
       <SessionTimelinePolished
