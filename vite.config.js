@@ -15,5 +15,11 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
-  ]
+  ],
+  resolve: {
+    // Force a single copy of React/ReactDOM — without this, transitive
+    // deps can resolve their own copy and hooks crash with
+    // "Cannot read properties of null (reading 'useState')".
+    dedupe: ['react', 'react-dom'],
+  },
 });
