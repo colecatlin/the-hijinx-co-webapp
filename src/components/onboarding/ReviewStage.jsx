@@ -185,7 +185,6 @@ export default function ReviewStage() {
 
       <Button
         type="submit"
-        onClick={handleFinish}
         disabled={saving}
         className="w-full gap-2 h-12 text-sm font-bold"
         style={{ background: TEAL, color: '#050A0A' }}

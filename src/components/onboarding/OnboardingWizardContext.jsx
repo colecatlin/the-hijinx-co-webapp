@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import {
   STAGE_ORDER,
   STAGE_META,
@@ -149,11 +150,18 @@ export function OnboardingWizardProvider({ children }) {
 
   const saveConnections = useCallback(async () => advanceTo({}, 'review'), [advanceTo]);
 
+  const { refreshUser } = useAuth();
+
   const completeOnboarding = useCallback(async () => {
     await base44.auth.updateMe({ onboarding_complete: true, onboarding_stage: 'complete' });
     await refresh();
+    // Refresh the AuthContext user so OnboardingGuard sees onboarding_complete
+    // === true BEFORE we navigate to /MyDashboard — otherwise the guard reads
+    // the stale AuthContext user (still onboarding_complete: false) and bounces
+    // the user straight back to ProfileSetup, making the button appear to do nothing.
+    await refreshUser();
     navigate('/MyDashboard');
-  }, [navigate, refresh]);
+  }, [navigate, refresh, refreshUser]);
 
   const goBack = useCallback(
     (currentStage) => {

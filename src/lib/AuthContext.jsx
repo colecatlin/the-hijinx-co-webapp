@@ -128,6 +128,13 @@ export const AuthProvider = ({ children }) => {
     base44.auth.redirectToLogin(window.location.href);
   };
 
+  // Lightweight refresh — re-fetches only the current user (not public
+  // settings). Used after updateMe() so guards that read from AuthContext
+  // see the updated fields without a full checkAppState round-trip.
+  const refreshUser = async () => {
+    await checkUserAuth();
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -138,7 +145,8 @@ export const AuthProvider = ({ children }) => {
       appPublicSettings,
       logout,
       navigateToLogin,
-      checkAppState
+      checkAppState,
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>
