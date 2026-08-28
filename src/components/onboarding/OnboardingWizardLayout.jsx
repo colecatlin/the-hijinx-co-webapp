@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, X } from 'lucide-react';
 import OnboardingProgress from '@/components/onboarding/OnboardingProgress';
+import HibernationBanner from '@/components/onboarding/HibernationBanner';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import { resolveOnboardingStage, stageIndex, STAGE_META, prevStage } from '@/components/onboarding/onboardingConfig';
 
@@ -46,6 +47,8 @@ export default function OnboardingWizardLayout({ stage, children }) {
             Profile Setup · {meta.label}
           </span>
         </div>
+
+        <HibernationBanner />
 
         <OnboardingProgress
           currentStage={stage}

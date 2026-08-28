@@ -12,12 +12,12 @@ const TEAL = '#1DA1A1';
 /**
  * Identity stage of the onboarding wizard.
  *
- * Username is OPTIONAL here. The goal is to reduce onboarding friction: a
- * user may complete setup with no username and choose one later the first
- * time they hit a public-identity feature (see ClaimUsername +
- * UsernameRequiredGuard).
+ * Username (handle) is REQUIRED here. A user cannot advance past this
+ * stage without a valid, available handle. This ensures every account
+ * has a public identity from day one — no hibernated accounts without
+ * a handle.
  *
- * First name, last name, and contact email remain required.
+ * First name, last name, contact email, and handle are all required.
  *
  * If a username IS entered, every existing validation rule still apply:
  *   - lowercase normalization
@@ -45,12 +45,11 @@ export default function IdentityStage() {
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-  // First + last name are required; username is optional. When a username is
-  // entered it must be fully validated (format + availability) to continue.
+  // First + last name + handle are all required. The handle must be fully
+  // validated (format + availability) to continue.
   const usernameValid =
-    !trimmedUsername ||
-    (usernameStatus.available && !usernameStatus.error && !usernameStatus.checking) ||
-    isOwnUsername;
+    !!trimmedUsername &&
+    (isOwnUsername || (usernameStatus.available && !usernameStatus.error && !usernameStatus.checking));
 
   const canContinue =
     firstName.trim().length > 0 &&
@@ -59,8 +58,7 @@ export default function IdentityStage() {
     !emailError &&
     !saving &&
     usernameValid &&
-    // If the user is typing a username, don't allow submit mid-check.
-    (!trimmedUsername || !usernameStatus.checking);
+    !usernameStatus.checking;
 
   const suggestions = useMemo(
     () => suggestUsernameCandidates({ firstName, lastName }),
@@ -76,13 +74,13 @@ export default function IdentityStage() {
     if (!lastName.trim()) { setLastNameError('Last name is required.'); blocked = true; }
     else setLastNameError('');
 
-    // Username is optional. Only validate if one was entered.
-    if (trimmedUsername) {
-      if (usernameStatus.checking) {
-        blocked = true; // wait for availability check
-      } else if (usernameStatus.error || (!usernameStatus.available && !isOwnUsername)) {
-        blocked = true;
-      }
+    // Username (handle) is required.
+    if (!trimmedUsername) {
+      blocked = true;
+    } else if (usernameStatus.checking) {
+      blocked = true; // wait for availability check
+    } else if (usernameStatus.error || (!usernameStatus.available && !isOwnUsername)) {
+      blocked = true;
     }
 
     if (!email.trim()) { setEmailError('Email address is required.'); blocked = true; }
@@ -147,7 +145,7 @@ export default function IdentityStage() {
 
       <div className="space-y-2">
         <Label htmlFor="onb-username-input" className="text-foreground text-xs flex items-center gap-1.5">
-          Username <span className="text-foreground-quiet font-normal">(optional)</span>
+          Username <span style={{ color: 'hsl(var(--danger))' }}>*</span>
         </Label>
         <UsernameFieldWithCheck
           value={username}
@@ -158,7 +156,7 @@ export default function IdentityStage() {
           onStatusChange={setUsernameStatus}
         />
         <p className="text-[11px]" style={{ color: 'hsl(var(--foreground-quiet))' }}>
-          You can always claim a public username later from your profile.
+          Your handle is your public identity on the platform — choose wisely.
         </p>
       </div>
 

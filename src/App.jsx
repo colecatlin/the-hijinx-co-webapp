@@ -162,7 +162,7 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 // applied at the router boundary (not inside the page) so incomplete users
 // are redirected to their onboarding stage and completed users are never
 // forced back. Public routes outside this set stay public.
-const GUARDED_PAGES = new Set(['MyDashboard', 'Profile']);
+const GUARDED_PAGES = new Set(['MyDashboard', 'Profile', 'MediaPortal', 'MediaApply', 'UserDashboard']);
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
@@ -230,7 +230,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/research-packets" element={<LayoutWrapper currentPageName="management/editorial/research-packets"><EditorialResearchPackets /></LayoutWrapper>} />
       <Route path="/management/editorial/writer-workspace" element={<LayoutWrapper currentPageName="management/editorial/writer-workspace"><WriterWorkspace /></LayoutWrapper>} />
       {/* R9BI: /management/media/* now redirect to canonical /racecore/media/* (handled above) */}
-      <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><MediaHome /></LayoutWrapper>} />
+      <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><OnboardingGuard><MediaHome /></OnboardingGuard></LayoutWrapper>} />
       <Route path="/creators" element={<Navigate to="/Directory?cat=creators" replace />} />
       <Route path="/creators/:slug" element={<LayoutWrapper currentPageName="creators"><CreatorProfile /></LayoutWrapper>} />
       <Route path="/media-outlets" element={<Navigate to="/Directory?cat=outlets" replace />} />
@@ -253,8 +253,8 @@ const AuthenticatedApp = () => {
       {/* Phase 13: Canonical Event profile route — /events/:slug */}
       <Route path="/events/:slug" element={<LayoutWrapper currentPageName="EventProfile"><EventProfileRouteWrapper /></LayoutWrapper>} />
       <Route path="/VehicleProfile" element={<LayoutWrapper currentPageName="VehicleProfile"><VehicleProfile /></LayoutWrapper>} />
-      <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
-      <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><ClaimsCenter /></LayoutWrapper>} />
+      <Route path="/ClaimsCenter" element={<LayoutWrapper currentPageName="ClaimsCenter"><OnboardingGuard><ClaimsCenter /></OnboardingGuard></LayoutWrapper>} />
+      <Route path="/dashboard/claims" element={<LayoutWrapper currentPageName="ClaimsCenter"><OnboardingGuard><ClaimsCenter /></OnboardingGuard></LayoutWrapper>} />
 
       {/* R9BI: Legacy /race-core/* editor routes → redirect to canonical /racecore/* */}
       <Route path="/race-core/drivers/:id" element={<RaceCoreEditorRedirect base="drivers" />} />
@@ -303,14 +303,14 @@ const AuthenticatedApp = () => {
 
       {/* Organization Platform — one reusable shell for every org type */}
       {/* Username on-demand: creating an org requires a public handle */}
-      <Route path="/organization/create" element={<LayoutWrapper currentPageName="OrganizationCreate"><UsernameRequiredGuard featureLabel="create an organization"><OrganizationCreate /></UsernameRequiredGuard></LayoutWrapper>} />
+      <Route path="/organization/create" element={<LayoutWrapper currentPageName="OrganizationCreate"><OnboardingGuard><UsernameRequiredGuard featureLabel="create an organization"><OrganizationCreate /></UsernameRequiredGuard></OnboardingGuard></LayoutWrapper>} />
       <Route path="/organization/:entityType/:entityId" element={<LayoutWrapper currentPageName="OrganizationPage"><OrganizationPage /></LayoutWrapper>} />
       <Route path="/organization/:entityType/:entityId/:section" element={<LayoutWrapper currentPageName="OrganizationPage"><OrganizationPage /></LayoutWrapper>} />
 
       {/* Cart & Checkout */}
-      <Route path="/cart" element={<LayoutWrapper currentPageName="Cart"><Cart /></LayoutWrapper>} />
-      <Route path="/checkout" element={<LayoutWrapper currentPageName="Checkout"><Checkout /></LayoutWrapper>} />
-      <Route path="/order-confirmation" element={<LayoutWrapper currentPageName="OrderConfirmation"><OrderConfirmation /></LayoutWrapper>} />
+      <Route path="/cart" element={<LayoutWrapper currentPageName="Cart"><OnboardingGuard><Cart /></OnboardingGuard></LayoutWrapper>} />
+      <Route path="/checkout" element={<LayoutWrapper currentPageName="Checkout"><OnboardingGuard><Checkout /></OnboardingGuard></LayoutWrapper>} />
+      <Route path="/order-confirmation" element={<LayoutWrapper currentPageName="OrderConfirmation"><OnboardingGuard><OrderConfirmation /></OnboardingGuard></LayoutWrapper>} />
 
       {/* Storefront routes */}
       <Route path="/store" element={<LayoutWrapper currentPageName="StorefrontHome"><StorefrontHome /></LayoutWrapper>} />
@@ -363,7 +363,7 @@ const AuthenticatedApp = () => {
 
       {/* R9BI: All /racecore/* routes inside RaceCoreLayout — no public LayoutWrapper */}
       <Route element={<MembershipGuard />}>
-      <Route element={<RaceCoreLayout />}>
+      <Route element={<OnboardingGuard><RaceCoreLayout /></OnboardingGuard>}>
         <Route path="/racecore" element={<RaceCoreDashboard />} />
         <Route path="/racecore/standings" element={<RaceCoreStandings />} />
         <Route path="/racecore/standings/:seriesId" element={<RaceCoreStandings />} />
@@ -431,7 +431,7 @@ const AuthenticatedApp = () => {
       
       {/* Membership: admin management + member self-service */}
       <Route path="/ManageMemberships" element={<LayoutWrapper currentPageName="ManageMemberships"><ManageMemberships /></LayoutWrapper>} />
-      <Route path="/membership" element={<LayoutWrapper currentPageName="Membership"><Membership /></LayoutWrapper>} />
+      <Route path="/membership" element={<LayoutWrapper currentPageName="Membership"><OnboardingGuard><Membership /></OnboardingGuard></LayoutWrapper>} />
       <Route path="/ManagePopUps" element={<LayoutWrapper currentPageName="ManagePopUps"><ManagePopUps /></LayoutWrapper>} />
       
       {/* R9BI: /race-control/events/* → redirect to canonical /racecore/event-files/* */}

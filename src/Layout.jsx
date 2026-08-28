@@ -21,6 +21,7 @@ import { useAndroidBackButton } from '@/hooks/useAndroidBackButton';
 import { useTabKeepAlive } from '@/hooks/useTabKeepAlive';
 import HijinxLogo from '@/components/shared/HijinxLogo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
+import HibernationBanner from '@/components/onboarding/HibernationBanner';
 import Home from '@/pages/Home';
 import OutletHome from '@/pages/OutletHome';
 import ApparelHome from '@/pages/ApparelHome';
@@ -98,6 +99,10 @@ export default function Layout({ children, currentPageName }) {
     queryFn: () => base44.auth.me(),
     enabled: isAuthenticated,
   });
+
+  // Hibernation: authenticated non-admin users who haven't completed onboarding.
+  // They browse public pages as a guest but are locked out of member features.
+  const isHibernated = !!user && user.role !== 'admin' && user.onboarding_complete !== true;
 
   // Sprint 1E: Search entity lists cached with 5min staleTime — no re-fetch on every keystroke
   const searchQueryOpts = { staleTime: SEARCH_STALE_TIME_MS, gcTime: 10 * 60 * 1000, enabled: searchOpen };
@@ -239,7 +244,7 @@ export default function Layout({ children, currentPageName }) {
               >
                 <Search className="w-5 h-5" />
               </button>
-              <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />
+              {!isHibernated && <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />}
             </div>
           </div>
           {/* Desktop chrome — hidden on mobile/tablet */}
@@ -321,7 +326,7 @@ export default function Layout({ children, currentPageName }) {
                       Admin Tools
                     </Link>
                   )}
-                  {isAuthenticated ? (
+                  {isAuthenticated && !isHibernated ? (
                     <div className="hidden lg:flex items-center gap-1">
                       <UserMenu user={user} />
                     </div>
@@ -340,7 +345,7 @@ export default function Layout({ children, currentPageName }) {
                       Login
                     </button>
                   )}
-                  <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />
+                  {!isHibernated && <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />}
                 </div>
               </div>
 
@@ -456,6 +461,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Page content */}
         <main className="flex-1 relative z-[1] pb-32 lg:pb-0">
+          {!location.pathname.startsWith('/ProfileSetup') && <HibernationBanner />}
           <ErrorBoundary>
             {isTabRoute(location.pathname) ? (
               <div className="relative">
