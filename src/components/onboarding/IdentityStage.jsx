@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
+import { useAuth } from '@/lib/AuthContext';
 import StageErrorBanner, { normalizeBackendError } from '@/components/onboarding/StageErrorBanner';
 import UsernameFieldWithCheck, { suggestUsernameCandidates } from '@/components/onboarding/UsernameFieldWithCheck';
 import { Button } from '@/components/ui/button';
@@ -27,11 +28,18 @@ const TEAL = '#1DA1A1';
  *   - final pre-write re-check on save
  */
 export default function IdentityStage() {
-  const { user, saveIdentity } = useOnboardingWizard();
+  const { user: wizardUser, saveIdentity } = useOnboardingWizard();
+  const { user: authUser } = useAuth();
+  // Use whichever user source resolves first — AuthContext loads on app
+  // startup, the wizard's own query loads when the provider mounts.
+  const user = wizardUser || authUser;
   const [firstName, setFirstName] = useState(user?.first_name || '');
   const [lastName, setLastName] = useState(user?.last_name || '');
   const [username, setUsername] = useState(user?.username || '');
-  const [email, setEmail] = useState(user?.contact_email || user?.email || '');
+  // Email is read-only — derived directly from the auth user, not state.
+  // This eliminates the race condition where useState initializes before
+  // the auth query resolves and the email stays blank.
+  const authEmail = user?.contact_email || user?.email || '';
   const [firstNameError, setFirstNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -39,21 +47,11 @@ export default function IdentityStage() {
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Sync the auth email once the user query resolves. useState initializes
-  // before base44.auth.me() completes, so the email would stay blank without
-  // this effect. The field is read-only — the email is set by the auth system
-  // and changeable later in Settings.
-  useEffect(() => {
-    if (user?.email) {
-      setEmail(user.contact_email || user.email);
-    }
-  }, [user?.email, user?.contact_email]);
-
   const trimmedUsername = username.trim().toLowerCase();
   const isOwnUsername =
     trimmedUsername && (trimmedUsername === (user?.username || '').toLowerCase());
 
-  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authEmail.trim());
 
   // First + last name + handle are all required. The handle must be fully
   // validated (format + availability) to continue.
@@ -93,7 +91,7 @@ export default function IdentityStage() {
       blocked = true;
     }
 
-    if (!email.trim()) { setEmailError('Email address is required.'); blocked = true; }
+    if (!authEmail.trim()) { setEmailError('Email address is required.'); blocked = true; }
     else if (!emailValid) { setEmailError('Enter a valid email address.'); blocked = true; }
     else setEmailError('');
     if (blocked || !canContinue) return;
@@ -104,7 +102,7 @@ export default function IdentityStage() {
         first_name: firstName,
         last_name: lastName,
         username,
-        contact_email: email,
+        contact_email: authEmail,
       });
     } catch (err) {
       if (err?.code === 'username_conflict') {
@@ -178,7 +176,7 @@ export default function IdentityStage() {
         <Input
           id="onb-email"
           type="email"
-          value={email}
+          value={authEmail}
           readOnly
           onChange={() => {}}
           placeholder="Set from your login"
