@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import StageErrorBanner, { normalizeBackendError } from '@/components/onboarding/StageErrorBanner';
 import UsernameFieldWithCheck, { suggestUsernameCandidates } from '@/components/onboarding/UsernameFieldWithCheck';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 
 const TEAL = '#1DA1A1';
 
@@ -38,6 +38,16 @@ export default function IdentityStage() {
   const [usernameStatus, setUsernameStatus] = useState({ blank: true, checking: false, available: false, error: '' });
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Sync the auth email once the user query resolves. useState initializes
+  // before base44.auth.me() completes, so the email would stay blank without
+  // this effect. The field is read-only — the email is set by the auth system
+  // and changeable later in Settings.
+  useEffect(() => {
+    if (user?.email && !email) {
+      setEmail(user.contact_email || user.email);
+    }
+  }, [user?.email, user?.contact_email, email]);
 
   const trimmedUsername = username.trim().toLowerCase();
   const isOwnUsername =
@@ -161,23 +171,26 @@ export default function IdentityStage() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="onb-email" className="text-foreground text-xs">
+        <Label htmlFor="onb-email" className="text-foreground text-xs flex items-center gap-1.5">
+          <Lock className="w-3 h-3" style={{ color: 'hsl(var(--foreground-quiet))' }} />
           Email address <span style={{ color: 'hsl(var(--danger))' }}>*</span>
         </Label>
         <Input
           id="onb-email"
           type="email"
           value={email}
-          onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
-          placeholder="you@example.com"
+          readOnly
+          onChange={() => {}}
+          placeholder="Set from your login"
           aria-invalid={!!emailError}
-          className="bg-surface-interactive/40 border-divider text-foreground placeholder:text-foreground-quiet"
+          className="border-divider text-foreground placeholder:text-foreground-quiet cursor-not-allowed"
+          style={{ background: 'hsl(var(--surface-interactive) / 0.2)', opacity: 0.7 }}
         />
         {emailError ? (
           <p className="text-xs" style={{ color: 'hsl(var(--danger))' }}>{emailError}</p>
         ) : (
           <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>
-            Used for account notifications and profile contact.
+            Set from your login. You can change this later in Settings.
           </p>
         )}
       </div>
