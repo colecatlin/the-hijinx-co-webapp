@@ -6,7 +6,8 @@ import UsernameFieldWithCheck, { suggestUsernameCandidates } from '@/components/
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Lock } from 'lucide-react';
+import { Loader2, Lock, BadgeCheck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const TEAL = '#1DA1A1';
 
@@ -173,22 +174,37 @@ export default function IdentityStage() {
           <Lock className="w-3 h-3" style={{ color: 'hsl(var(--foreground-quiet))' }} />
           Email address <span style={{ color: 'hsl(var(--danger))' }}>*</span>
         </Label>
-        <Input
-          id="onb-email"
-          type="email"
-          value={authEmail}
-          readOnly
-          onChange={() => {}}
-          placeholder="Set from your login"
-          aria-invalid={!!emailError}
-          className="border-divider text-foreground placeholder:text-foreground-quiet cursor-not-allowed"
-          style={{ background: 'hsl(var(--surface-interactive) / 0.2)', opacity: 0.7 }}
-        />
+        <div className="flex items-center gap-2">
+          <Input
+            id="onb-email"
+            type="email"
+            value={authEmail}
+            readOnly
+            onChange={() => {}}
+            placeholder="Set from your login"
+            aria-invalid={!!emailError}
+            className="border-divider text-foreground placeholder:text-foreground-quiet cursor-not-allowed flex-1"
+            style={{ background: 'hsl(var(--surface-interactive) / 0.2)', opacity: 0.7 }}
+          />
+          {authEmail && (
+            <Badge
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wide whitespace-nowrap"
+              style={{
+                background: 'hsl(var(--success) / 0.15)',
+                color: 'hsl(var(--success))',
+                border: '1px solid hsl(var(--success) / 0.3)',
+              }}
+            >
+              <BadgeCheck className="w-3 h-3" />
+              Verified
+            </Badge>
+          )}
+        </div>
         {emailError ? (
           <p className="text-xs" style={{ color: 'hsl(var(--danger))' }}>{emailError}</p>
         ) : (
           <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>
-            Set from your login. You can change this later in Settings.
+            Verified during sign-in. This is your account's login email.
           </p>
         )}
       </div>
