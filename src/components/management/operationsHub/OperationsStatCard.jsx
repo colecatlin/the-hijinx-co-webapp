@@ -12,14 +12,16 @@ export default function OperationsStatCard({
   label,
   value,
   href,
+  onClick,
   sublabel,
   alert = false,
   loading = false,
 }) {
+  const interactive = href || onClick;
   const content = (
     <div
       className={`group relative bg-surface-elevated border rounded-xl p-4 transition-all ${
-        href
+        interactive
           ? 'border-divider hover:border-motion/40 hover:shadow-md cursor-pointer'
           : 'border-divider'
       }`}
@@ -47,7 +49,7 @@ export default function OperationsStatCard({
       {sublabel && (
         <p className="text-[10px] text-foreground-quiet mt-0.5">{sublabel}</p>
       )}
-      {href && (
+      {interactive && (
         <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
           <ArrowRight className="w-3.5 h-3.5 text-motion" />
         </div>
@@ -57,6 +59,9 @@ export default function OperationsStatCard({
 
   if (href) {
     return <Link to={href}>{content}</Link>;
+  }
+  if (onClick) {
+    return <button type="button" onClick={onClick} className="text-left w-full">{content}</button>;
   }
   return content;
 }

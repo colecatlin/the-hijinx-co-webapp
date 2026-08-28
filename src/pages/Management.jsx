@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -18,9 +18,11 @@ import OperationsQuickActions from '@/components/management/operationsHub/Operat
 import OperationsPlatformHealth from '@/components/management/operationsHub/OperationsPlatformHealth';
 import OperationsRecentActivity from '@/components/management/operationsHub/OperationsRecentActivity';
 import OperationsReadiness from '@/components/management/operationsHub/OperationsReadiness';
+import ContactMessagesModal from '@/components/management/operationsHub/ContactMessagesModal';
 
 export default function Management() {
   const navigate = useNavigate();
+  const [messagesOpen, setMessagesOpen] = useState(false);
 
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['currentUser'],
@@ -227,7 +229,7 @@ export default function Management() {
                 label="Contact Messages"
                 value={messages.length}
                 sublabel={unreadMessages > 0 ? `${unreadMessages} unread` : 'All read'}
-                href={createPageUrl('Contact')}
+                onClick={() => setMessagesOpen(true)}
                 alert={unreadMessages > 0}
                 loading={messagesLoading}
               />
@@ -294,7 +296,8 @@ export default function Management() {
           </div>
 
         </ManagementShell>
-      </ManagementLayout>
-    </>
-  );
-}
+        </ManagementLayout>
+        <ContactMessagesModal open={messagesOpen} onOpenChange={setMessagesOpen} />
+        </>
+        );
+        }
