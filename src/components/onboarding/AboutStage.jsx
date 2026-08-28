@@ -39,7 +39,7 @@ export default function AboutStage() {
     }
   };
 
-  const inputStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' };
+  const inputStyle = { background: 'hsl(var(--surface-interactive) / 0.4)', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' };
   const inputClass = 'w-full h-11 rounded-lg px-3 text-sm focus-visible:outline-none focus:border-[#1DA1A1]';
 
   return (
@@ -47,8 +47,8 @@ export default function AboutStage() {
       {error && <StageErrorBanner message={error} />}
 
       <div>
-        <Label htmlFor="about-photo" className="text-white text-xs">
-          Profile photo <span className="text-white/30 font-normal">(optional)</span>
+        <Label htmlFor="about-photo" className="text-foreground text-xs">
+          Profile photo <span className="text-foreground-quiet font-normal">(optional)</span>
         </Label>
         <div className="mt-1.5">
           <MediaUploader value={photoUrl} onChange={setPhotoUrl} accept="image/*" hint="Square works best." />
@@ -56,8 +56,8 @@ export default function AboutStage() {
       </div>
 
       <div>
-        <Label htmlFor="about-banner" className="text-white text-xs">
-          Banner image <span className="text-white/30 font-normal">(optional)</span>
+        <Label htmlFor="about-banner" className="text-foreground text-xs">
+          Banner image <span className="text-foreground-quiet font-normal">(optional)</span>
         </Label>
         <div className="mt-1.5">
           <MediaUploader value={bannerUrl} onChange={setBannerUrl} accept="image/*" hint="Wide image for your profile header." />
@@ -65,8 +65,8 @@ export default function AboutStage() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="about-bio" className="text-white text-xs">
-          Bio <span className="text-white/30 font-normal">(optional)</span>
+        <Label htmlFor="about-bio" className="text-foreground text-xs">
+          Bio <span className="text-foreground-quiet font-normal">(optional)</span>
         </Label>
         <textarea
           id="about-bio"
@@ -80,8 +80,8 @@ export default function AboutStage() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="about-location" className="text-white text-xs">
-          Location <span className="text-white/30 font-normal">(optional)</span>
+        <Label htmlFor="about-location" className="text-foreground text-xs">
+          Location <span className="text-foreground-quiet font-normal">(optional)</span>
         </Label>
         <input
           id="about-location"
@@ -94,8 +94,8 @@ export default function AboutStage() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="about-website" className="text-white text-xs">
-          Website <span className="text-white/30 font-normal">(optional)</span>
+        <Label htmlFor="about-website" className="text-foreground text-xs">
+          Website <span className="text-foreground-quiet font-normal">(optional)</span>
         </Label>
         <input
           id="about-website"
@@ -108,8 +108,8 @@ export default function AboutStage() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="about-socials" className="text-white text-xs">
-          Social links <span className="text-white/30 font-normal">(optional)</span>
+        <Label htmlFor="about-socials" className="text-foreground text-xs">
+          Social links <span className="text-foreground-quiet font-normal">(optional)</span>
         </Label>
         <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
       </div>

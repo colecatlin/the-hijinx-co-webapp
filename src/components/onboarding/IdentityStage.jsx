@@ -115,7 +115,7 @@ export default function IdentityStage() {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="onb-first-name" className="text-white text-xs">
+          <Label htmlFor="onb-first-name" className="text-foreground text-xs">
             First name <span style={{ color: '#f87171' }}>*</span>
           </Label>
           <Input
@@ -125,12 +125,12 @@ export default function IdentityStage() {
             placeholder="Jordan"
             autoFocus
             aria-invalid={!!firstNameError}
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+            className="bg-surface-interactive/40 border-divider text-foreground placeholder:text-foreground-quiet"
           />
           {firstNameError && <p className="text-xs" style={{ color: '#f87171' }}>{firstNameError}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="onb-last-name" className="text-white text-xs">
+          <Label htmlFor="onb-last-name" className="text-foreground text-xs">
             Last name <span style={{ color: '#f87171' }}>*</span>
           </Label>
           <Input
@@ -139,15 +139,15 @@ export default function IdentityStage() {
             onChange={(e) => { setLastName(e.target.value); if (lastNameError) setLastNameError(''); }}
             placeholder="Racer"
             aria-invalid={!!lastNameError}
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+            className="bg-surface-interactive/40 border-divider text-foreground placeholder:text-foreground-quiet"
           />
           {lastNameError && <p className="text-xs" style={{ color: '#f87171' }}>{lastNameError}</p>}
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="onb-username-input" className="text-white text-xs flex items-center gap-1.5">
-          Username <span className="text-white/30 font-normal">(optional)</span>
+        <Label htmlFor="onb-username-input" className="text-foreground text-xs flex items-center gap-1.5">
+          Username <span className="text-foreground-quiet font-normal">(optional)</span>
         </Label>
         <UsernameFieldWithCheck
           value={username}
@@ -157,13 +157,13 @@ export default function IdentityStage() {
           idPrefix="onb-username"
           onStatusChange={setUsernameStatus}
         />
-        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <p className="text-[11px]" style={{ color: 'hsl(var(--foreground-quiet))' }}>
           You can always claim a public username later from your profile.
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="onb-email" className="text-white text-xs">
+        <Label htmlFor="onb-email" className="text-foreground text-xs">
           Email address <span style={{ color: '#f87171' }}>*</span>
         </Label>
         <Input
@@ -173,12 +173,12 @@ export default function IdentityStage() {
           onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
           placeholder="you@example.com"
           aria-invalid={!!emailError}
-          className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+          className="bg-surface-interactive/40 border-divider text-foreground placeholder:text-foreground-quiet"
         />
         {emailError ? (
           <p className="text-xs" style={{ color: '#f87171' }}>{emailError}</p>
         ) : (
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             Used for account notifications and profile contact.
           </p>
         )}
@@ -189,7 +189,7 @@ export default function IdentityStage() {
         onClick={handleContinue}
         disabled={!canContinue}
         className="w-full gap-2 h-11 text-sm font-bold"
-        style={{ background: canContinue ? TEAL : 'rgba(255,255,255,0.08)', color: canContinue ? '#050A0A' : 'rgba(255,255,255,0.3)' }}
+        style={{ background: canContinue ? TEAL : 'hsl(var(--surface-interactive))', color: canContinue ? '#050A0A' : 'hsl(var(--foreground-quiet))' }}
       >
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Continue'}
       </Button>

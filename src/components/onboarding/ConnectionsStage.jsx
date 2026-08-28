@@ -72,7 +72,7 @@ export default function ConnectionsStage() {
       {noConnectionsNeeded ? (
         <div className="text-center py-8 rounded-xl"
           style={{ background: 'rgba(29,161,161,0.05)', border: '1px dashed rgba(29,161,161,0.2)' }}>
-          <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground-secondary))' }}>
             No organization connections required for your roles.
           </p>
           <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
@@ -93,9 +93,9 @@ export default function ConnectionsStage() {
       )}
 
       <div className="flex items-start gap-2 p-3 rounded-xl"
-        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider))' }}>
         <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: TEAL }} />
-        <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)' }}>
+        <p className="text-[11px]" style={{ color: 'hsl(var(--foreground-secondary))' }}>
           Organization access may require approval from an administrator. Pending requests won't stop
           you from finishing setup — you'll be notified once approved.
         </p>
@@ -205,12 +205,12 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
 
   return (
     <div className="space-y-3 p-4 rounded-xl"
-      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider))' }}>
       <div className="flex items-center gap-2">
         <role.icon className="w-4 h-4" style={{ color: TEAL }} />
-        <span className="text-sm font-bold text-white">{role.display_name}</span>
+        <span className="text-sm font-bold text-foreground">{role.display_name}</span>
         <span className="text-[10px] font-mono uppercase tracking-wider ml-auto px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+          style={{ background: 'rgba(255,255,255,0.05)', color: 'hsl(var(--foreground-secondary))' }}>
           {role.relationship_entity_type}
         </span>
       </div>
@@ -223,7 +223,7 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
             return (
               <div key={c.id} className="flex items-center gap-2 px-3 py-2 rounded-lg"
                 style={{ background: meta.bg, border: `1px solid ${meta.border}` }}>
-                <span className="text-sm flex-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                <span className="text-sm flex-1" style={{ color: 'hsl(var(--foreground))' }}>
                   {c.entity_name || c.entity_type}
                 </span>
                 <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: meta.color }}>
@@ -239,30 +239,30 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
       {entityApi ? (
         <div className="space-y-2">
           <div className="flex items-center gap-2 rounded-lg px-3"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <Search className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+            style={{ background: 'hsl(var(--surface-interactive) / 0.4)', border: '1px solid hsl(var(--divider))' }}>
+            <Search className="w-4 h-4" style={{ color: 'hsl(var(--foreground-quiet))' }} />
             <input
               value={query}
               onChange={(e) => runSearch(e.target.value)}
               placeholder={`Join an existing ${role.relationship_entity_type}…`}
               className="flex h-10 flex-1 bg-transparent text-sm focus-visible:outline-none focus:border-[#1DA1A1]"
-              style={{ color: 'rgba(255,255,255,0.9)' }}
+              style={{ color: 'hsl(var(--foreground))' }}
             />
-            {(searching || submitting) && <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'rgba(255,255,255,0.4)' }} />}
+            {(searching || submitting) && <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'hsl(var(--foreground-secondary))' }} />}
           </div>
           {results.length > 0 ? (
             <div className="space-y-1">
               {results.map((r) => (
                 <button key={r.id} type="button" onClick={() => selectExisting(r)} disabled={submitting}
                   className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors disabled:opacity-50"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <span className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>{r.name}</span>
+                  style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider))' }}>
+                  <span className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>{r.name}</span>
                   <Plus className="w-3.5 h-3.5" style={{ color: TEAL }} />
                 </button>
               ))}
             </div>
           ) : hasSearched && !searching ? (
-            <p className="text-xs px-1" style={{ color: 'rgba(255,255,255,0.3)' }}>No matches found.</p>
+            <p className="text-xs px-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>No matches found.</p>
           ) : null}
         </div>
       ) : null}
@@ -270,7 +270,7 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
       {/* Create a brand-new organization (Team Owner only) — REAL persistence (B2). */}
       {supportsCreate ? (
         <div className="space-y-2 pt-1" style={{ borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
-          <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-[11px]" style={{ color: 'hsl(var(--foreground-secondary))' }}>
             Or create a new {role.relationship_entity_type}. You'll become the owner immediately.
           </p>
           <div className="flex items-center gap-2">
@@ -279,11 +279,11 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
               onChange={(e) => setCreateName(e.target.value)}
               placeholder={`${role.relationship_entity_type} name`}
               className="flex-1 h-10 rounded-lg px-3 text-sm focus-visible:outline-none focus:border-[#1DA1A1]"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)' }}
+              style={{ background: 'hsl(var(--surface-interactive) / 0.4)', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}
             />
             <Button type="button" onClick={submitCreate} disabled={creating || !createName.trim()}
               className="text-xs font-bold gap-1.5"
-              style={{ background: createName.trim() ? TEAL : 'rgba(255,255,255,0.08)', color: createName.trim() ? '#050A0A' : 'rgba(255,255,255,0.3)' }}>
+              style={{ background: createName.trim() ? TEAL : 'rgba(255,255,255,0.08)', color: createName.trim() ? '#050A0A' : 'hsl(var(--foreground-quiet))' }}>
               {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               Create
             </Button>

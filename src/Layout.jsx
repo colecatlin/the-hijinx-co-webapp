@@ -468,7 +468,7 @@ export default function Layout({ children, currentPageName }) {
             ) : (
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={location.pathname}
+                  key={location.pathname.startsWith('/ProfileSetup') ? '/ProfileSetup' : location.pathname}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}

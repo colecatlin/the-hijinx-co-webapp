@@ -73,7 +73,7 @@ export default function RolesStage() {
     <form onSubmit={handleContinue} className="space-y-5">
       {error && <StageErrorBanner message={error} />}
 
-      <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+      <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>
         Pick a <span className="font-bold" style={{ color: TEAL }}>primary role</span> to customize your experience — or skip to stay a Fan.
         Add any extra roles you want available. Roles unlock modules; they don't grant management access.
       </p>
@@ -85,7 +85,7 @@ export default function RolesStage() {
           <div key={cat.key} className="space-y-2">
             <h3
               className="text-[10px] font-bold uppercase tracking-[0.3em] pt-1"
-              style={{ color: 'rgba(255,255,255,0.3)' }}
+              style={{ color: 'hsl(var(--foreground-quiet))' }}
             >
               {cat.label}
             </h3>
@@ -113,27 +113,27 @@ export default function RolesStage() {
                         ? 'rgba(29,161,161,0.12)'
                         : isAdditional
                           ? 'rgba(29,161,161,0.06)'
-                          : 'rgba(255,255,255,0.03)',
+                          : 'hsl(var(--surface-interactive) / 0.3)',
                       border: isPrimary
                         ? '1px solid rgba(29,161,161,0.4)'
                         : isAdditional
                           ? '1px solid rgba(29,161,161,0.2)'
-                          : '1px solid rgba(255,255,255,0.07)',
+                          : '1px solid hsl(var(--divider))',
                     }}
                   >
                     <div
                       className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{
-                        background: isPrimary || isAdditional ? 'rgba(29,161,161,0.15)' : 'rgba(255,255,255,0.05)',
+                        background: isPrimary || isAdditional ? 'rgba(29,161,161,0.15)' : 'hsl(var(--surface-interactive) / 0.5)',
                       }}
                     >
-                      <Icon className="w-4 h-4" style={{ color: isPrimary || isAdditional ? TEAL : 'rgba(255,255,255,0.5)' }} />
+                      <Icon className="w-4 h-4" style={{ color: isPrimary || isAdditional ? TEAL : 'hsl(var(--foreground-quiet))' }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold" style={{ color: isPrimary || isAdditional ? '#fff' : 'rgba(255,255,255,0.7)' }}>
+                      <div className="text-sm font-bold" style={{ color: isPrimary || isAdditional ? 'hsl(var(--foreground))' : 'hsl(var(--foreground-secondary))' }}>
                         {role.display_name}
                       </div>
-                      <div className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      <div className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
                         {role.description}
                       </div>
                     </div>
@@ -145,11 +145,11 @@ export default function RolesStage() {
                         </span>
                       ) : isAdditional ? (
                         <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                          style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)' }}>
+                          style={{ background: 'hsl(var(--surface-interactive) / 0.5)', color: 'hsl(var(--foreground-quiet))' }}>
                           Added
                         </span>
                       ) : (
-                        <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                        <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'hsl(var(--foreground-quiet) / 0.5)' }}>
                           Select
                         </span>
                       )
@@ -159,7 +159,7 @@ export default function RolesStage() {
                         Added
                       </span>
                     ) : (
-                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.2)' }}>
+                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'hsl(var(--foreground-quiet) / 0.5)' }}>
                         Add
                       </span>
                     )}
@@ -176,7 +176,7 @@ export default function RolesStage() {
         onClick={handleContinue}
         disabled={!canContinue}
         className="w-full gap-2 h-11 text-sm font-bold"
-        style={{ background: canContinue ? TEAL : 'rgba(255,255,255,0.08)', color: canContinue ? '#050A0A' : 'rgba(255,255,255,0.3)' }}
+        style={{ background: canContinue ? TEAL : 'hsl(var(--surface-interactive))', color: canContinue ? '#050A0A' : 'hsl(var(--foreground-quiet))' }}
       >
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Continue'}
       </Button>

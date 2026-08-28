@@ -11,14 +11,14 @@ export default function StageErrorBanner({ message }) {
     <div
       className="flex items-start gap-2 p-3 rounded-xl"
       style={{
-        background: 'rgba(239,68,68,0.07)',
-        border: '1px solid rgba(239,68,68,0.25)',
+        background: 'hsl(var(--danger) / 0.07)',
+        border: '1px solid hsl(var(--danger) / 0.25)',
       }}
       role="alert"
       aria-live="assertive"
     >
-      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: '#ef4444' }} />
-      <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.78)' }}>
+      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'hsl(var(--danger))' }} />
+      <p className="text-[11px] leading-relaxed" style={{ color: 'hsl(var(--foreground-secondary))' }}>
         {message}
       </p>
     </div>
