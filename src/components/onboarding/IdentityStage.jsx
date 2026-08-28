@@ -44,10 +44,10 @@ export default function IdentityStage() {
   // this effect. The field is read-only — the email is set by the auth system
   // and changeable later in Settings.
   useEffect(() => {
-    if (user?.email && !email) {
+    if (user?.email) {
       setEmail(user.contact_email || user.email);
     }
-  }, [user?.email, user?.contact_email, email]);
+  }, [user?.email, user?.contact_email]);
 
   const trimmedUsername = username.trim().toLowerCase();
   const isOwnUsername =
