@@ -2,34 +2,37 @@
  * Shared EntityCollaborator status label/color resolver.
  * Used by the Connections and Review stages so denied/revoked records are
  * never rendered as "Pending approval".
+ *
+ * All colors use semantic design tokens so the wizard adapts to both light
+ * and dark themes. The approved (TEAL) accent uses the motion token.
  */
 export const RELATIONSHIP_STATUS_META = {
   pending: {
     label: 'Pending approval',
-    color: 'rgba(255,255,255,0.55)',
-    bg: 'rgba(255,255,255,0.05)',
-    border: 'rgba(255,255,255,0.15)',
+    color: 'hsl(var(--foreground-quiet))',
+    bg: 'hsl(var(--surface-interactive) / 0.5)',
+    border: 'hsl(var(--divider))',
     icon: 'clock',
   },
   approved: {
     label: 'Approved',
-    color: '#1DA1A1',
-    bg: 'rgba(29,161,161,0.10)',
-    border: 'rgba(29,161,161,0.3)',
+    color: 'hsl(var(--motion))',
+    bg: 'hsl(var(--motion) / 0.10)',
+    border: 'hsl(var(--motion) / 0.3)',
     icon: 'check',
   },
   denied: {
     label: 'Denied',
-    color: '#f87171',
-    bg: 'rgba(239,68,68,0.08)',
-    border: 'rgba(239,68,68,0.25)',
+    color: 'hsl(var(--danger))',
+    bg: 'hsl(var(--danger) / 0.08)',
+    border: 'hsl(var(--danger) / 0.25)',
     icon: 'x',
   },
   revoked: {
     label: 'Revoked',
-    color: '#f87171',
-    bg: 'rgba(239,68,68,0.06)',
-    border: 'rgba(239,68,68,0.2)',
+    color: 'hsl(var(--danger))',
+    bg: 'hsl(var(--danger) / 0.06)',
+    border: 'hsl(var(--danger) / 0.2)',
     icon: 'ban',
   },
 };
@@ -45,9 +48,9 @@ export function getRelationshipStatusMeta(status) {
   return (
     RELATIONSHIP_STATUS_META[status] || {
       label: status ? status : 'Unknown',
-      color: 'rgba(255,255,255,0.4)',
-      bg: 'rgba(255,255,255,0.04)',
-      border: 'rgba(255,255,255,0.1)',
+      color: 'hsl(var(--foreground-quiet))',
+      bg: 'hsl(var(--surface-interactive) / 0.4)',
+      border: 'hsl(var(--divider))',
     }
   );
 }

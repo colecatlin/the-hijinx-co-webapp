@@ -142,7 +142,7 @@ export default function ReviewStage() {
             <div className="flex flex-wrap gap-1.5">
               {additionalCapabilities.map((cap) => (
                 <span key={`cap-${cap}`} className="text-xs font-medium px-2.5 py-1 rounded-full"
-                  style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', border: '1px solid hsl(var(--divider))' }}>
+                  style={{ background: 'hsl(var(--surface-interactive) / 0.5)', color: 'hsl(var(--foreground-secondary))', border: '1px solid hsl(var(--divider))' }}>
                   {getCapabilityLabel(cap)}
                 </span>
               ))}

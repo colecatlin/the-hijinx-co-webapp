@@ -116,7 +116,7 @@ export default function IdentityStage() {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="onb-first-name" className="text-foreground text-xs">
-            First name <span style={{ color: '#f87171' }}>*</span>
+            First name <span style={{ color: 'hsl(var(--danger))' }}>*</span>
           </Label>
           <Input
             id="onb-first-name"
@@ -127,11 +127,11 @@ export default function IdentityStage() {
             aria-invalid={!!firstNameError}
             className="bg-surface-interactive/40 border-divider text-foreground placeholder:text-foreground-quiet"
           />
-          {firstNameError && <p className="text-xs" style={{ color: '#f87171' }}>{firstNameError}</p>}
+          {firstNameError && <p className="text-xs" style={{ color: 'hsl(var(--danger))' }}>{firstNameError}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="onb-last-name" className="text-foreground text-xs">
-            Last name <span style={{ color: '#f87171' }}>*</span>
+            Last name <span style={{ color: 'hsl(var(--danger))' }}>*</span>
           </Label>
           <Input
             id="onb-last-name"
@@ -141,7 +141,7 @@ export default function IdentityStage() {
             aria-invalid={!!lastNameError}
             className="bg-surface-interactive/40 border-divider text-foreground placeholder:text-foreground-quiet"
           />
-          {lastNameError && <p className="text-xs" style={{ color: '#f87171' }}>{lastNameError}</p>}
+          {lastNameError && <p className="text-xs" style={{ color: 'hsl(var(--danger))' }}>{lastNameError}</p>}
         </div>
       </div>
 
@@ -164,7 +164,7 @@ export default function IdentityStage() {
 
       <div className="space-y-2">
         <Label htmlFor="onb-email" className="text-foreground text-xs">
-          Email address <span style={{ color: '#f87171' }}>*</span>
+          Email address <span style={{ color: 'hsl(var(--danger))' }}>*</span>
         </Label>
         <Input
           id="onb-email"
@@ -176,7 +176,7 @@ export default function IdentityStage() {
           className="bg-surface-interactive/40 border-divider text-foreground placeholder:text-foreground-quiet"
         />
         {emailError ? (
-          <p className="text-xs" style={{ color: '#f87171' }}>{emailError}</p>
+          <p className="text-xs" style={{ color: 'hsl(var(--danger))' }}>{emailError}</p>
         ) : (
           <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             Used for account notifications and profile contact.

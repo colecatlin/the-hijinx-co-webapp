@@ -75,7 +75,7 @@ export default function ConnectionsStage() {
           <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground-secondary))' }}>
             No organization connections required for your roles.
           </p>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-xs mt-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>
             You can request access to teams, tracks, or series anytime from your garage.
           </p>
         </div>
@@ -210,7 +210,7 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
         <role.icon className="w-4 h-4" style={{ color: TEAL }} />
         <span className="text-sm font-bold text-foreground">{role.display_name}</span>
         <span className="text-[10px] font-mono uppercase tracking-wider ml-auto px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(255,255,255,0.05)', color: 'hsl(var(--foreground-secondary))' }}>
+          style={{ background: 'hsl(var(--surface-interactive) / 0.5)', color: 'hsl(var(--foreground-secondary))' }}>
           {role.relationship_entity_type}
         </span>
       </div>
@@ -269,7 +269,7 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
 
       {/* Create a brand-new organization (Team Owner only) — REAL persistence (B2). */}
       {supportsCreate ? (
-        <div className="space-y-2 pt-1" style={{ borderTop: '1px dashed rgba(255,255,255,0.08)' }}>
+        <div className="space-y-2 pt-1" style={{ borderTop: '1px dashed hsl(var(--divider))' }}>
           <p className="text-[11px]" style={{ color: 'hsl(var(--foreground-secondary))' }}>
             Or create a new {role.relationship_entity_type}. You'll become the owner immediately.
           </p>
@@ -283,7 +283,7 @@ function ConnectionRequestBuilder({ role, user, pending, setError, onCreated }) 
             />
             <Button type="button" onClick={submitCreate} disabled={creating || !createName.trim()}
               className="text-xs font-bold gap-1.5"
-              style={{ background: createName.trim() ? TEAL : 'rgba(255,255,255,0.08)', color: createName.trim() ? '#050A0A' : 'hsl(var(--foreground-quiet))' }}>
+              style={{ background: createName.trim() ? TEAL : 'hsl(var(--surface-interactive))', color: createName.trim() ? '#050A0A' : 'hsl(var(--foreground-quiet))' }}>
               {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               Create
             </Button>

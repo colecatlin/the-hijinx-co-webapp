@@ -111,17 +111,17 @@ export default function UsernameFieldWithCheck({
       <div
         className="flex items-center gap-2 rounded-lg px-3"
         style={{
-          background: 'rgba(255,255,255,0.04)',
+          background: 'hsl(var(--surface-interactive) / 0.4)',
           border:
             '1px solid ' +
             (error
-              ? 'rgba(239,68,68,0.4)'
+              ? 'hsl(var(--danger) / 0.4)'
               : status === 'available'
                 ? 'rgba(29,161,161,0.45)'
-                : 'rgba(255,255,255,0.1)'),
+                : 'hsl(var(--divider))'),
         }}
       >
-        <AtSign className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
+        <AtSign className="w-4 h-4 flex-shrink-0" style={{ color: 'hsl(var(--foreground-quiet))' }} />
         <input
           ref={inputRef}
           id={`${idPrefix}-input`}
@@ -135,10 +135,10 @@ export default function UsernameFieldWithCheck({
           placeholder="yourhandle"
           aria-invalid={!!error}
           className="flex h-11 flex-1 bg-transparent text-sm font-mono focus-visible:outline-none"
-          style={{ color: 'rgba(255,255,255,0.9)' }}
+          style={{ color: 'hsl(var(--foreground))' }}
         />
         {status === 'checking' && (
-          <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'rgba(255,255,255,0.4)' }} />
+          <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'hsl(var(--foreground-quiet))' }} />
         )}
         {status === 'available' && (
           <Check className="w-4 h-4" style={{ color: 'rgba(29,161,161,0.9)' }} />
@@ -146,13 +146,13 @@ export default function UsernameFieldWithCheck({
       </div>
 
       {error ? (
-        <p className="text-xs" style={{ color: '#f87171' }}>{error}</p>
+        <p className="text-xs" style={{ color: 'hsl(var(--danger))' }}>{error}</p>
       ) : status === 'available' ? (
         <p className="text-xs font-mono" style={{ color: 'rgba(29,161,161,0.85)' }}>
           Available · public URL /u/{trimmed}
         </p>
       ) : (
-        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>
           3–24 chars · lowercase letters, numbers, underscores.
         </p>
       )}
