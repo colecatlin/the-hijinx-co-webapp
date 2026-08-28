@@ -8,6 +8,7 @@ import {
   nextStage,
   prevStage,
   stagePath,
+  stageIndex,
 } from '@/components/onboarding/onboardingConfig';
 import {
   getRole,
@@ -64,21 +65,28 @@ export function OnboardingWizardProvider({ children }) {
   // then navigate to the next stage route. Returns the next stage.
   const advanceTo = useCallback(
     async (fields, toStage) => {
-      await base44.auth.updateMe({ ...fields, onboarding_stage: toStage });
+      // Don't regress: if the user jumped back from a later stage (e.g. Review)
+      // to edit an earlier one, Continue returns them to their highest-achieved
+      // stage rather than re-walking through intermediate stages.
+      const highestStage = user?.onboarding_complete ? 'review' : user?.onboarding_stage;
+      const targetStage = highestStage && stageIndex(highestStage) > stageIndex(toStage)
+        ? highestStage
+        : toStage;
+      await base44.auth.updateMe({ ...fields, onboarding_stage: targetStage });
       // Optimistically update the cache so the WizardShell clamp guard sees
       // the new onboarding_stage BEFORE the refetch completes and before
       // navigate fires — prevents a stale-user bounce-back to the prior stage.
       queryClient.setQueryData(['onboarding_user'], (old) => ({
         ...(old || {}),
         ...fields,
-        onboarding_stage: toStage,
+        onboarding_stage: targetStage,
       }));
-      navigate(stagePath(toStage));
+      navigate(stagePath(targetStage));
       // Refetch in the background to sync the full record from the server.
       refresh();
-      return toStage;
+      return targetStage;
     },
-    [navigate, refresh, queryClient],
+    [navigate, refresh, queryClient, user?.onboarding_stage, user?.onboarding_complete],
   );
 
   const saveIdentity = useCallback(
