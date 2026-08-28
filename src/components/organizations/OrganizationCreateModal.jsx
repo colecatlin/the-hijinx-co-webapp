@@ -4,8 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { ORGANIZATION_TYPES, getOrganizationType } from '@/config/organizationRegistry';
 
-const TEAL = '#1DA1A1';
-
 /**
  * OrganizationCreateModal — the reusable creation flow. Rendered full-page by
  * OrganizationCreate and embeddable in a dialog elsewhere. Calls the backend
@@ -44,8 +42,8 @@ export default function OrganizationCreateModal({ onClose }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-white">Create an Organization</h2>
-        <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <h2 className="text-lg font-bold text-foreground">Create an Organization</h2>
+        <p className="text-[11px] mt-1 text-foreground-quiet">
           Every organization type shares the same platform: people, assets, relationships, activity, and settings.
         </p>
       </div>
@@ -56,11 +54,10 @@ export default function OrganizationCreateModal({ onClose }) {
             const Icon = spec.icon;
             return (
               <button key={key} onClick={() => setType(key)}
-                className="p-4 rounded-xl text-left transition-all"
-                style={{ background: 'rgba(4,8,8,0.72)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <Icon className="w-5 h-5 mb-2" style={{ color: TEAL }} />
-                <div className="text-sm font-bold text-white">{spec.label}</div>
-                <div className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                className="p-4 rounded-xl text-left transition-all bg-surface-elevated border border-divider hover:border-motion/40 hover:bg-surface-interactive">
+                <Icon className="w-5 h-5 mb-2 text-motion" />
+                <div className="text-sm font-bold text-foreground">{spec.label}</div>
+                <div className="text-[10px] mt-1 text-foreground-quiet">
                   {spec.generic ? 'Generic org record' : 'Dedicated entity'}
                 </div>
               </button>
@@ -69,8 +66,8 @@ export default function OrganizationCreateModal({ onClose }) {
         </div>
       ) : (
         <div className="space-y-4">
-          <button onClick={() => setType(null)} className="text-[11px]" style={{ color: TEAL }}>← Change type</button>
-          <div className="space-y-3 p-5 rounded-xl" style={{ background: 'rgba(4,8,8,0.72)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          <button onClick={() => setType(null)} className="text-[11px] text-motion hover:text-motion-hover">← Change type</button>
+          <div className="space-y-3 p-5 rounded-xl bg-surface-elevated border border-divider">
             <Field label="Name"><Input value={form.name} onChange={(v) => set('name', v)} placeholder={`${getOrganizationType(type).label} name`} /></Field>
             <Field label="Description"><Textarea value={form.description} onChange={(v) => set('description', v)} /></Field>
             <div className="grid grid-cols-2 gap-3">
@@ -84,10 +81,9 @@ export default function OrganizationCreateModal({ onClose }) {
               </div>
             )}
           </div>
-          {error && <p className="text-xs" style={{ color: '#ef4444' }}>{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           <button onClick={submit} disabled={submitting || !form.name.trim()}
-            className="w-full px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
-            style={{ background: form.name.trim() ? TEAL : 'rgba(255,255,255,0.1)', color: form.name.trim() ? '#050A0A' : 'rgba(255,255,255,0.3)' }}>
+            className="w-full px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:bg-surface-interactive disabled:text-foreground-quiet bg-motion text-primary-foreground hover:bg-motion-hover">
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Create {getOrganizationType(type).label} <ArrowRight className="w-4 h-4" /></>}
           </button>
         </div>
@@ -96,7 +92,6 @@ export default function OrganizationCreateModal({ onClose }) {
   );
 }
 
-const inputStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff' };
-function Field({ label, children }) { return <div><label className="text-[10px] font-mono uppercase tracking-widest mb-1 block" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</label>{children}</div>; }
-function Input({ value, onChange, placeholder }) { return <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full h-9 px-3 rounded-lg text-sm" style={inputStyle} />; }
-function Textarea({ value, onChange }) { return <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} className="w-full p-3 rounded-lg text-sm" style={inputStyle} />; }
+function Field({ label, children }) { return <div><label className="text-[10px] font-mono uppercase tracking-widest mb-1 block text-foreground-quiet">{label}</label>{children}</div>; }
+function Input({ value, onChange, placeholder }) { return <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full h-9 px-3 rounded-lg text-sm bg-surface-interactive border border-divider text-foreground placeholder:text-foreground-quiet focus:border-motion focus:outline-none" />; }
+function Textarea({ value, onChange }) { return <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3} className="w-full p-3 rounded-lg text-sm bg-surface-interactive border border-divider text-foreground placeholder:text-foreground-quiet focus:border-motion focus:outline-none" />; }
