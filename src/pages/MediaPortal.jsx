@@ -34,31 +34,31 @@ import PortalApplicationStatus from '@/components/media/portal/PortalApplication
 
 function LoggedOutLanding() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-canvas">
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
-          <Badge className="bg-blue-900/60 text-blue-300 mb-4">Media Portal</Badge>
-          <h1 className="text-4xl font-black text-white mb-4">HIJINX Media Portal</h1>
-          <p className="text-gray-400 max-w-xl mx-auto">
+          <Badge className="bg-motion/15 text-motion mb-4">Media Portal</Badge>
+          <h1 className="text-4xl font-black text-foreground mb-4">HIJINX Media Portal</h1>
+          <p className="text-foreground-secondary max-w-xl mx-auto">
             The internal hub for motorsports media contributors. Build your profile, manage credentials,
             submit work, and connect with outlets — all in one place.
           </p>
         </div>
 
-        <Card className="bg-[#171717] border-gray-800 max-w-md mx-auto mb-12">
+        <Card className="bg-surface-elevated border-divider max-w-md mx-auto mb-12">
           <CardContent className="p-8 text-center">
-            <Lock className="w-10 h-10 text-gray-600 mx-auto mb-4" />
-            <h2 className="text-white font-bold text-lg mb-2">Sign In to Continue</h2>
-            <p className="text-gray-500 text-sm mb-6">
+            <Lock className="w-10 h-10 text-foreground-quiet mx-auto mb-4" />
+            <h2 className="text-foreground font-bold text-lg mb-2">Sign In to Continue</h2>
+            <p className="text-foreground-quiet text-sm mb-6">
               You must be signed in to access the contributor workspace.
             </p>
             <Button
               onClick={() => base44.auth.redirectToLogin(window.location.href)}
-              className="bg-white text-black hover:bg-gray-100 w-full font-semibold"
+              className="bg-motion text-primary-foreground hover:bg-motion-hover w-full font-semibold"
             >
               Sign In
             </Button>
-            <p className="text-gray-600 text-xs mt-4">Don't have an account? Sign up from the login page.</p>
+            <p className="text-foreground-quiet text-xs mt-4">Don't have an account? Sign up from the login page.</p>
           </CardContent>
         </Card>
 
@@ -69,10 +69,10 @@ function LoggedOutLanding() {
             { title: 'Manage Assets', desc: 'Track your uploaded photos, videos, and media with review status.' },
             { title: 'Connect with Outlets', desc: 'Affiliate with publications, creator brands, and media organizations.' },
           ].map(f => (
-            <div key={f.title} className="bg-[#171717] border border-gray-800 rounded-lg p-4">
-              <Camera className="w-6 h-6 text-blue-400 mb-2" />
-              <h3 className="text-white text-sm font-semibold mb-1">{f.title}</h3>
-              <p className="text-gray-500 text-xs">{f.desc}</p>
+            <div key={f.title} className="bg-surface-elevated border border-divider rounded-lg p-4">
+              <Camera className="w-6 h-6 text-motion mb-2" />
+              <h3 className="text-foreground text-sm font-semibold mb-1">{f.title}</h3>
+              <p className="text-foreground-quiet text-xs">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -240,8 +240,8 @@ export default function MediaPortal() {
   // ── Loading ──
   if (loadingAuth || (isAuthenticated && !currentUser)) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-gray-700 border-t-gray-300 rounded-full animate-spin" />
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-divider border-t-motion rounded-full animate-spin" />
       </div>
     );
   }
@@ -258,27 +258,27 @@ export default function MediaPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen bg-canvas">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
         {/* Page header */}
         <div className="mb-6">
-          <p className="text-xs font-medium text-gray-600 uppercase tracking-widest mb-0.5">Internal</p>
-          <h1 className="text-2xl font-black text-white">Media Portal</h1>
+          <p className="text-xs font-medium text-foreground-quiet uppercase tracking-widest mb-0.5">Internal</p>
+          <h1 className="text-2xl font-black text-foreground">Media Portal</h1>
           {currentUser && (
-            <p className="text-gray-500 text-sm mt-0.5">{currentUser.full_name || currentUser.email}</p>
+            <p className="text-foreground-quiet text-sm mt-0.5">{currentUser.full_name || currentUser.email}</p>
           )}
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           {/* Tab bar — scrollable on mobile */}
           <div className="overflow-x-auto mb-6">
-            <TabsList className="bg-[#171717] border border-gray-800 p-1 flex gap-1 w-max min-w-full sm:w-auto">
+            <TabsList className="bg-surface-elevated border border-divider p-1 flex gap-1 w-max min-w-full sm:w-auto">
               {tabs.map(t => (
                 <TabsTrigger
                   key={t.id}
                   value={t.id}
-                  className="flex-none data-[state=active]:bg-[#232323] data-[state=active]:text-white text-gray-500 text-xs px-3 py-1.5 whitespace-nowrap"
+                  className="flex-none data-[state=active]:bg-surface-interactive data-[state=active]:text-foreground text-foreground-quiet text-xs px-3 py-1.5 whitespace-nowrap"
                 >
                   {t.label}
                 </TabsTrigger>
