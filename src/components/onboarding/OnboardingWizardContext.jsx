@@ -65,11 +65,20 @@ export function OnboardingWizardProvider({ children }) {
   const advanceTo = useCallback(
     async (fields, toStage) => {
       await base44.auth.updateMe({ ...fields, onboarding_stage: toStage });
-      await refresh();
+      // Optimistically update the cache so the WizardShell clamp guard sees
+      // the new onboarding_stage BEFORE the refetch completes and before
+      // navigate fires — prevents a stale-user bounce-back to the prior stage.
+      queryClient.setQueryData(['onboarding_user'], (old) => ({
+        ...(old || {}),
+        ...fields,
+        onboarding_stage: toStage,
+      }));
       navigate(stagePath(toStage));
+      // Refetch in the background to sync the full record from the server.
+      refresh();
       return toStage;
     },
-    [navigate, refresh],
+    [navigate, refresh, queryClient],
   );
 
   const saveIdentity = useCallback(
