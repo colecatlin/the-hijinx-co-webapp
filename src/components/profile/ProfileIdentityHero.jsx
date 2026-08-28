@@ -7,7 +7,7 @@ const MOTION = 'hsl(var(--motion))';
 const MOTION_HOVER = 'hsl(var(--motion-hover))';
 
 /**
- * Shared identity hero used on both My Garage and Public Profile.
+ * Shared identity hero used on both My Dashboard and Public Profile.
  * isOwner = true means show edit prompts / completion hints.
  * Uses semantic tokens so it adapts to light/dark theme.
  */

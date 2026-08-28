@@ -19,7 +19,7 @@ export function getUserMenuItems({
   const items = [];
 
   // Core — always present for any logged-in user
-  items.push({ type: 'link', label: 'My Garage', to: createPageUrl('MyDashboard'), icon: 'LayoutDashboard' });
+  items.push({ type: 'link', label: 'My Dashboard', to: createPageUrl('MyDashboard'), icon: 'LayoutDashboard' });
   items.push({ type: 'link', label: 'Profile', to: createPageUrl('Profile'), icon: 'User' });
 
   // Race Core — only for users with valid Track or Series access

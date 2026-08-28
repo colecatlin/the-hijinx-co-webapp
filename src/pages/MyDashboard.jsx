@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -6,8 +6,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { createPageUrl } from '@/components/utils';
 import HijinxPageShell from '@/components/shared/HijinxPageShell';
 import PullToRefresh from '@/components/shared/PullToRefresh';
-import ProfileIdentityHero from '@/components/profile/ProfileIdentityHero';
-import GarageAdaptiveModules from '@/components/mydashboard/GarageAdaptiveModules';
+import DashboardProfileCard from '@/components/mydashboard/DashboardProfileCard';
+import RaceCoreTiles from '@/components/mydashboard/RaceCoreTiles';
+import DashboardSummaryWidgets from '@/components/mydashboard/DashboardSummaryWidgets';
+import DashboardAdaptiveModules from '@/components/mydashboard/DashboardAdaptiveModules';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
 import OnboardingGuard from '@/components/onboarding/OnboardingGuard';
@@ -20,7 +22,7 @@ import {
 import { getValidPrimaryEntity } from '@/components/entities/entityPrimary';
 import { getUserMode, getPublicProfileType } from '@/components/system/userModeResolver';
 import {
-  ChevronRight, Gauge, KeyRound, Star, Shield, Flag,
+  ChevronRight, Gauge, KeyRound, Star, Shield,
   BarChart3, AlertCircle, ListChecks, ShieldCheck, HelpCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -33,16 +35,6 @@ const ENTITY_TYPE_LABELS = {
   Track: 'Track Page',
   Series: 'Series Page',
 };
-
-function computeProfileCompletion(user) {
-  const fields = [
-    user?.first_name, user?.last_name, user?.username,
-    user?.bio, user?.profile_photo_url, user?.location_display,
-    user?.website_url || (user?.social_links || []).length > 0,
-  ];
-  const filled = fields.filter(Boolean).length;
-  return Math.round((filled / fields.length) * 100);
-}
 
 // ─── Racing Profile Card ──────────────────────────────────────────────────────
 
@@ -57,14 +49,14 @@ function RacingProfileCard({ entity, isPrimary, index }) {
       transition={{ delay: 0.1 + index * 0.05 }}
       className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-4 rounded-xl transition-all duration-200 gap-2"
       style={{
-        background: isPrimary ? `hsl(var(--motion) / 0.08)` : 'hsl(var(--surface-interactive) / 0.3)',
+        background: isPrimary ? `${MOTION} / 0.08)` : 'hsl(var(--surface-interactive) / 0.3)',
         border: isPrimary ? `1px solid ${MOTION} / 0.25)` : '1px solid hsl(var(--divider) / 0.6)',
       }}
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: isPrimary ? `hsl(var(--motion) / 0.2)` : 'hsl(var(--surface-interactive) / 0.5)' }}>
-          <Flag className="w-4 h-4" style={{ color: isPrimary ? MOTION : 'hsl(var(--foreground-quiet))' }} />
+          style={{ background: isPrimary ? `${MOTION} / 0.2)` : 'hsl(var(--surface-interactive) / 0.5)' }}>
+          <Star className="w-4 h-4" style={{ color: isPrimary ? MOTION : 'hsl(var(--foreground-quiet))' }} />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
@@ -106,19 +98,18 @@ function RacingProfileCard({ entity, isPrimary, index }) {
 
 function AdminControlCenter() {
   return (
-    <div className="px-5 py-5 rounded-2xl"
+    <div className="rounded-2xl p-5 space-y-3"
       style={{
-        background: `hsl(var(--motion) / 0.06)`,
+        background: `${MOTION} / 0.06)`,
         border: `1px solid ${MOTION} / 0.2)`,
-        boxShadow: `0 0 40px ${MOTION} / 0.05)`,
       }}>
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2">
         <Shield className="w-3.5 h-3.5" style={{ color: MOTION }} />
         <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: MOTION }}>
           Control Center
         </p>
       </div>
-      <p className="text-sm mb-4" style={{ color: 'hsl(var(--foreground-secondary))' }}>
+      <p className="text-sm" style={{ color: 'hsl(var(--foreground-secondary))' }}>
         Full platform admin access active.
       </p>
       <div className="flex flex-wrap gap-2">
@@ -168,6 +159,9 @@ export default function MyDashboard() {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] }),
       queryClient.invalidateQueries({ queryKey: ['resolvedEntities'] }),
       queryClient.invalidateQueries({ queryKey: ['mediaProfile'] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard_upcoming_events'] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard_recent_results'] }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard_media_assignments'] }),
     ]);
   };
 
@@ -178,7 +172,8 @@ export default function MyDashboard() {
   const raceCoreTarget = (primaryEntity?.is_racecore_entity ? primaryEntity : null) || raceCoreEntities[0] || null;
   const mode = getUserMode({ user, collaborators: resolvedEntities, mediaProfile });
   const primaryProfileType = getPublicProfileType(user);
-  const completionPct = user ? computeProfileCompletion(user) : null;
+  const hasRaceCoreAccess = raceCoreEntities.length > 0 || user?.role === 'admin';
+  const hasMediaAccess = !!mediaProfile && mediaProfile.status !== 'rejected';
 
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('MyDashboard'));
@@ -189,8 +184,9 @@ export default function MyDashboard() {
     return (
       <HijinxPageShell>
         <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
-          <Skeleton className="h-44 w-full rounded-2xl opacity-20" />
-          <Skeleton className="h-28 w-full rounded-2xl opacity-10" />
+          <Skeleton className="h-10 w-48 rounded-xl opacity-20" />
+          <Skeleton className="h-16 w-full rounded-2xl opacity-20" />
+          <Skeleton className="h-32 w-full rounded-2xl opacity-10" />
         </div>
       </HijinxPageShell>
     );
@@ -202,6 +198,21 @@ export default function MyDashboard() {
         <PullToRefresh onRefresh={handleRefresh}>
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-5">
 
+        {/* ── Page heading ─────────────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+            Welcome back
+          </p>
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: 'hsl(var(--foreground))' }}>
+            My Dashboard
+          </h1>
+        </motion.div>
+
+        {/* ── Compact profile entry card ────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <DashboardProfileCard user={user} />
+        </motion.div>
+
         {/* Access banners */}
         <AccessSuccessBanner
           raceCoreTarget={raceCoreTarget}
@@ -210,19 +221,17 @@ export default function MyDashboard() {
           buildEditorUrl={buildEditorUrl}
         />
 
-        {/* ── Identity Hero ────────────────────────────────────────── */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <ProfileIdentityHero
-            user={user}
-            isOwner={true}
-            completionPct={completionPct}
-          />
-        </motion.div>
-
         {/* ── Admin Control Center ─────────────────────────────────── */}
         {mode === 'admin' && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <AdminControlCenter />
+          </motion.div>
+        )}
+
+        {/* ── RaceCore quick-access tiles ──────────────────────────── */}
+        {hasRaceCoreAccess && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+            <RaceCoreTiles user={user} collaborators={resolvedEntities} />
           </motion.div>
         )}
 
@@ -260,10 +269,19 @@ export default function MyDashboard() {
           </motion.div>
         )}
 
+        {/* ── Summary widgets ──────────────────────────────────────── */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
+          <DashboardSummaryWidgets
+            user={user}
+            hasRaceCoreAccess={hasRaceCoreAccess}
+            hasMediaAccess={hasMediaAccess}
+          />
+        </motion.div>
+
         {/* ── Welcome education (no entities, non-admin) ───────────── */}
         {!hasEntities && mode !== 'admin' && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="px-5 py-5 rounded-2xl space-y-3"
             style={{ background: 'hsl(var(--surface-elevated) / 0.7)', backdropFilter: 'blur(20px)', border: '1px solid hsl(var(--divider) / 0.6)' }}
           >
@@ -298,9 +316,9 @@ export default function MyDashboard() {
         {/* ── Invite code prompt (no entities, non-admin) ──────────── */}
         {!hasEntities && mode !== 'admin' && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
             className="flex items-start sm:items-center justify-between gap-3 px-5 py-4 rounded-2xl"
-            style={{ background: `hsl(var(--motion) / 0.05)`, border: `1px dashed ${MOTION} / 0.2)` }}
+            style={{ background: `${MOTION} / 0.05)`, border: `1px dashed ${MOTION} / 0.2)` }}
           >
             <div>
               <p className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>{(() => {
@@ -336,7 +354,7 @@ export default function MyDashboard() {
 
         {/* ── Adaptive discovery modules ───────────────────────────── */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <GarageAdaptiveModules primaryProfileType={primaryProfileType} mode={mode} />
+          <DashboardAdaptiveModules primaryProfileType={primaryProfileType} mode={mode} />
         </motion.div>
 
         {/* ── Pending invitations ──────────────────────────────────── */}

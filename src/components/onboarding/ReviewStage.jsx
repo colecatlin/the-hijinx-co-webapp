@@ -192,7 +192,7 @@ export default function ReviewStage() {
         {saving ? (
           <><Loader2 className="w-4 h-4 animate-spin" /> Launching…</>
         ) : (
-          <><Sparkles className="w-4 h-4" /> Launch my garage</>
+          <><Sparkles className="w-4 h-4" /> Launch my dashboard</>
         )}
       </Button>
     </form>

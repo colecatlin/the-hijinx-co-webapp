@@ -25,7 +25,7 @@ export const STAGE_META = {
   },
   review: {
     label: 'Review',
-    description: 'Confirm everything and launch your garage.',
+    description: 'Confirm everything and launch your dashboard.',
   },
 };
 

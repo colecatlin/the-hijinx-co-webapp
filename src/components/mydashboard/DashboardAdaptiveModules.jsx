@@ -14,11 +14,11 @@ function ModuleCard({ icon: Icon, label, sub, to }) {
       <div
         className="flex items-center gap-3 p-4 rounded-2xl transition-all duration-200"
         style={{ background: 'hsl(var(--surface-interactive) / 0.3)', border: '1px solid hsl(var(--divider) / 0.6)' }}
-        onMouseEnter={e => { e.currentTarget.style.background = `hsl(var(--motion) / 0.08)`; e.currentTarget.style.border = `1px solid ${MOTION} / 0.25)`; }}
+        onMouseEnter={e => { e.currentTarget.style.background = `${MOTION} / 0.08)`; e.currentTarget.style.border = `1px solid ${MOTION} / 0.25)`; }}
         onMouseLeave={e => { e.currentTarget.style.background = 'hsl(var(--surface-interactive) / 0.3)'; e.currentTarget.style.border = '1px solid hsl(var(--divider) / 0.6)'; }}
       >
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: `hsl(var(--motion) / 0.12)`, color: MOTION }}>
+          style={{ background: `${MOTION} / 0.12)`, color: MOTION }}>
           <Icon className="w-4 h-4" />
         </div>
         <div className="min-w-0">
@@ -109,11 +109,11 @@ const SECTION_LABELS = {
   series: 'Series Hub',
   crew: 'Crew & Connections',
   sponsor: 'Brand & Partnerships',
-  builder: 'Builds & Garage',
+  builder: 'Builds & Shop',
   fan: 'Explore',
 };
 
-export default function GarageAdaptiveModules({ primaryProfileType, mode }) {
+export default function DashboardAdaptiveModules({ primaryProfileType, mode }) {
   const key = (() => {
     if (mode === 'media_user') return 'media';
     if (['entity_owner', 'entity_editor'].includes(mode)) return primaryProfileType || 'driver';

@@ -31,6 +31,7 @@ import MediaApplicationForm from '@/components/media/portal/MediaApplicationForm
 import MediaApplicationStatus from '@/components/media/portal/MediaApplicationStatus';
 import SocialLinksEditor from '@/components/profile/SocialLinksEditor';
 import IdentitySection from '@/components/profile/IdentitySection';
+import ProfileIdentityHero from '@/components/profile/ProfileIdentityHero';
 import { isApprovedContributor } from '@/components/media/mediaPermissions';
 import { getUserMode } from '@/components/system/userModeResolver';
 import { validateUsername, mapLegacyRoleToProfileType } from '@/components/system/userCapabilities';
@@ -298,6 +299,15 @@ export default function Profile() {
   const raceCoreTarget = (primaryEntity?.is_racecore_entity ? primaryEntity : null) || raceCoreEntities[0] || null;
   const defaultTab = tabFromUrl ? resolveTab(tabFromUrl) : 'account';
 
+  const completionPct = user ? (() => {
+    const fields = [
+      user?.first_name, user?.last_name, user?.username,
+      user?.bio, user?.profile_photo_url, user?.location_display,
+      user?.website_url || (user?.social_links || []).length > 0,
+    ];
+    return Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  })() : null;
+
   if (!userLoading && !user) {
     base44.auth.redirectToLogin(createPageUrl('Profile'));
     return null;
@@ -368,7 +378,7 @@ export default function Profile() {
                 onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--foreground-secondary))'; }}
               >
-                <ChevronRight className="w-3 h-3 rotate-180" /> My Garage
+                <ChevronRight className="w-3 h-3 rotate-180" /> My Dashboard
               </button>
             </Link>
             <button onClick={handleLogout}
@@ -388,6 +398,11 @@ export default function Profile() {
           buildRaceCoreLaunchUrl={buildRaceCoreLaunchUrl}
           buildEditorUrl={buildEditorUrl}
         />
+
+        {/* Full profile identity hero with profile strength bar */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <ProfileIdentityHero user={user} isOwner={true} completionPct={completionPct} />
+        </motion.div>
 
         {/* Username prompt — only for users who skipped username at onboarding */}
         {user && !user.username && (
@@ -580,7 +595,7 @@ export default function Profile() {
               <GlassPanel>
                 <SectionLabel>Motorsports Identity</SectionLabel>
                 <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-quiet))' }}>
-                  Select all that apply. Your primary identity shapes how your Garage is organized.
+                  Select all that apply. Your primary identity shapes how your Dashboard is organized.
                 </p>
                 <IdentitySection formData={formData} setFormData={setFormData} />
                 <div className="mt-6 pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
