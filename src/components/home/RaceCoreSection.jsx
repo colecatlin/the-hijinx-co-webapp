@@ -168,13 +168,7 @@ export default function RaceCoreSection() {
                 Explore INDEX46
                 <ArrowRight className="w-4 h-4" />
               </button>
-              <button
-                onClick={() => navigate(createPageUrl('DriverDirectory'))}
-                className="inline-flex items-center gap-2.5 px-7 py-4 text-sm font-black tracking-widest uppercase transition-all duration-200 hover:bg-white/10"
-                style={{ border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }}
-              >
-                Driver Directory
-              </button>
+
             </div>
           </motion.div>
 
