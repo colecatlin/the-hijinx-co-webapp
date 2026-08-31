@@ -16,6 +16,7 @@ import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import TrackRecordRow     from '@/components/tracks/TrackRecordRow';
 import TrackDrawer        from '@/components/racecore/records/TrackDrawer';
+import BulkActionBar       from '@/components/racecore/records/BulkActionBar';
 import QuickAddEntityDialog from '@/components/management/QuickAddEntityDialog';
 
 const SURFACE_OPTIONS = ['Asphalt', 'Concrete', 'Dirt', 'Clay', 'Mixed'];
@@ -196,20 +197,13 @@ export default function ManageTracks() {
   );
 
   const bulkBar = isAdmin && selectedTracks.length > 0 ? (
-    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-red-900/40 bg-red-900/10">
-      <span className="text-xs font-mono text-red-400">{selectedTracks.length} selected</span>
-      <button
-        onClick={() => setBulkDeleteConfirm(true)}
-        disabled={bulkDeleteMutation.isPending}
-        className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
-      >
-        <Trash2 className="w-3 h-3" />
-        {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedTracks.length}`}
-      </button>
-      <button onClick={() => setSelectedTracks([])} className="text-[11px] font-mono text-gray-600 hover:text-gray-400">
-        Cancel
-      </button>
-    </div>
+    <BulkActionBar
+      count={selectedTracks.length}
+      onDelete={() => setBulkDeleteConfirm(true)}
+      isDeleting={bulkDeleteMutation.isPending}
+      deletingLabel={`Delete ${selectedTracks.length}`}
+      onCancel={() => setSelectedTracks([])}
+    />
   ) : null;
 
   if (userLoading) return null;

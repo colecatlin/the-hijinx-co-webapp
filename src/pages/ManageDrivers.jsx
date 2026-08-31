@@ -21,6 +21,7 @@ import DriverRecordRow    from '@/components/drivers/DriverRecordRow';
 import DriverDuplicateFinder from '@/components/management/DriverDuplicateFinder';
 import { downloadTemplate } from '@/components/shared/downloadTemplate';
 import DriverDrawer from '@/components/racecore/records/DriverDrawer';
+import BulkActionBar from '@/components/racecore/records/BulkActionBar';
 import QuickAddDriverDialog from '@/components/management/DriverManagement/QuickAddDriverDialog';
 
 // ── Filter option sets ────────────────────────────────────────────────────────
@@ -419,95 +420,50 @@ export default function ManageDrivers() {
 
   // ── Bulk bar (selection-driven, admin only) ───────────────────────────────────
   const bulkBar = isAdmin && selectedDrivers.length > 0 ? (
-    <div
-      className="flex items-center gap-3 px-5 py-2 flex-wrap"
-      style={{ background: 'hsl(var(--surface-interactive))', borderBottom: '1px solid hsl(var(--motion) / 0.4)' }}
+    <BulkActionBar
+      count={selectedDrivers.length}
+      onDelete={() => setBulkDeleteConfirm(true)}
+      isDeleting={bulkDeleteMutation.isPending}
+      deletingLabel={`Delete ${selectedDrivers.length}`}
+      onCancel={() => setSelectedDrivers([])}
     >
-      <span className="text-xs font-mono font-bold" style={{ color: 'hsl(var(--motion))' }}>
-        {selectedDrivers.length} selected
-      </span>
-
-      {/* Bulk racing status */}
       <select
         value={bulkStatus}
         onChange={e => setBulkStatus(e.target.value)}
         className="h-7 px-2 text-[11px] font-mono rounded focus:outline-none"
-        style={{
-          background: 'hsl(var(--surface-elevated))',
-          border: '1px solid hsl(var(--divider))',
-          color: 'hsl(var(--foreground))',
-        }}
+        style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}
       >
         <option value="">Status…</option>
         {RACING_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
-
-      {/* Bulk visibility */}
       <select
         value={bulkProfileStatus}
         onChange={e => setBulkProfileStatus(e.target.value)}
         className="h-7 px-2 text-[11px] font-mono rounded focus:outline-none"
-        style={{
-          background: 'hsl(var(--surface-elevated))',
-          border: '1px solid hsl(var(--divider))',
-          color: 'hsl(var(--foreground))',
-        }}
+        style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}
       >
         <option value="">Profile…</option>
         <option value="live">Live</option>
         <option value="draft">Draft</option>
       </select>
-
-      {/* Bulk discipline */}
       <select
         value={bulkDiscipline}
         onChange={e => setBulkDiscipline(e.target.value)}
         className="h-7 px-2 text-[11px] font-mono rounded focus:outline-none"
-        style={{
-          background: 'hsl(var(--surface-elevated))',
-          border: '1px solid hsl(var(--divider))',
-          color: 'hsl(var(--foreground))',
-        }}
+        style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}
       >
         <option value="">Discipline…</option>
         {DISCIPLINE_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
       </select>
-
       <button
         onClick={handleBulkApply}
         disabled={applyingBulk || (!bulkStatus && !bulkProfileStatus && !bulkDiscipline)}
         className="h-7 px-3 text-[11px] font-mono font-semibold rounded transition-colors disabled:opacity-40"
-        style={{
-          background: 'hsl(var(--motion))',
-          color: 'hsl(var(--canvas))',
-          border: '1px solid hsl(var(--motion))',
-        }}
+        style={{ background: 'hsl(var(--motion))', color: 'hsl(var(--canvas))', border: '1px solid hsl(var(--motion))' }}
       >
         {applyingBulk ? 'Applying…' : 'Apply'}
       </button>
-
-      <button
-        onClick={() => setBulkDeleteConfirm(true)}
-        disabled={bulkDeleteMutation.isPending}
-        className="h-7 px-3 text-[11px] font-mono font-semibold rounded transition-colors disabled:opacity-40 flex items-center gap-1.5"
-        style={{
-          background: 'hsl(var(--danger) / 0.15)',
-          color: 'hsl(var(--danger))',
-          border: '1px solid hsl(var(--danger) / 0.5)',
-        }}
-      >
-        <Trash2 className="w-3 h-3" />
-        {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedDrivers.length}`}
-      </button>
-
-      <button
-        onClick={() => setSelectedDrivers([])}
-        className="text-[11px] font-mono transition-colors"
-        style={{ color: 'hsl(var(--foreground-quiet))' }}
-      >
-        Cancel
-      </button>
-    </div>
+    </BulkActionBar>
   ) : null;
 
   // ── Admin guard ──────────────────────────────────────────────────────────────

@@ -14,6 +14,7 @@ import RecordsFilterRail  from '@/components/racecore/records/RecordsFilterRail'
 import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import EventRecordRow     from '@/components/events/EventRecordRow';
+import BulkActionBar       from '@/components/racecore/records/BulkActionBar';
 
 // Bulk scheduler (preserved, moved to header-action panel)
 import EventSchedulerForm from '@/components/management/EventScheduler/EventSchedulerForm';
@@ -274,20 +275,13 @@ export default function ManageEvents() {
 
   // ── Bulk bar (admin only, selection-driven) ───────────────────────────────────
   const bulkBar = isAdmin && selectedEvents.length > 0 ? (
-    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-danger/30 bg-danger/5">
-      <span className="text-xs font-mono text-danger">{selectedEvents.length} selected</span>
-      <button
-        onClick={() => setBulkDeleteConfirm(true)}
-        disabled={bulkDeleteMutation.isPending}
-        className="h-6 px-3 text-[11px] font-mono rounded border border-danger/40 bg-danger/10 text-danger hover:bg-danger/20 transition-colors disabled:opacity-40 flex items-center gap-1.5"
-      >
-        <Trash2 className="w-3 h-3" />
-        {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedEvents.length}`}
-      </button>
-      <button onClick={() => setSelectedEvents([])} className="text-[11px] font-mono text-foreground-quiet hover:text-foreground">
-        Cancel
-      </button>
-    </div>
+    <BulkActionBar
+      count={selectedEvents.length}
+      onDelete={() => setBulkDeleteConfirm(true)}
+      isDeleting={bulkDeleteMutation.isPending}
+      deletingLabel={`Delete ${selectedEvents.length}`}
+      onCancel={() => setSelectedEvents([])}
+    />
   ) : null;
 
   // ── Bulk Scheduler panel (collapsible, below the grid header) ─────────────────

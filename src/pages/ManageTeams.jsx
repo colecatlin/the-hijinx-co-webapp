@@ -16,6 +16,7 @@ import RecordGrid         from '@/components/racecore/records/RecordGrid';
 import RecordActivityRail from '@/components/racecore/records/RecordActivityRail';
 import TeamRecordRow      from '@/components/teams/TeamRecordRow';
 import TeamDrawer         from '@/components/racecore/records/TeamDrawer';
+import BulkActionBar       from '@/components/racecore/records/BulkActionBar';
 import QuickAddEntityDialog from '@/components/management/QuickAddEntityDialog';
 
 const STATUS_OPTIONS     = ['Active', 'Part Time', 'Historic', 'Inactive'];
@@ -179,20 +180,13 @@ export default function ManageTeams() {
   );
 
   const bulkBar = isAdmin && selectedTeams.length > 0 ? (
-    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-red-900/40 bg-red-900/10">
-      <span className="text-xs font-mono text-red-400">{selectedTeams.length} selected</span>
-      <button
-        onClick={() => setBulkDeleteConfirm(true)}
-        disabled={bulkDeleteMutation.isPending}
-        className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
-      >
-        <Trash2 className="w-3 h-3" />
-        {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedTeams.length}`}
-      </button>
-      <button onClick={() => setSelectedTeams([])} className="text-[11px] font-mono text-gray-600 hover:text-gray-400">
-        Cancel
-      </button>
-    </div>
+    <BulkActionBar
+      count={selectedTeams.length}
+      onDelete={() => setBulkDeleteConfirm(true)}
+      isDeleting={bulkDeleteMutation.isPending}
+      deletingLabel={`Delete ${selectedTeams.length}`}
+      onCancel={() => setSelectedTeams([])}
+    />
   ) : null;
 
   if (userLoading) return null;
