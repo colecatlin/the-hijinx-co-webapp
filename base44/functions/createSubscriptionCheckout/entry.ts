@@ -22,11 +22,25 @@ export default async function(req) {
     const stripe = new Stripe(secrets.get('STRIPE_SECRET_KEY'));
     const origin = req.headers.get('origin') || '';
 
+    // Validate redirect URLs to prevent open redirect attacks.
+    // Only allow relative paths or URLs matching the request origin.
+    const safeUrl = (url) => {
+      if (!url) return null;
+      if (url.startsWith('/')) return `${origin}${url}`;
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === origin) return url;
+      } catch {}
+      return null;
+    };
+    const safeSuccessUrl = safeUrl(success_url) || `${origin}/membership?status=success&session_id={CHECKOUT_SESSION_ID}`;
+    const safeCancelUrl = safeUrl(cancel_url) || `${origin}/membership?status=canceled`;
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: tier.stripe_price_id, quantity: 1 }],
-      success_url: success_url || `${origin}/membership?status=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancel_url || `${origin}/membership?status=canceled`,
+      success_url: safeSuccessUrl,
+      cancel_url: safeCancelUrl,
       customer_email: user.email,
       subscription_data: {
         metadata: {
