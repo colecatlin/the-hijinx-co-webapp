@@ -118,7 +118,7 @@ export function OnboardingWizardProvider({ children }) {
   );
 
   const saveAbout = useCallback(
-    async (data) => advanceTo({ ...data }, 'roles'),
+    async (data) => advanceTo({ ...data }, 'review'),
     [advanceTo],
   );
 

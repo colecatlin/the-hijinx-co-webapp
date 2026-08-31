@@ -94,6 +94,8 @@ export const ROLES = {
     relationship_required_on_onboarding: false,
     requires_approval: false,
     onboarding_fields: [],
+    review_tier: null, // Fan is automatic — no application
+    application_entity_type: null,
     modules_enabled: [
       'follow',
       'favorites',
@@ -128,6 +130,8 @@ export const ROLES = {
       'hometown',
       'license_number',
     ],
+    review_tier: 'light',
+    application_entity_type: 'RacerProfile',
     modules_enabled: [
       'driver_dashboard',
       'driver_stats',
@@ -164,6 +168,8 @@ export const ROLES = {
       'team_discipline',
       'team_hq_location',
     ],
+    review_tier: 'full',
+    application_entity_type: 'Team',
     modules_enabled: [
       'team_management',
       'team_roster',
@@ -194,6 +200,8 @@ export const ROLES = {
     relationship_required_on_onboarding: true,
     requires_approval: true,
     onboarding_fields: [],
+    review_tier: 'full',
+    application_entity_type: 'Team',
     modules_enabled: [
       'team_view',
       'team_roster_view',
@@ -219,6 +227,8 @@ export const ROLES = {
     relationship_required_on_onboarding: true,
     requires_approval: true,
     onboarding_fields: ['crew_role'],
+    review_tier: 'light',
+    application_entity_type: null,
     modules_enabled: [
       'team_view',
       'team_roster_view',
@@ -244,6 +254,8 @@ export const ROLES = {
     relationship_required_on_onboarding: true,
     requires_approval: true,
     onboarding_fields: [],
+    review_tier: 'full',
+    application_entity_type: 'Track',
     modules_enabled: [
       'race_core',
       'event_management',
@@ -273,6 +285,8 @@ export const ROLES = {
     relationship_required_on_onboarding: true,
     requires_approval: true,
     onboarding_fields: [],
+    review_tier: 'full',
+    application_entity_type: 'Series',
     modules_enabled: [
       'race_core',
       'series_management',
@@ -303,6 +317,8 @@ export const ROLES = {
     relationship_required_on_onboarding: true,
     requires_approval: true,
     onboarding_fields: ['official_role'],
+    review_tier: 'full',
+    application_entity_type: 'Series',
     modules_enabled: [
       'race_core',
       'officials_assignment',
@@ -336,6 +352,8 @@ export const ROLES = {
       'media_specialties',
       'portfolio_link',
     ],
+    review_tier: 'full',
+    application_entity_type: 'MediaProfile',
     modules_enabled: [
       'media_portal',
       'media_requests',
@@ -369,6 +387,8 @@ export const ROLES = {
       'portfolio_link',
       'media_specialties',
     ],
+    review_tier: 'light',
+    application_entity_type: 'MediaProfile',
     modules_enabled: [
       'media_portal',
       'media_requests',
@@ -412,6 +432,8 @@ export const ROLES = {
     default_permission_template: PERMISSION_TEMPLATES.contributor,
     navigation_sections: ['home', 'outlet', 'index46', 'store', 'marketplace', 'media_portal'],
     dashboard_widgets: ['my_assignments', 'my_credentials', 'my_revenue'],
+    review_tier: 'light',
+    application_entity_type: 'MediaProfile',
     onboarding_order: 10,
     visibility: 'onboarding',
   },
@@ -433,6 +455,8 @@ export const ROLES = {
       'brand_name',
       'sponsor_industry',
     ],
+    review_tier: 'full',
+    application_entity_type: 'Organization',
     modules_enabled: [
       'sponsor_dashboard',
       'sponsorship_opportunities',
@@ -461,6 +485,8 @@ export const ROLES = {
       'business_name',
       'services_offered',
     ],
+    review_tier: 'full',
+    application_entity_type: 'Organization',
     modules_enabled: [
       'vendor_dashboard',
       'vendor_listings',
@@ -489,6 +515,8 @@ export const ROLES = {
       'manufacturer_name',
       'manufacturer_industry',
     ],
+    review_tier: 'full',
+    application_entity_type: 'Organization',
     modules_enabled: [
       'manufacturer_dashboard',
       'manufacturer_presence',
@@ -516,6 +544,8 @@ export const ROLES = {
     onboarding_fields: [
       'organization_name',
     ],
+    review_tier: 'full',
+    application_entity_type: 'Organization',
     modules_enabled: [
       'partner_dashboard',
     ],
@@ -543,6 +573,8 @@ export const ROLES = {
       'creator_handle',
       'content_focus',
     ],
+    review_tier: 'light',
+    application_entity_type: 'MediaProfile',
     modules_enabled: [
       'outlet_submit',
       'creator_dashboard',
@@ -568,6 +600,8 @@ export const ROLES = {
     relationship_required_on_onboarding: false,
     requires_approval: 'on_request',
     onboarding_fields: ['volunteer_interests'],
+    review_tier: 'light',
+    application_entity_type: null,
     modules_enabled: [
       'volunteer_dashboard',
     ],

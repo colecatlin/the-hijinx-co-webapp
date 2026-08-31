@@ -116,6 +116,19 @@ export default function IdentityApplicationForm({ user, onSubmitted, onCancel })
     setError(null);
   };
 
+  const resetRole = () => {
+    setSelectedRoleId(null);
+    setMode('new');
+    setRoleFields({});
+    setEvidenceLinks(['']);
+    setEvidenceNotes('');
+    setEntityName('');
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedEntity(null);
+    setError(null);
+  };
+
   const handleSubmit = async () => {
     if (!selectedRole || !user) return;
     setError(null);
@@ -164,8 +177,7 @@ export default function IdentityApplicationForm({ user, onSubmitted, onCancel })
 
       if (onSubmitted) onSubmitted({ ...application, role: selectedRole });
       // Reset
-      setSelectedRoleId(null);
-      setSelectedRole(null);
+      resetRole();
     } catch (e) {
       setError(e?.message || 'Could not submit application. Please try again.');
     } finally {
@@ -301,7 +313,7 @@ export default function IdentityApplicationForm({ user, onSubmitted, onCancel })
             {selectedRole.description}
           </p>
         </div>
-        <button type="button" onClick={() => handleRoleSelect(null)}
+        <button type="button" onClick={resetRole}
           className="text-xs transition-colors flex-shrink-0"
           style={{ color: 'hsl(var(--foreground-quiet))' }}>
           ← Back

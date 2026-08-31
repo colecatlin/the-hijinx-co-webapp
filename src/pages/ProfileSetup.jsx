@@ -4,8 +4,6 @@ import { OnboardingWizardProvider } from '@/components/onboarding/OnboardingWiza
 import OnboardingWizardLayout from '@/components/onboarding/OnboardingWizardLayout';
 import IdentityStage from '@/components/onboarding/IdentityStage';
 import AboutStage from '@/components/onboarding/AboutStage';
-import RolesStage from '@/components/onboarding/RolesStage';
-import ConnectionsStage from '@/components/onboarding/ConnectionsStage';
 import ReviewStage from '@/components/onboarding/ReviewStage';
 import {
   resolveOnboardingStage,
@@ -19,8 +17,6 @@ import { Loader2 } from 'lucide-react';
 const STAGE_COMPONENTS = {
   identity: IdentityStage,
   about: AboutStage,
-  roles: RolesStage,
-  connections: ConnectionsStage,
   review: ReviewStage,
 };
 

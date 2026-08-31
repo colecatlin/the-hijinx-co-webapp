@@ -4,7 +4,7 @@
  * the wizard page, and routing logic alike.
  */
 
-export const STAGE_ORDER = ['identity', 'about', 'roles', 'connections', 'review', 'complete'];
+export const STAGE_ORDER = ['identity', 'about', 'review', 'complete'];
 
 export const STAGE_META = {
   identity: {
@@ -15,21 +15,13 @@ export const STAGE_META = {
     label: 'About',
     description: 'Your public profile — photo, bio, and links.',
   },
-  roles: {
-    label: 'Roles',
-    description: 'Choose how you participate in motorsports.',
-  },
-  connections: {
-    label: 'Connections',
-    description: 'Link to the organizations you belong to.',
-  },
   review: {
     label: 'Review',
     description: 'Confirm everything and launch your dashboard.',
   },
 };
 
-export const ONBOARDING_STAGES = ['identity', 'about', 'roles', 'connections', 'review'];
+export const ONBOARDING_STAGES = ['identity', 'about', 'review'];
 
 export function stageIndex(stage) {
   return STAGE_ORDER.indexOf(stage);
@@ -56,17 +48,16 @@ export function resolveOnboardingStage(user) {
   if (user.onboarding_complete === true) return 'complete';
 
   const stored = user.onboarding_stage;
+  // Map legacy stages that no longer exist to their nearest equivalent.
+  if (stored === 'roles' || stored === 'connections') return 'review';
   if (stored && STAGE_ORDER.includes(stored)) return stored;
 
   // Legacy inference for users created before this wizard existed.
   const hasIdentity = !!(user.first_name?.trim() && user.last_name?.trim());
   if (!hasIdentity) return 'identity';
 
-  const types = user.profile_types || ['fan'];
-  const hasRealRole = types.some((t) => t !== 'fan');
   const hasProfile = !!(user.bio || user.profile_photo_url);
   if (!hasProfile) return 'about';
-  if (!user.primary_profile_type || user.primary_profile_type === 'fan' || !hasRealRole) return 'roles';
   return 'review';
 }
 
