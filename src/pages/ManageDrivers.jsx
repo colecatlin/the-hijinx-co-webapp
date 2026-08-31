@@ -419,14 +419,24 @@ export default function ManageDrivers() {
 
   // ── Bulk bar (selection-driven, admin only) ───────────────────────────────────
   const bulkBar = isAdmin && selectedDrivers.length > 0 ? (
-    <div className="flex items-center gap-3 px-5 py-1.5 border-b border-blue-900/40 bg-blue-900/10 flex-wrap">
-      <span className="text-xs font-mono text-blue-400">{selectedDrivers.length} selected</span>
+    <div
+      className="flex items-center gap-3 px-5 py-2 flex-wrap"
+      style={{ background: 'hsl(var(--surface-interactive))', borderBottom: '1px solid hsl(var(--motion) / 0.4)' }}
+    >
+      <span className="text-xs font-mono font-bold" style={{ color: 'hsl(var(--motion))' }}>
+        {selectedDrivers.length} selected
+      </span>
 
       {/* Bulk racing status */}
       <select
         value={bulkStatus}
         onChange={e => setBulkStatus(e.target.value)}
-        className="h-6 px-2 text-[11px] font-mono rounded border border-gray-800 bg-gray-900 text-gray-400 focus:outline-none"
+        className="h-7 px-2 text-[11px] font-mono rounded focus:outline-none"
+        style={{
+          background: 'hsl(var(--surface-elevated))',
+          border: '1px solid hsl(var(--divider))',
+          color: 'hsl(var(--foreground))',
+        }}
       >
         <option value="">Status…</option>
         {RACING_STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -436,7 +446,12 @@ export default function ManageDrivers() {
       <select
         value={bulkProfileStatus}
         onChange={e => setBulkProfileStatus(e.target.value)}
-        className="h-6 px-2 text-[11px] font-mono rounded border border-gray-800 bg-gray-900 text-gray-400 focus:outline-none"
+        className="h-7 px-2 text-[11px] font-mono rounded focus:outline-none"
+        style={{
+          background: 'hsl(var(--surface-elevated))',
+          border: '1px solid hsl(var(--divider))',
+          color: 'hsl(var(--foreground))',
+        }}
       >
         <option value="">Profile…</option>
         <option value="live">Live</option>
@@ -447,7 +462,12 @@ export default function ManageDrivers() {
       <select
         value={bulkDiscipline}
         onChange={e => setBulkDiscipline(e.target.value)}
-        className="h-6 px-2 text-[11px] font-mono rounded border border-gray-800 bg-gray-900 text-gray-400 focus:outline-none"
+        className="h-7 px-2 text-[11px] font-mono rounded focus:outline-none"
+        style={{
+          background: 'hsl(var(--surface-elevated))',
+          border: '1px solid hsl(var(--divider))',
+          color: 'hsl(var(--foreground))',
+        }}
       >
         <option value="">Discipline…</option>
         {DISCIPLINE_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
@@ -456,7 +476,12 @@ export default function ManageDrivers() {
       <button
         onClick={handleBulkApply}
         disabled={applyingBulk || (!bulkStatus && !bulkProfileStatus && !bulkDiscipline)}
-        className="h-6 px-3 text-[11px] font-mono rounded border border-blue-800/60 bg-blue-900/20 text-blue-400 hover:bg-blue-900/40 transition-colors disabled:opacity-40"
+        className="h-7 px-3 text-[11px] font-mono font-semibold rounded transition-colors disabled:opacity-40"
+        style={{
+          background: 'hsl(var(--motion))',
+          color: 'hsl(var(--canvas))',
+          border: '1px solid hsl(var(--motion))',
+        }}
       >
         {applyingBulk ? 'Applying…' : 'Apply'}
       </button>
@@ -464,13 +489,22 @@ export default function ManageDrivers() {
       <button
         onClick={() => setBulkDeleteConfirm(true)}
         disabled={bulkDeleteMutation.isPending}
-        className="h-6 px-3 text-[11px] font-mono rounded border border-red-800/60 bg-red-900/20 text-red-400 hover:bg-red-900/40 transition-colors disabled:opacity-40 flex items-center gap-1.5"
+        className="h-7 px-3 text-[11px] font-mono font-semibold rounded transition-colors disabled:opacity-40 flex items-center gap-1.5"
+        style={{
+          background: 'hsl(var(--danger) / 0.15)',
+          color: 'hsl(var(--danger))',
+          border: '1px solid hsl(var(--danger) / 0.5)',
+        }}
       >
         <Trash2 className="w-3 h-3" />
         {bulkDeleteMutation.isPending ? 'Deleting…' : `Delete ${selectedDrivers.length}`}
       </button>
 
-      <button onClick={() => setSelectedDrivers([])} className="text-[11px] font-mono text-gray-600 hover:text-gray-400">
+      <button
+        onClick={() => setSelectedDrivers([])}
+        className="text-[11px] font-mono transition-colors"
+        style={{ color: 'hsl(var(--foreground-quiet))' }}
+      >
         Cancel
       </button>
     </div>
