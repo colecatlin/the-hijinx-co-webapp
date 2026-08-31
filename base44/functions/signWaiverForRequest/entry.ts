@@ -25,6 +25,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Verify the authenticated caller owns the holder_media_user_id MediaUser
+    // record (or is an admin) before allowing a legally binding signature.
+    const mediaUsers = await base44.asServiceRole.entities.MediaUser.filter({ id: holder_media_user_id });
+    const mediaUser = mediaUsers?.[0];
+    if (!mediaUser) return Response.json({ error: 'Media user not found' }, { status: 404 });
+    if (mediaUser.user_id !== user.id && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: you may only sign waivers for yourself' }, { status: 403 });
+    }
+
     // Validate the request exists and belongs to this media user
     const credReq = await base44.entities.CredentialRequest.get(request_id);
     if (!credReq) return Response.json({ error: 'Request not found' }, { status: 404 });

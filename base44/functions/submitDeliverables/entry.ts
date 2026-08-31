@@ -15,6 +15,15 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'requirement_id, holder_media_user_id, asset_ids required' }, { status: 400 });
     }
 
+    // Verify the authenticated caller owns the holder_media_user_id MediaUser
+    // record (or is an admin) before accepting deliverable submissions.
+    const mediaUsers = await base44.asServiceRole.entities.MediaUser.filter({ id: holder_media_user_id });
+    const mediaUser = mediaUsers?.[0];
+    if (!mediaUser) return Response.json({ error: 'Media user not found' }, { status: 404 });
+    if (mediaUser.user_id !== user.id && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: you may only submit deliverables for yourself' }, { status: 403 });
+    }
+
     const now = new Date().toISOString();
 
     const submission = await base44.entities.DeliverableSubmission.create({

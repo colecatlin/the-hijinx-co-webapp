@@ -15,8 +15,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'request_id, requirement_id, holder_media_user_id required' }, { status: 400 });
     }
 
-    // Authorization: caller must own the holder_media_user_id or be admin
-    if (user.id !== holder_media_user_id && user.role !== 'admin') {
+    // Authorization: caller must own the holder_media_user_id MediaUser record
+    // (holder_media_user_id is a MediaUser entity ID, not a User ID) or be admin.
+    const mediaUsers = await base44.asServiceRole.entities.MediaUser.filter({ id: holder_media_user_id });
+    const mediaUser = mediaUsers?.[0];
+    if (!mediaUser) return Response.json({ error: 'Media user not found' }, { status: 404 });
+    if (mediaUser.user_id !== user.id && user.role !== 'admin') {
       return Response.json({ error: 'Forbidden: you may only acknowledge deliverables for yourself' }, { status: 403 });
     }
 

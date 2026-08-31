@@ -33,6 +33,31 @@ Deno.serve(async (req) => {
       }, { status: 422 });
     }
 
+    // Ownership check: caller must own the asset or hold an owner/editor
+    // collaborator role on the target entity. Admins bypass.
+    if (user.role !== 'admin') {
+      const asset = await base44.asServiceRole.entities.MediaAsset.get(asset_id);
+      if (!asset) return Response.json({ error: 'Asset not found' }, { status: 404 });
+
+      const isAssetOwner = asset.owner_user_id === user.id;
+      let isUploader = false;
+      if (!isAssetOwner && asset.uploader_media_user_id) {
+        const uploaders = await base44.asServiceRole.entities.MediaUser.filter({ id: asset.uploader_media_user_id });
+        isUploader = uploaders?.[0]?.user_id === user.id;
+      }
+      let isTargetManager = false;
+      if (target_entity_id) {
+        const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
+          entity_id: target_entity_id,
+          user_id: user.id,
+        });
+        isTargetManager = (collabs || []).some((c) => c.role === 'owner' || c.role === 'editor');
+      }
+      if (!isAssetOwner && !isUploader && !isTargetManager) {
+        return Response.json({ error: 'Forbidden: you do not own this asset or manage the target entity' }, { status: 403 });
+      }
+    }
+
     const now = new Date().toISOString();
     const isScheduled = !!scheduled_at;
 
