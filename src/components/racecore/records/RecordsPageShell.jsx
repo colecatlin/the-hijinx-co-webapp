@@ -38,7 +38,7 @@ export default function RecordsPageShell({
   const [moreOpen, setMoreOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-surface">
+    <div className="flex flex-col h-full bg-surface">
 
       {/* Alert strip (duplicate warnings, system notices) */}
       {alert && (

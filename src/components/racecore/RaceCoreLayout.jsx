@@ -163,10 +163,8 @@ export default function RaceCoreLayout() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile top offset spacer */}
         <div className="lg:hidden h-11 flex-shrink-0" />
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden pb-6">
           <Outlet />
-          {/* Consistent bottom spacer — anchors every RaceCore page at the same floor */}
-          <div className="h-6 w-full flex-shrink-0" />
         </div>
       </div>
 
