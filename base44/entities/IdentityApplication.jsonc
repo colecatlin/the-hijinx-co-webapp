@@ -1,0 +1,163 @@
+{
+  "name": "IdentityApplication",
+  "type": "object",
+  "description": "Application submitted by a user to acquire a non-Fan motorsports identity (Driver, Team, Track, Series, Media, Brand, etc.). Replaces the old self-selection model: every user is a Fan by default, and any other identity requires a short role-specific application with evidence, reviewed by an admin. On approval, the system either creates a new entity record owned by the user (new path), links the user to an existing entity via EntityCollaborator (existing path), or simply grants the capability (capability-only roles).",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the applicant"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Applicant email at time of submission (denormalized for admin list view)"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Applicant display name at time of submission"
+    },
+    "role_key": {
+      "type": "string",
+      "description": "Granular role id from the onboardingRoles registry (e.g. 'driver', 'team_owner', 'track_staff', 'series_staff', 'media', 'photographer', 'sponsor', 'vendor', 'manufacturer', 'partner', 'creator', 'videographer', 'crew_member', 'official', 'volunteer')"
+    },
+    "capability": {
+      "type": "string",
+      "description": "Broad capability the role maps to (e.g. 'driver', 'team', 'track', 'series', 'media', 'brand', 'creator', 'crew', 'fan'). This is what gets added to User.profile_types on approval."
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Role display name from the registry (e.g. 'Driver', 'Team Owner')"
+    },
+    "application_mode": {
+      "type": "string",
+      "enum": [
+        "new",
+        "existing"
+      ],
+      "description": "new = user is a new [role] with no existing record (system creates one on approval); existing = user claims to be an existing entity record (system links via EntityCollaborator on approval)"
+    },
+    "application_entity_type": {
+      "type": "string",
+      "enum": [
+        "RacerProfile",
+        "Team",
+        "Track",
+        "Series",
+        "MediaProfile",
+        "Organization"
+      ],
+      "description": "The type of entity to create (new path) or search (existing path). Null for capability-only roles that don't map to an entity."
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Existing entity ID (existing path only). Null for new path."
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Display name of the entity to create (new path) or the existing entity (existing path)"
+    },
+    "role_fields": {
+      "type": "object",
+      "description": "Role-specific form fields submitted by the applicant (e.g. { primary_discipline, primary_number, manufacturer, hometown, license_number } for a driver). Stored for admin review and used to seed the new entity on approval."
+    },
+    "evidence_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "URLs provided as evidence (results pages, portfolio links, official records, social media)"
+    },
+    "evidence_notes": {
+      "type": "string",
+      "description": "Free-text evidence or justification from the applicant"
+    },
+    "evidence_attachment_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Uploaded file URLs as evidence (license photos, results sheets, etc.)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "needs_more_info"
+      ],
+      "default": "pending",
+      "description": "Application review status"
+    },
+    "review_tier": {
+      "type": "string",
+      "enum": [
+        "light",
+        "full"
+      ],
+      "default": "full",
+      "description": "Review tier from the role registry. light = automated pre-checks + light admin review (low-risk roles); full = full admin review (high-trust roles)."
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Admin user ID who reviewed the application"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the application was reviewed"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Admin notes \u2014 shown to applicant for needs_more_info, internal for rejections"
+    },
+    "created_entity_id": {
+      "type": "string",
+      "description": "ID of the entity created on approval (new path only)"
+    },
+    "created_collaboration_id": {
+      "type": "string",
+      "description": "ID of the EntityCollaborator created on approval (existing path, or new path with entity)"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the application was submitted"
+    }
+  },
+  "required": [
+    "user_id",
+    "role_key",
+    "capability",
+    "application_mode",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
