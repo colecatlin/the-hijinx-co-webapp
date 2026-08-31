@@ -81,7 +81,6 @@ export default function MotorsportsHome() {
           style={{ filter: 'saturate(1.15) contrast(1.08)' }}
         />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(4,8,8,0.86) 0%, rgba(4,8,8,0.6) 38%, rgba(4,8,8,0.10) 65%, rgba(4,8,8,0.32) 100%)' }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(4,8,8,0.35) 0%, rgba(4,8,8,0.02) 35%, rgba(247,245,242,0.0) 70%, hsl(var(--canvas)) 100%)' }} />
         <div className="absolute top-0 left-0 w-[500px] h-[2px] opacity-50" style={{ background: `linear-gradient(to right, ${ACCENT}, transparent)` }} />
         <div className="absolute top-0 left-0 w-[2px] h-40 opacity-40" style={{ background: `linear-gradient(to bottom, ${ACCENT}, transparent)` }} />
         <div className="absolute bottom-0 right-0 w-[300px] h-[1px] opacity-25" style={{ background: `linear-gradient(to left, ${ACCENT}, transparent)` }} />
