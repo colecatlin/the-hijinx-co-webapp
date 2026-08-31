@@ -32,25 +32,20 @@ function StandingsShell({ children }) {
   );
 }
 
-// ─── Series selector pill row
+// ─── Series selector dropdown
 function SeriesSelector({ seriesList, selectedId, onSelect }) {
   if (!seriesList.length) return null;
   return (
-    <div className="flex gap-2 flex-wrap">
-      {seriesList.map(s => (
-        <button
-          key={s.id}
-          onClick={() => onSelect(s.id)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold tracking-widest uppercase transition-colors border ${
-            selectedId === s.id
-              ? 'bg-motion/10 border-motion/40 text-motion'
-              : 'bg-surface border-divider text-foreground-quiet hover:text-foreground hover:border-motion/30'
-          }`}
-        >
-          {s.name}
-        </button>
-      ))}
-    </div>
+    <Select value={selectedId || ''} onValueChange={onSelect}>
+      <SelectTrigger className="w-64 bg-surface border-divider text-foreground text-xs h-8">
+        <SelectValue placeholder="Select series" />
+      </SelectTrigger>
+      <SelectContent className="bg-popover border-divider max-h-80">
+        {seriesList.map(s => (
+          <SelectItem key={s.id} value={s.id} className="text-foreground text-xs">{s.name}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -242,18 +237,16 @@ export default function RaceCoreStandings() {
       {/* Main content area */}
       <div className="max-w-5xl mx-auto px-3 sm:px-5 py-5">
 
-      {/* Series selector */}
-      <div className="mb-4">
-        <p className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest mb-2">Series</p>
-        <SeriesSelector
-          seriesList={seriesList}
-          selectedId={resolvedSeriesId}
-          onSelect={handleSeriesChange}
-        />
-      </div>
-
-      {/* Controls row: Season + Class */}
-      <div className="flex items-center gap-3 mb-5 flex-wrap">
+      {/* Controls row: Series + Season + Class */}
+      <div className="flex items-end gap-3 mb-5 flex-wrap">
+        <div>
+          <p className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest mb-1.5">Series</p>
+          <SeriesSelector
+            seriesList={seriesList}
+            selectedId={resolvedSeriesId}
+            onSelect={handleSeriesChange}
+          />
+        </div>
         <div>
           <p className="text-[9px] font-mono text-foreground-quiet uppercase tracking-widest mb-1.5">Season</p>
           <SeasonSelector
