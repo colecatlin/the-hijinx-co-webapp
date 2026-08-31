@@ -165,6 +165,8 @@ export default function RaceCoreLayout() {
         <div className="lg:hidden h-11 flex-shrink-0" />
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <Outlet />
+          {/* Consistent bottom spacer — anchors every RaceCore page at the same floor */}
+          <div className="h-24 flex-shrink-0" />
         </div>
       </div>
 
