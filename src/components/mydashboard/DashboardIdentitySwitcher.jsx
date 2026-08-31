@@ -41,11 +41,6 @@ export default function DashboardIdentitySwitcher({ user, activeIdentity, onSele
       .map((t) => ({ key: t, label: labelMap[t] || t }));
   }, [user?.profile_types]);
 
-  // If only Fan is available, don't render the switcher
-  if (identities.length <= 1) return null;
-
-  const active = identities.find((i) => i.key === activeIdentity) || identities[0];
-
   // Close dropdown when clicking outside
   useEffect(() => {
     if (!open) return;
@@ -53,6 +48,11 @@ export default function DashboardIdentitySwitcher({ user, activeIdentity, onSele
     setTimeout(() => document.addEventListener('click', handler), 0);
     return () => document.removeEventListener('click', handler);
   }, [open]);
+
+  // If only Fan is available, don't render the switcher
+  if (identities.length <= 1) return null;
+
+  const active = identities.find((i) => i.key === activeIdentity) || identities[0];
 
   return (
     <div className="flex items-center gap-2">

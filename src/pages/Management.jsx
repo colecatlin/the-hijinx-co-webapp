@@ -62,6 +62,12 @@ export default function Management() {
     enabled,
   });
 
+  const { data: identityApps = [], isLoading: identityAppsLoading } = useQuery({
+    queryKey: ['mgmt_identity_apps'],
+    queryFn: () => base44.entities.IdentityApplication.filter({ status: 'pending' }),
+    enabled,
+  });
+
   const { data: storySubs = [], isLoading: storySubsLoading } = useQuery({
     queryKey: ['mgmt_story_subs'],
     queryFn: () => base44.entities.StorySubmission.filter({ status: 'pending' }),
@@ -205,6 +211,15 @@ export default function Management() {
                 href={createPageUrl('MediaPortal')}
                 alert={mediaApps.length > 0}
                 loading={mediaAppsLoading}
+              />
+              <OperationsStatCard
+                icon={FileText}
+                label="Identity Applications"
+                value={identityApps.length}
+                sublabel="Pending review"
+                href="/management/identity-applications"
+                alert={identityApps.length > 0}
+                loading={identityAppsLoading}
               />
               <OperationsStatCard
                 icon={ImageIcon}

@@ -243,7 +243,7 @@ export default function IdentityApplicationForm({ user, onSubmitted, onCancel })
         )}
 
         {categories.map((cat) => {
-          const roles = (ROLES_BY_CATEGORY[cat.key] || []).filter((r) => r.id !== 'fan' && r.id !== 'volunteer');
+          const roles = (ROLES_BY_CATEGORY[cat.key] || []).filter((r) => r.id !== 'fan');
           if (!roles.length) return null;
           return (
             <div key={cat.key} className="space-y-2">

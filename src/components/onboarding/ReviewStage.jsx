@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOnboardingWizard } from '@/components/onboarding/OnboardingWizardContext';
 import StageErrorBanner, { normalizeBackendError } from '@/components/onboarding/StageErrorBanner';
 import { Button } from '@/components/ui/button';
-import { Loader2, Pencil, Sparkles, Heart, ArrowRight } from 'lucide-react';
-import { createPageUrl } from '@/components/utils';
+import { Loader2, Pencil, Sparkles, Heart } from 'lucide-react';
 
 const TEAL = '#1DA1A1';
 
