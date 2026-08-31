@@ -120,6 +120,7 @@ import MembershipGuard from '@/components/membership/MembershipGuard';
 import Membership from './pages/Membership';
 import ManageMemberships from './pages/ManageMemberships';
 import ManagePopUps from './pages/ManagePopUps';
+import IdentityApplicationsReview from '@/components/identity/IdentityApplicationsReview';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
 function RaceCoreEditorRedirect({ base }) {
@@ -433,6 +434,7 @@ const AuthenticatedApp = () => {
       <Route path="/ManageMemberships" element={<LayoutWrapper currentPageName="ManageMemberships"><ManageMemberships /></LayoutWrapper>} />
       <Route path="/membership" element={<LayoutWrapper currentPageName="Membership"><OnboardingGuard><Membership /></OnboardingGuard></LayoutWrapper>} />
       <Route path="/ManagePopUps" element={<LayoutWrapper currentPageName="ManagePopUps"><ManagePopUps /></LayoutWrapper>} />
+      <Route path="/management/identity-applications" element={<LayoutWrapper currentPageName="identity-applications"><IdentityApplicationsReview /></LayoutWrapper>} />
       
       {/* R9BI: /race-control/events/* → redirect to canonical /racecore/event-files/* */}
       <Route path="/race-control/events" element={<Navigate to="/racecore/event-files" replace />} />

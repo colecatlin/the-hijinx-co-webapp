@@ -1,96 +1,78 @@
 import React from 'react';
-import { PROFILE_TYPE_CONFIG, ALL_PROFILE_TYPES } from '@/components/system/userCapabilities';
+import { Heart, ShieldCheck, Plus } from 'lucide-react';
+import IdentityApplicationForm from '@/components/identity/IdentityApplicationForm';
 
 const MOTION = 'hsl(var(--motion))';
-const MOTION_HOVER = 'hsl(var(--motion-hover))';
 
-export default function IdentitySection({ formData, setFormData }) {
-  const profileTypes = formData.profile_types || ['fan'];
-  const primaryType = formData.primary_profile_type || 'fan';
+const CAPABILITY_LABELS = {
+  fan: 'Fan',
+  driver: 'Driver',
+  team: 'Team',
+  track: 'Track',
+  series: 'Series',
+  media: 'Media',
+  brand: 'Brand',
+  crew: 'Crew',
+  builder: 'Builder',
+  sponsor: 'Sponsor',
+  photographer: 'Photographer',
+  creator: 'Creator',
+};
 
-  const toggleType = (type) => {
-    const current = profileTypes.includes(type)
-      ? profileTypes.filter(t => t !== type)
-      : [...profileTypes, type];
-    const updated = current.length === 0 ? ['fan'] : current;
-    const newPrimary = updated.includes(primaryType) ? primaryType : updated[0];
-    setFormData({ ...formData, profile_types: updated, primary_profile_type: newPrimary });
-  };
+// Ordered for display
+const ORDERED_TYPES = ['fan', 'driver', 'team', 'track', 'series', 'media', 'photographer', 'creator', 'brand', 'sponsor', 'crew', 'builder'];
 
-  const setPrimary = (type) => {
-    const types = profileTypes.includes(type) ? profileTypes : [...profileTypes, type];
-    setFormData({ ...formData, primary_profile_type: type, profile_types: types });
-  };
+export default function IdentitySection({ formData, setFormData, user }) {
+  const profileTypes = user?.profile_types || ['fan'];
+  const approvedIdentities = ORDERED_TYPES.filter((t) => profileTypes.includes(t));
 
   return (
-    <div className="space-y-6">
-      {/* Type toggles */}
-      <div className="flex flex-wrap gap-2">
-        {ALL_PROFILE_TYPES.map(type => {
-          const config = PROFILE_TYPE_CONFIG[type];
-          const selected = profileTypes.includes(type);
-          const isPrimary = selected && primaryType === type;
-          return (
-            <button
-              key={type}
-              type="button"
-              onClick={() => toggleType(type)}
-              className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200"
-              style={isPrimary ? {
-                background: `hsl(var(--motion) / 0.18)`,
-                color: MOTION,
-                border: `1px solid ${MOTION} / 0.4)`,
-              } : selected ? {
-                background: `hsl(var(--motion) / 0.12)`,
-                color: MOTION,
-                border: `1px solid ${MOTION} / 0.3)`,
-              } : {
-                background: 'hsl(var(--surface-interactive) / 0.3)',
-                color: 'hsl(var(--foreground-quiet))',
-                border: '1px solid hsl(var(--divider))',
-              }}
-            >
-              {config.label}
-            </button>
-          );
-        })}
+    <div className="space-y-5">
+      {/* Approved identities — Fan is always on, others are application-approved */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-3" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+          Your Identities
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {approvedIdentities.map((type) => {
+            const isFan = type === 'fan';
+            const label = CAPABILITY_LABELS[type] || type;
+            return (
+              <span
+                key={type}
+                className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+                style={isFan ? {
+                  background: `${MOTION} / 0.18)`,
+                  color: MOTION,
+                  border: `1px solid ${MOTION} / 0.4)`,
+                } : {
+                  background: `${MOTION} / 0.12)`,
+                  color: MOTION,
+                  border: `1px solid ${MOTION} / 0.3)`,
+                }}
+              >
+                {isFan && <Heart className="w-3 h-3" />}
+                {!isFan && <ShieldCheck className="w-3 h-3" />}
+                {label}
+              </span>
+            );
+          })}
+        </div>
+        <p className="text-xs mt-2" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+          Fan is your default identity. Other identities are granted after application review.
+        </p>
       </div>
 
-      {/* Primary picker */}
-      {profileTypes.length > 1 && (
-        <div>
-          <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'hsl(var(--foreground-quiet))' }}>
-            Which role do you want front and center in your Garage?
+      {/* Application form */}
+      <div className="pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Plus className="w-3.5 h-3.5" style={{ color: MOTION }} />
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: MOTION }}>
+            Apply for a new identity
           </p>
-          <div className="flex flex-wrap gap-2">
-            {profileTypes.map(type => {
-              const config = PROFILE_TYPE_CONFIG[type];
-              const isPrimary = primaryType === type;
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setPrimary(type)}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5"
-                  style={isPrimary ? {
-                    background: MOTION,
-                    color: 'hsl(var(--canvas))',
-                    border: `1px solid ${MOTION}`,
-                    boxShadow: `0 0 12px ${MOTION} / 0.3)`,
-                  } : {
-                    background: 'hsl(var(--surface-interactive) / 0.4)',
-                    color: 'hsl(var(--foreground-quiet))',
-                    border: '1px solid hsl(var(--divider))',
-                  }}
-                >
-                  {isPrimary && <span className="w-1.5 h-1.5 rounded-full inline-block flex-shrink-0" style={{ background: 'hsl(var(--canvas))' }} />}
-                  {config.label}
-                </button>
-              );
-            })}
-          </div>
         </div>
-      )}
+        <IdentityApplicationForm user={user} />
+      </div>
     </div>
   );
 }

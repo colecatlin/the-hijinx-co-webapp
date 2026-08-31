@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -10,6 +10,7 @@ import DashboardProfileCard from '@/components/mydashboard/DashboardProfileCard'
 import RaceCoreTiles from '@/components/mydashboard/RaceCoreTiles';
 import DashboardSummaryWidgets from '@/components/mydashboard/DashboardSummaryWidgets';
 import DashboardAdaptiveModules from '@/components/mydashboard/DashboardAdaptiveModules';
+import DashboardIdentitySwitcher from '@/components/mydashboard/DashboardIdentitySwitcher';
 import AccessSuccessBanner from '@/components/mydashboard/AccessSuccessBanner';
 import PendingAccessSection from '@/components/mydashboard/PendingAccessSection';
 import OnboardingGuard from '@/components/onboarding/OnboardingGuard';
@@ -140,6 +141,10 @@ export default function MyDashboard() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+
+  // Local-only identity view toggle. When set, overrides primaryProfileType
+  // for the adaptive modules section — does NOT write to the user's profile.
+  const [identityOverride, setIdentityOverride] = useState(null);
 
   const { data: resolvedEntities = [], isLoading: resolvedLoading } = useQuery({
     queryKey: ['resolvedEntities', user?.id],
@@ -353,8 +358,17 @@ export default function MyDashboard() {
         )}
 
         {/* ── Adaptive discovery modules ───────────────────────────── */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <DashboardAdaptiveModules primaryProfileType={primaryProfileType} mode={mode} />
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="space-y-3">
+          <DashboardIdentitySwitcher
+            user={user}
+            activeIdentity={identityOverride || primaryProfileType}
+            onSelect={setIdentityOverride}
+          />
+          <DashboardAdaptiveModules
+            primaryProfileType={primaryProfileType}
+            mode={mode}
+            identityOverride={identityOverride}
+          />
         </motion.div>
 
         {/* ── Pending invitations ──────────────────────────────────── */}

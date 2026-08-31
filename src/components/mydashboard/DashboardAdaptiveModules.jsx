@@ -113,11 +113,15 @@ const SECTION_LABELS = {
   fan: 'Explore',
 };
 
-export default function DashboardAdaptiveModules({ primaryProfileType, mode }) {
+export default function DashboardAdaptiveModules({ primaryProfileType, mode, identityOverride }) {
+  // identityOverride is a local-only view toggle from the dashboard switcher.
+  // When set, it overrides the primary profile type for module selection only —
+  // it does NOT change the canonical profile.
+  const effectiveType = identityOverride || primaryProfileType;
   const key = (() => {
-    if (mode === 'media_user') return 'media';
-    if (['entity_owner', 'entity_editor'].includes(mode)) return primaryProfileType || 'driver';
-    return primaryProfileType || 'fan';
+    if (mode === 'media_user' && !identityOverride) return 'media';
+    if (['entity_owner', 'entity_editor'].includes(mode) && !identityOverride) return effectiveType || 'driver';
+    return effectiveType || 'fan';
   })();
 
   const modules = MODULE_SETS[key] || MODULE_SETS.fan;

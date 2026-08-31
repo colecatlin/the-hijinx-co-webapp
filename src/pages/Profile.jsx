@@ -595,12 +595,9 @@ export default function Profile() {
               <GlassPanel>
                 <SectionLabel>Motorsports Identity</SectionLabel>
                 <p className="text-xs mb-4" style={{ color: 'hsl(var(--foreground-quiet))' }}>
-                  Select all that apply. Your primary identity shapes how your Dashboard is organized.
+                  Everyone is a Fan by default. Apply for additional identities — each one is reviewed to keep the platform authentic.
                 </p>
-                <IdentitySection formData={formData} setFormData={setFormData} />
-                <div className="mt-6 pt-4" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
-                  <SaveButton label="Save Identity" />
-                </div>
+                <IdentitySection formData={formData} setFormData={setFormData} user={user} />
               </GlassPanel>
             </TabsContent>
 
