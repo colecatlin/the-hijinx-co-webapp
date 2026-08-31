@@ -15,7 +15,7 @@ export default function DriverAccessSection({ driverId }) {
   const { data: driver } = useQuery({
     queryKey: ['driver', driverId],
     queryFn: () => base44.entities.Driver.filter({ id: driverId }),
-    enabled: driverId && driverId !== 'new',
+    enabled: !!driverId && driverId !== 'new',
   });
 
   const driverData = driver?.[0];
