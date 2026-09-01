@@ -273,6 +273,13 @@ export default function Layout({ children, currentPageName }) {
                         key={item.name}
                         className="relative"
                         onMouseEnter={() => setHoveredItem(item.name)}
+                        onClick={(e) => {
+                          if (item.sub && window.matchMedia('(hover: none)').matches && hoveredItem !== item.name) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setHoveredItem(item.name);
+                          }
+                        }}
                       >
                         <Link
                            to={item.href || (item.page ? createPageUrl(item.page) : '#')}

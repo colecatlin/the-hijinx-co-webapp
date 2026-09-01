@@ -51,6 +51,7 @@ import VehicleHistoryPanel from '@/components/racerprofile/VehicleHistoryPanel';
 import ProfileCompletenessIndicator from '@/components/racerprofile/ProfileCompletenessIndicator';
 import StatisticsBreakdown from '@/components/racerprofile/StatisticsBreakdown';
 import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -243,6 +244,7 @@ export default function RacerProfile() {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(experience.seo.structured_data) }} />
       )}
 
+      <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', routeSlug] }); }}>
       <MobileBackHeader tone="light" title={fullName} to="/Directory?cat=racers" />
 
       {isAdmin && racerProfile.visibility !== 'live' && (
@@ -342,7 +344,7 @@ export default function RacerProfile() {
         )}
 
         {/* TAB NAV */}
-        <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mt-2 mb-6 scrollbar-hide">
+        <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mt-2 mb-6 scrollbar-hide sticky top-16 z-30 bg-white">
           {TABS.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 text-xs font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${
@@ -660,6 +662,7 @@ export default function RacerProfile() {
           </div>
         )}
       </div>
+      </PullToRefresh>
     </PageShell>
   );
 }

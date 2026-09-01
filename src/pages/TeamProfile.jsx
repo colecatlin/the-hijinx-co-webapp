@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
-import { getTeamProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { EntityNotFound } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -52,30 +52,27 @@ export default function TeamProfile() {
   const teamSlug = (urlParams.get('slug') || urlParams.get('id') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Sprint 1E: Profile data uses 5min staleTime — public content rarely changes
-  const { data: profileData, isLoading } = useQuery({
-    queryKey: ['teamProfileData', teamSlug],
-    queryFn: () => getTeamProfileData({ id: teamSlug, slug: teamSlug }),
-    enabled: !!teamSlug,
-    ...applyExperienceQueryOptions(),
-  });
+  const queryClient = useQueryClient();
 
-  // Phase 11 — Computed team experience data (Sprint 1E: 5min staleTime for server-aggregated data)
-  const { data: experienceData } = useQuery({
+  // Phase 11 — Single server-side call: getTeamExperience returns both computed
+  // experience (roster, timeline, stats) AND raw page_data (team, entries, results,
+  // events, tracks, programs) eliminating client-side over-fetching.
+  const { data: experienceData, isLoading } = useQuery({
     queryKey: ['teamExperience', teamSlug],
     queryFn: () => base44.functions.invoke('getTeamExperience', { slug: teamSlug, allow_draft: true }),
     enabled: !!teamSlug,
     ...applyExperienceQueryOptions(),
   });
   const experience = experienceData?.data || experienceData || null;
+  const pageData = experience?.page_data || null;
 
-  const team           = profileData?.team           ?? null;
-  const rosterDrivers  = profileData?.roster_drivers ?? [];
-  const driverPrograms = profileData?.programs       ?? [];
-  const entries        = profileData?.entries        ?? [];
-  const results        = profileData?.results        ?? [];
-  const allEvents      = profileData?.events         ?? [];
-  const allTracks      = profileData?.tracks         ?? [];
+  const team           = pageData?.team           ?? experience?.team ?? null;
+  const rosterDrivers  = pageData?.roster_drivers ?? [];
+  const driverPrograms = pageData?.programs       ?? [];
+  const entries        = pageData?.entries        ?? [];
+  const results        = pageData?.results        ?? [];
+  const allEvents      = pageData?.events         ?? [];
+  const allTracks      = pageData?.tracks         ?? [];
 
   useEffect(() => { window.scrollTo(0, 0); setActiveTab('overview'); }, [teamSlug]);
   useEffect(() => { if (team) Analytics.profileViewTeam(team.id, team.name); }, [team?.id]);
@@ -149,6 +146,7 @@ export default function TeamProfile() {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(experience.seo.structured_data) }} />
       )}
 
+      <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['teamExperience', teamSlug] }); }}>
       <MobileBackHeader tone="light" title={team.name} to="/Directory?cat=teams" />
 
       {/* ── HERO ── */}
@@ -189,7 +187,7 @@ export default function TeamProfile() {
       </div>
 
       {/* ── NAV BAR ── */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2 pb-0">
             <EntityBreadcrumbs entityType="Team" entityName={team?.name} />
@@ -440,6 +438,7 @@ export default function TeamProfile() {
 
         <ProfileClaimFooter entityType="Team" entityId={team?.id} entityName={team.name} />
       </div>
+      </PullToRefresh>
     </PageShell>
   );
 }

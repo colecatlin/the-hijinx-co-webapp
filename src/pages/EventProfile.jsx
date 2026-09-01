@@ -2,11 +2,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import { getEventProfileData } from '@/components/entities/publicPageDataApi';
 import PageShell from '@/components/shared/PageShell';
 import MobileBackHeader from '@/components/shared/MobileBackHeader';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,6 +59,7 @@ export default function EventProfile({ routeSlug }) {
   const eventSlug = routeSlug || (urlParams.get('slug') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedClassId, setSelectedClassId] = useState('');
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), retry: false });
   const { data: isAuthenticated } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), retry: false });
@@ -144,6 +146,7 @@ export default function EventProfile({ routeSlug }) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.structured_data) }} />
       )}
 
+      <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['eventExperience', eventId, eventSlug] }); }}>
       <MobileBackHeader tone="light" title={eventTitle} to={createPageUrl('EventDirectory')} />
 
       {/* HERO */}
@@ -175,7 +178,7 @@ export default function EventProfile({ routeSlug }) {
       </div>
 
       {/* NAV */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2">
             <EntityBreadcrumbs entityType="Event" entityName={event.name} />
@@ -246,6 +249,7 @@ export default function EventProfile({ routeSlug }) {
 
         <ProfileClaimFooter entityType="Event" entityId={event?.id} entityName={event.name} />
       </div>
+      </PullToRefresh>
     </PageShell>
   );
 }

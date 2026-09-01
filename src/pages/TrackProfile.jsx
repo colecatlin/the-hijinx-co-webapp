@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
 import PageShell from '@/components/shared/PageShell';
 import MobileBackHeader from '@/components/shared/MobileBackHeader';
+import PullToRefresh from '@/components/shared/PullToRefresh';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Skeleton } from '@/components/ui/skeleton';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
@@ -51,6 +52,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
   const [searchParams] = useSearchParams();
   const trackSlug = overrideSlug || (searchParams.get('slug') || searchParams.get('id') || '').trim() || null;
   const [activeTab, setActiveTab] = useState('overview');
+  const queryClient = useQueryClient();
 
   const { data: experienceData, isLoading } = useQuery(applyExperienceQueryOptions({
     queryKey: ['trackExperience', trackSlug],
@@ -98,6 +100,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
       />
 
       {/* Mobile back header */}
+      <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['trackExperience', trackSlug] }); }}>
       <MobileBackHeader title={track.name} />
 
       {/* Hero */}
@@ -135,7 +138,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 overflow-x-auto border-b border-divider mb-6 scrollbar-hide">
+        <div className="flex gap-1 overflow-x-auto border-b border-divider mb-6 scrollbar-hide sticky top-16 z-30 bg-canvas">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -372,6 +375,7 @@ export default function TrackProfile({ overrideSlug } = {}) {
 
         <ProfileClaimFooter entityType="Track" entityId={track.id} entityName={track.name} />
       </div>
+      </PullToRefresh>
     </PageShell>
   );
 }

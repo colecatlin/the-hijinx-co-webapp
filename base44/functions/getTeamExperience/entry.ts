@@ -58,6 +58,19 @@ async function loadTeamContext(base44, team) {
   return { team, entries, teamEntries, teamResults, teamStandings, driverPrograms, teamDriverPrograms, entrySponsors: teamEntrySponsors, driverMedia, outletStories, allDrivers, allRacerProfiles, allVehicles, allSeries, allClasses, allEvents, allTracks, allSessions, allTeams, driverMap, racerProfileMap, vehicleMap, seriesMap, classMap, eventMap, trackMap, sessionMap };
 }
 
+function buildPageData(ctx, publicFields) {
+  const { teamEntries, teamResults, teamDriverPrograms, allEvents, allTracks, driverMap } = ctx;
+  const driverIds = new Set();
+  teamDriverPrograms.forEach(dp => { if (dp.driver_id) driverIds.add(dp.driver_id); });
+  teamEntries.forEach(e => { if (e.driver_id) driverIds.add(e.driver_id); });
+  const roster_drivers = Array.from(driverIds).map(id => driverMap.get(id)).filter(Boolean);
+  const eventIds = new Set(teamEntries.map(e => e.event_id).filter(Boolean));
+  const events = allEvents.filter(e => eventIds.has(e.id));
+  const trackIds = new Set(events.map(e => e.track_id).filter(Boolean));
+  const tracks = allTracks.filter(t => trackIds.has(t.id));
+  return { team: publicFields, roster_drivers, programs: teamDriverPrograms, entries: teamEntries, results: teamResults, events, tracks };
+}
+
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -87,7 +100,8 @@ export default async function(req) {
       legacySponsors: legacyEntrySponsors,
     });
 
-    return Response.json({ team: publicFields, roster, timeline, statistics, achievements, sponsors, sponsorships: sponsorshipResult.sponsorships, sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count }, media, profile_completeness: profileCompleteness, seo });
+    const page_data = buildPageData(ctx, publicFields);
+    return Response.json({ team: publicFields, roster, timeline, statistics, achievements, sponsors, sponsorships: sponsorshipResult.sponsorships, sponsorship_counts: { modern: sponsorshipResult.modern_count, legacy: sponsorshipResult.legacy_count, deduped: sponsorshipResult.deduped_count }, media, profile_completeness: profileCompleteness, seo, page_data });
   } catch (err) {
     console.error("[getTeamExperience] Error:", err);
     return Response.json({ error: err.message || "Internal server error" }, { status: 500 });
