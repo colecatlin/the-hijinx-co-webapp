@@ -73,7 +73,22 @@ Deno.serve(async (req) => {
     // 8. Calculate revenue split from the authoritative agreement
     const split = calculateRevenueSplit(licensePriceCents, agreement);
 
-    // 9. Create Stripe Checkout Session using the server-derived price only
+    // 9. Validate redirect URLs to prevent open redirect attacks.
+    // Only allow relative paths or URLs matching the request origin.
+    const origin = req.headers.get('origin') || '';
+    const safeUrl = (url) => {
+      if (!url || typeof url !== 'string') return null;
+      if (url.startsWith('/') && !url.startsWith('//')) return `${origin}${url}`;
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === origin) return url;
+      } catch {}
+      return null;
+    };
+    const safeSuccessUrl = safeUrl(successUrl) || `${origin}/MediaHome?license=success`;
+    const safeCancelUrl = safeUrl(cancelUrl) || `${origin}/MediaHome?license=cancelled`;
+
+    // 10. Create Stripe Checkout Session using the server-derived price only
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -89,8 +104,8 @@ Deno.serve(async (req) => {
         quantity: 1
       }],
       mode: 'payment',
-      success_url: successUrl || 'https://hijinx.app/MediaHome?license=success',
-      cancel_url: cancelUrl || 'https://hijinx.app/MediaHome?license=cancelled',
+      success_url: safeSuccessUrl,
+      cancel_url: safeCancelUrl,
       metadata: {
         asset_id: assetId,
         agreement_id: agreementId,

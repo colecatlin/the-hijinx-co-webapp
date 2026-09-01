@@ -12,6 +12,13 @@ Deno.serve(async (req) => {
     const VALID = ['uploaded', 'in_review', 'approved', 'rejected', 'flagged'];
     if (!VALID.includes(status)) return Response.json({ error: 'Invalid status' }, { status: 400 });
 
+    // Verify the review belongs to the claimed entity (prevents IDOR: a
+    // collaborator on entity A cannot update a review belonging to entity B
+    // by supplying entity A's id alongside entity B's review_id).
+    const existing = await base44.asServiceRole.entities.AssetReview.get(review_id);
+    if (!existing) return Response.json({ error: 'Review not found' }, { status: 404 });
+    if (existing.entity_id !== entity_id) return Response.json({ error: 'Forbidden: review does not belong to this entity' }, { status: 403 });
+
     // Validate authority — always check the server-verified caller identity,
     // never a client-supplied reviewer_user_id (which could spoof another
     // user's collaborator record to bypass the authority check).

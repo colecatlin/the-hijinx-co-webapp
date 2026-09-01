@@ -12,6 +12,15 @@ Deno.serve(async (req) => {
     const statusList = status || ['uploaded', 'in_review', 'flagged'];
     const maxLimit = limit || 50;
 
+    // Authorization: only admins or collaborators on this entity may view its review queue.
+    if (user.role !== 'admin') {
+      const collaborators = await base44.asServiceRole.entities.EntityCollaborator.filter({
+        entity_id,
+        user_id: user.id,
+      });
+      if (!collaborators.length) return Response.json({ error: 'Forbidden: no authority on this entity' }, { status: 403 });
+    }
+
     // Fetch all reviews for entity, filter by status
     const allReviews = await base44.asServiceRole.entities.AssetReview.filter({ entity_id });
     const filtered = allReviews
