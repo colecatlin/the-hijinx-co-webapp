@@ -25,8 +25,9 @@ export default async function(req) {
     // Validate redirect URLs to prevent open redirect attacks.
     // Only allow relative paths or URLs matching the request origin.
     const safeUrl = (url) => {
-      if (!url) return null;
-      if (url.startsWith('/')) return `${origin}${url}`;
+      if (!url || typeof url !== 'string') return null;
+      // Reject protocol-relative URLs (//evil.com) — only allow paths starting with exactly one /
+      if (url.startsWith('/') && !url.startsWith('//')) return `${origin}${url}`;
       try {
         const parsed = new URL(url);
         if (parsed.origin === origin) return url;
