@@ -233,7 +233,7 @@ export default function OutletHome() {
                 onClick={() => setActiveSub(sub)}
                 className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap transition-all"
                 style={{
-                  color: activeSub === sub ? '#fff' : 'hsl(var(--foreground-quiet))',
+                  color: activeSub === sub ? 'hsl(var(--canvas))' : 'hsl(var(--foreground-quiet))',
                   background: activeSub === sub ? OUTLET_CYAN : 'transparent',
                   border: `1px solid ${activeSub === sub ? OUTLET_CYAN : 'hsl(var(--divider))'}`,
                 }}
@@ -316,7 +316,7 @@ export default function OutletHome() {
                           onClick={() => setPopularRange(key)}
                           className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider whitespace-nowrap transition-all"
                           style={{
-                            color: popularRange === key ? '#fff' : 'hsl(var(--foreground-quiet))',
+                            color: popularRange === key ? 'hsl(var(--canvas))' : 'hsl(var(--foreground-quiet))',
                             background: popularRange === key ? OUTLET_CYAN : 'transparent',
                             border: `1px solid ${popularRange === key ? OUTLET_CYAN : 'hsl(var(--divider))'}`,
                           }}

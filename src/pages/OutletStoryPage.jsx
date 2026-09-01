@@ -72,14 +72,14 @@ export default function OutletStoryPage() {
   // ── Loading ──────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div style={{ background: '#080808', minHeight: '100vh' }}>
+      <div style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
         <div className="max-w-3xl mx-auto px-6 py-16">
-          <Skeleton className="h-4 w-24 mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <Skeleton className="h-3 w-20 mb-4" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <Skeleton className="h-12 w-full mb-3" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <Skeleton className="h-12 w-2/3 mb-8" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <Skeleton className="h-72 w-full mb-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-4 w-full mb-3" style={{ background: 'rgba(255,255,255,0.04)' }} />)}
+          <Skeleton className="h-4 w-24 mb-10" style={{ background: 'hsl(var(--divider))' }} />
+          <Skeleton className="h-3 w-20 mb-4" style={{ background: 'hsl(var(--divider))' }} />
+          <Skeleton className="h-12 w-full mb-3" style={{ background: 'hsl(var(--divider))' }} />
+          <Skeleton className="h-12 w-2/3 mb-8" style={{ background: 'hsl(var(--divider))' }} />
+          <Skeleton className="h-72 w-full mb-10" style={{ background: 'hsl(var(--divider))' }} />
+          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-4 w-full mb-3" style={{ background: 'hsl(var(--divider))' }} />)}
         </div>
       </div>
     );
@@ -88,10 +88,10 @@ export default function OutletStoryPage() {
   // ── Not found ─────────────────────────────────────────────────────────────
   if (!story) {
     return (
-      <div style={{ background: '#080808', minHeight: '100vh' }}>
+      <div style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
         <div className="max-w-3xl mx-auto px-6 py-24 text-center">
           <img src={LOGO_URL} alt="The Outlet" className="w-12 h-12 mx-auto mb-6 opacity-30" />
-          <p className="text-white/40 text-sm mb-4">Story not found.</p>
+          <p className="text-foreground-quiet text-sm mb-4">Story not found.</p>
           <Link to={createPageUrl('OutletHome')} className="text-xs font-mono uppercase tracking-widest transition-colors" style={{ color: OUTLET_CYAN }}>
             ← Back to The Outlet
           </Link>
@@ -105,18 +105,18 @@ export default function OutletStoryPage() {
   const related   = relatedStories.filter(s => s.id !== story.id).slice(0, 3);
 
   return (
-    <div style={{ background: '#080808', minHeight: '100vh' }}>
+    <div style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
       <SeoMeta title={story.title} description={storyDesc} image={storyImg} type="article" />
 
-      <MobileBackHeader tone="dark" title={story.title} to={createPageUrl('OutletHome')} />
+      <MobileBackHeader title={story.title} to={createPageUrl('OutletHome')} />
 
       {/* ── MASTHEAD ── */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center gap-4">
           <Link to={createPageUrl('OutletHome')} className="flex items-center gap-3 group">
             <img src={LOGO_URL} alt="The Outlet" className="w-8 h-8 group-hover:opacity-80 transition-opacity" />
             <div>
-              <div className="font-black text-white text-lg tracking-tight uppercase leading-none">The Outlet</div>
+              <div className="font-black text-foreground text-lg tracking-tight uppercase leading-none">The Outlet</div>
               <div className="font-mono text-[8px] tracking-[0.4em] uppercase" style={{ color: OUTLET_CYAN }}>Short Course Off-Road Media</div>
             </div>
           </Link>
@@ -138,9 +138,9 @@ export default function OutletStoryPage() {
             <Link
               to={createPageUrl('OutletHome')}
               className="inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-[0.3em] mb-10 transition-colors"
-              style={{ color: 'rgba(255,255,255,0.3)' }}
+              style={{ color: 'hsl(var(--foreground-quiet))' }}
               onMouseEnter={e => e.currentTarget.style.color = OUTLET_CYAN}
-              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.3)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'hsl(var(--foreground-quiet))'}
             >
               <ArrowLeft className="w-3 h-3" /> The Outlet
             </Link>
@@ -155,36 +155,36 @@ export default function OutletStoryPage() {
             </div>
 
             {/* Headline */}
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.02] text-white mb-5">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-[1.02] text-foreground mb-5">
               {story.title}
             </h1>
 
             {/* Subtitle */}
             {story.subtitle && (
-              <p className="text-lg md:text-xl leading-relaxed mb-8" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              <p className="text-lg md:text-xl leading-relaxed mb-8" style={{ color: 'hsl(var(--foreground-secondary))' }}>
                 {story.subtitle}
               </p>
             )}
 
             {/* Meta bar */}
-            <div className="flex flex-wrap items-center gap-4 py-5 mb-8" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="flex flex-wrap items-center gap-4 py-5 mb-8" style={{ borderTop: '1px solid hsl(var(--divider))', borderBottom: '1px solid hsl(var(--divider))' }}>
               {story.author && (
-                <span className="flex items-center gap-1.5 text-xs font-semibold text-white/60">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-foreground-secondary">
                   <User className="w-3 h-3" style={{ color: OUTLET_CYAN }} />
                   {story.author}
                 </span>
               )}
               {story.published_date && (
-                <span className="flex items-center gap-1.5 text-xs text-white/35 font-mono">
+                <span className="flex items-center gap-1.5 text-xs text-foreground-quiet font-mono">
                   <Calendar className="w-3 h-3" />
                   {format(new Date(story.published_date), 'MMMM d, yyyy')}
                 </span>
               )}
               {story.photo_credit && (
-                <span className="text-xs text-white/30">Photo: {story.photo_credit}</span>
+                <span className="text-xs text-foreground-quiet">Photo: {story.photo_credit}</span>
               )}
               {(story.location_city || story.location_state) && (
-                <span className="flex items-center gap-1 text-xs text-white/30">
+                <span className="flex items-center gap-1 text-xs text-foreground-quiet">
                   <MapPin className="w-3 h-3" />
                   {[story.location_city, story.location_state].filter(Boolean).join(', ')}
                 </span>
@@ -200,8 +200,8 @@ export default function OutletStoryPage() {
                 {linkedDriver && (
                   <Link
                     to={`/drivers/${linkedDriver.canonical_slug || linkedDriver.slug || linkedDriver.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:text-white transition-colors"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-foreground-secondary hover:text-foreground transition-colors"
+                    style={{ border: '1px solid hsl(var(--divider))', background: 'hsl(var(--divider))' }}
                   >
                     <User className="w-3 h-3" style={{ color: OUTLET_CYAN }} />
                     Featuring {linkedDriver.first_name} {linkedDriver.last_name}
@@ -210,8 +210,8 @@ export default function OutletStoryPage() {
                 {linkedEvent && (
                   <Link
                     to={`${createPageUrl('EventProfile')}?id=${linkedEvent.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white/70 hover:text-white transition-colors"
-                    style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)' }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-foreground-secondary hover:text-foreground transition-colors"
+                    style={{ border: '1px solid hsl(var(--divider))', background: 'hsl(var(--divider))' }}
                   >
                     <Calendar className="w-3 h-3" style={{ color: OUTLET_CYAN }} />
                     From {linkedEvent.name}
@@ -231,16 +231,16 @@ export default function OutletStoryPage() {
             {/* Body */}
             <div
               className="editorial-body mt-4"
-              style={{ color: 'rgba(255,255,255,0.78)' }}
+              style={{ color: 'hsl(var(--foreground) / 0.82)' }}
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.body || '') }}
             />
 
             {/* Tags */}
             {story.tags?.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2 mt-14 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <Tag className="w-3 h-3 text-white/30" />
+              <div className="flex flex-wrap items-center gap-2 mt-14 pt-8" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
+                <Tag className="w-3 h-3 text-foreground-quiet" />
                 {story.tags.map(tag => (
-                  <span key={tag} className="px-3 py-1 text-[9px] font-mono tracking-[0.3em] uppercase text-white/40" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <span key={tag} className="px-3 py-1 text-[9px] font-mono tracking-[0.3em] uppercase text-foreground-quiet" style={{ border: '1px solid hsl(var(--divider))' }}>
                     {tag}
                   </span>
                 ))}
@@ -248,7 +248,7 @@ export default function OutletStoryPage() {
             )}
 
             {/* Share footer */}
-            <div className="mt-12 pt-8 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <div className="mt-12 pt-8 flex items-center justify-between" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
               <Link
                 to={createPageUrl('OutletHome')}
                 className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider transition-colors"
@@ -270,18 +270,18 @@ export default function OutletStoryPage() {
 
         {/* ── RELATED STORIES ── */}
         {related.length > 0 && (
-          <div className="pb-16" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="pb-16" style={{ borderTop: '1px solid hsl(var(--divider))' }}>
             <div className="flex items-center gap-4 py-8 mb-6">
               <div className="w-6 h-0.5" style={{ background: OUTLET_CYAN }} />
               <span className="font-mono text-[10px] tracking-[0.45em] uppercase" style={{ color: OUTLET_CYAN }}>More in {story.primary_category}</span>
-              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.05)' }} />
-              <Link to={createPageUrl('OutletHome')} className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-white/30 hover:text-white transition-colors">
+              <div className="flex-1 h-px" style={{ background: 'hsl(var(--divider) / 0.5)' }} />
+              <Link to={createPageUrl('OutletHome')} className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-foreground-quiet hover:text-foreground transition-colors">
                 All Stories <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-0.5">
               {related.map(s => (
-                <Link key={s.id} to={getOutletStoryUrl(s)} className="group block" style={{ background: '#0a0a0a' }}>
+                <Link key={s.id} to={getOutletStoryUrl(s)} className="group block" style={{ background: 'hsl(var(--surface))' }}>
                   {s.cover_image && (
                     <div className="aspect-[3/2] overflow-hidden">
                       <img src={s.cover_image} alt={s.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
@@ -289,8 +289,8 @@ export default function OutletStoryPage() {
                   )}
                   <div className="p-4">
                     <span className="font-mono text-[9px] tracking-[0.35em] uppercase block mb-2" style={{ color: OUTLET_CYAN }}>{s.primary_category}</span>
-                    <h4 className="text-sm font-bold text-white/85 group-hover:text-white transition-colors leading-snug">{s.title}</h4>
-                    {s.published_date && <span className="text-[10px] text-white/25 font-mono mt-2 block">{format(new Date(s.published_date), 'MMM d, yyyy')}</span>}
+                    <h4 className="text-sm font-bold text-foreground group-hover:text-foreground transition-colors leading-snug">{s.title}</h4>
+                    {s.published_date && <span className="text-[10px] text-foreground-quiet font-mono mt-2 block">{format(new Date(s.published_date), 'MMM d, yyyy')}</span>}
                   </div>
                 </Link>
               ))}
