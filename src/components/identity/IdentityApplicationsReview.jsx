@@ -50,30 +50,53 @@ export default function IdentityApplicationsReview() {
 
   const filters = ['pending', 'needs_more_info', 'approved', 'rejected', 'all'];
 
+  const counts = {
+    pending: applications.filter((a) => a.status === 'pending').length,
+    needs_more_info: applications.filter((a) => a.status === 'needs_more_info').length,
+    approved: applications.filter((a) => a.status === 'approved').length,
+    rejected: applications.filter((a) => a.status === 'rejected').length,
+    all: applications.length,
+  };
+
+  const filterMeta = {
+    pending: { headline: 'No pending applications', desc: 'New identity requests awaiting your review will appear here. When users submit an application, it lands in this queue for approval.' },
+    needs_more_info: { headline: 'No applications need more info', desc: 'Applications where you requested additional evidence or clarification will show here once applicants respond.' },
+    approved: { headline: 'No approved applications', desc: 'Approved identity requests are archived here for reference. Newly approved applications will appear in this list.' },
+    rejected: { headline: 'No rejected applications', desc: 'Declined identity requests are retained here for audit purposes. Rejected applications will appear in this list.' },
+    all: { headline: 'No applications yet', desc: 'Identity applications submitted by users requesting a non-Fan role will appear here for your review.' },
+  };
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-black" style={{ color: 'hsl(var(--foreground))' }}>Identity Applications</h2>
-          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
-            Review and approve identity requests from users.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {filters.map((f) => (
-            <button key={f} type="button" onClick={() => setFilter(f)}
-              className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all"
-              style={filter === f ? {
-                background: MOTION, color: 'hsl(var(--canvas))',
-              } : {
-                background: 'hsl(var(--surface-interactive) / 0.3)',
-                color: 'hsl(var(--foreground-quiet))',
-                border: '1px solid hsl(var(--divider) / 0.6)',
-              }}>
-              {f.replace(/_/g, ' ')}
-            </button>
-          ))}
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-xl font-black" style={{ color: 'hsl(var(--foreground))' }}>Identity Applications</h2>
+        <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+          Review and approve identity requests from users.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-1.5 rounded-xl p-2"
+        style={{ background: 'hsl(var(--surface-elevated) / 0.5)', border: '1px solid hsl(var(--divider) / 0.5)' }}>
+        {filters.map((f) => (
+          <button key={f} type="button" onClick={() => setFilter(f)}
+            className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5"
+            style={filter === f ? {
+              background: MOTION, color: 'hsl(var(--canvas))',
+            } : {
+              background: 'hsl(var(--surface-interactive) / 0.3)',
+              color: 'hsl(var(--foreground-quiet))',
+              border: '1px solid hsl(var(--divider) / 0.6)',
+            }}>
+            {f.replace(/_/g, ' ')}
+            {counts[f] > 0 && (
+              <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                style={filter === f
+                  ? { background: 'hsl(var(--canvas) / 0.2)', color: 'hsl(var(--canvas))' }
+                  : { background: 'hsl(var(--motion) / 0.15)', color: MOTION }}>
+                {counts[f]}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {error && (
@@ -88,9 +111,42 @@ export default function IdentityApplicationsReview() {
           <Loader2 className="w-5 h-5 animate-spin" style={{ color: MOTION }} />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12">
-          <FileText className="w-8 h-8 mx-auto mb-2" style={{ color: 'hsl(var(--foreground-quiet))' }} />
-          <p className="text-sm" style={{ color: 'hsl(var(--foreground-quiet))' }}>No {filter} applications.</p>
+        <div className="flex items-center justify-center py-10">
+          <div className="max-w-md w-full rounded-2xl p-8 text-center space-y-4"
+            style={{ background: 'hsl(var(--surface-elevated) / 0.6)', border: '1px solid hsl(var(--divider) / 0.6)' }}>
+            <div className="w-14 h-14 mx-auto rounded-full flex items-center justify-center"
+              style={{ background: 'hsl(var(--motion) / 0.1)', border: '1px solid hsl(var(--motion) / 0.2)' }}>
+              <FileText className="w-6 h-6" style={{ color: MOTION }} />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="text-base font-black" style={{ color: 'hsl(var(--foreground))' }}>
+                {filterMeta[filter].headline}
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+                {filterMeta[filter].desc}
+              </p>
+            </div>
+            {filters.filter((f) => f !== filter && counts[f] > 0).length > 0 && (
+              <div className="pt-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+                  Jump to where work exists
+                </p>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {filters.filter((f) => f !== filter && counts[f] > 0).map((f) => (
+                    <button key={f} type="button" onClick={() => setFilter(f)}
+                      className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5"
+                      style={{ background: 'hsl(var(--motion) / 0.08)', color: MOTION, border: '1px solid hsl(var(--motion) / 0.25)' }}>
+                      {f.replace(/_/g, ' ')}
+                      <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'hsl(var(--motion) / 0.2)', color: MOTION }}>
+                        {counts[f]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
