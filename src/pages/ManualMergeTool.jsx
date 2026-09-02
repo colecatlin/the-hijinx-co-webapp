@@ -2,74 +2,129 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import RaceCorePageHeader from '@/components/racecore/RaceCorePageHeader';
-import { GitMerge, Search, Loader2, CheckCircle2, AlertTriangle, ArrowRight, Trophy, Link2 } from 'lucide-react';
+import { GitMerge, Search, Loader2, CheckCircle2, AlertTriangle, ArrowRight, Link2, Trophy, User, Users, MapPin, Flag } from 'lucide-react';
 
 const MOTION = 'hsl(var(--motion))';
 const DANGER = 'hsl(var(--danger))';
 const WARNING = 'hsl(var(--warning))';
 
-// Fields shown in the side-by-side comparison. Admin can toggle which value wins.
-const COMPARISON_FIELDS = [
-  { key: 'name', label: 'Name' },
-  { key: 'short_name', label: 'Short Name' },
-  { key: 'slug', label: 'Slug' },
-  { key: 'full_name', label: 'Full Name' },
-  { key: 'discipline', label: 'Discipline' },
-  { key: 'geographic_scope', label: 'Geographic Scope' },
-  { key: 'sanctioning_body', label: 'Sanctioning Body' },
-  { key: 'visibility_status', label: 'Visibility' },
-  { key: 'operational_status', label: 'Operational Status' },
-  { key: 'season_year', label: 'Season Year' },
-  { key: 'description', label: 'Description' },
-  { key: 'tagline', label: 'Tagline' },
-  { key: 'website_url', label: 'Website' },
-  { key: 'logo_url', label: 'Logo URL' },
-  { key: 'banner_url', label: 'Banner URL' },
-  { key: 'title_sponsor_name', label: 'Title Sponsor' },
-];
+// ── Per-entity-type configuration ────────────────────────────────────────────
+const ENTITY_CONFIG = {
+  Series: {
+    label: 'Series', icon: Trophy,
+    fields: ['name', 'short_name', 'slug', 'full_name', 'discipline', 'geographic_scope', 'sanctioning_body', 'visibility_status', 'operational_status', 'season_year', 'description', 'tagline', 'website_url', 'logo_url', 'banner_url', 'title_sponsor_name'],
+    getName: (r) => r.name || '',
+    getSub: (r) => r.slug || r.id,
+    references: [
+      { entity: 'Event', field: 'series_id', label: 'Events' },
+      { entity: 'SeriesClass', field: 'series_id', label: 'Classes' },
+      { entity: 'Standings', field: 'series_id', label: 'Standings' },
+      { entity: 'Entry', field: 'series_id', label: 'Entries' },
+      { entity: 'Sponsorship', polymorphic: true, type: 'Series', label: 'Sponsorships' },
+    ],
+  },
+  Driver: {
+    label: 'Driver', icon: User,
+    fields: ['first_name', 'last_name', 'slug', 'primary_number', 'hometown_city', 'hometown_state', 'hometown_country', 'racing_status', 'date_of_birth', 'contact_email', 'manufacturer'],
+    getName: (r) => `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.slug || r.id,
+    getSub: (r) => r.slug || r.id,
+    references: [
+      { entity: 'Results', field: 'driver_id', label: 'Results' },
+      { entity: 'Entry', field: 'driver_id', label: 'Entries' },
+      { entity: 'Standings', field: 'driver_id', label: 'Standings' },
+      { entity: 'DriverProgram', field: 'driver_id', label: 'Programs' },
+      { entity: 'DriverMedia', field: 'driver_id', label: 'Media' },
+      { entity: 'Vehicle', field: 'owner_driver_id', label: 'Vehicles' },
+    ],
+  },
+  Team: {
+    label: 'Team', icon: Users,
+    fields: ['name', 'slug', 'headquarters_city', 'headquarters_state', 'country', 'primary_discipline', 'racing_status', 'description', 'website_url', 'logo_url'],
+    getName: (r) => r.name || '',
+    getSub: (r) => r.slug || r.id,
+    references: [
+      { entity: 'Driver', field: 'team_id', label: 'Drivers' },
+      { entity: 'Entry', field: 'team_id', label: 'Entries' },
+      { entity: 'Vehicle', field: 'owner_team_id', label: 'Vehicles' },
+      { entity: 'Sponsorship', polymorphic: true, type: 'Team', label: 'Sponsorships' },
+    ],
+  },
+  Track: {
+    label: 'Track', icon: MapPin,
+    fields: ['name', 'slug', 'location_city', 'location_state', 'location_country', 'track_type', 'visibility_status', 'operational_status', 'description', 'website_url', 'logo_url'],
+    getName: (r) => r.name || '',
+    getSub: (r) => r.slug || r.id,
+    references: [
+      { entity: 'Event', field: 'track_id', label: 'Events' },
+      { entity: 'Sponsorship', polymorphic: true, type: 'Track', label: 'Sponsorships' },
+    ],
+  },
+  Event: {
+    label: 'Event', icon: Flag,
+    fields: ['name', 'slug', 'series_name', 'season', 'event_date', 'end_date', 'location_note', 'track_name', 'status', 'published_flag', 'description'],
+    getName: (r) => r.name || '',
+    getSub: (r) => r.slug || r.id,
+    references: [
+      { entity: 'Entry', field: 'event_id', label: 'Entries' },
+      { entity: 'Session', field: 'event_id', label: 'Sessions' },
+      { entity: 'EventClass', field: 'event_id', label: 'Classes' },
+      { entity: 'Results', field: 'event_id', label: 'Results' },
+      { entity: 'Sponsorship', polymorphic: true, type: 'Event', label: 'Sponsorships' },
+    ],
+  },
+};
 
-export default function SeriesMergeTool() {
+export default function ManualMergeTool() {
   const queryClient = useQueryClient();
-  const [allSeries, setAllSeries] = useState([]);
-  const [loadingSeries, setLoadingSeries] = useState(true);
+  const [entityType, setEntityType] = useState('Series');
+  const [allRecords, setAllRecords] = useState([]);
+  const [loadingRecords, setLoadingRecords] = useState(true);
   const [searchA, setSearchA] = useState('');
   const [searchB, setSearchB] = useState('');
   const [survivorId, setSurvivorId] = useState(null);
   const [duplicateId, setDuplicateId] = useState(null);
-  const [fieldChoices, setFieldChoices] = useState({}); // { field: 'survivor' | 'duplicate' }
+  const [fieldChoices, setFieldChoices] = useState({});
   const [reason, setReason] = useState('');
   const [merging, setMerging] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  // Load all series once
+  const cfg = ENTITY_CONFIG[entityType];
+
+  // Load records whenever entity type changes
   useEffect(() => {
     let cancelled = false;
+    setSurvivorId(null);
+    setDuplicateId(null);
+    setSearchA('');
+    setSearchB('');
+    setResult(null);
+    setError(null);
     (async () => {
-      setLoadingSeries(true);
+      setLoadingRecords(true);
       try {
-        const list = await base44.entities.Series.list('-created_date', 500);
-        if (!cancelled) setAllSeries(list || []);
+        const list = await base44.entities[entityType].list('-created_date', 500);
+        if (!cancelled) setAllRecords(list || []);
       } catch (e) {
-        if (!cancelled) setError('Failed to load series records.');
+        if (!cancelled) setError(`Failed to load ${entityType} records.`);
       } finally {
-        if (!cancelled) setLoadingSeries(false);
+        if (!cancelled) setLoadingRecords(false);
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [entityType]);
 
-  const survivor = useMemo(() => allSeries.find((s) => s.id === survivorId) || null, [allSeries, survivorId]);
-  const duplicate = useMemo(() => allSeries.find((s) => s.id === duplicateId) || null, [allSeries, duplicateId]);
+  const survivor = useMemo(() => allRecords.find((s) => s.id === survivorId) || null, [allRecords, survivorId]);
+  const duplicate = useMemo(() => allRecords.find((s) => s.id === duplicateId) || null, [allRecords, duplicateId]);
 
   // Default field choices to 'survivor' whenever selection changes
   useEffect(() => {
     const defaults = {};
-    COMPARISON_FIELDS.forEach((f) => { defaults[f.key] = 'survivor'; });
+    cfg.fields.forEach((f) => { defaults[f] = 'survivor'; });
     setFieldChoices(defaults);
     setResult(null);
     setError(null);
-  }, [survivorId, duplicateId]);
+  }, [survivorId, duplicateId, entityType]);
 
   // Reference counts for the duplicate (preview)
   const [refCounts, setRefCounts] = useState(null);
@@ -80,22 +135,15 @@ export default function SeriesMergeTool() {
     (async () => {
       setRefLoading(true);
       try {
-        const [events, classes, standings, entries, sponsorships] = await Promise.all([
-          base44.entities.Event.filter({ series_id: duplicateId }, '-created_date', 5000).catch(() => []),
-          base44.entities.SeriesClass.filter({ series_id: duplicateId }, '-created_date', 5000).catch(() => []),
-          base44.entities.Standings.filter({ series_id: duplicateId }, '-created_date', 5000).catch(() => []),
-          base44.entities.Entry.filter({ series_id: duplicateId }, '-created_date', 5000).catch(() => []),
-          base44.entities.Sponsorship.filter({ target_entity_type: 'Series', target_entity_id: duplicateId }, '-created_date', 5000).catch(() => []),
-        ]);
-        if (!cancelled) {
-          setRefCounts({
-            Event: events.length,
-            SeriesClass: classes.length,
-            Standings: standings.length,
-            Entry: entries.length,
-            Sponsorship: sponsorships.length,
-          });
-        }
+        const counts = {};
+        await Promise.all(cfg.references.map(async (ref) => {
+          const filter = ref.polymorphic
+            ? { target_entity_type: ref.type, target_entity_id: duplicateId }
+            : { [ref.field]: duplicateId };
+          const records = await base44.entities[ref.entity].filter(filter, '-created_date', 5000).catch(() => []);
+          counts[ref.label] = records.length;
+        }));
+        if (!cancelled) setRefCounts(counts);
       } catch (e) {
         if (!cancelled) setRefCounts(null);
       } finally {
@@ -103,7 +151,7 @@ export default function SeriesMergeTool() {
       }
     })();
     return () => { cancelled = true; };
-  }, [duplicateId]);
+  }, [duplicateId, entityType]);
 
   const canMerge = survivorId && duplicateId && survivorId !== duplicateId && reason.trim().length > 0 && !merging;
 
@@ -113,24 +161,23 @@ export default function SeriesMergeTool() {
     setError(null);
     setResult(null);
     try {
-      // Build field_overrides from admin choices (only fields where duplicate won)
       const fieldOverrides = {};
-      COMPARISON_FIELDS.forEach((f) => {
-        if (fieldChoices[f.key] === 'duplicate' && duplicate?.[f.key] != null) {
-          fieldOverrides[f.key] = duplicate[f.key];
+      cfg.fields.forEach((f) => {
+        if (fieldChoices[f] === 'duplicate' && duplicate?.[f] != null) {
+          fieldOverrides[f] = duplicate[f];
         }
       });
-      const res = await base44.functions.invoke('mergeSeriesSafely', {
-        survivor_series_id: survivorId,
-        duplicate_series_id: duplicateId,
+      const res = await base44.functions.invoke('mergeRecordsSafely', {
+        entity_type: entityType,
+        survivor_id: survivorId,
+        duplicate_id: duplicateId,
         field_overrides: fieldOverrides,
         reason: reason.trim(),
       });
       const data = res?.data || res;
       if (data?.ok) {
         setResult(data);
-        queryClient.invalidateQueries({ queryKey: ['series'] });
-        queryClient.invalidateQueries({ queryKey: ['searchSeries'] });
+        queryClient.invalidateQueries({ queryKey: [entityType.toLowerCase()] });
       } else {
         setError(data?.error || 'Merge failed.');
       }
@@ -153,19 +200,19 @@ export default function SeriesMergeTool() {
 
   const filteredA = useMemo(() => {
     const q = searchA.toLowerCase();
-    return allSeries.filter((s) => !q || (s.name || '').toLowerCase().includes(q) || (s.slug || '').toLowerCase().includes(q)).slice(0, 8);
-  }, [allSeries, searchA]);
+    return allRecords.filter((s) => !q || cfg.getName(s).toLowerCase().includes(q) || (s.slug || '').toLowerCase().includes(q)).slice(0, 8);
+  }, [allRecords, searchA, entityType]);
   const filteredB = useMemo(() => {
     const q = searchB.toLowerCase();
-    return allSeries.filter((s) => !q || (s.name || '').toLowerCase().includes(q) || (s.slug || '').toLowerCase().includes(q)).slice(0, 8);
-  }, [allSeries, searchB]);
+    return allRecords.filter((s) => !q || cfg.getName(s).toLowerCase().includes(q) || (s.slug || '').toLowerCase().includes(q)).slice(0, 8);
+  }, [allRecords, searchB, entityType]);
 
   return (
     <div className="flex flex-col h-full">
       <RaceCorePageHeader
         icon={GitMerge}
-        title="Series Merge Tool"
-        subtitle="Manually merge two Series records into one"
+        title="Manual Merge Tool"
+        subtitle="Merge any two duplicate records into one"
       />
 
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
@@ -183,9 +230,9 @@ export default function SeriesMergeTool() {
               <h3 className="text-sm font-black uppercase tracking-wider" style={{ color: 'hsl(var(--success))' }}>Merge Complete</h3>
             </div>
             <p className="text-sm" style={{ color: 'hsl(var(--foreground-secondary))' }}>
-              The duplicate series has been deactivated and all references re-pointed to the survivor.
+              The duplicate {result.entity_type} has been deactivated and all references re-pointed to the survivor.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 pt-1">
               {Object.entries(result.references_repaired || {}).map(([k, v]) => (
                 <div key={k} className="rounded-lg px-3 py-2 text-center" style={{ background: 'hsl(var(--surface-interactive))' }}>
                   <div className="text-lg font-black" style={{ color: MOTION }}>{v}</div>
@@ -199,41 +246,67 @@ export default function SeriesMergeTool() {
           </div>
         )}
 
-        {/* Step 1: Selection */}
         {!result && (
           <>
+            {/* Entity type selector */}
+            <section className="rounded-xl p-4" style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))' }}>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider mr-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>Entity type:</span>
+                {Object.entries(ENTITY_CONFIG).map(([key, ec]) => {
+                  const Icon = ec.icon;
+                  const active = entityType === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setEntityType(key)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+                      style={{
+                        background: active ? MOTION : 'hsl(var(--surface-interactive))',
+                        color: active ? 'hsl(var(--canvas))' : 'hsl(var(--foreground-secondary))',
+                        border: active ? 'none' : '1px solid hsl(var(--divider))',
+                      }}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      {ec.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Step 1: Selection */}
             <section className="rounded-xl p-5 space-y-4" style={{ background: 'hsl(var(--surface-elevated))', border: '1px solid hsl(var(--divider))' }}>
               <div className="flex items-center gap-2">
                 <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black" style={{ background: MOTION, color: 'hsl(var(--canvas))' }}>1</span>
-                <h2 className="text-sm font-black uppercase tracking-wider" style={{ color: 'hsl(var(--foreground))' }}>Select Two Series Records</h2>
+                <h2 className="text-sm font-black uppercase tracking-wider" style={{ color: 'hsl(var(--foreground))' }}>Select Two {cfg.label} Records</h2>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Survivor picker */}
-                <SeriesPicker
+                <RecordPicker
                   label="Survivor (keep)"
                   accent={MOTION}
-                  accentIcon={Trophy}
                   search={searchA}
                   setSearch={setSearchA}
                   filtered={filteredA}
                   selectedId={survivorId}
                   onSelect={(id) => setSurvivorId(id)}
-                  loading={loadingSeries}
-                  allSeries={allSeries}
+                  loading={loadingRecords}
+                  allRecords={allRecords}
+                  getName={cfg.getName}
+                  getSub={cfg.getSub}
                 />
-                {/* Duplicate picker */}
-                <SeriesPicker
+                <RecordPicker
                   label="Duplicate (absorb & deactivate)"
                   accent={DANGER}
-                  accentIcon={AlertTriangle}
                   search={searchB}
                   setSearch={setSearchB}
                   filtered={filteredB}
                   selectedId={duplicateId}
                   onSelect={(id) => setDuplicateId(id)}
-                  loading={loadingSeries}
-                  allSeries={allSeries}
+                  loading={loadingRecords}
+                  allRecords={allRecords}
+                  getName={cfg.getName}
+                  getSub={cfg.getSub}
                 />
               </div>
             </section>
@@ -258,21 +331,21 @@ export default function SeriesMergeTool() {
                       </tr>
                     </thead>
                     <tbody>
-                      {COMPARISON_FIELDS.map((f) => {
-                        const choice = fieldChoices[f.key] || 'survivor';
-                        const sVal = survivor?.[f.key];
-                        const dVal = duplicate?.[f.key];
+                      {cfg.fields.map((f) => {
+                        const choice = fieldChoices[f] || 'survivor';
+                        const sVal = survivor?.[f];
+                        const dVal = duplicate?.[f];
                         const same = (sVal ?? '') === (dVal ?? '');
                         return (
-                          <tr key={f.key} style={{ borderBottom: '1px solid hsl(var(--divider) / 0.5)' }}>
-                            <td className="py-2 px-2 text-[11px] font-bold uppercase tracking-wider align-top" style={{ color: 'hsl(var(--foreground-quiet))' }}>{f.label}</td>
+                          <tr key={f} style={{ borderBottom: '1px solid hsl(var(--divider) / 0.5)' }}>
+                            <td className="py-2 px-2 text-[11px] font-bold uppercase tracking-wider align-top w-32" style={{ color: 'hsl(var(--foreground-quiet))' }}>{f.replace(/_/g, ' ')}</td>
                             <td className="py-2 px-2 align-top">
                               <button
-                                onClick={() => setFieldChoices((p) => ({ ...p, [f.key]: 'survivor' }))}
+                                onClick={() => setFieldChoices((p) => ({ ...p, [f]: 'survivor' }))}
                                 className="text-left w-full rounded-md px-2 py-1.5 transition-all"
                                 style={{
                                   background: choice === 'survivor' ? 'hsl(var(--motion) / 0.12)' : 'transparent',
-                                  border: choice === 'survivor' ? `1px solid hsl(var(--motion) / 0.4)` : '1px solid transparent',
+                                  border: choice === 'survivor' ? '1px solid hsl(var(--motion) / 0.4)' : '1px solid transparent',
                                   color: choice === 'survivor' ? MOTION : 'hsl(var(--foreground-secondary))',
                                   fontWeight: choice === 'survivor' ? 700 : 400,
                                 }}
@@ -282,11 +355,11 @@ export default function SeriesMergeTool() {
                             </td>
                             <td className="py-2 px-2 align-top">
                               <button
-                                onClick={() => setFieldChoices((p) => ({ ...p, [f.key]: 'duplicate' }))}
+                                onClick={() => setFieldChoices((p) => ({ ...p, [f]: 'duplicate' }))}
                                 className="text-left w-full rounded-md px-2 py-1.5 transition-all"
                                 style={{
                                   background: choice === 'duplicate' ? 'hsl(var(--danger) / 0.12)' : 'transparent',
-                                  border: choice === 'duplicate' ? `1px solid hsl(var(--danger) / 0.4)` : '1px solid transparent',
+                                  border: choice === 'duplicate' ? '1px solid hsl(var(--danger) / 0.4)' : '1px solid transparent',
                                   color: choice === 'duplicate' ? DANGER : same ? 'hsl(var(--foreground-quiet))' : 'hsl(var(--foreground-secondary))',
                                   fontWeight: choice === 'duplicate' ? 700 : 400,
                                 }}
@@ -318,16 +391,19 @@ export default function SeriesMergeTool() {
                     <Loader2 className="w-4 h-4 animate-spin" /> Counting references…
                   </div>
                 ) : refCounts ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                    {Object.entries(refCounts).map(([k, v]) => (
-                      <div key={k} className="rounded-lg px-3 py-3 text-center" style={{ background: 'hsl(var(--surface-interactive))', border: '1px solid hsl(var(--divider))' }}>
-                        <div className="flex items-center justify-center mb-1">
-                          <Link2 className="w-3.5 h-3.5" style={{ color: v > 0 ? WARNING : 'hsl(var(--foreground-quiet))' }} />
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                    {cfg.references.map((ref) => {
+                      const v = refCounts[ref.label] || 0;
+                      return (
+                        <div key={ref.label} className="rounded-lg px-3 py-3 text-center" style={{ background: 'hsl(var(--surface-interactive))', border: '1px solid hsl(var(--divider))' }}>
+                          <div className="flex items-center justify-center mb-1">
+                            <Link2 className="w-3.5 h-3.5" style={{ color: v > 0 ? WARNING : 'hsl(var(--foreground-quiet))' }} />
+                          </div>
+                          <div className="text-xl font-black" style={{ color: v > 0 ? 'hsl(var(--foreground))' : 'hsl(var(--foreground-quiet))' }}>{v}</div>
+                          <div className="text-[9px] font-mono uppercase tracking-wider mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>{ref.label}</div>
                         </div>
-                        <div className="text-xl font-black" style={{ color: v > 0 ? 'hsl(var(--foreground))' : 'hsl(var(--foreground-quiet))' }}>{v}</div>
-                        <div className="text-[9px] font-mono uppercase tracking-wider mt-0.5" style={{ color: 'hsl(var(--foreground-quiet))' }}>{k}</div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>Unable to load reference counts.</p>
@@ -346,9 +422,9 @@ export default function SeriesMergeTool() {
                 <div className="flex items-center gap-3 text-sm rounded-lg px-4 py-3" style={{ background: 'hsl(var(--warning) / 0.08)', border: '1px solid hsl(var(--warning) / 0.3)' }}>
                   <ArrowRight className="w-4 h-4 shrink-0" style={{ color: WARNING }} />
                   <span style={{ color: 'hsl(var(--foreground-secondary))' }}>
-                    <span className="font-bold" style={{ color: MOTION }}>{survivor.name || 'Survivor'}</span>
+                    <span className="font-bold" style={{ color: MOTION }}>{cfg.getName(survivor)}</span>
                     {' will absorb '}
-                    <span className="font-bold" style={{ color: DANGER }}>{duplicate.name || 'Duplicate'}</span>
+                    <span className="font-bold" style={{ color: DANGER }}>{cfg.getName(duplicate)}</span>
                     {'. The duplicate will be deactivated. This action is irreversible.'}
                   </span>
                 </div>
@@ -359,7 +435,7 @@ export default function SeriesMergeTool() {
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     rows={2}
-                    placeholder="e.g. Two records created for the same series by different imports."
+                    placeholder="e.g. Two records created for the same entity by different imports."
                     className="w-full rounded-lg px-3 py-2 text-sm outline-none resize-none"
                     style={{ background: 'hsl(var(--surface-interactive))', border: '1px solid hsl(var(--divider))', color: 'hsl(var(--foreground))' }}
                   />
@@ -388,20 +464,16 @@ export default function SeriesMergeTool() {
   );
 }
 
-// ── Series picker sub-component ──────────────────────────────────────────────
-function SeriesPicker({ label, accent, accentIcon: AccentIcon, search, setSearch, filtered, selectedId, onSelect, loading, allSeries }) {
-  const selected = allSeries.find((s) => s.id === selectedId) || null;
+// ── Record picker sub-component ──────────────────────────────────────────────
+function RecordPicker({ label, accent, search, setSearch, filtered, selectedId, onSelect, loading, allRecords, getName, getSub }) {
+  const selected = allRecords.find((s) => s.id === selectedId) || null;
   return (
     <div className="rounded-lg p-4 space-y-3" style={{ background: 'hsl(var(--surface-interactive))', border: `1px solid ${selectedId ? accent + '55' : 'hsl(var(--divider))'}` }}>
-      <div className="flex items-center gap-2">
-        <AccentIcon className="w-3.5 h-3.5" style={{ color: accent }} />
-        <span className="text-[10px] font-mono uppercase tracking-wider font-bold" style={{ color: accent }}>{label}</span>
-      </div>
+      <span className="text-[10px] font-mono uppercase tracking-wider font-bold" style={{ color: accent }}>{label}</span>
       {selected ? (
         <div className="space-y-1">
-          <div className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>{selected.name || 'Unnamed'}</div>
-          <div className="text-[11px] font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>{selected.slug || selected.id}</div>
-          {selected.discipline && <div className="text-[11px]" style={{ color: 'hsl(var(--foreground-quiet))' }}>{selected.discipline}</div>}
+          <div className="text-sm font-bold" style={{ color: 'hsl(var(--foreground))' }}>{getName(selected)}</div>
+          <div className="text-[11px] font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>{getSub(selected)}</div>
           <button onClick={() => onSelect(null)} className="text-[10px] font-bold uppercase tracking-wider mt-1" style={{ color: accent }}>
             Change selection
           </button>
@@ -413,7 +485,7 @@ function SeriesPicker({ label, accent, accentIcon: AccentIcon, search, setSearch
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search series…"
+              placeholder="Search…"
               className="flex-1 bg-transparent outline-none text-sm"
               style={{ color: 'hsl(var(--foreground))' }}
             />
@@ -435,8 +507,8 @@ function SeriesPicker({ label, accent, accentIcon: AccentIcon, search, setSearch
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = accent + '66'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'hsl(var(--divider))'; }}
                 >
-                  <div className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{s.name || 'Unnamed'}</div>
-                  <div className="text-[10px] font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>{s.slug || s.id}</div>
+                  <div className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{getName(s)}</div>
+                  <div className="text-[10px] font-mono" style={{ color: 'hsl(var(--foreground-quiet))' }}>{getSub(s)}</div>
                 </button>
               ))}
             </div>

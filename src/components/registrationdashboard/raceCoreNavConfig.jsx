@@ -101,7 +101,7 @@ export const RACE_CORE_NAV_GROUPS = [
       { href: '/racecore/data/calendar-sync',   label: 'Calendar Sync',   icon: RefreshCw },
       { href: '/racecore/data/results-repair',  label: 'Results Repair',  icon: Award,    adminOnly: true },
       { href: '/racecore/data/duplicate-merge',  label: 'Duplicate Merge', icon: GitMerge, adminOnly: true },
-      { href: '/racecore/data/series-merge',     label: 'Series Merge',    icon: GitMerge, adminOnly: true },
+      { href: '/racecore/data/manual-merge',      label: 'Manual Merge',    icon: GitMerge, adminOnly: true },
       { href: '/racecore/data/diagnostics',     label: 'Diagnostics',     icon: Wrench,   adminOnly: true },
     ],
     adminOnly: true,
