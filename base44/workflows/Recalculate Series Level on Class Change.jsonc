@@ -1,0 +1,39 @@
+{
+  "name": "Recalculate Series Level on Class Change",
+  "description": "Recalculates derived_competition_level and derived_competition_score on the parent Series whenever a SeriesClass is created, updated, or deleted.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update",
+        "delete"
+      ],
+      "entity_name": "SeriesClass"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "recalculate_series_level_on_class_change",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "recalculateSeriesLevel",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "recalculateSeriesLevel"
+  }
+}
