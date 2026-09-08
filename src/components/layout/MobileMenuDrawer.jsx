@@ -97,13 +97,6 @@ export default function MobileMenuDrawer({
                 >
                   Profile
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-2 text-left py-3 px-4 text-sm font-semibold rounded-lg transition-colors"
-                  style={{ color: 'hsl(var(--danger) / 0.85)', border: '1px solid hsl(var(--danger) / 0.2)', background: 'hsl(var(--danger) / 0.08)' }}
-                >
-                  <LogOut className="w-4 h-4" /> Sign Out
-                </button>
               </div>
             )}
           </div>
@@ -162,6 +155,17 @@ export default function MobileMenuDrawer({
             <span className="text-sm font-semibold tracking-[0.1em] uppercase" style={{ color: 'hsl(var(--foreground-secondary))' }}>Theme</span>
             <ThemeToggle />
           </div>
+
+          {/* Sign out — bottom of menu */}
+          {isAuthenticated && (
+            <button
+              onClick={handleLogout}
+              className="mt-3 w-full flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold rounded-lg transition-colors"
+              style={{ color: 'hsl(var(--danger) / 0.85)', border: '1px solid hsl(var(--danger) / 0.2)', background: 'hsl(var(--danger) / 0.08)' }}
+            >
+              <LogOut className="w-4 h-4" /> Sign Out
+            </button>
+          )}
         </div>
       </DrawerContent>
     </Drawer>
