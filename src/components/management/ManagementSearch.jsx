@@ -41,7 +41,7 @@ export default function ManagementSearch() {
   const handleSelect = (item) => {
     setOpen(false);
     setQuery('');
-    navigate(createPageUrl(item.page));
+    navigate(item.href || createPageUrl(item.page));
   };
 
   return (
@@ -90,7 +90,7 @@ export default function ManagementSearch() {
                   const Icon = item.icon;
                   return (
                     <button
-                      key={item.page}
+                      key={item.href || item.page}
                       onClick={() => handleSelect(item)}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-surface-interactive transition-colors"
                     >

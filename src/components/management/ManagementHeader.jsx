@@ -25,6 +25,21 @@ const PAGE_TITLES = {
   Diagnostics:          { title: 'Data Health',        subtitle: 'Data integrity and diagnostics' },
   Contact:              { title: 'Contact Messages',   subtitle: 'Review contact form submissions' },
   MediaPortal:          { title: 'Media Portal',       subtitle: 'Manage media applications and credentials' },
+  // ── Phase 1: Website placeholders ──
+  'management/website/home':       { title: 'Home',          subtitle: 'Homepage management — being rebuilt' },
+  'management/website/navigation': { title: 'Navigation',   subtitle: 'Public site navigation — future' },
+  'management/website/footer':     { title: 'Footer',        subtitle: 'Footer groups, links, pages, socials' },
+  'management/website/links':      { title: 'Links',         subtitle: 'Reusable link system — future' },
+  'management/website/seo':        { title: 'SEO',           subtitle: 'SEO management — future' },
+  // ── Phase 1: other placeholders ──
+  'management/marketplace':              { title: 'Marketplace',        subtitle: 'Listing platform administration — future' },
+  'management/community/users':          { title: 'Users',              subtitle: 'User management — future' },
+  'management/community/newsletter':     { title: 'Newsletter',         subtitle: 'Newsletter subscriber management — future' },
+  'management/media/library':            { title: 'Media Library',      subtitle: 'Shared media library — future' },
+  'management/platform/integrations':    { title: 'Integrations',       subtitle: 'Platform integrations — future' },
+  'management/platform/audit-log':       { title: 'Audit Log',          subtitle: 'Administrative change history — future' },
+  'management/platform/settings':        { title: 'Settings',           subtitle: 'Platform-wide settings — future' },
+  'management/apparel/shopify':          { title: 'Shopify Connection', subtitle: 'Shopify integration configuration — future' },
 };
 
 export default function ManagementHeader({ currentPage }) {

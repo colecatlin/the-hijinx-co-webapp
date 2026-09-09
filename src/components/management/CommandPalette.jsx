@@ -17,6 +17,7 @@ export default function CommandPalette() {
     section.items.map(item => ({
       name: item.name,
       page: item.page,
+      href: item.href,
       icon: item.icon,
       shortcut: item.shortcut,
       keywords: [item.name.toLowerCase(), section.title.toLowerCase()],
@@ -61,7 +62,8 @@ export default function CommandPalette() {
 
   const handleSelect = () => {
     if (filtered[selectedIndex]) {
-      navigate(createPageUrl(filtered[selectedIndex].page));
+      const cmd = filtered[selectedIndex];
+      navigate(cmd.href || createPageUrl(cmd.page));
       setOpen(false);
       setQuery('');
     }
@@ -125,7 +127,7 @@ export default function CommandPalette() {
                   const Icon = cmd.icon;
                   return (
                     <button
-                      key={cmd.page}
+                      key={cmd.href || cmd.page}
                       onClick={() => {
                         setSelectedIndex(index);
                         handleSelect();

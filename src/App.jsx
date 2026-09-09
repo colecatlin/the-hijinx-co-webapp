@@ -123,6 +123,20 @@ import Membership from './pages/Membership';
 import ManageMemberships from './pages/ManageMemberships';
 import ManagePopUps from './pages/ManagePopUps';
 import IdentityApplicationsReview from '@/components/identity/IdentityApplicationsReview';
+// ── Phase 1: Management foundation — Website + placeholder pages ──
+import WebsiteHome from './pages/management/WebsiteHome';
+import WebsiteNavigation from './pages/management/WebsiteNavigation';
+import WebsiteFooter from './pages/management/WebsiteFooter';
+import WebsiteLinks from './pages/management/WebsiteLinks';
+import WebsiteSeo from './pages/management/WebsiteSeo';
+import MarketplaceAdmin from './pages/management/Marketplace';
+import CommunityUsers from './pages/management/CommunityUsers';
+import CommunityNewsletter from './pages/management/CommunityNewsletter';
+import MediaLibrary from './pages/management/MediaLibrary';
+import PlatformIntegrations from './pages/management/PlatformIntegrations';
+import PlatformAuditLog from './pages/management/PlatformAuditLog';
+import PlatformSettings from './pages/management/PlatformSettings';
+import ApparelShopify from './pages/management/ApparelShopify';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
 function RaceCoreEditorRedirect({ base }) {
@@ -237,6 +251,20 @@ const AuthenticatedApp = () => {
       <Route path="/management/editorial/narratives" element={<LayoutWrapper currentPageName="management/editorial/narratives"><EditorialNarratives /></LayoutWrapper>} />
       <Route path="/management/editorial/research-packets" element={<LayoutWrapper currentPageName="management/editorial/research-packets"><EditorialResearchPackets /></LayoutWrapper>} />
       <Route path="/management/editorial/writer-workspace" element={<LayoutWrapper currentPageName="management/editorial/writer-workspace"><WriterWorkspace /></LayoutWrapper>} />
+      {/* ── Phase 1: Management foundation — Website + placeholder routes ── */}
+      <Route path="/management/website/home" element={<LayoutWrapper currentPageName="management/website/home"><WebsiteHome /></LayoutWrapper>} />
+      <Route path="/management/website/navigation" element={<LayoutWrapper currentPageName="management/website/navigation"><WebsiteNavigation /></LayoutWrapper>} />
+      <Route path="/management/website/footer" element={<LayoutWrapper currentPageName="management/website/footer"><WebsiteFooter /></LayoutWrapper>} />
+      <Route path="/management/website/links" element={<LayoutWrapper currentPageName="management/website/links"><WebsiteLinks /></LayoutWrapper>} />
+      <Route path="/management/website/seo" element={<LayoutWrapper currentPageName="management/website/seo"><WebsiteSeo /></LayoutWrapper>} />
+      <Route path="/management/marketplace" element={<LayoutWrapper currentPageName="management/marketplace"><MarketplaceAdmin /></LayoutWrapper>} />
+      <Route path="/management/community/users" element={<LayoutWrapper currentPageName="management/community/users"><CommunityUsers /></LayoutWrapper>} />
+      <Route path="/management/community/newsletter" element={<LayoutWrapper currentPageName="management/community/newsletter"><CommunityNewsletter /></LayoutWrapper>} />
+      <Route path="/management/media/library" element={<LayoutWrapper currentPageName="management/media/library"><MediaLibrary /></LayoutWrapper>} />
+      <Route path="/management/platform/integrations" element={<LayoutWrapper currentPageName="management/platform/integrations"><PlatformIntegrations /></LayoutWrapper>} />
+      <Route path="/management/platform/audit-log" element={<LayoutWrapper currentPageName="management/platform/audit-log"><PlatformAuditLog /></LayoutWrapper>} />
+      <Route path="/management/platform/settings" element={<LayoutWrapper currentPageName="management/platform/settings"><PlatformSettings /></LayoutWrapper>} />
+      <Route path="/management/apparel/shopify" element={<LayoutWrapper currentPageName="management/apparel/shopify"><ApparelShopify /></LayoutWrapper>} />
       {/* R9BI: /management/media/* now redirect to canonical /racecore/media/* (handled above) */}
       <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><OnboardingGuard><MediaHome /></OnboardingGuard></LayoutWrapper>} />
       <Route path="/creators" element={<Navigate to="/Directory?cat=creators" replace />} />

@@ -41,6 +41,7 @@ const footerLinks = [
       { name: 'Help', page: 'Help' },
       { name: 'Advertise', page: 'OutletAdvertising' },
       { name: 'Submit a Story', page: 'OutletSubmit' },
+      { name: 'Hashtag Library', href: '/hashtag-library' },
     ]
   },
   {
