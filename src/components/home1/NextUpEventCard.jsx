@@ -6,11 +6,12 @@ import { format, parseISO } from 'date-fns';
 function formatDate(dateStr, endStr) {
   if (!dateStr) return null;
   try {
-    const start = format(parseISO(dateStr), 'MMM d');
-    if (!endStr) return start;
+    const start = parseISO(dateStr);
+    if (!endStr) return format(start, 'MMM d, yyyy').toUpperCase();
     const end = parseISO(endStr);
-    if (isNaN(end.getTime()) || endStr === dateStr) return start;
-    return `${start} – ${format(end, 'MMM d')}`;
+    if (isNaN(end.getTime()) || endStr === dateStr)
+      return format(start, 'MMM d, yyyy').toUpperCase();
+    return `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`.toUpperCase();
   } catch {
     return null;
   }
@@ -37,7 +38,7 @@ export default function NextUpEventCard({ event, series, track, discipline }) {
     <Link
       to={to}
       data-card
-      className="group flex-shrink-0 w-[80vw] sm:w-[330px] md:w-[300px] lg:w-[278px] xl:w-[288px] snap-start flex flex-col border bg-[#FFF8F5] hover:bg-white transition-colors"
+      className="group flex-shrink-0 w-[80vw] sm:w-[330px] md:w-[300px] lg:w-[278px] xl:w-[288px] snap-start flex flex-col border bg-[#F9F7F2] hover:bg-white transition-colors"
       style={{ borderColor: '#232323' }}
     >
       {/* Info area — text left, track outline right */}
@@ -93,7 +94,7 @@ export default function NextUpEventCard({ event, series, track, discipline }) {
       {/* Wide event photograph */}
       <div
         className="relative w-full overflow-hidden"
-        style={{ aspectRatio: '16 / 9', background: '#FFF8F5' }}
+        style={{ aspectRatio: '16 / 9', background: '#F9F7F2' }}
       >
         {image ? (
           <img
@@ -125,13 +126,9 @@ export default function NextUpEventCard({ event, series, track, discipline }) {
       >
         {disciplineName ? (
           <span
-            className="flex items-center gap-2 font-mono text-[9px] tracking-[0.2em] uppercase font-bold"
-            style={{ color: '#232323' }}
+            className="font-mono text-[9px] tracking-[0.2em] uppercase font-bold"
+            style={{ color: disciplineColor }}
           >
-            <span
-              className="inline-block w-2 h-2"
-              style={{ background: disciplineColor }}
-            />
             {disciplineName}
           </span>
         ) : (

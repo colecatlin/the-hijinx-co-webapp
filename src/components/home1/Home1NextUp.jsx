@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight } from 'lucide-react';
 import NextUpEventCard from './NextUpEventCard';
 
 function useNextUpEvents() {
@@ -89,7 +89,7 @@ export default function Home1NextUp() {
   ];
 
   return (
-    <section className="relative w-full pt-3 md:pt-5 pb-8 md:pb-12" style={{ background: '#FFF8F5' }}>
+    <section className="relative w-full pt-3 md:pt-5 pb-8 md:pb-12" style={{ background: '#F9F7F2' }}>
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
         {/* Header */}
         <div className="flex items-end justify-between gap-6 mb-5 md:mb-7">
@@ -109,7 +109,7 @@ export default function Home1NextUp() {
           </div>
           <Link
             to="/Directory?cat=events"
-            className="hidden sm:flex items-center gap-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold pb-2 border-b transition-colors hover:opacity-60"
+            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold border bg-white transition-colors hover:bg-[#232323] hover:text-[#F9F7F2]"
             style={{ color: '#232323', borderColor: '#232323' }}
           >
             VIEW FULL CALENDAR <ArrowRight className="w-3.5 h-3.5" />
@@ -131,26 +131,6 @@ export default function Home1NextUp() {
           </div>
         ) : (
           <div className="relative">
-            {upcoming.length > 4 && (
-              <div className="hidden md:flex items-center gap-2 absolute -top-14 right-0">
-                <button
-                  onClick={() => scrollByCards(-1)}
-                  className="w-9 h-9 border flex items-center justify-center transition-colors hover:bg-[#232323] hover:text-[#FFF8F5]"
-                  style={{ borderColor: '#232323', color: '#232323' }}
-                  aria-label="Previous events"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => scrollByCards(1)}
-                  className="w-9 h-9 border flex items-center justify-center transition-colors hover:bg-[#232323] hover:text-[#FFF8F5]"
-                  style={{ borderColor: '#232323', color: '#232323' }}
-                  aria-label="Next events"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
             <div
               ref={scrollerRef}
               className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-6 px-6 sm:mx-0 sm:px-0 pb-2"
@@ -171,6 +151,16 @@ export default function Home1NextUp() {
                 );
               })}
             </div>
+            {upcoming.length > 4 && (
+              <button
+                onClick={() => scrollByCards(1)}
+                className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full items-center justify-center shadow-sm transition-transform hover:scale-105"
+                style={{ background: '#232323', color: '#F9F7F2' }}
+                aria-label="Next events"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
           </div>
         )}
 
@@ -187,7 +177,7 @@ export default function Home1NextUp() {
 
         {/* Bottom editorial detail */}
         <div
-          className="mt-7 md:mt-10 pt-3 border-t"
+          className="mt-7 md:mt-10 pt-3 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
           style={{ borderColor: 'rgba(35,35,35,0.15)' }}
         >
           <p className="font-serif italic text-lg md:text-xl" style={{ color: '#232323' }}>
@@ -195,7 +185,7 @@ export default function Home1NextUp() {
           </p>
           {presentDisciplines.length > 0 && (
             <p
-              className="mt-2 font-mono text-[9px] md:text-[10px] tracking-[0.25em] uppercase"
+              className="font-mono text-[9px] md:text-[10px] tracking-[0.25em] uppercase"
               style={{ color: 'rgba(35,35,35,0.5)' }}
             >
               {presentDisciplines.map((d) => d.toUpperCase()).join(' // ')} // MORE
