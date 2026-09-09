@@ -224,19 +224,19 @@ export default function Home1FeaturedCollection() {
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </a>
 
-              <ul className="flex items-center gap-4 sm:gap-5">
+              <ul className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 {VALUE_PROPS.map(({ icon: Icon, label }, i) => (
-                  <li key={label} className="flex items-center gap-4 sm:gap-5">
+                  <li key={label} className="flex items-center gap-3">
                     {i > 0 && (
                       <span
-                        className="hidden sm:block h-8 w-px"
+                        className="hidden md:block h-7 w-px"
                         style={{ background: 'rgba(35,35,35,0.18)' }}
                       />
                     )}
-                    <span className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" style={{ color: OIL }} />
+                    <span className="flex items-center gap-1.5">
+                      <Icon className="w-3.5 h-3.5" style={{ color: TEAL }} />
                       <span
-                        className="font-mono text-[9px] tracking-[0.2em] uppercase font-bold"
+                        className="font-mono text-[8px] tracking-[0.18em] uppercase font-bold whitespace-nowrap"
                         style={{ color: OIL }}
                       >
                         {label}
