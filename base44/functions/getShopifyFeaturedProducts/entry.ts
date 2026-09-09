@@ -14,7 +14,9 @@ export default async function(req) {
       );
     }
 
-    const endpoint = `https://${domain}/api/${SHOPIFY_API_VERSION}/graphql.json`;
+    const cleanDomain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const endpoint = `https://${cleanDomain}/api/${SHOPIFY_API_VERSION}/graphql.json`;
+    console.log("Shopify debug:", { domain: cleanDomain, tokenPrefix: token?.slice(0, 6), tokenLen: token?.length });
 
     // Fetch first 6 products with image, price, and online store URL
     const query = `
