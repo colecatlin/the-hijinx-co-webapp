@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import PlatformDataMap from './pages/PlatformDataMap';
 import EditorialHub from './pages/EditorialHub';
+import Home1 from './pages/Home1';
 import OrganizationPage from './pages/OrganizationPage';
 import OrganizationCreate from './pages/OrganizationCreate';
 import StoryRadar from './pages/StoryRadar';
@@ -205,6 +206,11 @@ const AuthenticatedApp = () => {
       <Route path="/" element={
         <LayoutWrapper currentPageName={mainPageKey}>
           <MainPage />
+        </LayoutWrapper>
+      } />
+      <Route path="/Home1" element={
+        <LayoutWrapper currentPageName="Home1">
+          <Home1 />
         </LayoutWrapper>
       } />
       {Object.entries(Pages).map(([path, Page]) => (

@@ -223,7 +223,7 @@ export default function Layout({ children, currentPageName }) {
 
   // Root path redirect — always send / to the public homepage
   if (location.pathname === '/' || location.pathname === '') {
-    return <Navigate to="/Home" replace />;
+    return <Navigate to="/Home1" replace />;
   }
 
   const activeSubItems = hoveredItem ? navItems.find(i => i.name === hoveredItem)?.sub : null;
