@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import ManagementSearch from './ManagementSearch';
 
 // R9CB: Removed all motorsports entity titles — RaceCore owns those.
@@ -26,10 +28,21 @@ const PAGE_TITLES = {
 };
 
 export default function ManagementHeader({ currentPage }) {
+  const navigate = useNavigate();
   const info = PAGE_TITLES[currentPage] || { title: currentPage || 'Management', subtitle: '' };
 
   return (
     <div className="bg-surface-elevated border-b border-divider shadow-sm px-6 py-3 flex items-center gap-4 shrink-0">
+      {/* Back button */}
+      <button
+        type="button"
+        onClick={() => navigate(-1)}
+        aria-label="Go back"
+        className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground-secondary hover:text-foreground hover:bg-surface-interactive transition-colors shrink-0"
+      >
+        <ArrowLeft className="w-4 h-4" />
+      </button>
+
       {/* Title */}
       <div className="min-w-0 flex-1">
         <h1 className="text-base font-bold text-foreground leading-tight truncate">{info.title}</h1>
