@@ -83,24 +83,35 @@ export default function Home1BePartOfSomethingBigger() {
               transition={{ duration: 0.7, ease: 'easeOut' }}
               className="max-w-xl"
             >
-              {/* Headline */}
-              <h2
-                className="uppercase leading-[0.92] tracking-[-0.01em]"
+              {/* Eyebrow — small, wide-tracked, white */}
+              <span
+                className="block uppercase font-bold"
                 style={{
-                  color: 'hsl(var(--foreground))',
-                  fontWeight: 800,
-                  fontSize: 'clamp(2.5rem, 5.2vw, 4.25rem)',
+                  color: '#FFFFFF',
+                  fontSize: 'clamp(0.7rem, 1vw, 0.85rem)',
+                  letterSpacing: '0.35em',
+                  marginBottom: '0.85rem',
                 }}
               >
                 BE PART OF
-                <br />
-                <span style={{ color: '#00FFDA' }}>SOMETHING BIGGER.</span>
+              </span>
+
+              {/* Headline — large, bold, teal */}
+              <h2
+                className="uppercase leading-[0.9] tracking-[-0.01em]"
+                style={{
+                  color: '#00FFD1',
+                  fontWeight: 800,
+                  fontSize: 'clamp(2.75rem, 6vw, 5rem)',
+                }}
+              >
+                SOMETHING BIGGER.
               </h2>
 
               {/* Supporting copy */}
               <p
                 className="mt-5 lg:mt-6 text-base lg:text-lg leading-relaxed"
-                style={{ color: 'hsl(var(--foreground-secondary))' }}
+                style={{ color: '#D1D1D1' }}
               >
                 Racers. Builders. Fans. Creators.
                 <br />
@@ -112,8 +123,8 @@ export default function Home1BePartOfSomethingBigger() {
                 to="/join"
                 className="group inline-flex items-center gap-2 mt-7 lg:mt-8 px-5 py-2.5 transition-all"
                 style={{
-                  border: '1px solid hsl(var(--foreground) / 0.85)',
-                  color: 'hsl(var(--foreground))',
+                  border: '1px solid #FFFFFF',
+                  color: '#FFFFFF',
                   background: 'transparent',
                 }}
               >
@@ -122,7 +133,7 @@ export default function Home1BePartOfSomethingBigger() {
                 </span>
                 <ArrowRight
                   className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                  style={{ color: '#00FFDA' }}
+                  style={{ color: '#00FFD1' }}
                 />
               </Link>
             </motion.div>
