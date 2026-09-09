@@ -89,10 +89,10 @@ export default function Home1NextUp() {
   ];
 
   return (
-    <section className="relative w-full py-16 md:py-24" style={{ background: '#FFF8F5' }}>
+    <section className="relative w-full pt-3 md:pt-5 pb-8 md:pb-12" style={{ background: '#FFF8F5' }}>
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
         {/* Header */}
-        <div className="flex items-end justify-between gap-6 mb-10 md:mb-14">
+        <div className="flex items-end justify-between gap-6 mb-5 md:mb-7">
           <div className="flex items-end gap-4 md:gap-6 flex-wrap">
             <h2
               className="font-serif italic font-black leading-[0.9] tracking-[-0.02em]"
@@ -187,7 +187,7 @@ export default function Home1NextUp() {
 
         {/* Bottom editorial detail */}
         <div
-          className="mt-14 md:mt-20 pt-6 border-t"
+          className="mt-7 md:mt-10 pt-3 border-t"
           style={{ borderColor: 'rgba(35,35,35,0.15)' }}
         >
           <p className="font-serif italic text-lg md:text-xl" style={{ color: '#232323' }}>
