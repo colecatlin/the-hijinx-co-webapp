@@ -1,60 +1,57 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
-const BONE = '#FFF8F5';
 const OIL = '#232323';
-const TEAL = '#00FFDA';
+const TEAL = '#00AAB5';
 const RASP = '#D33F49';
 const DENIM = '#1E3A5F';
 const GREY = '#6B6B6B';
 
+const FALLBACK_SEEDS = {
+  INDEX46: '1502920917128-1aa1c652f298',
+  RACECORE: '1568605117036-5fe5e7bab8b7',
+  HIJINX: '1556906781-9a412961c28c',
+  OUTLET: '1601362840410-2f0b3a4a7e76',
+  MARKETPLACE: '1518770660439-4636190af475',
+  COMMUNITY: '1485827404703-89b55fcc5950',
+};
+
 const SOURCE_STYLES = {
-  OUTLET: { bg: RASP, text: '#FFFFFF', label: 'THE OUTLET' },
-  HIJINX: { bg: TEAL, text: OIL, label: 'HIJINX' },
   INDEX46: { bg: OIL, text: '#FFFFFF', label: 'INDEX46' },
-  MARKETPLACE: { bg: GREY, text: '#FFFFFF', label: 'MARKETPLACE' },
   RACECORE: { bg: DENIM, text: '#FFFFFF', label: 'RACECORE' },
+  HIJINX: { bg: TEAL, text: '#FFFFFF', label: 'HIJINX' },
+  OUTLET: { bg: RASP, text: '#FFFFFF', label: 'THE OUTLET' },
+  MARKETPLACE: { bg: GREY, text: '#FFFFFF', label: 'MARKETPLACE' },
   COMMUNITY: { bg: '#FFFFFF', text: OIL, label: 'COMMUNITY', border: OIL },
 };
 
-function timeAgo(dateStr) {
-  if (!dateStr) return null;
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return null;
-    return formatDistanceToNow(d, { addSuffix: false }).toUpperCase();
-  } catch {
-    return null;
-  }
-}
-
-function fallbackImg(seed) {
+function fallbackImg(source) {
+  const seed = FALLBACK_SEEDS[source] || FALLBACK_SEEDS.INDEX46;
   return `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&w=800&q=80`;
 }
 
 export default function ActivityCard({ item }) {
   const s = SOURCE_STYLES[item.source] || SOURCE_STYLES.INDEX46;
-  const img = item.image || fallbackImg(item.fallbackSeed);
+  const img = item.image || fallbackImg(item.source);
 
   return (
     <Link
       to={item.to}
-      className="group flex flex-col h-full bg-white border transition-colors hover:border-[#232323]"
-      style={{ borderColor: 'rgba(35,35,35,0.15)' }}
+      className="group flex flex-col bg-white border transition-colors hover:border-[#232323]"
+      style={{ borderColor: 'rgba(35,35,35,0.15)', borderRadius: '2px' }}
     >
-      {/* Image */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#f0ece6]">
+      {/* 1. IMAGE — fixed 16:9, object-cover */}
+      <div className="relative aspect-[16/9] overflow-hidden bg-[#f0ece6]">
         <img
           src={img}
           alt={item.title}
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
         />
-        {/* Source tag */}
+        {/* 2. SOURCE TAG — upper-left overlay */}
         <span
-          className="absolute top-3 left-3 inline-flex items-center px-2.5 py-1 font-mono text-[9px] tracking-[0.2em] uppercase font-bold"
+          className="absolute top-2.5 left-2.5 inline-flex items-center px-2 py-0.5 font-mono text-[8px] tracking-[0.18em] uppercase font-bold"
           style={{
             background: s.bg,
             color: s.text,
@@ -65,36 +62,21 @@ export default function ActivityCard({ item }) {
         </span>
       </div>
 
-      {/* Body */}
-      <div className="flex flex-col flex-1 p-4">
+      {/* 3. HEADLINE + 4. ACTION */}
+      <div className="p-3">
         <h3
-          className="font-black uppercase leading-[1.05] tracking-[-0.01em] line-clamp-2"
-          style={{ color: OIL, fontSize: 'clamp(0.95rem, 1.3vw, 1.1rem)', minHeight: '2.42em' }}
+          className="font-black uppercase leading-[1.1] tracking-[-0.01em] line-clamp-2"
+          style={{ color: OIL, fontSize: 'clamp(0.78rem, 0.95vw, 0.92rem)' }}
         >
           {item.title}
         </h3>
-        <p
-          className="mt-2 text-[12px] leading-snug line-clamp-2"
-          style={{ color: 'rgba(35,35,35,0.65)', minHeight: '2.75em' }}
+        <span
+          className="mt-2 inline-flex items-center gap-1 font-mono text-[9px] tracking-[0.18em] uppercase font-bold"
+          style={{ color: OIL }}
         >
-          {item.body || '\u00A0'}
-        </p>
-        {/* Footer */}
-        <div className="mt-auto pt-3 flex items-center justify-between gap-2">
-          <span
-            className="font-mono text-[9px] tracking-[0.18em] uppercase"
-            style={{ color: 'rgba(35,35,35,0.5)' }}
-          >
-            {item.time}
-          </span>
-          <span
-            className="inline-flex items-center gap-1 font-mono text-[9px] tracking-[0.18em] uppercase font-bold"
-            style={{ color: OIL }}
-          >
-            {item.cta}
-            <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" />
-          </span>
-        </div>
+          {item.cta}
+          <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" />
+        </span>
       </div>
     </Link>
   );
