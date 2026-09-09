@@ -45,7 +45,7 @@ export default function Home1Hero() {
       />
 
       {/* Content */}
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 flex flex-col justify-start pt-[12vh] lg:pt-[10vh]">
+      <div className="relative z-10 h-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 flex flex-col justify-center">
         <motion.div
           className="max-w-2xl"
           initial={reduceMotion ? false : { opacity: 0, y: 22 }}
