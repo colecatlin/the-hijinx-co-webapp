@@ -65,8 +65,8 @@ export default function ActivityCard({ item }) {
       {/* 3. HEADLINE + 4. ACTION */}
       <div className="p-3">
         <h3
-          className="font-black uppercase leading-[1.1] tracking-[-0.01em] line-clamp-2"
-          style={{ color: OIL, fontSize: 'clamp(0.78rem, 0.95vw, 0.92rem)' }}
+          className="font-black uppercase leading-[1.15] tracking-[-0.01em] line-clamp-2 overflow-hidden"
+          style={{ color: OIL, fontSize: 'clamp(0.78rem, 0.95vw, 0.92rem)', minHeight: '2.3em', maxHeight: '2.3em' }}
         >
           {item.title}
         </h3>
