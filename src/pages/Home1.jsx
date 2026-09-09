@@ -5,6 +5,7 @@ import Home1OneBrand from '@/components/home1/Home1OneBrand';
 import Home1Ecosystem from '@/components/home1/Home1Ecosystem';
 import Home1WhatsHappening from '@/components/home1/Home1WhatsHappening';
 import Home1FromTheOutlet from '@/components/home1/Home1FromTheOutlet';
+import Home1FeaturedCollection from '@/components/home1/Home1FeaturedCollection';
 
 export default function Home1() {
   return (
@@ -15,6 +16,7 @@ export default function Home1() {
       <Home1Ecosystem />
       <Home1WhatsHappening />
       <Home1FromTheOutlet />
+      <Home1FeaturedCollection />
     </>
   );
 }
