@@ -37,9 +37,9 @@ function buildProductItems(products) {
 }
 
 function buildEventItems(events) {
-  const today = new Date().toISOString().split('T')[0];
+  // Most recent events first (past or upcoming) — ecosystem activity, not just a future calendar.
   return (events || [])
-    .filter((e) => !e.is_archived && (e.end_date || e.event_date) >= today)
+    .filter((e) => !e.is_archived && e.name)
     .slice(0, 2)
     .map((e) => ({
       source: 'INDEX46',
@@ -96,7 +96,7 @@ export default function Home1WhatsHappening() {
 
   const { data: events = [] } = useQuery({
     queryKey: ['home1ActivityEvents'],
-    queryFn: () => base44.entities.Event.list('event_date', 20),
+    queryFn: () => base44.entities.Event.list('-event_date', 20),
     staleTime: 5 * 60 * 1000,
   });
 
