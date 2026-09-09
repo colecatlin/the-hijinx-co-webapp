@@ -6,6 +6,7 @@ import Home1Ecosystem from '@/components/home1/Home1Ecosystem';
 import Home1WhatsHappening from '@/components/home1/Home1WhatsHappening';
 import Home1FromTheOutlet from '@/components/home1/Home1FromTheOutlet';
 import Home1FeaturedCollection from '@/components/home1/Home1FeaturedCollection';
+import Home1BePartOfSomethingBigger from '@/components/home1/Home1BePartOfSomethingBigger';
 
 export default function Home1() {
   return (
@@ -17,6 +18,7 @@ export default function Home1() {
       <Home1WhatsHappening />
       <Home1FromTheOutlet />
       <Home1FeaturedCollection />
+      <Home1BePartOfSomethingBigger />
     </>
   );
 }
