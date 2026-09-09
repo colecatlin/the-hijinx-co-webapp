@@ -1,12 +1,12 @@
-import React, { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Truck, Wrench, Globe } from 'lucide-react';
 
 const BONE = '#FFF8F5';
 const OIL = '#232323';
-const TEAL = '#00FFDA';
+const TEAL = '#00AAB5';
+const RED = '#D9332D';
 
 const LIFESTYLE_IMG =
   'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/627c0f160_generated_image.png';
@@ -15,6 +15,14 @@ const FALLBACK_IMG =
   'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80';
 
 const SHOP_URL = 'https://hijinx.com';
+
+const USE_CASES = ['TRACKSIDE', 'TRAVEL', 'WORKSHOP', 'EVERYDAY'];
+const DECOR_STACK = ['PEOPLE', 'PLACES', 'PROGRESS', 'NO LIMITS'];
+const VALUE_PROPS = [
+  { icon: Truck, label: 'RACE INSPIRED' },
+  { icon: Wrench, label: 'EVERYDAY READY' },
+  { icon: Globe, label: 'BUILT DIFFERENT' },
+];
 
 function formatPrice(p, currency = 'USD') {
   if (p == null) return null;
@@ -34,36 +42,12 @@ export default function Home1FeaturedCollection() {
   return (
     <section
       className="w-full"
-      style={{ background: BONE, paddingTop: '28px', paddingBottom: '30px' }}
+      style={{ background: BONE, paddingTop: '28px', paddingBottom: '32px' }}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-        {/* Top editorial header — small, with rule */}
-        <div className="flex items-center gap-4 mb-4 md:mb-5">
-          <span
-            className="font-mono text-[10px] md:text-[11px] tracking-[0.3em] uppercase font-bold whitespace-nowrap"
-            style={{ color: OIL }}
-          >
-            Featured Products
-          </span>
-          <span
-            className="flex-1 h-px"
-            style={{ background: 'rgba(35,35,35,0.18)' }}
-          />
-          <a
-            href={SHOP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.25em] uppercase font-bold transition-colors hover:text-[#00B8A0] whitespace-nowrap"
-            style={{ color: OIL }}
-          >
-            Shop All <ArrowRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
         {/* Main layout — 55/45 desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-6 lg:gap-8">
-          {/* LEFT — lifestyle / lookbook image.
-              Mobile keeps 4/5; desktop stretches to match the right column's height. */}
+          {/* ── LEFT — lifestyle / lookbook image with editorial overlays ── */}
           <div className="relative w-full overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-full">
             <img
               src={LIFESTYLE_IMG}
@@ -71,35 +55,87 @@ export default function Home1FeaturedCollection() {
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
             />
+            {/* Subtle bottom gradient for legibility */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 28%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)',
+              }}
+            />
+
+            {/* Top-left vertical use-case list */}
+            <ul className="absolute top-5 left-5 hidden sm:flex flex-col gap-1.5">
+              {USE_CASES.map((u) => (
+                <li
+                  key={u}
+                  className="font-mono text-[9px] tracking-[0.28em] uppercase font-bold"
+                  style={{ color: 'rgba(255,255,255,0.85)' }}
+                >
+                  {u}
+                </li>
+              ))}
+            </ul>
+
+            {/* Bottom-left brand block */}
+            <div className="absolute bottom-5 left-5 right-5">
+              <h2
+                className="font-black uppercase leading-[0.9] tracking-[-0.02em]"
+                style={{ color: '#FFFFFF', fontSize: 'clamp(1.6rem, 2.4vw, 2.4rem)' }}
+              >
+                Hijinx Apparel
+              </h2>
+              <p
+                className="mt-1.5 font-mono text-[10px] tracking-[0.22em] uppercase"
+                style={{ color: 'rgba(255,255,255,0.85)' }}
+              >
+                Made for wherever you end up.
+              </p>
+              <div className="mt-3 h-px w-14" style={{ background: TEAL }} />
+            </div>
           </div>
 
-          {/* RIGHT — commerce / editorial */}
+          {/* ── RIGHT — header + product grid + footer ── */}
           <div className="flex flex-col">
-            {/* Eyebrow */}
-            <span
-              className="font-mono text-[10px] tracking-[0.35em] uppercase font-bold"
-              style={{ color: 'rgba(35,35,35,0.6)' }}
-            >
-              Current Drop
-            </span>
+            {/* Header row: eyebrow + headline + subline (left), decor stack (right) */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <span
+                  className="font-mono text-[10px] tracking-[0.35em] uppercase font-bold"
+                  style={{ color: 'rgba(35,35,35,0.6)' }}
+                >
+                  Current Drop
+                </span>
+                <h2
+                  className="mt-2 font-black uppercase leading-[0.9] tracking-[-0.02em]"
+                  style={{ color: OIL, fontSize: 'clamp(1.8rem, 3vw, 2.6rem)' }}
+                >
+                  Featured Products
+                </h2>
+                <p
+                  className="mt-2 font-mono text-[10px] tracking-[0.22em] uppercase"
+                  style={{ color: 'rgba(35,35,35,0.6)' }}
+                >
+                  Tees. Hoodies. Headwear. More.
+                </p>
+              </div>
+              {/* Right-side vertical decor stack */}
+              <ul className="hidden md:flex flex-col items-end gap-1 pt-1">
+                {DECOR_STACK.map((d, i) => (
+                  <li
+                    key={d}
+                    className="font-mono text-[9px] tracking-[0.28em] uppercase font-bold"
+                    style={{
+                      color: i === DECOR_STACK.length - 1 ? TEAL : 'rgba(35,35,35,0.35)',
+                    }}
+                  >
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            {/* Headline */}
-            <h2
-              className="mt-2 font-black uppercase leading-[0.9] tracking-[-0.02em]"
-              style={{ color: OIL, fontSize: 'clamp(2rem, 3.6vw, 3rem)' }}
-            >
-              Featured Products
-            </h2>
-
-            {/* Short supporting line */}
-            <p
-              className="mt-2 text-sm md:text-base"
-              style={{ color: 'rgba(35,35,35,0.7)' }}
-            >
-              Apparel for life in motion.
-            </p>
-
-            {/* Products — 3 across desktop, horizontal swipe on mobile */}
+            {/* Product grid — 3 across desktop, 2 on mobile */}
             <div className="mt-5 md:mt-6">
               {isLoading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5">
@@ -138,8 +174,11 @@ export default function Home1FeaturedCollection() {
                       rel="noopener noreferrer"
                       className="group block"
                     >
-                      {/* Product image */}
-                      <div className="relative aspect-square overflow-hidden" style={{ background: '#f0ece6' }}>
+                      {/* Product image — light editorial box */}
+                      <div
+                        className="relative aspect-square overflow-hidden"
+                        style={{ background: '#f0ece6' }}
+                      >
                         <img
                           src={p.image_url || FALLBACK_IMG}
                           alt={p.image_alt || p.name}
@@ -147,7 +186,7 @@ export default function Home1FeaturedCollection() {
                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                         />
                       </div>
-                      {/* Name + price only */}
+                      {/* Name (bold) + price (thin) */}
                       <div className="pt-2 flex items-baseline justify-between gap-2">
                         <h3
                           className="font-bold leading-tight tracking-[-0.01em] line-clamp-1 transition-colors group-hover:underline"
@@ -157,8 +196,8 @@ export default function Home1FeaturedCollection() {
                         </h3>
                         {p.price != null && (
                           <span
-                            className="font-mono text-[11px] font-bold shrink-0"
-                            style={{ color: OIL }}
+                            className="font-mono text-[11px] shrink-0"
+                            style={{ color: 'rgba(35,35,35,0.7)' }}
                           >
                             {formatPrice(p.price, p.currency)}
                           </span>
@@ -170,30 +209,43 @@ export default function Home1FeaturedCollection() {
               )}
             </div>
 
-            {/* Primary CTA */}
-            <a
-              href={SHOP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 mt-6 md:mt-7 px-5 py-2.5 transition-all w-fit"
-              style={{ border: `1px solid ${OIL}`, color: OIL, background: 'transparent' }}
-            >
-              <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
-                Shop the Collection
-              </span>
-              <ArrowRight
-                className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                style={{ color: OIL }}
-              />
-            </a>
+            {/* Footer row — CTA (left) + value props (right) */}
+            <div className="mt-6 md:mt-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <a
+                href={SHOP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 px-5 py-3 transition-all w-fit"
+                style={{ background: OIL, color: '#FFFFFF' }}
+              >
+                <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
+                  Shop the Collection
+                </span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </a>
 
-            {/* Optional editorial detail — lower right */}
-            <p
-              className="mt-4 font-mono text-[9px] tracking-[0.3em] uppercase self-end"
-              style={{ color: 'rgba(35,35,35,0.4)' }}
-            >
-              More styles. Same mindset.
-            </p>
+              <ul className="flex items-center gap-4 sm:gap-5">
+                {VALUE_PROPS.map(({ icon: Icon, label }, i) => (
+                  <li key={label} className="flex items-center gap-4 sm:gap-5">
+                    {i > 0 && (
+                      <span
+                        className="hidden sm:block h-8 w-px"
+                        style={{ background: 'rgba(35,35,35,0.18)' }}
+                      />
+                    )}
+                    <span className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" style={{ color: OIL }} />
+                      <span
+                        className="font-mono text-[9px] tracking-[0.2em] uppercase font-bold"
+                        style={{ color: OIL }}
+                      >
+                        {label}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
