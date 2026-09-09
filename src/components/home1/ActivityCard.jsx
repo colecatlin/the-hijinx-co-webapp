@@ -69,18 +69,16 @@ export default function ActivityCard({ item }) {
       <div className="flex flex-col flex-1 p-4">
         <h3
           className="font-black uppercase leading-[1.05] tracking-[-0.01em] line-clamp-2"
-          style={{ color: OIL, fontSize: 'clamp(0.95rem, 1.3vw, 1.1rem)' }}
+          style={{ color: OIL, fontSize: 'clamp(0.95rem, 1.3vw, 1.1rem)', minHeight: '2.42em' }}
         >
           {item.title}
         </h3>
-        {item.body && (
-          <p
-            className="mt-2 text-[12px] leading-snug line-clamp-2"
-            style={{ color: 'rgba(35,35,35,0.65)' }}
-          >
-            {item.body}
-          </p>
-        )}
+        <p
+          className="mt-2 text-[12px] leading-snug line-clamp-2"
+          style={{ color: 'rgba(35,35,35,0.65)', minHeight: '2.75em' }}
+        >
+          {item.body || '\u00A0'}
+        </p>
         {/* Footer */}
         <div className="mt-auto pt-3 flex items-center justify-between gap-2">
           <span
