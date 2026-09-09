@@ -62,8 +62,9 @@ export default function Home1FeaturedCollection() {
 
         {/* Main layout — 55/45 desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-6 lg:gap-8">
-          {/* LEFT — lifestyle / lookbook image */}
-          <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4 / 5' }}>
+          {/* LEFT — lifestyle / lookbook image.
+              Mobile keeps 4/5; desktop stretches to match the right column's height. */}
+          <div className="relative w-full overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-full">
             <img
               src={LIFESTYLE_IMG}
               alt="HIJINX apparel worn in a motorsports paddock"
