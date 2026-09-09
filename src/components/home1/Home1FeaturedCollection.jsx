@@ -29,7 +29,7 @@ export default function Home1FeaturedCollection() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const items = (data?.data?.products || []).slice(0, 3);
+  const items = (data?.data?.products || []).slice(0, 6);
 
   return (
     <section
@@ -43,7 +43,7 @@ export default function Home1FeaturedCollection() {
             className="font-mono text-[10px] md:text-[11px] tracking-[0.3em] uppercase font-bold whitespace-nowrap"
             style={{ color: OIL }}
           >
-            Featured Collection
+            Featured Products
           </span>
           <span
             className="flex-1 h-px"
@@ -87,7 +87,7 @@ export default function Home1FeaturedCollection() {
               className="mt-2 font-black uppercase leading-[0.9] tracking-[-0.02em]"
               style={{ color: OIL, fontSize: 'clamp(2rem, 3.6vw, 3rem)' }}
             >
-              Featured Collection
+              Featured Products
             </h2>
 
             {/* Short supporting line */}
@@ -101,9 +101,9 @@ export default function Home1FeaturedCollection() {
             {/* Products — 3 across desktop, horizontal swipe on mobile */}
             <div className="mt-5 md:mt-6">
               {isLoading ? (
-                <div className="flex gap-3 overflow-hidden">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="flex-1 min-w-0">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i}>
                       <div
                         className="aspect-square animate-pulse"
                         style={{ background: 'rgba(35,35,35,0.06)' }}
@@ -124,18 +124,18 @@ export default function Home1FeaturedCollection() {
                     className="font-mono text-[10px] tracking-[0.3em] uppercase"
                     style={{ color: 'rgba(35,35,35,0.5)' }}
                   >
-                    Collection coming soon.
+                    Products coming soon.
                   </p>
                 </div>
               ) : (
-                <div className="flex gap-3 md:gap-3.5 overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-6 px-6 lg:mx-0 lg:px-0 pb-1">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5">
                   {items.map((p) => (
                     <a
                       key={p.id}
                       href={p.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group snap-start shrink-0 w-[46%] sm:w-[40%] lg:w-[calc(33.333%-7px)] block"
+                      className="group block"
                     >
                       {/* Product image */}
                       <div className="relative aspect-square overflow-hidden" style={{ background: '#f0ece6' }}>
