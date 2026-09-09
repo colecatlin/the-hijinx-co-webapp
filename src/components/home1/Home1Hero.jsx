@@ -9,8 +9,8 @@ export default function Home1Hero() {
 
   return (
     <section
-      className="relative w-full overflow-hidden h-[80vh] lg:h-[82vh]"
-      style={{ minHeight: '560px', background: '#232323' }}
+      className="relative w-full overflow-hidden h-[64vh] lg:h-[68vh]"
+      style={{ minHeight: '460px', background: '#232323' }}
     >
       {/* Background image layer — very slow scale-in */}
       <motion.div
@@ -45,7 +45,7 @@ export default function Home1Hero() {
       />
 
       {/* Content */}
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 flex flex-col justify-center">
+      <div className="relative z-10 h-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 flex flex-col justify-start pt-[12vh] lg:pt-[10vh]">
         <motion.div
           className="max-w-2xl"
           initial={reduceMotion ? false : { opacity: 0, y: 22 }}
