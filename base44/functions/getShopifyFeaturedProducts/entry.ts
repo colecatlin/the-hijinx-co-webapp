@@ -21,7 +21,7 @@ export default async function(req) {
     // Fetch first 6 products with image, price, and online store URL
     const query = `
       query FeaturedProducts {
-        products(first: 6, sortKey: CREATED, reverse: true) {
+        products(first: 6, sortKey: CREATED_AT, reverse: true) {
           edges {
             node {
               id
