@@ -41,7 +41,7 @@ export default function ActivityCard({ item }) {
   return (
     <Link
       to={item.to}
-      className="group flex flex-col bg-white border transition-colors hover:border-[#232323]"
+      className="group flex flex-col h-full bg-white border transition-colors hover:border-[#232323]"
       style={{ borderColor: 'rgba(35,35,35,0.15)' }}
     >
       {/* Image */}
