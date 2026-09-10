@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
@@ -28,6 +28,7 @@ export default function WebsiteHome() {
 }
 
 function HomeEditor() {
+  const queryClient = useQueryClient();
   const [draft, setDraft] = useState(null);
   const [savedDraft, setSavedDraft] = useState(null);
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false);
@@ -81,6 +82,7 @@ function HomeEditor() {
         setHasUnpublishedChanges(false);
         setPublishedAt(d.published_at);
         toast.success('Home configuration published');
+        queryClient.invalidateQueries({ queryKey: ['home1Settings'] });
         if (d.warnings?.length) d.warnings.forEach((w) => toast.warning(w));
       } else {
         toast.error(d?.error || 'Publish failed');
@@ -96,7 +98,16 @@ function HomeEditor() {
   const handleSave = () => saveMutation.mutate({ draft });
   const handlePublish = () => publishMutation.mutate();
   const handlePreview = () => {
-    toast.info('Preview will become available when Home is connected in Phase 2B.', { duration: 5000 });
+    // Save draft first if there are unsaved changes, then open preview
+    if (isDirty) {
+      saveMutation.mutate({ draft }, {
+        onSuccess: () => {
+          window.open('/Home1?preview=home-draft', '_blank');
+        },
+      });
+    } else {
+      window.open('/Home1?preview=home-draft', '_blank');
+    }
   };
 
   if (isLoading || draft === null) {
@@ -130,9 +141,8 @@ function HomeEditor() {
       <div className="flex items-start gap-2 p-3 mb-4 rounded-lg border border-motion/20 bg-motion/5 text-xs text-foreground-secondary">
         <Info className="w-4 h-4 text-motion mt-0.5 shrink-0" />
         <p>
-          This editor stores presentation configuration safely. The public homepage (Home1) is not yet
-          connected to these settings — it will be wired in Phase 2B. Draft and published states are separate;
-          publishing does not change the visible site until Phase 2B.
+          This editor controls the live homepage. Save drafts, preview changes in a new tab, and publish
+          to make changes visible to the public. Draft and published states are separate.
         </p>
       </div>
 

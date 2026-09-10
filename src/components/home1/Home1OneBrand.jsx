@@ -1,17 +1,31 @@
 import React from 'react';
 import { Users, Globe, TrendingUp, Move } from 'lucide-react';
+import { mergeConfig } from './home1Helpers';
 
 const BONE = '#FFF8F5';
 const OIL = '#232323';
 
-const PILLARS = [
-  { icon: Users, name: 'PEOPLE', desc: 'The reason.' },
-  { icon: Globe, name: 'CULTURE', desc: 'The connection.' },
-  { icon: TrendingUp, name: 'OPPORTUNITY', desc: 'The goal.' },
-  { icon: Move, name: 'MOTION', desc: 'The mindset.' },
-];
+const PILLAR_ICONS = [Users, Globe, TrendingUp, Move];
 
-export default function Home1OneBrand() {
+const ONE_BRAND_DEFAULTS = {
+  enabled: true,
+  eyebrow: 'A Connected Motorsports Community',
+  headline: 'One Brand.\nA Bigger Movement.',
+  body_copy_1: 'HIJINX connects the pieces of motorsports that usually live separately.',
+  body_copy_2: 'Apparel, media, information, racing, commerce, tools and community — brought together to create more ways for people to participate, discover, build and keep moving forward.',
+  pillars: [
+    { name: 'PEOPLE', desc: 'The reason.' },
+    { name: 'CULTURE', desc: 'The connection.' },
+    { name: 'OPPORTUNITY', desc: 'The goal.' },
+    { name: 'MOTION', desc: 'The mindset.' },
+  ],
+  schedule: { enabled: false, start_at: '', end_at: '' },
+};
+
+export default function Home1OneBrand({ config }) {
+  const v = mergeConfig(ONE_BRAND_DEFAULTS, config);
+  const pillars = (v.pillars || []).slice(0, 4);
+
   return (
     <section className="w-full py-8 md:py-12" style={{ background: BONE }}>
       {/* Top rule */}
@@ -27,7 +41,7 @@ export default function Home1OneBrand() {
                 className="font-mono text-[10px] tracking-[0.3em] uppercase font-bold"
                 style={{ color: OIL }}
               >
-                A Connected Motorsports Community
+                {v.eyebrow}
               </p>
             </div>
             {/* Headline */}
@@ -35,9 +49,12 @@ export default function Home1OneBrand() {
               className="font-black uppercase leading-[0.9] tracking-[-0.02em]"
               style={{ color: OIL, fontSize: 'clamp(2rem, 4.5vw, 3.5rem)' }}
             >
-              One Brand.
-              <br />
-              A Bigger Movement.
+              {v.headline?.split('\n').map((line, i) => (
+                <React.Fragment key={i}>
+                  {line}
+                  {i < (v.headline?.split('\n').length || 0) - 1 && <br />}
+                </React.Fragment>
+              ))}
             </h2>
             {/* Copy */}
             <div className="mt-5 max-w-xl space-y-3">
@@ -45,43 +62,43 @@ export default function Home1OneBrand() {
                 className="text-[15px] md:text-[16px] leading-relaxed font-semibold"
                 style={{ color: OIL }}
               >
-                HIJINX connects the pieces of motorsports that usually live
-                separately.
+                {v.body_copy_1}
               </p>
               <p
                 className="text-[14px] md:text-[15px] leading-relaxed"
                 style={{ color: 'rgba(35,35,35,0.72)' }}
               >
-                Apparel, media, information, racing, commerce, tools and
-                community — brought together to create more ways for people to
-                participate, discover, build and keep moving forward.
+                {v.body_copy_2}
               </p>
             </div>
           </div>
 
           {/* RIGHT — Pillars 2x2 */}
           <div className="grid grid-cols-2 gap-px" style={{ background: 'rgba(35,35,35,0.12)' }}>
-            {PILLARS.map(({ icon: Icon, name, desc }) => (
-              <div
-                key={name}
-                className="flex flex-col gap-1.5 p-4 md:p-5"
-                style={{ background: BONE }}
-              >
-                <Icon className="w-4 h-4" style={{ color: OIL, strokeWidth: 1.5 }} />
-                <p
-                  className="font-black uppercase tracking-[0.04em] mt-0.5"
-                  style={{ color: OIL, fontSize: 'clamp(1rem, 1.5vw, 1.25rem)' }}
+            {pillars.map((pillar, i) => {
+              const Icon = PILLAR_ICONS[i] || PILLAR_ICONS[0];
+              return (
+                <div
+                  key={pillar.name || i}
+                  className="flex flex-col gap-1.5 p-4 md:p-5"
+                  style={{ background: BONE }}
                 >
-                  {name}
-                </p>
-                <p
-                  className="text-[12px] md:text-[13px]"
-                  style={{ color: 'rgba(35,35,35,0.6)' }}
-                >
-                  {desc}
-                </p>
-              </div>
-            ))}
+                  <Icon className="w-4 h-4" style={{ color: OIL, strokeWidth: 1.5 }} />
+                  <p
+                    className="font-black uppercase tracking-[0.04em] mt-0.5"
+                    style={{ color: OIL, fontSize: 'clamp(1rem, 1.5vw, 1.25rem)' }}
+                  >
+                    {pillar.name}
+                  </p>
+                  <p
+                    className="text-[12px] md:text-[13px]"
+                    style={{ color: 'rgba(35,35,35,0.6)' }}
+                  >
+                    {pillar.desc}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
         {/* Bottom rule */}

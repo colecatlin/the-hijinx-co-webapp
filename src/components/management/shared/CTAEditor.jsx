@@ -22,7 +22,7 @@ export default function CTAEditor({ value = {}, onChange, ctaLabel = 'CTA' }) {
     style: 'solid',
     ...value,
   };
-  const d = { type: 'none', internal_page: '', entity_type: '', entity_id: '', external_url: '', open_in_new_tab: false, ...v.destination };
+  const d = { type: 'none', internal_page: '', entity_type: '', entity_id: '', entity_slug: '', entity_name: '', external_url: '', open_in_new_tab: false, ...v.destination };
   const set = (field, val) => onChange({ ...v, [field]: val });
   const setDest = (field, val) => onChange({ ...v, destination: { ...d, [field]: val } });
 
@@ -90,6 +90,10 @@ export default function CTAEditor({ value = {}, onChange, ctaLabel = 'CTA' }) {
                     mode="single"
                     value={d.entity_id}
                     onChange={(id) => setDest('entity_id', id)}
+                    onEntityPicked={(id, entity) => {
+                      setDest('entity_slug', entity?.slug || '');
+                      setDest('entity_name', entity ? (entity.name || entity.title || '') : '');
+                    }}
                     placeholder={`Search ${d.entity_type.toLowerCase()}s...`}
                   />
                 </div>

@@ -65,7 +65,7 @@ export default function PublishBar({
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={onPreview} disabled={hasUnpublishedChanges === false && !isDirty}>
+        <Button variant="outline" size="sm" onClick={onPreview}>
           <Eye className="w-3.5 h-3.5 mr-1.5" /> Preview
         </Button>
         <Button variant="outline" size="sm" onClick={onSave} disabled={!isDirty || isSaving}>

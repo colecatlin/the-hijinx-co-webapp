@@ -43,7 +43,7 @@ export default async function (req) {
           record_id: null,
         });
       }
-      return Response.json({ published: null });
+      return Response.json({ published: defaults });
     }
 
     if (isAdmin) {
@@ -58,8 +58,8 @@ export default async function (req) {
       });
     }
 
-    // Public — published only
-    return Response.json({ published: record.published || null });
+    // Public — published only, fall back to defaults
+    return Response.json({ published: record.published || defaults });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

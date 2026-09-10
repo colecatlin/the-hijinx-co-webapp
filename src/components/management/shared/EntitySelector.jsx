@@ -48,6 +48,7 @@ export default function EntitySelector({
   mode = 'single',
   value,
   onChange,
+  onEntityPicked,
   placeholder = 'Search...',
 }) {
   const [query, setQuery] = useState('');
@@ -78,6 +79,7 @@ export default function EntitySelector({
   const toggle = (id) => {
     if (mode === 'single') {
       onChange(id === value ? '' : id);
+      if (onEntityPicked) onEntityPicked(id === value ? '' : id, entityMap[id] || null);
       setOpen(false);
     } else {
       if (selectedIds.includes(id)) onChange(selectedIds.filter((x) => x !== id));

@@ -4,9 +4,31 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import NextUpEventCard from './NextUpEventCard';
+import { mergeConfig, resolveCta } from './home1Helpers';
 
-function useNextUpEvents() {
-  const { data: events = [] } = useQuery({
+const NEXT_UP_DEFAULTS = {
+  enabled: true,
+  eyebrow: 'WHERE MOTORSPORTS HAPPENS.',
+  headline: 'NEXT UP',
+  supporting_copy: '',
+  view_calendar_cta: {
+    enabled: true,
+    label: 'VIEW FULL CALENDAR',
+    destination: { type: 'internal_page', internal_page: '/Directory?cat=events' },
+  },
+  mode: 'auto',
+  pinned_event_ids: [],
+  display_limit: 10,
+  schedule: { enabled: false, start_at: '', end_at: '' },
+};
+
+function useNextUpEvents(config) {
+  const mode = config?.mode || 'auto';
+  const pinnedIds = config?.pinned_event_ids || [];
+  const displayLimit = config?.display_limit || 10;
+
+  // Auto mode: fetch upcoming published events
+  const { data: allEvents = [] } = useQuery({
     queryKey: ['home1NextUpEvents'],
     queryFn: () =>
       base44.entities.Event.filter(
@@ -17,24 +39,48 @@ function useNextUpEvents() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const today = new Date().toISOString().split('T')[0];
-  const upcoming = events
-    .filter((e) => !e.is_archived && (e.end_date || e.event_date) >= today)
-    .slice(0, 10);
+  // Pinned mode: fetch specific events by ID (single batched query)
+  const { data: pinnedEvents = [] } = useQuery({
+    queryKey: ['home1NextUpPinned', pinnedIds.join(',')],
+    queryFn: () =>
+      pinnedIds.length > 0
+        ? base44.entities.Event.filter({ id: { $in: pinnedIds } }, 'event_date', 50)
+        : [],
+    enabled: mode === 'pinned' && pinnedIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+  });
 
+  const today = new Date().toISOString().split('T')[0];
+
+  const isEligible = (e) => !e.is_archived && (e.end_date || e.event_date) >= today;
+
+  let upcoming;
+  if (mode === 'pinned' && pinnedIds.length > 0) {
+    const valid = pinnedEvents.filter(isEligible);
+    if (valid.length > 0) {
+      // Preserve pinned order
+      upcoming = pinnedIds
+        .map((id) => valid.find((e) => e.id === id))
+        .filter(Boolean)
+        .slice(0, displayLimit);
+    } else {
+      // Fall back to auto
+      upcoming = allEvents.filter(isEligible).slice(0, displayLimit);
+    }
+  } else {
+    upcoming = allEvents.filter(isEligible).slice(0, displayLimit);
+  }
+
+  // Batched series/track fetches (reduces N+1)
   const seriesIds = [...new Set(upcoming.map((e) => e.series_id).filter(Boolean))];
   const trackIds = [...new Set(upcoming.map((e) => e.track_id).filter(Boolean))];
 
   const { data: seriesList = [] } = useQuery({
     queryKey: ['home1NextUpSeries', seriesIds.join(',')],
     queryFn: () =>
-      Promise.all(
-        seriesIds.map((id) =>
-          base44.entities.Series.filter({ id }, '-created_date', 1)
-            .then((r) => r[0])
-            .catch(() => null)
-        )
-      ).then((r) => r.filter(Boolean)),
+      seriesIds.length > 0
+        ? base44.entities.Series.filter({ id: { $in: seriesIds } })
+        : [],
     enabled: seriesIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
@@ -42,13 +88,9 @@ function useNextUpEvents() {
   const { data: trackList = [] } = useQuery({
     queryKey: ['home1NextUpTracks', trackIds.join(',')],
     queryFn: () =>
-      Promise.all(
-        trackIds.map((id) =>
-          base44.entities.Track.filter({ id }, '-created_date', 1)
-            .then((r) => r[0])
-            .catch(() => null)
-        )
-      ).then((r) => r.filter(Boolean)),
+      trackIds.length > 0
+        ? base44.entities.Track.filter({ id: { $in: trackIds } })
+        : [],
     enabled: trackIds.length > 0,
     staleTime: 10 * 60 * 1000,
   });
@@ -66,9 +108,10 @@ function useNextUpEvents() {
   return { upcoming, seriesMap, trackMap, disciplineMap };
 }
 
-export default function Home1NextUp() {
+export default function Home1NextUp({ config }) {
+  const v = mergeConfig(NEXT_UP_DEFAULTS, config);
   const scrollerRef = useRef(null);
-  const { upcoming, seriesMap, trackMap, disciplineMap } = useNextUpEvents();
+  const { upcoming, seriesMap, trackMap, disciplineMap } = useNextUpEvents(v);
 
   const scrollByCards = (dir) => {
     const el = scrollerRef.current;
@@ -88,6 +131,22 @@ export default function Home1NextUp() {
     ),
   ];
 
+  const calendarCta = resolveCta(v.view_calendar_cta);
+
+  const CalendarLink = ({ className, style, children }) => {
+    if (!calendarCta || !calendarCta.isLink) {
+      return <span className={className} style={style}>{children}</span>;
+    }
+    if (calendarCta.isExternal) {
+      return (
+        <a href={calendarCta.href} target={calendarCta.openInNewTab ? '_blank' : undefined} rel={calendarCta.openInNewTab ? 'noopener noreferrer' : undefined} className={className} style={style}>
+          {children}
+        </a>
+      );
+    }
+    return <Link to={calendarCta.href} className={className} style={style}>{children}</Link>;
+  };
+
   return (
     <section className="relative w-full pt-3 md:pt-5 pb-8 md:pb-12" style={{ background: '#F9F7F2' }}>
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -98,22 +157,21 @@ export default function Home1NextUp() {
               className="font-serif italic font-black leading-[0.9] tracking-[-0.02em]"
               style={{ color: '#232323', fontSize: 'clamp(2.75rem, 6vw, 5rem)' }}
             >
-              NEXT UP
+              {v.headline}
             </h2>
             <p
               className="font-mono text-[10px] md:text-[11px] tracking-[0.3em] uppercase pb-2"
               style={{ color: 'rgba(35,35,35,0.6)' }}
             >
-              WHERE MOTORSPORTS HAPPENS.
+              {v.eyebrow}
             </p>
           </div>
-          <Link
-            to="/Directory?cat=events"
-            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold border bg-white transition-colors hover:bg-[#232323] hover:text-[#F9F7F2]"
-            style={{ color: '#232323', borderColor: '#232323' }}
-          >
-            VIEW FULL CALENDAR <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {calendarCta && (
+            <CalendarLink className="hidden sm:inline-flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold border bg-white transition-colors hover:bg-[#232323] hover:text-[#F9F7F2]"
+              style={{ color: '#232323', borderColor: '#232323' }}>
+              {calendarCta.label} <ArrowRight className="w-3.5 h-3.5" />
+            </CalendarLink>
+          )}
         </div>
 
         {/* Cards row */}
@@ -165,15 +223,14 @@ export default function Home1NextUp() {
         )}
 
         {/* Mobile full calendar link */}
-        <div className="mt-6 sm:hidden">
-          <Link
-            to="/Directory?cat=events"
-            className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold border-b pb-1"
-            style={{ color: '#232323', borderColor: '#232323' }}
-          >
-            VIEW FULL CALENDAR <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+        {calendarCta && (
+          <div className="mt-6 sm:hidden">
+            <CalendarLink className="inline-flex items-center gap-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold border-b pb-1"
+              style={{ color: '#232323', borderColor: '#232323' }}>
+              {calendarCta.label} <ArrowRight className="w-3.5 h-3.5" />
+            </CalendarLink>
+          </div>
+        )}
 
         {/* Bottom editorial detail */}
         <div

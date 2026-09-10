@@ -2,12 +2,34 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { mergeConfig, resolveCta } from './home1Helpers';
 
 const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/c7e783970_generated_image.png';
 
-const SECONDARY_WORDS = ['PEOPLE', 'PLACES', 'PROGRESS', 'NO LIMITS'];
+const SECONDARY_WORDS_DEFAULT = ['PEOPLE', 'PLACES', 'PROGRESS', 'NO LIMITS'];
 
-export default function Home1BePartOfSomethingBigger() {
+const CLOSING_DEFAULTS = {
+  enabled: true,
+  eyebrow: 'BE PART OF',
+  headline: 'SOMETHING BIGGER.',
+  accent_text: '',
+  supporting_line_1: 'Racers. Builders. Fans. Creators.',
+  supporting_line_2: 'Everyone has a place here.',
+  background_image: BG_IMAGE,
+  desktop_image_position: 'center center',
+  mobile_image_position: 'center center',
+  cta: {
+    enabled: true,
+    label: 'Join the Movement',
+    destination: { type: 'internal_page', internal_page: '/join' },
+  },
+  right_side_words: SECONDARY_WORDS_DEFAULT,
+  show_right_side_words: true,
+  schedule: { enabled: false, start_at: '', end_at: '' },
+};
+
+export default function Home1BePartOfSomethingBigger({ config }) {
+  const v = mergeConfig(CLOSING_DEFAULTS, config);
   const ref = useRef(null);
   const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -15,9 +37,27 @@ export default function Home1BePartOfSomethingBigger() {
     offset: ['start end', 'end start'],
   });
 
-  // Subtle parallax — respects reduced motion
   const y = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : ['-6%', '6%']);
   const scale = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1, 1] : [1.08, 1]);
+
+  const bgImage = v.background_image || BG_IMAGE;
+  const words = v.right_side_words || SECONDARY_WORDS_DEFAULT;
+  const cta = resolveCta(v.cta);
+
+  const ctaContent = cta ? (
+    <>
+      <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
+        {cta.label}
+      </span>
+      <ArrowRight
+        className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+        style={{ color: '#00FFD1' }}
+      />
+    </>
+  ) : null;
+
+  const ctaClassName = 'group inline-flex items-center gap-2 mt-7 lg:mt-8 px-5 py-2.5 transition-all';
+  const ctaStyle = { border: '1px solid #FFFFFF', color: '#FFFFFF', background: 'transparent' };
 
   return (
     <section
@@ -26,22 +66,22 @@ export default function Home1BePartOfSomethingBigger() {
       className="relative w-full overflow-hidden"
       style={{ background: 'hsl(var(--canvas))' }}
     >
-      {/* Cinematic image — 420–520px desktop, 420–500px mobile */}
+      {/* Cinematic image */}
       <div className="relative w-full" style={{ height: 'clamp(420px, 46vw, 520px)' }}>
         <motion.div
           className="absolute inset-0"
           style={{ y, scale }}
         >
           <img
-            src={BG_IMAGE}
+            src={bgImage}
             alt="People walking through a race paddock at golden hour"
             className="w-full h-full object-cover"
             loading="lazy"
-            style={{ filter: 'saturate(1.05) contrast(1.05)' }}
+            style={{ filter: 'saturate(1.05) contrast(1.05)', objectPosition: v.desktop_image_position }}
           />
         </motion.div>
 
-        {/* Cinematic gradient — strongest behind primary text (left) */}
+        {/* Cinematic gradient */}
         <div
           className="absolute inset-0"
           style={{
@@ -83,7 +123,7 @@ export default function Home1BePartOfSomethingBigger() {
               transition={{ duration: 0.7, ease: 'easeOut' }}
               className="max-w-xl"
             >
-              {/* Eyebrow — small, wide-tracked, white */}
+              {/* Eyebrow */}
               <span
                 className="block uppercase font-bold"
                 style={{
@@ -93,10 +133,10 @@ export default function Home1BePartOfSomethingBigger() {
                   marginBottom: '0.85rem',
                 }}
               >
-                BE PART OF
+                {v.eyebrow}
               </span>
 
-              {/* Headline — large, bold, teal */}
+              {/* Headline */}
               <h2
                 className="uppercase leading-[0.9] tracking-[-0.01em]"
                 style={{
@@ -105,7 +145,7 @@ export default function Home1BePartOfSomethingBigger() {
                   fontSize: 'clamp(2.75rem, 6vw, 5rem)',
                 }}
               >
-                SOMETHING BIGGER.
+                {v.headline}
               </h2>
 
               {/* Supporting copy */}
@@ -113,59 +153,65 @@ export default function Home1BePartOfSomethingBigger() {
                 className="mt-5 lg:mt-6 text-base lg:text-lg leading-relaxed"
                 style={{ color: '#D1D1D1' }}
               >
-                Racers. Builders. Fans. Creators.
+                {v.supporting_line_1}
                 <br />
-                Everyone has a place here.
+                {v.supporting_line_2}
               </p>
 
-              {/* CTA — minimal outlined */}
-              <Link
-                to="/join"
-                className="group inline-flex items-center gap-2 mt-7 lg:mt-8 px-5 py-2.5 transition-all"
-                style={{
-                  border: '1px solid #FFFFFF',
-                  color: '#FFFFFF',
-                  background: 'transparent',
-                }}
-              >
-                <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
-                  Join the Movement
+              {/* CTA */}
+              {cta && cta.isLink && !cta.isExternal && (
+                <Link to={cta.href} className={ctaClassName} style={ctaStyle}>
+                  {ctaContent}
+                </Link>
+              )}
+              {cta && cta.isLink && cta.isExternal && (
+                <a
+                  href={cta.href}
+                  target={cta.openInNewTab ? '_blank' : undefined}
+                  rel={cta.openInNewTab ? 'noopener noreferrer' : undefined}
+                  className={ctaClassName}
+                  style={ctaStyle}
+                >
+                  {ctaContent}
+                </a>
+              )}
+              {cta && !cta.isLink && (
+                <span className={ctaClassName} style={ctaStyle}>
+                  {ctaContent}
                 </span>
-                <ArrowRight
-                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                  style={{ color: '#00FFD1' }}
-                />
-              </Link>
+              )}
             </motion.div>
           </div>
         </div>
 
         {/* Secondary editorial block — right side, desktop only */}
-        <div className="hidden lg:flex absolute inset-0 z-10 items-center justify-end pointer-events-none">
-          <div className="max-w-7xl mx-auto w-full px-10">
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, x: 12 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
-              className="flex flex-col items-end gap-1.5"
-            >
-              {SECONDARY_WORDS.map((word) => (
+        {v.show_right_side_words && (
+          <div className="hidden lg:flex absolute inset-0 z-10 items-center justify-end pointer-events-none">
+            <div className="max-w-7xl mx-auto w-full px-10">
+              <motion.div
+                initial={reduceMotion ? false : { opacity: 0, x: 12 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '-80px' }}
+                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 }}
+                className="flex flex-col items-end gap-1.5"
+              >
+                {words.map((word) => (
+                  <span
+                    key={word}
+                    className="font-mono text-[10px] tracking-[0.45em] uppercase"
+                    style={{ color: 'hsl(var(--foreground-secondary) / 0.7)' }}
+                  >
+                    {word}
+                  </span>
+                ))}
                 <span
-                  key={word}
-                  className="font-mono text-[10px] tracking-[0.45em] uppercase"
-                  style={{ color: 'hsl(var(--foreground-secondary) / 0.7)' }}
-                >
-                  {word}
-                </span>
-              ))}
-              <span
-                className="inline-block mt-1.5"
-                style={{ width: '32px', height: '1px', background: 'hsl(var(--foreground-secondary) / 0.4)' }}
-              />
-            </motion.div>
+                  className="inline-block mt-1.5"
+                  style={{ width: '32px', height: '1px', background: 'hsl(var(--foreground-secondary) / 0.4)' }}
+                />
+              </motion.div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Bottom-left footer: LIFE IN MOTION — */}
         <div className="absolute bottom-0 left-0 right-0 z-10">

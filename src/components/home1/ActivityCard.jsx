@@ -35,12 +35,11 @@ export default function ActivityCard({ item }) {
   const s = SOURCE_STYLES[item.source] || SOURCE_STYLES.INDEX46;
   const img = item.image || fallbackImg(item.source);
 
-  return (
-    <Link
-      to={item.to}
-      className="group flex flex-col bg-white border transition-colors hover:border-[#232323]"
-      style={{ borderColor: 'rgba(35,35,35,0.15)', borderRadius: '2px' }}
-    >
+  const cardClass = 'group flex flex-col bg-white border transition-colors hover:border-[#232323]';
+  const cardStyle = { borderColor: 'rgba(35,35,35,0.15)', borderRadius: '2px' };
+
+  const inner = (
+    <>
       {/* 1. IMAGE — fixed 16:9, object-cover */}
       <div className="relative aspect-[16/9] overflow-hidden bg-[#f0ece6]">
         <img
@@ -78,6 +77,20 @@ export default function ActivityCard({ item }) {
           <ArrowRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5" />
         </span>
       </div>
+    </>
+  );
+
+  if (item.isExternal) {
+    return (
+      <a href={item.to} target="_blank" rel="noopener noreferrer" className={cardClass} style={cardStyle}>
+        {inner}
+      </a>
+    );
+  }
+
+  return (
+    <Link to={item.to} className={cardClass} style={cardStyle}>
+      {inner}
     </Link>
   );
 }

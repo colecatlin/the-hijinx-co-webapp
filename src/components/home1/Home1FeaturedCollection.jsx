@@ -2,19 +2,17 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowRight, Truck, Wrench, Globe } from 'lucide-react';
+import { mergeConfig, resolveCta } from './home1Helpers';
 
 const BONE = '#FFF8F5';
 const OIL = '#232323';
 const TEAL = '#00AAB5';
-const RED = '#D9332D';
 
 const LIFESTYLE_IMG =
   'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/627c0f160_generated_image.png';
 
 const FALLBACK_IMG =
   'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80';
-
-const SHOP_URL = 'https://hijinx.com';
 
 const USE_CASES = ['TRACKSIDE', 'TRAVEL', 'WORKSHOP', 'EVERYDAY'];
 const DECOR_STACK = ['PEOPLE', 'PLACES', 'PROGRESS', 'NO LIMITS'];
@@ -24,20 +22,47 @@ const VALUE_PROPS = [
   { icon: Globe, label: 'BUILT DIFFERENT' },
 ];
 
+const FEATURED_DEFAULTS = {
+  enabled: true,
+  section_label: 'Hijinx Apparel',
+  eyebrow: 'Current Drop',
+  headline: 'Featured Products',
+  supporting_copy: 'Tees. Hoodies. Headwear. More.',
+  lifestyle_image: LIFESTYLE_IMG,
+  desktop_image_position: 'center center',
+  mobile_image_position: 'center center',
+  product_mode: 'newest',
+  shopify_collection_handle: '',
+  product_display_count: 6,
+  shop_all_cta: {
+    enabled: true,
+    label: 'Shop the Collection',
+    destination: { type: 'external', external_url: 'https://hijinx.com', open_in_new_tab: true },
+  },
+  schedule: { enabled: false, start_at: '', end_at: '' },
+};
+
 function formatPrice(p, currency = 'USD') {
   if (p == null) return null;
   const symbol = currency === 'USD' ? '$' : '';
   return `${symbol}${Number(p).toFixed(0)}`;
 }
 
-export default function Home1FeaturedCollection() {
+export default function Home1FeaturedCollection({ config }) {
+  const v = mergeConfig(FEATURED_DEFAULTS, config);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['home1ShopifyFeatured'],
-    queryFn: () => base44.functions.invoke('getShopifyFeaturedProducts'),
+    queryKey: ['home1ShopifyFeatured', v.product_mode, v.shopify_collection_handle, v.product_display_count],
+    queryFn: () => base44.functions.invoke('getShopifyFeaturedProducts', {
+      mode: v.product_mode,
+      collectionHandle: v.shopify_collection_handle,
+      count: v.product_display_count,
+    }),
     staleTime: 5 * 60 * 1000,
   });
 
-  const items = (data?.data?.products || []).slice(0, 6);
+  const items = (data?.data?.products || []).slice(0, v.product_display_count || 6);
+  const shopAllCta = resolveCta(v.shop_all_cta);
 
   return (
     <section
@@ -50,10 +75,11 @@ export default function Home1FeaturedCollection() {
           {/* ── LEFT — lifestyle / lookbook image with editorial overlays ── */}
           <div className="relative w-full overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-full">
             <img
-              src={LIFESTYLE_IMG}
+              src={v.lifestyle_image || LIFESTYLE_IMG}
               alt="HIJINX apparel worn in a motorsports paddock"
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: v.desktop_image_position || 'center center' }}
             />
             {/* Subtle bottom gradient for legibility */}
             <div
@@ -83,7 +109,7 @@ export default function Home1FeaturedCollection() {
                 className="font-black uppercase leading-[0.9] tracking-[-0.02em]"
                 style={{ color: '#FFFFFF', fontSize: 'clamp(1.6rem, 2.4vw, 2.4rem)' }}
               >
-                Hijinx Apparel
+                {v.section_label}
               </h2>
               <p
                 className="mt-1.5 font-mono text-[10px] tracking-[0.22em] uppercase"
@@ -104,19 +130,19 @@ export default function Home1FeaturedCollection() {
                   className="font-mono text-[10px] tracking-[0.35em] uppercase font-bold"
                   style={{ color: 'rgba(35,35,35,0.6)' }}
                 >
-                  Current Drop
+                  {v.eyebrow}
                 </span>
                 <h2
                   className="mt-2 font-black uppercase leading-[0.9] tracking-[-0.02em]"
                   style={{ color: OIL, fontSize: 'clamp(1.8rem, 3vw, 2.6rem)' }}
                 >
-                  Featured Products
+                  {v.headline}
                 </h2>
                 <p
                   className="mt-2 font-mono text-[10px] tracking-[0.22em] uppercase"
                   style={{ color: 'rgba(35,35,35,0.6)' }}
                 >
-                  Tees. Hoodies. Headwear. More.
+                  {v.supporting_copy}
                 </p>
               </div>
               {/* Right-side vertical decor stack */}
@@ -139,7 +165,7 @@ export default function Home1FeaturedCollection() {
             <div className="mt-5 md:mt-6">
               {isLoading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5">
-                  {Array.from({ length: 6 }).map((_, i) => (
+                  {Array.from({ length: v.product_display_count || 6 }).map((_, i) => (
                     <div key={i}>
                       <div
                         className="aspect-square animate-pulse"
@@ -211,18 +237,31 @@ export default function Home1FeaturedCollection() {
 
             {/* Footer row — CTA (left) + value props (right) */}
             <div className="mt-6 md:mt-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <a
-                href={SHOP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 px-5 py-3 transition-all w-fit"
-                style={{ background: OIL, color: '#FFFFFF' }}
-              >
-                <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
-                  Shop the Collection
+              {shopAllCta && shopAllCta.isLink && (
+                <a
+                  href={shopAllCta.href}
+                  target={shopAllCta.openInNewTab ? '_blank' : undefined}
+                  rel={shopAllCta.openInNewTab ? 'noopener noreferrer' : undefined}
+                  className="group inline-flex items-center gap-2 px-5 py-3 transition-all w-fit"
+                  style={{ background: OIL, color: '#FFFFFF' }}
+                >
+                  <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
+                    {shopAllCta.label}
+                  </span>
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </a>
+              )}
+              {shopAllCta && !shopAllCta.isLink && (
+                <span
+                  className="group inline-flex items-center gap-2 px-5 py-3 w-fit"
+                  style={{ background: OIL, color: '#FFFFFF' }}
+                >
+                  <span className="text-[11px] font-bold tracking-[0.2em] uppercase">
+                    {shopAllCta.label}
+                  </span>
+                  <ArrowRight className="w-4 h-4" />
                 </span>
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </a>
+              )}
 
               <ul className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 {VALUE_PROPS.map(({ icon: Icon, label }, i) => (

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowRight } from 'lucide-react';
+import { mergeConfig, resolveCta } from './home1Helpers';
 
 const BONE = '#FFF8F5';
 const OIL = '#232323';
@@ -10,6 +11,23 @@ const RASP = '#D33F49';
 
 const FALLBACK_IMG =
   'https://images.unsplash.com/photo-1502920917128-1aa1c652f298?auto=format&fit=crop&w=1400&q=80';
+
+const FROM_OUTLET_DEFAULTS = {
+  enabled: true,
+  eyebrow: 'Media // Stories // Motorsports',
+  headline: 'From The Outlet',
+  supporting_tagline: 'The Pulse Of Motorsports.',
+  view_all_cta: {
+    enabled: true,
+    label: 'View All Stories',
+    destination: { type: 'internal_page', internal_page: '/OutletHome' },
+  },
+  lead_mode: 'auto',
+  pinned_lead_story_id: '',
+  secondary_story_count: 3,
+  category_rail_enabled: true,
+  schedule: { enabled: false, start_at: '', end_at: '' },
+};
 
 function timeAgo(dateStr) {
   if (!dateStr) return null;
@@ -36,7 +54,9 @@ function categoryLabel(s) {
   return (s.primary_category || 'STORY').toUpperCase();
 }
 
-export default function Home1FromTheOutlet() {
+export default function Home1FromTheOutlet({ config }) {
+  const v = mergeConfig(FROM_OUTLET_DEFAULTS, config);
+
   const { data: stories = [] } = useQuery({
     queryKey: ['home1OutletStories'],
     queryFn: () => base44.entities.OutletStory.list('-published_date', 20),
@@ -45,18 +65,39 @@ export default function Home1FromTheOutlet() {
 
   const published = stories.filter((s) => s.status === 'published');
 
-  // Lead: prefer featured, else most recent
-  const lead =
-    published.find((s) => s.featured) || published[0] || null;
+  // Lead story: pinned or auto (featured → most recent)
+  let lead = null;
+  if (v.lead_mode === 'pinned' && v.pinned_lead_story_id) {
+    lead = published.find((s) => s.id === v.pinned_lead_story_id) || null;
+  }
+  if (!lead) {
+    // Auto: prefer featured, else most recent
+    lead = published.find((s) => s.featured) || published[0] || null;
+  }
 
+  const secondaryCount = v.secondary_story_count || 3;
   const secondary = published
     .filter((s) => s.id !== lead?.id)
-    .slice(0, 3);
+    .slice(0, secondaryCount);
 
-  // Category rail — real existing primary_category values
-  const categories = [
-    ...new Set(published.map((s) => s.primary_category).filter(Boolean)),
-  ].slice(0, 5);
+  // Category rail
+  const categories = v.category_rail_enabled
+    ? [...new Set(published.map((s) => s.primary_category).filter(Boolean))].slice(0, 5)
+    : [];
+
+  const viewAllCta = resolveCta(v.view_all_cta);
+
+  const ViewAllLink = ({ className, style, children }) => {
+    if (!viewAllCta || !viewAllCta.isLink) return <span className={className} style={style}>{children}</span>;
+    if (viewAllCta.isExternal) {
+      return (
+        <a href={viewAllCta.href} target={viewAllCta.openInNewTab ? '_blank' : undefined} rel={viewAllCta.openInNewTab ? 'noopener noreferrer' : undefined} className={className} style={style}>
+          {children}
+        </a>
+      );
+    }
+    return <Link to={viewAllCta.href} className={className} style={style}>{children}</Link>;
+  };
 
   return (
     <section
@@ -74,28 +115,27 @@ export default function Home1FromTheOutlet() {
               className="font-mono text-[10px] tracking-[0.3em] uppercase font-bold mb-2"
               style={{ color: RASP }}
             >
-              Media // Stories // Motorsports
+              {v.eyebrow}
             </p>
             <h2
               className="font-serif italic font-black leading-[0.9] tracking-[-0.02em]"
               style={{ color: OIL, fontSize: 'clamp(2.25rem, 5vw, 4rem)' }}
             >
-              From The Outlet
+              {v.headline}
             </h2>
             <p
               className="mt-1 font-mono text-[10px] md:text-[11px] tracking-[0.25em] uppercase"
               style={{ color: 'rgba(35,35,35,0.6)' }}
             >
-              The Pulse Of Motorsports.
+              {v.supporting_tagline}
             </p>
           </div>
-          <Link
-            to="/OutletHome"
-            className="inline-flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold border transition-colors hover:bg-[#232323] hover:text-[#FFF8F5] self-start md:self-auto"
-            style={{ color: OIL, borderColor: OIL }}
-          >
-            View All Stories <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {viewAllCta && (
+            <ViewAllLink className="inline-flex items-center gap-2 px-4 py-2 font-mono text-[10px] tracking-[0.25em] uppercase font-bold border transition-colors hover:bg-[#232323] hover:text-[#FFF8F5] self-start md:self-auto"
+              style={{ color: OIL, borderColor: OIL }}>
+              {viewAllCta.label} <ArrowRight className="w-3.5 h-3.5" />
+            </ViewAllLink>
+          )}
         </div>
 
         {published.length === 0 ? (
