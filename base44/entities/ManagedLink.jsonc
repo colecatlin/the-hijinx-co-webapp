@@ -1,0 +1,105 @@
+{
+  "name": "ManagedLink",
+  "type": "object",
+  "description": "Reusable managed link for the HIJINX ecosystem. Can be referenced by Footer and future modules. Stores a structured destination (internal page, entity, external URL, or none) plus optional metadata (category, image, icon). The Footer may reference ManagedLink records by ID \u2014 the link remains authoritative for its destination.",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Internal name for this link (admin-facing)"
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label shown to users"
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description (admin-facing context)"
+    },
+    "destination_type": {
+      "type": "string",
+      "enum": [
+        "internal_page",
+        "entity",
+        "external",
+        "none"
+      ],
+      "default": "none",
+      "description": "Type of destination this link points to"
+    },
+    "internal_route": {
+      "type": "string",
+      "description": "Internal route path (for destination_type = internal_page)"
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "Entity type (for destination_type = entity)"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "Entity ID (for destination_type = entity)"
+    },
+    "entity_slug": {
+      "type": "string",
+      "description": "Entity slug for URL construction (for destination_type = entity)"
+    },
+    "entity_name": {
+      "type": "string",
+      "description": "Entity display name (denormalized for admin list)"
+    },
+    "external_url": {
+      "type": "string",
+      "description": "External URL (for destination_type = external)"
+    },
+    "open_in_new_tab": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to open this link in a new tab"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this link is active and usable"
+    },
+    "category": {
+      "type": "string",
+      "description": "Optional lightweight category (freeform string)"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Optional image URL"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Optional icon identifier"
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0,
+      "description": "Display ordering (lower = earlier)"
+    }
+  },
+  "required": [
+    "title",
+    "label",
+    "destination_type",
+    "enabled"
+  ],
+  "rls": {
+    "read": null,
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

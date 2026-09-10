@@ -1,0 +1,64 @@
+{
+  "name": "FooterSettings",
+  "type": "object",
+  "description": "Presentation configuration for the public site footer. Single active record (is_active=true). Stores draft and published configuration separately \u2014 the public footer reads only published; the Management editor works against draft. Does NOT duplicate legal page content or social data \u2014 stores references and presentation overrides only.",
+  "properties": {
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Singleton marker \u2014 the active Footer settings record"
+    },
+    "draft": {
+      "type": "object",
+      "description": "Full draft footer configuration (groups, socials, legal, brand, display). Edited by admins; not shown publicly until published."
+    },
+    "published": {
+      "type": "object",
+      "description": "Full published footer configuration. The public Footer component reads this. Copied from draft on publish."
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the published configuration was last published"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the draft was last saved"
+    },
+    "updated_by_user_id": {
+      "type": "string",
+      "description": "User ID of the last admin to save the draft or publish"
+    },
+    "has_unpublished_changes": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when draft differs from published \u2014 set on draft save, cleared on publish"
+    }
+  },
+  "required": [
+    "is_active"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
