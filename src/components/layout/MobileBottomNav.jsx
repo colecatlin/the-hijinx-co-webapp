@@ -95,7 +95,7 @@ export default function MobileBottomNav({ isAuthenticated, onOpenSearch, onOpenM
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      {renderContentTab('Home', '/Home', Home)}
+      {renderContentTab('Home', '/', Home)}
       {renderContentTab('Directory', '/Directory', Compass)}
       {renderActionTab('Search', Search, onOpenSearch, true)}
       {isAuthenticated

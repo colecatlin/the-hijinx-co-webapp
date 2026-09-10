@@ -26,7 +26,7 @@ const BACK_LINKS = {
  * @param {{ entityType: string }} props
  */
 export function EntityNotFound({ entityType = 'Entity' }) {
-  const back = BACK_LINKS[entityType] || { label: '← Back', page: 'Home' };
+  const back = BACK_LINKS[entityType] || { label: '← Back', page: '' };
   return (
     <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 py-20 text-center">
@@ -50,7 +50,7 @@ export function EntityNotFound({ entityType = 'Entity' }) {
  * @param {{ entityType: string }} props
  */
 export function EntityUnavailable({ entityType = 'Entity' }) {
-  const back = BACK_LINKS[entityType] || { label: '← Back', page: 'Home' };
+  const back = BACK_LINKS[entityType] || { label: '← Back', page: '' };
   return (
     <PageShell className="bg-white">
       <div className="max-w-7xl mx-auto px-6 py-20 text-center">

@@ -236,7 +236,7 @@ function SlideRow({ slide, isFirst, isLast, isEditing, onEdit, onDelete, onMoveU
 }
 
 const INTERNAL_PAGES = [
-  { label: 'Home', path: '/Home' },
+  { label: 'Home', path: '/' },
   { label: 'The Outlet', path: '/OutletHome' },
   { label: 'Submit a Story', path: '/OutletSubmit' },
   { label: 'INDEX46 / Motorsports', path: '/MotorsportsHome' },

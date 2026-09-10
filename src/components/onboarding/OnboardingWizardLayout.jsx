@@ -75,7 +75,7 @@ export default function OnboardingWizardLayout({ stage, children }) {
             </div>
             <button
               type="button"
-              onClick={() => navigate('/Home')}
+              onClick={() => navigate('/')}
               className="p-2 rounded-lg transition-colors"
               style={{ color: 'hsl(var(--foreground-quiet))' }}
               aria-label="Save and finish later"

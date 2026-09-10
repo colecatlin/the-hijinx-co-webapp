@@ -51,7 +51,7 @@ export default function DeleteAccountModal({ open, onOpenChange, user, onClose }
       /* noop — still proceed to sign out */
     }
     try {
-      await base44.auth.logout('/Home');
+      await base44.auth.logout('/');
     } catch {
       /* if logout fails, still close the modal */
     }

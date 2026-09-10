@@ -118,7 +118,7 @@ export default function UserMenu({ user }) {
           if (item.type === 'action' && item.action === 'logout') {
             return (
               <DropdownMenuItem key={i}
-                onClick={() => base44.auth.logout(createPageUrl('Home'))}
+                onClick={() => base44.auth.logout('/')}
                 className="gap-2 cursor-pointer"
                 style={{ color: 'hsl(var(--danger) / 0.85)' }}>
                 {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}

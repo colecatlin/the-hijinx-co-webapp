@@ -282,7 +282,7 @@ export default function Profile() {
   };
 
   const handleSubmit = (e) => { e.preventDefault(); updateMutation.mutate(formData); };
-  const handleLogout = () => base44.auth.logout(createPageUrl('Home'));
+  const handleLogout = () => base44.auth.logout('/');
 
   const mode = getUserMode({ user, collaborators: resolvedEntities, mediaProfile: null });
   const isMediaUser = mode === 'media_user'

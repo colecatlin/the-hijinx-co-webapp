@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, Navigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Search, X, ChevronDown } from 'lucide-react';
 import CartIcon from '@/components/cart/CartIcon';
@@ -23,12 +23,13 @@ import HijinxLogo from '@/components/shared/HijinxLogo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import HibernationBanner from '@/components/onboarding/HibernationBanner';
 import Home from '@/pages/Home';
+import Home1 from '@/pages/Home1';
 import OutletHome from '@/pages/OutletHome';
 import ApparelHome from '@/pages/ApparelHome';
 import MarketplaceHome from '@/pages/MarketplaceHome';
 
 const navItems = [
-  { name: 'Home', page: 'Home' },
+  { name: 'Home', page: 'Home1', href: '/' },
   { name: 'The Outlet', page: 'OutletHome', sub: [
     { name: 'Stories', page: 'OutletHome' },
     { name: 'Submit a Story', page: 'OutletSubmit' },
@@ -59,9 +60,9 @@ const navItems = [
 // Native-style tab keep-alive: these four destinations stay mounted and
 // hidden when switching between them so their scroll position and in-page
 // state (filters, selections) are preserved across tab switches.
-const TAB_ROUTES = ['/Home', '/OutletHome', '/ApparelHome', '/MarketplaceHome'];
+const TAB_ROUTES = ['/', '/OutletHome', '/ApparelHome', '/MarketplaceHome'];
 const TAB_PAGES = [
-  ['/Home', Home],
+  ['/', Home1],
   ['/OutletHome', OutletHome],
   ['/ApparelHome', ApparelHome],
   ['/MarketplaceHome', MarketplaceHome],
@@ -221,10 +222,8 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
   const launchMode = getLaunchModeConfig();
 
-  // Root path redirect — always send / to the public homepage
-  if (location.pathname === '/' || location.pathname === '') {
-    return <Navigate to="/Home1" replace />;
-  }
+  // Root path renders Home1 directly via the App.jsx "/" route (mainPage: "Home1").
+  // No redirect needed — / IS the canonical homepage.
 
   const activeSubItems = hoveredItem ? navItems.find(i => i.name === hoveredItem)?.sub : null;
 
@@ -234,7 +233,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="sticky top-0 z-50 relative" style={{ background: 'hsl(var(--canvas))', paddingTop: 'env(safe-area-inset-top)' }}>
           {/* Mobile/tablet static top bar — logo + cart only */}
           <div className="lg:hidden flex items-center justify-between px-4 h-14" style={{ borderBottom: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface) / 0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
-            <HijinxLogo to={createPageUrl('Home')} iconClassName="h-5 w-auto" wordmarkClassName="h-7 w-auto" className="gap-2" />
+            <HijinxLogo to="/" iconClassName="h-5 w-auto" wordmarkClassName="h-7 w-auto" className="gap-2" />
             <div className="flex items-center gap-1">
               {!isHibernated && <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />}
             </div>
@@ -255,7 +254,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Top row — logo + nav + actions */}
               <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between w-full gap-8">
                 {/* Logo */}
-                <HijinxLogo to={createPageUrl('Home')} iconClassName="h-5 w-auto" wordmarkClassName="h-8 w-auto" className="gap-2" />
+                <HijinxLogo to="/" iconClassName="h-5 w-auto" wordmarkClassName="h-8 w-auto" className="gap-2" />
 
                 {/* Desktop nav */}
                 <nav className="hidden lg:flex flex-1 items-center justify-center">

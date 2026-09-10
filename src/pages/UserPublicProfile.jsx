@@ -41,7 +41,7 @@ function SocialPill({ link }) {
 
 function BackLink() {
   return (
-    <Link to={createPageUrl('Home')}>
+    <Link to="/">
       <button className="flex items-center gap-1.5 text-xs mb-2 transition-colors"
         style={{ color: 'rgba(255,255,255,0.3)' }}
         onMouseEnter={e => e.currentTarget.style.color = TEAL}
@@ -91,7 +91,7 @@ export default function UserPublicProfile() {
               This profile doesn't exist or is set to private.
             </p>
           </div>
-          <Link to={createPageUrl('Home')}>
+          <Link to="/">
             <button className="flex items-center gap-2 mx-auto px-4 py-2 text-sm font-medium rounded-xl transition-all"
               style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
               onMouseEnter={e => e.currentTarget.style.color = '#fff'}

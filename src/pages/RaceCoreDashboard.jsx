@@ -215,7 +215,7 @@ export default function RaceCoreDashboard() {
                 Your role does not have access to any dashboard features. Please contact an administrator.
               </p>
               <Button
-                onClick={() => navigate(createPageUrl('Home'))}
+                onClick={() => navigate('/')}
                 className="w-full bg-surface-interactive hover:bg-surface-interactive/80 text-foreground"
               >
                 Return to Home

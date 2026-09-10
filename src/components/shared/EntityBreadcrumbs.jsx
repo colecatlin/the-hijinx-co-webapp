@@ -39,7 +39,7 @@ export default function EntityBreadcrumbs({ entityType, entityName, directoryCat
 
   return (
     <nav className="flex items-center gap-1.5 text-xs text-foreground-quiet flex-wrap" aria-label="Breadcrumb">
-      <Link to="/Home" className="flex items-center gap-1 hover:text-motion transition-colors">
+      <Link to="/" className="flex items-center gap-1 hover:text-motion transition-colors">
         <Home className="w-3 h-3" />
         <span className="hidden sm:inline">Home</span>
       </Link>

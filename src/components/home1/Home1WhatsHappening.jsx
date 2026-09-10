@@ -56,7 +56,7 @@ function buildShopifyItems(products) {
 
 function buildEventItems(events) {
   return (events || [])
-    .filter((e) => !e.is_archived && e.name)
+    .filter((e) => !e.is_archived && e.name && e.published_flag)
     .slice(0, 2)
     .map((e) => ({
       source: 'INDEX46',

@@ -182,7 +182,7 @@ export function OnboardingWizardProvider({ children }) {
   const saveAndExit = useCallback(() => {
     // Exit to the public home — avoids the onboarding guard redirect loop
     // for users who haven't completed setup yet.
-    navigate('/Home');
+    navigate('/');
   }, [navigate]);
 
   const value = useMemo(

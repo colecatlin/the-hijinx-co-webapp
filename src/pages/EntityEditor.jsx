@@ -28,7 +28,7 @@ export default function EntityEditor() {
       <PageShell>
         <div className="max-w-6xl mx-auto px-6 py-12">
           <p className="text-gray-500">No access code provided.</p>
-          <Button onClick={() => navigate(createPageUrl('Home'))} className="mt-4">
+          <Button onClick={() => navigate('/')} className="mt-4">
             Back Home
           </Button>
         </div>
@@ -54,7 +54,7 @@ export default function EntityEditor() {
           <p className="text-gray-500">
             {isAccessDenied ? 'You do not have access to this entity.' : 'Entity not found.'}
           </p>
-          <Button onClick={() => navigate(createPageUrl('Home'))} className="mt-4">
+          <Button onClick={() => navigate('/')} className="mt-4">
             Back Home
           </Button>
         </div>
@@ -81,7 +81,7 @@ export default function EntityEditor() {
         <PageShell>
           <div className="max-w-6xl mx-auto px-6 py-12">
             <p className="text-gray-500">Unknown entity type: {entityType}</p>
-            <Button onClick={() => navigate(createPageUrl('Home'))} className="mt-4">
+            <Button onClick={() => navigate('/')} className="mt-4">
               Back Home
             </Button>
           </div>

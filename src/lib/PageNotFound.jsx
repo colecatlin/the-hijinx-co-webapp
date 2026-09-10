@@ -5,7 +5,7 @@ export default function PageNotFound({}) {
   const location = useLocation();
 
   const navOptions = [
-    { label: 'Home', to: '/Home', icon: Home, description: 'Back to the homepage' },
+    { label: 'Home', to: '/', icon: Home, description: 'Back to the homepage' },
     { label: 'Directory', to: '/Directory', icon: Compass, description: 'Browse racers, teams, tracks & series' },
     { label: 'Contact', to: '/Contact', icon: Mail, description: 'Reach out to our team' },
   ];

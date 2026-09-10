@@ -40,7 +40,7 @@ export default function MobileMenuDrawer({
 
   const handleLogout = () => {
     close();
-    base44.auth.logout(createPageUrl('Home'));
+    base44.auth.logout('/');
   };
 
   const handleLogin = () => {

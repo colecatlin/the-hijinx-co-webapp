@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useHome1Config } from '@/hooks/useHome1Config';
 import { isSectionVisible } from '@/components/home1/home1Helpers';
+import SeoMeta from '@/components/system/seoMeta';
+import Analytics from '@/components/system/analyticsTracker';
 import Home1Hero from '@/components/home1/Home1Hero';
 import Home1NextUp from '@/components/home1/Home1NextUp';
 import Home1OneBrand from '@/components/home1/Home1OneBrand';
@@ -13,6 +15,9 @@ import Home1BePartOfSomethingBigger from '@/components/home1/Home1BePartOfSometh
 export default function Home1() {
   const { config } = useHome1Config();
 
+  // Fire homepage analytics once per page view (not on config hydration)
+  useEffect(() => { Analytics.pageView('Home'); }, []);
+
   // While config is null (loading), all sections render with their own
   // hardcoded defaults — no flash. When config arrives, disabled/scheduled-out
   // sections are omitted.
@@ -20,6 +25,10 @@ export default function Home1() {
 
   return (
     <>
+      <SeoMeta
+        title="Motorsports, Culture, and Competition"
+        description="HIJINX — where motorsports, media, and culture collide."
+      />
       {show(config?.hero) && <Home1Hero config={config?.hero} />}
       {show(config?.next_up) && <Home1NextUp config={config?.next_up} />}
       {show(config?.one_brand) && <Home1OneBrand config={config?.one_brand} />}
