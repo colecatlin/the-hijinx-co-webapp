@@ -1,4 +1,6 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -111,8 +113,51 @@ export default function DestinationEditor({ value = {}, onChange, allowReusableL
         </div>
       )}
 
+      {d.type === 'reusable_link' && allowReusableLink && (
+        <ReusableLinkPicker
+          value={reusableLinkValue}
+          onChange={onReusableLinkChange || (() => {})}
+        />
+      )}
+
       {d.type === 'none' && (
         <p className="text-xs text-foreground-quiet italic">No destination — link will not be clickable</p>
+      )}
+    </div>
+  );
+}
+
+function ReusableLinkPicker({ value, onChange }) {
+  const { data: links, isLoading } = useQuery({
+    queryKey: ['managedLinks', 'for-picker'],
+    queryFn: () => base44.entities.ManagedLink.list('-updated_date', 200),
+    staleTime: 60 * 1000,
+  });
+
+  const enabledLinks = (links || []).filter((l) => l.enabled);
+
+  return (
+    <div>
+      <Label className="text-xs text-foreground-quiet mb-1 block">Reusable Link</Label>
+      {isLoading ? (
+        <p className="text-xs text-foreground-quiet">Loading links...</p>
+      ) : enabledLinks.length === 0 ? (
+        <p className="text-xs text-foreground-quiet italic">
+          No enabled reusable links. Create one in Website → Links first.
+        </p>
+      ) : (
+        <Select value={value || ''} onValueChange={onChange}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder="Select a reusable link..." />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            {enabledLinks.map((l) => (
+              <SelectItem key={l.id} value={l.id}>
+                {l.title} {l.label !== l.title ? `(${l.label})` : ''}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </div>
   );

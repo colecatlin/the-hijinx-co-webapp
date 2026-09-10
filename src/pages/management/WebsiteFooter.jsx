@@ -267,7 +267,13 @@ function InlineLinkEditor({ link, onSave, onCancel }) {
         <Label className="text-xs text-foreground-quiet mb-1 block">Label</Label>
         <Input value={d.label} onChange={(e) => setD({ ...d, label: e.target.value })} className="h-8 text-xs" />
       </div>
-      <DestinationEditor value={d.destination} onChange={(dest) => setD({ ...d, destination: dest })} allowReusableLink />
+      <DestinationEditor
+        value={d.destination}
+        onChange={(dest) => setD({ ...d, destination: dest, destination_type: dest.type, reusable_link_id: dest.type !== 'reusable_link' ? '' : d.reusable_link_id })}
+        allowReusableLink
+        reusableLinkValue={d.reusable_link_id || ''}
+        onReusableLinkChange={(id) => setD({ ...d, reusable_link_id: id, destination_type: 'reusable_link' })}
+      />
       <div className="flex justify-end gap-2">
         <Button variant="outline" size="sm" className="text-xs" onClick={onCancel}>Cancel</Button>
         <Button size="sm" className="text-xs" onClick={() => onSave(d)}>Save</Button>

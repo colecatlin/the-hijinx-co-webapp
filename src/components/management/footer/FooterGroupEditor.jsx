@@ -154,8 +154,14 @@ function LinkEditor({ link, onSave, onCancel }) {
       </div>
       <DestinationEditor
         value={draft.destination}
-        onChange={(dest) => set('destination', dest)}
+        onChange={(dest) => {
+          set('destination', dest);
+          set('destination_type', dest.type);
+          if (dest.type !== 'reusable_link') set('reusable_link_id', '');
+        }}
         allowReusableLink
+        reusableLinkValue={draft.reusable_link_id || ''}
+        onReusableLinkChange={(id) => set('reusable_link_id', id)}
       />
       <div className="flex items-center gap-2">
         <Switch checked={draft.open_in_new_tab} onCheckedChange={(val) => set('open_in_new_tab', val)} />
