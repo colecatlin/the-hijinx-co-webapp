@@ -35,7 +35,7 @@ const PAGE_TITLES = {
   'management/marketplace':              { title: 'Marketplace',        subtitle: 'Listing platform administration — future' },
   'management/community/users':          { title: 'Users',              subtitle: 'User management — future' },
   'management/community/newsletter':     { title: 'Newsletter',         subtitle: 'Newsletter subscriber management — future' },
-  'management/media/library':            { title: 'Media Library',      subtitle: 'Shared media library — future' },
+  'management/media/library':            { title: 'Media Library',      subtitle: 'Searchable reusable media for content editors' },
   'management/platform/integrations':    { title: 'Integrations',       subtitle: 'Platform integrations — future' },
   'management/platform/audit-log':       { title: 'Audit Log',          subtitle: 'Administrative change history — future' },
   'management/platform/settings':        { title: 'Settings',           subtitle: 'Platform-wide settings — future' },

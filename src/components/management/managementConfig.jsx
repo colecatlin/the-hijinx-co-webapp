@@ -9,7 +9,7 @@ import {
   LineChart, BarChart3,
   FileCheck,
   Link2, Navigation, ShoppingBag, Store,
-  Plug, ScrollText, Camera,
+  Plug, ScrollText, Camera, FileSpreadsheet,
 } from 'lucide-react';
 
 /**
@@ -153,14 +153,14 @@ export const MANAGEMENT_SECTIONS = [
   },
 
   // ─────────────────────────────────────────────────────
-  // MEDIA — content files + future media library
+  // MEDIA — content files + shared media library
   // ─────────────────────────────────────────────────────
   {
     title: 'Media',
-    description: 'Content files and the future shared media library',
+    description: 'Content files and the shared media library',
     items: [
-      { name: 'Content Files',  href: '/admin/content-files',      icon: ImageIcon, description: 'Manage uploaded content files' },
-      { name: 'Media Library',  page: 'management/media/library',   icon: ImageIcon, description: 'Shared media library and picker (future)' },
+      { name: 'Media Library',  page: 'management/media/library',   icon: ImageIcon, description: 'Searchable reusable media for content editors' },
+      { name: 'Content Files',  href: '/admin/content-files',      icon: FileSpreadsheet, description: 'Raw content files stored in Google Drive' },
     ],
   },
 

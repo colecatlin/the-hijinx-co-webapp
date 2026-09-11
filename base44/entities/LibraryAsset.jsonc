@@ -1,0 +1,111 @@
+{
+  "name": "LibraryAsset",
+  "type": "object",
+  "description": "Curated, searchable reusable media asset for Management content editors. Points to a file stored in Base44 public storage (via UploadPublicFile). Used by the Media Library management page and the shared MediaSelector picker. Distinct from ManagedFile (Google Drive content files) and MediaAsset (RaceCore contributor media with rights/ownership). The URL field is the source of truth \u2014 content editors reference this URL directly, no migration to asset IDs required.",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Display title. Defaults to filename if blank. Editable by admins."
+    },
+    "filename": {
+      "type": "string",
+      "description": "Original uploaded filename. Read-only after upload."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description (admin-facing context)."
+    },
+    "alt_text": {
+      "type": "string",
+      "description": "Default alt text \u2014 prefilled when selected via MediaSelector, overridable per use. Asset-level default, not immutable."
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video",
+        "document",
+        "other"
+      ],
+      "default": "image",
+      "description": "Type of media asset. Drives filter tabs and preview rendering."
+    },
+    "url": {
+      "type": "string",
+      "description": "Public file URL \u2014 the source of truth. Content editors reference this URL directly in their field (desktop_media_url, image_url, etc.). Read-only after upload."
+    },
+    "thumbnail_url": {
+      "type": "string",
+      "description": "Optional thumbnail URL for video/document previews. For images, the url itself is used as thumbnail."
+    },
+    "mime_type": {
+      "type": "string",
+      "description": "MIME type from the uploaded file. Read-only."
+    },
+    "file_size": {
+      "type": "number",
+      "description": "File size in bytes. Read-only."
+    },
+    "width": {
+      "type": "number",
+      "description": "Image width in pixels (if known). Read-only."
+    },
+    "height": {
+      "type": "number",
+      "description": "Image height in pixels (if known). Read-only."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Freeform tags for searchability (e.g. crandon, racing, paddock)."
+    },
+    "category": {
+      "type": "string",
+      "description": "Optional category (freeform string)."
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "Archived assets are hidden from normal picker results and the default library view. Existing published content using the URL continues rendering."
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "upload",
+        "url_import"
+      ],
+      "default": "upload",
+      "description": "How the asset was added to the library."
+    }
+  },
+  "required": [
+    "title",
+    "url",
+    "asset_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

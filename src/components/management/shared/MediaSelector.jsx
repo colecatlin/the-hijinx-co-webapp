@@ -3,43 +3,73 @@ import { base44 } from '@/api/base44Client';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Link2, Loader2 } from 'lucide-react';
+import { Upload, X, Link2, Loader2, Library } from 'lucide-react';
 import { toast } from 'sonner';
 import ImagePositionControl from './ImagePositionControl';
+import MediaLibraryPicker from '@/components/management/media/MediaLibraryPicker';
+import { uploadAndCreateAsset, validateFile } from '@/lib/mediaLibraryUtils';
+import { useInvalidateMediaLibrary } from '@/hooks/useMediaLibrary';
 
 /**
- * MediaSelector — reusable media picker with upload, URL, preview, alt, and positioning.
+ * MediaSelector — reusable media picker with upload, URL, browse library,
+ * preview, alt, and positioning.
  *
  * Value shape: { url, alt, desktop_position, mobile_position }
  *
- * "Select Existing" (browsable library) is gracefully unavailable until
- * the future Website → Media Library plugs in.
+ * Three input modes:
+ * - Browse Library (select from reusable Media Library assets)
+ * - Upload (upload a new file — also creates a LibraryAsset record)
+ * - Use URL (paste a direct URL)
+ *
+ * Alt text from a library asset is a default — the consuming editor can
+ * override it per use.
  */
 export default function MediaSelector({ value = {}, onChange, label = 'Media', showPosition = true }) {
   const v = { url: '', alt: '', desktop_position: 'center center', mobile_position: 'center center', ...value };
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const invalidate = useInvalidateMediaLibrary();
 
   const set = (field, val) => onChange({ ...v, [field]: val });
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('File too large (max 10MB)');
+    const validation = validateFile(file, 10);
+    if (!validation.valid) {
+      toast.error(validation.error);
+      e.target.value = '';
       return;
     }
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      set('url', file_url);
+      const { file_url, asset } = await uploadAndCreateAsset(file, base44);
+      // Set URL and prefill alt text from the library asset's default
+      onChange({
+        ...v,
+        url: file_url,
+        alt: asset?.alt_text || v.alt || '',
+      });
+      invalidate();
       toast.success('Image uploaded');
     } catch (err) {
-      toast.error('Upload failed: ' + err.message);
+      toast.error('Upload failed: ' + (err?.message || 'Unknown error'));
     } finally {
       setUploading(false);
       e.target.value = '';
     }
+  };
+
+  const handleLibrarySelect = (asset) => {
+    // Select from library — set URL and prefill alt from asset's default.
+    // The consuming editor can still override alt for this specific use.
+    onChange({
+      ...v,
+      url: asset.url,
+      alt: asset.alt_text || v.alt || '',
+    });
+    toast.success('Selected from library');
   };
 
   const remove = () => onChange({ url: '', alt: '', desktop_position: 'center center', mobile_position: 'center center' });
@@ -61,14 +91,25 @@ export default function MediaSelector({ value = {}, onChange, label = 'Media', s
         </div>
       )}
 
-      {/* Upload / URL toggle */}
+      {/* Browse Library / Upload / URL */}
       {!v.url && (
         <div className="space-y-2">
-          <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed rounded-lg transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:border-motion'}`}>
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin text-foreground-quiet" /> : <Upload className="w-4 h-4 text-foreground-quiet" />}
-            <span className="text-xs text-foreground-quiet">{uploading ? 'Uploading...' : 'Click to upload image'}</span>
-            <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
-          </label>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPickerOpen(true)}
+              className="flex-1 h-9 text-xs"
+            >
+              <Library className="w-3.5 h-3.5" /> Browse Library
+            </Button>
+            <label className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed rounded-lg transition-colors cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:border-motion'}`}>
+              {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'hsl(var(--foreground-quiet))' }} /> : <Upload className="w-3.5 h-3.5" style={{ color: 'hsl(var(--foreground-quiet))' }} />}
+              <span className="text-xs" style={{ color: 'hsl(var(--foreground-quiet))' }}>{uploading ? 'Uploading...' : 'Upload'}</span>
+              <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+            </label>
+          </div>
           <button onClick={() => setShowUrl(!showUrl)} className="text-xs text-motion hover:underline flex items-center gap-1">
             <Link2 className="w-3 h-3" /> Paste URL instead
           </button>
@@ -83,6 +124,13 @@ export default function MediaSelector({ value = {}, onChange, label = 'Media', s
           )}
         </div>
       )}
+
+      {/* Library Picker */}
+      <MediaLibraryPicker
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={handleLibrarySelect}
+      />
 
       {/* Alt text */}
       {v.url && (
