@@ -1,74 +1,42 @@
 import React, { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { useHome1Config } from '@/hooks/useHome1Config';
+import { isSectionVisible } from '@/components/home1/home1Helpers';
 import SeoMeta from '@/components/system/seoMeta';
 import Analytics from '@/components/system/analyticsTracker';
-import { getHomepageData, FALLBACK_DATA } from '@/components/homepage/homepageDataService';
-import CultureGrid from '@/components/home/CultureGrid';
-import OutletSection from '@/components/home/OutletSection';
-import ApparelSection from '@/components/home/ApparelSection';
-import EventsSection from '@/components/home/EventsSection';
-import RaceCoreSection from '@/components/home/RaceCoreSection';
-import RaceCoreBridge from '@/components/home/RaceCoreBridge';
-import SocialsSection from '@/components/home/SocialsSection';
-import GetInvolvedCTA from '@/components/home/GetInvolvedCTA';
-import SitePopupOverlay from '@/components/shared/SitePopupOverlay';
-
+import Home1Hero from '@/components/home1/Home1Hero';
+import Home1NextUp from '@/components/home1/Home1NextUp';
+import Home1OneBrand from '@/components/home1/Home1OneBrand';
+import Home1Ecosystem from '@/components/home1/Home1Ecosystem';
+import Home1WhatsHappening from '@/components/home1/Home1WhatsHappening';
+import Home1FromTheOutlet from '@/components/home1/Home1FromTheOutlet';
+import Home1FeaturedCollection from '@/components/home1/Home1FeaturedCollection';
+import Home1BePartOfSomethingBigger from '@/components/home1/Home1BePartOfSomethingBigger';
 
 export default function Home() {
-  const { data: hpResult, isLoading } = useQuery({
-    queryKey: ['homepageData'],
-    queryFn: getHomepageData,
-    staleTime: 2 * 60 * 1000,
-    retry: 1,
-  });
+  const { config } = useHome1Config();
 
-  const hp = hpResult?.data ?? FALLBACK_DATA;
-
+  // Fire homepage analytics once per page view (not on config hydration)
   useEffect(() => { Analytics.pageView('Home'); }, []);
 
+  // While config is null (loading), all sections render with their own
+  // hardcoded defaults — no flash. When config arrives, disabled/scheduled-out
+  // sections are omitted.
+  const show = (section) => !config || isSectionVisible(section);
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-canvas">
+    <>
       <SeoMeta
         title="Motorsports, Culture, and Competition"
         description="HIJINX — where motorsports, media, and culture collide."
-        noSuffix={false}
       />
-
-      <CultureGrid />
-
-      {/* Teal glow thread — culture → outlet */}
-      <div className="relative h-px mx-auto max-w-5xl" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.3) 35%, rgba(29,161,161,0.3) 65%, transparent 100%)' }}>
-        <div className="absolute inset-x-0 top-0 h-8 -translate-y-1/2 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 100% at 50% 50%, rgba(29,161,161,0.07) 0%, transparent 100%)' }} />
-      </div>
-
-      <OutletSection
-        featuredStory={hp.featured_story}
-        supportingStories={(hp.featured_stories || []).slice(1, 6)}
-      />
-
-      {/* Ambient glow — outlet → apparel */}
-      <div className="pointer-events-none h-px" style={{ background: 'radial-gradient(ellipse 80% 1px at 50% 50%, rgba(229,255,0,0.12) 0%, transparent 100%)' }} />
-
-      <ApparelSection products={hp.featured_products || []} />
-
-      {/* Ambient glow — apparel → events */}
-      <div className="pointer-events-none" style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.15) 40%, rgba(29,161,161,0.15) 60%, transparent 100%)' }} />
-
-      <EventsSection />
-
-      <RaceCoreSection />
-
-      <RaceCoreBridge />
-
-      {/* Ambient glow — bridge → socials */}
-      <div className="pointer-events-none" style={{ height: 1, background: 'linear-gradient(90deg, transparent 0%, rgba(29,161,161,0.2) 30%, rgba(29,161,161,0.2) 70%, transparent 100%)' }} />
-
-      <SocialsSection media={hp.featured_media || []} />
-
-      <GetInvolvedCTA />
-
-      <SitePopupOverlay />
-    </div>
+      {show(config?.hero) && <Home1Hero config={config?.hero} />}
+      {show(config?.next_up) && <Home1NextUp config={config?.next_up} />}
+      {show(config?.one_brand) && <Home1OneBrand config={config?.one_brand} />}
+      {show(config?.ecosystem) && <Home1Ecosystem config={config?.ecosystem} />}
+      {show(config?.whats_happening) && <Home1WhatsHappening config={config?.whats_happening} />}
+      {show(config?.from_the_outlet) && <Home1FromTheOutlet config={config?.from_the_outlet} />}
+      {show(config?.featured_apparel) && <Home1FeaturedCollection config={config?.featured_apparel} />}
+      {show(config?.closing_cta) && <Home1BePartOfSomethingBigger config={config?.closing_cta} />}
+    </>
   );
 }

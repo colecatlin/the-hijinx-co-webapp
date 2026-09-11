@@ -26,7 +26,7 @@ const PAGE_TITLES = {
   Contact:              { title: 'Contact Messages',   subtitle: 'Review contact form submissions' },
   MediaPortal:          { title: 'Media Portal',       subtitle: 'Manage media applications and credentials' },
   // ── Phase 1: Website placeholders ──
-  'management/website/home':       { title: 'Home',          subtitle: 'Home1 editor — the active homepage' },
+  'management/website/home':       { title: 'Home',          subtitle: 'Home editor — the active homepage' },
   'management/website/navigation': { title: 'Navigation',   subtitle: 'Public site navigation — future' },
   'management/website/footer':     { title: 'Footer',        subtitle: 'Footer groups, links, pages, socials' },
   'management/website/links':      { title: 'Links',         subtitle: 'Reusable link system — future' },

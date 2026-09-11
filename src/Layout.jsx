@@ -23,13 +23,13 @@ import HijinxLogo from '@/components/shared/HijinxLogo';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import HibernationBanner from '@/components/onboarding/HibernationBanner';
 import Home from '@/pages/Home';
-import Home1 from '@/pages/Home1';
+
 import OutletHome from '@/pages/OutletHome';
 import ApparelHome from '@/pages/ApparelHome';
 import MarketplaceHome from '@/pages/MarketplaceHome';
 
 const navItems = [
-  { name: 'Home', page: 'Home1', href: '/' },
+  { name: 'Home', page: 'Home', href: '/' },
   { name: 'The Outlet', page: 'OutletHome', sub: [
     { name: 'Stories', page: 'OutletHome' },
     { name: 'Submit a Story', page: 'OutletSubmit' },
@@ -62,7 +62,7 @@ const navItems = [
 // state (filters, selections) are preserved across tab switches.
 const TAB_ROUTES = ['/', '/OutletHome', '/ApparelHome', '/MarketplaceHome'];
 const TAB_PAGES = [
-  ['/', Home1],
+  ['/', Home],
   ['/OutletHome', OutletHome],
   ['/ApparelHome', ApparelHome],
   ['/MarketplaceHome', MarketplaceHome],
@@ -222,7 +222,7 @@ export default function Layout({ children, currentPageName }) {
   const isActive = (page) => currentPageName === page;
   const launchMode = getLaunchModeConfig();
 
-  // Root path renders Home1 directly via the App.jsx "/" route (mainPage: "Home1").
+  // Root path renders Home directly via the App.jsx "/" route (mainPage: "Home").
   // No redirect needed — / IS the canonical homepage.
 
   const activeSubItems = hoveredItem ? navItems.find(i => i.name === hoveredItem)?.sub : null;

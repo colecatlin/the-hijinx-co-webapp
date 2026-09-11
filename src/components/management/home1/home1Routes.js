@@ -5,7 +5,7 @@
  * Only public, stable routes are included — no admin/management routes.
  */
 export const HOME1_INTERNAL_ROUTES = [
-  { label: 'Home', path: '/Home1' },
+  { label: 'Home', path: '/' },
   { label: 'The Outlet', path: '/OutletHome' },
   { label: 'INDEX46 (Motorsports)', path: '/MotorsportsHome' },
   { label: 'Apparel', path: '/ApparelHome' },

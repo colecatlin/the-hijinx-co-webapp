@@ -66,7 +66,7 @@ import EventProfile from './pages/EventProfile';
 import EventResults from './pages/EventResults';
 import FoodBeverage from './pages/FoodBeverage';
 import Home from './pages/Home';
-import Home1 from './pages/Home1';
+import LegacyHome from './pages/LegacyHome';
 import Hospitality from './pages/Hospitality';
 import Learning from './pages/Learning';
 import ManageAccess from './pages/ManageAccess';
@@ -140,7 +140,7 @@ export const PAGES = {
     "EventResults": EventResults,
     "FoodBeverage": FoodBeverage,
     "Home": Home,
-    "Home1": Home1,
+    "LegacyHome": LegacyHome,
     "Hospitality": Hospitality,
     "Learning": Learning,
     "ManageAccess": ManageAccess,
@@ -194,7 +194,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Home1",
+    mainPage: "Home",
     Pages: PAGES,
     Layout: __Layout,
 };
