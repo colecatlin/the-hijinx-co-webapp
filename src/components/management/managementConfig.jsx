@@ -53,16 +53,16 @@ export const MANAGEMENT_SECTIONS = [
     title: 'Website',
     description: 'Public site presentation: home, navigation, footer, links, announcements, SEO',
     items: [
-      { name: 'Home',                page: 'management/website/home',        icon: Home,         description: 'Homepage management — being rebuilt' },
-      { name: 'Homepage Settings',   page: 'ManageHomepage',                 icon: Home,         description: 'Legacy homepage settings (storefront, hero, culture, apparel, socials)' },
+      { name: 'Home',                page: 'management/website/home',        icon: Home,         description: 'Homepage management — Home1 editor' },
       { name: 'INDEX46',             page: 'ManageMotorsportsHome',          icon: Gauge,        description: 'Public motorsports homepage curation' },
-      { name: 'Hero Slides',         href: '/admin/hero-slides',             icon: ImageIcon,    description: 'Homepage hero slides' },
       { name: 'Navigation',          page: 'management/website/navigation',  icon: Navigation,   description: 'Public site navigation (future)' },
       { name: 'Footer',              page: 'management/website/footer',      icon: LayoutDashboard, description: 'Footer groups, links, pages, socials' },
       { name: 'Links',               page: 'management/website/links',       icon: Link2,         description: 'Reusable link system (future)' },
       { name: 'Announcements',       page: 'ManageAnnouncements',           icon: Megaphone,     description: 'Rotating announcement bar' },
       { name: 'Pop-Ups',             page: 'ManagePopUps',                  icon: Megaphone,     description: 'Landing pop-ups shown on the Home page' },
       { name: 'SEO',                 page: 'management/website/seo',        icon: Search,        description: 'SEO management (future)' },
+      { name: 'Legacy Homepage Settings', page: 'ManageHomepage',           icon: Home,         description: 'Legacy /Home page editor — retained for rollback' },
+      { name: 'Legacy Hero Slides',       href: '/admin/hero-slides',        icon: ImageIcon,    description: 'Legacy hero slides — used by legacy /Home only' },
     ],
   },
 
@@ -173,7 +173,7 @@ export const MANAGEMENT_SECTIONS = [
     items: [
       { name: 'Platform Analytics', page: 'AnalyticsDashboard',              icon: LineChart,    description: 'View platform insights and data trends' },
       { name: 'Ad Analytics',       page: 'AdvertisementAnalytics',           icon: BarChart3,    description: 'Advertisement performance analytics' },
-      { name: 'Data Health',        page: 'Diagnostics',                       icon: Database,     description: 'Data integrity and diagnostics' },
+      { name: 'RaceCore Data Health', page: 'Diagnostics',                    icon: Database,     description: 'Opens RaceCore data diagnostics (peer system)' },
       { name: 'Discipline Colors',  page: 'management/discipline',            icon: Palette,      description: 'Manage discipline colors for map pins' },
       { name: 'Integrations',       page: 'management/platform/integrations',  icon: Plug,         description: 'Platform integrations (future)' },
       { name: 'Audit Log',          page: 'management/platform/audit-log',    icon: ScrollText,   description: 'Administrative change history (future)' },

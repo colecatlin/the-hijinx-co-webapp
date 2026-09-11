@@ -17,16 +17,16 @@ const PAGE_TITLES = {
   ManageFoodBeverage:   { title: 'Food & Beverage',   subtitle: 'Manage food and beverage offerings' },
   ManageTech:           { title: 'Tech',              subtitle: 'Manage tech offerings' },
   AnalyticsDashboard:   { title: 'Platform Analytics', subtitle: 'View insights and data trends' },
-  ManageHomepage:       { title: 'Homepage Settings', subtitle: 'Manage homepage visuals' },
+  ManageHomepage:       { title: 'Legacy Homepage Settings', subtitle: 'Legacy /Home page editor — retained for rollback' },
   ManageMotorsportsHome:{ title: 'Motorsports Home',  subtitle: 'Control Index46 featured content' },
   ManageSponsorshipActivations: { title: 'Sponsor Activations', subtitle: 'Manage sponsorship activations and deliverables' },
   ManageSponsorAnalytics: { title: 'Sponsor Analytics', subtitle: 'Sponsor ROI and exposure analytics' },
   AdvertisementAnalytics: { title: 'Ad Analytics',    subtitle: 'Advertisement performance analytics' },
-  Diagnostics:          { title: 'Data Health',        subtitle: 'Data integrity and diagnostics' },
+  Diagnostics:          { title: 'RaceCore Data Health', subtitle: 'Opens RaceCore data diagnostics (peer system)' },
   Contact:              { title: 'Contact Messages',   subtitle: 'Review contact form submissions' },
   MediaPortal:          { title: 'Media Portal',       subtitle: 'Manage media applications and credentials' },
   // ── Phase 1: Website placeholders ──
-  'management/website/home':       { title: 'Home',          subtitle: 'Homepage management — being rebuilt' },
+  'management/website/home':       { title: 'Home',          subtitle: 'Home1 editor — the active homepage' },
   'management/website/navigation': { title: 'Navigation',   subtitle: 'Public site navigation — future' },
   'management/website/footer':     { title: 'Footer',        subtitle: 'Footer groups, links, pages, socials' },
   'management/website/links':      { title: 'Links',         subtitle: 'Reusable link system — future' },
@@ -40,6 +40,18 @@ const PAGE_TITLES = {
   'management/platform/audit-log':       { title: 'Audit Log',          subtitle: 'Administrative change history — future' },
   'management/platform/settings':        { title: 'Settings',           subtitle: 'Platform-wide settings — future' },
   'management/apparel/shopify':          { title: 'Shopify Connection', subtitle: 'Shopify integration configuration — future' },
+  'management/discipline':                { title: 'Discipline Colors',  subtitle: 'Manage discipline colors for map pins' },
+  'identity-applications':                { title: 'Identity Applications', subtitle: 'Review identity applications' },
+  // ── Editorial pages ──
+  'management/editorial/story-radar':        { title: 'Story Radar',       subtitle: 'Editorial signal and recommendation dashboard' },
+  'management/editorial/recommendations':    { title: 'Recommendations',  subtitle: 'Review and action story recommendations' },
+  'management/editorial/signals':            { title: 'Signals',           subtitle: 'Review content signals' },
+  'management/editorial/trend-clusters':      { title: 'Trend Clusters',   subtitle: 'Monitor editorial trend clusters' },
+  'management/editorial/coverage-map':        { title: 'Coverage Map',      subtitle: 'Review coverage and identify gaps' },
+  'management/editorial/review-queue':         { title: 'Review Queue',     subtitle: 'Prioritized editorial work queue' },
+  'management/editorial/narratives':           { title: 'Narrative Arcs',   subtitle: 'Track storylines and coverage planning' },
+  'management/editorial/research-packets':     { title: 'Research Packets', subtitle: 'AI-generated writer research packets' },
+  'management/editorial/writer-workspace':     { title: 'Writer Workspace', subtitle: 'Writer assignments, drafts, and research packets' },
 };
 
 export default function ManagementHeader({ currentPage }) {
@@ -63,6 +75,16 @@ export default function ManagementHeader({ currentPage }) {
         <h1 className="text-base font-bold text-foreground leading-tight truncate">{info.title}</h1>
         {info.subtitle && <p className="text-xs text-foreground-quiet leading-tight truncate">{info.subtitle}</p>}
       </div>
+
+      {/* View Site — opens public homepage in new tab */}
+      <a
+        href="/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border border-divider text-foreground-secondary hover:text-foreground hover:bg-surface-interactive transition-colors shrink-0"
+      >
+        View Site
+      </a>
 
       {/* Search */}
       <ManagementSearch />

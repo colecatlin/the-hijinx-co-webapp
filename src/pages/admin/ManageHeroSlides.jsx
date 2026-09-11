@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { Plus, Edit, Trash2, ArrowLeft, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, ArrowLeft, GripVertical, AlertTriangle } from 'lucide-react';
 import PageShell from '@/components/shared/PageShell';
 
 const EMPTY = { title: '', subtitle: '', eyebrow: '', image_url: '', video_url: '', cta_label: '', cta_url: '', cta_secondary_label: '', cta_secondary_url: '', text_position: 'left', active: true, sort_order: 0 };
@@ -103,6 +103,17 @@ export default function ManageHeroSlides() {
   return (
     <PageShell style={{ background: '#050505', color: '#F5F5F5' }}>
       <div className="max-w-5xl mx-auto px-6 py-12">
+        {/* Legacy notice */}
+        <div className="mb-6 flex items-start gap-3 p-4 rounded-xl border border-[#333] bg-[#111]">
+          <AlertTriangle className="w-5 h-5 text-[#D7B15A] mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-[#F5F5F5]">Legacy Hero Slides</p>
+            <p className="text-xs text-[#888] mt-0.5 leading-snug">
+              Hero Slides are currently used by the legacy <code className="text-[#00FFDA]">/Home</code> page.
+              The active homepage uses <strong>Website → Home</strong> (the Home1 editor).
+            </p>
+          </div>
+        </div>
         <div className="flex items-center gap-4 mb-8">
           <Link to="/admin/storefront"><ArrowLeft className="w-4 h-4 text-[#555] hover:text-[#00FFDA]" /></Link>
           <div className="flex-1">

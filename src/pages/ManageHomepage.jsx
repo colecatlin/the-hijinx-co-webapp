@@ -7,7 +7,7 @@ import ManagementShell from '@/components/management/ManagementShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import HeroSlideManagement from '@/components/management/HeroSlideManagement';
 import CultureBlockManagement from '@/components/management/CultureBlockManagement';
 import ApparelSettings from '@/components/management/ApparelSettings';
@@ -49,6 +49,17 @@ export default function ManageHomepage() {
   return (
     <ManagementLayout currentPage="ManageHomepage">
       <ManagementShell title="Homepage & Store" subtitle="Storefront operations, homepage settings, and platform configuration" maxWidth="max-w-5xl">
+        {/* Legacy banner */}
+        <div className="mb-4 flex items-start gap-3 p-4 rounded-xl border border-warning/30 bg-warning/5">
+          <AlertTriangle className="w-5 h-5 text-warning mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-foreground">Legacy Homepage Settings</p>
+            <p className="text-xs text-foreground-quiet mt-0.5 leading-snug">
+              This editor controls the legacy <code className="text-motion">/Home</code> page and is retained temporarily for rollback.
+              The active homepage uses <strong>Website → Home</strong> (the Home1 editor).
+            </p>
+          </div>
+        </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="storefront">🛍 Storefront</TabsTrigger>

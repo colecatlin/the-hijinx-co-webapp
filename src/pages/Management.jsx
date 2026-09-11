@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
-import CommandPalette from '@/components/management/CommandPalette';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -135,7 +134,6 @@ export default function Management() {
 
   return (
     <>
-      <CommandPalette />
       <ManagementLayout currentPage="Management">
         <ManagementShell
           title="Operations Hub"

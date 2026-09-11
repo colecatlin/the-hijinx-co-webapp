@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/components/utils';
 import { Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { MANAGEMENT_SECTIONS } from './managementSections';
 
 const ALL_ITEMS = MANAGEMENT_SECTIONS.flatMap(section =>
@@ -11,6 +12,7 @@ const ALL_ITEMS = MANAGEMENT_SECTIONS.flatMap(section =>
 export default function ManagementSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -38,10 +40,26 @@ export default function ManagementSearch() {
       )
     : ALL_ITEMS;
 
+  // Reset selection when results change
+  useEffect(() => { setSelectedIndex(0); }, [query]);
+
   const handleSelect = (item) => {
     setOpen(false);
     setQuery('');
     navigate(item.href || createPageUrl(item.page));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex(i => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(i => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filtered[selectedIndex]) handleSelect(filtered[selectedIndex]);
+    }
   };
 
   return (
@@ -71,6 +89,7 @@ export default function ManagementSearch() {
                 ref={inputRef}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Search pages..."
                 className="flex-1 text-sm outline-none bg-transparent text-foreground placeholder:text-foreground-quiet"
               />
@@ -86,13 +105,17 @@ export default function ManagementSearch() {
               {filtered.length === 0 ? (
                 <p className="text-sm text-foreground-quiet px-4 py-6 text-center">No results found</p>
               ) : (
-                filtered.map(item => {
+                filtered.map((item, index) => {
                   const Icon = item.icon;
                   return (
                     <button
                       key={item.href || item.page}
                       onClick={() => handleSelect(item)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-surface-interactive transition-colors"
+                      onMouseEnter={() => setSelectedIndex(index)}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors',
+                        index === selectedIndex ? 'bg-surface-interactive' : 'hover:bg-surface-interactive'
+                      )}
                     >
                       {Icon && <Icon className="w-4 h-4 text-foreground-quiet shrink-0" />}
                       <div className="flex-1 min-w-0">

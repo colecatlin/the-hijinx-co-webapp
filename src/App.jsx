@@ -181,9 +181,71 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 // forced back. Public routes outside this set stay public.
 const GUARDED_PAGES = new Set(['MyDashboard', 'Profile', 'MediaPortal', 'MediaApply', 'UserDashboard']);
 
-const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+import ManagementRoute from '@/components/management/ManagementRoute';
+
+// ── Phase 5: Management shell boundary ──
+// Management pages fall into three categories:
+// 1. MANAGEMENT_SHELL_PAGES — render their own ManagementLayout internally.
+//    LayoutWrapper skips the public Layout for them (no double chrome).
+// 2. MANAGEMENT_ROUTE_PAGES — no internal ManagementLayout; LayoutWrapper
+//    wraps them with <ManagementRoute> (AdminGuard + ManagementLayout).
+// 3. ADMIN_STANDALONE_PAGES — /admin/* pages with their own PageShell.
+//    LayoutWrapper skips the public Layout; they render standalone.
+const MANAGEMENT_SHELL_PAGES = new Set([
+  // Pages in PAGES with their own ManagementLayout
+  'Management', 'ManageHomepage', 'ManageStories', 'ManageIssues',
+  'ManageAnnouncements', 'ManageDriverClaims', 'ManageEntityClaims',
+  'ManageAccess', 'ManageFoodBeverage', 'ManageTech', 'ManageResults',
+  'AnalyticsDashboard', 'AdvertisementAnalytics', 'Diagnostics', 'Contact',
+  // Explicit routes with their own ManagementLayout
+  'ManageMotorsportsHome', 'ManagePopUps', 'ManageMemberships',
+  // management/* pages (all render their own ManagementLayout)
+  'management/website/home', 'management/website/navigation',
+  'management/website/footer', 'management/website/links',
+  'management/website/seo', 'management/marketplace',
+  'management/community/users', 'management/community/newsletter',
+  'management/media/library', 'management/platform/integrations',
+  'management/platform/audit-log', 'management/platform/settings',
+  'management/apparel/shopify',
+  // management/editorial/* pages
+  'management/editorial/story-radar', 'management/editorial/recommendations',
+  'management/editorial/signals', 'management/editorial/trend-clusters',
+  'management/editorial/coverage-map', 'management/editorial/review-queue',
+  'management/editorial/narratives', 'management/editorial/research-packets',
+  'management/editorial/writer-workspace',
+]);
+
+const MANAGEMENT_ROUTE_PAGES = new Set([
+  'MediaPortal',
+  'ManageSponsorshipActivations',
+  'ManageSponsorAnalytics',
+  'ManageDisciplineColors',
+  'identity-applications',
+]);
+
+const ADMIN_STANDALONE_PAGES = new Set([
+  'StorefrontAdmin', 'ManageStorefrontProducts', 'ManageOrders',
+  'ManageVariants', 'ManageCollections', 'ManageDiscounts',
+  'ManageReviews', 'ManageCustomers', 'ManageStorefrontSettings',
+  'ManageHeroSlides', 'ContentFileManager',
+]);
+
+const LayoutWrapper = ({ children, currentPageName }) => {
+  // Management pages with their own ManagementLayout — no public Layout
+  if (MANAGEMENT_SHELL_PAGES.has(currentPageName)) {
+    return <>{children}</>;
+  }
+  // /admin/* pages with PageShell — standalone, no public Layout
+  if (ADMIN_STANDALONE_PAGES.has(currentPageName)) {
+    return <>{children}</>;
+  }
+  // Management pages without their own ManagementLayout — wrap with ManagementRoute
+  if (MANAGEMENT_ROUTE_PAGES.has(currentPageName)) {
+    return <ManagementRoute currentPage={currentPageName}>{children}</ManagementRoute>;
+  }
+  // Public pages — wrap with public Layout
+  return Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : <>{children}</>;
+};
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
