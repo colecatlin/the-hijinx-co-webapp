@@ -2,6 +2,8 @@ import React, { useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Compass, Search, LayoutGrid, Menu } from 'lucide-react';
 import { clearTabScrollCache } from '@/hooks/useTabKeepAlive';
+import { useNavigationConfig } from '@/hooks/useNavigationConfig';
+import { resolveMobileBottomNav } from '@/lib/navResolver';
 
 /**
  * Mobile/tablet bottom tab navigation (lg:hidden).
@@ -16,10 +18,33 @@ import { clearTabScrollCache } from '@/hooks/useTabKeepAlive';
  */
 const DOUBLE_TAP_MS = 300;
 
+const ICON_REGISTRY = {
+  home: Home,
+  directory: Compass,
+  search: Search,
+  dashboard: LayoutGrid,
+  menu: Menu,
+};
+
+// Hardcoded fallback — matches the current mobile bottom nav exactly.
+// Used when NavigationSettings is unavailable (loading, error, no record).
+const FALLBACK_MOBILE_ITEMS = [
+  { id: 'fb_home', label: 'Home', type: 'route', _href: '/', icon_key: 'home', auth_only: false, emphasized: false },
+  { id: 'fb_directory', label: 'Directory', type: 'route', _href: '/Directory', icon_key: 'directory', auth_only: false, emphasized: false },
+  { id: 'fb_search', label: 'Search', type: 'search', icon_key: 'search', auth_only: false, emphasized: true },
+  { id: 'fb_dashboard', label: 'Dashboard', type: 'route', _href: '/MyDashboard', icon_key: 'dashboard', auth_only: true, emphasized: false },
+  { id: 'fb_menu', label: 'Menu', type: 'menu', icon_key: 'menu', auth_only: false, emphasized: false },
+];
+
 export default function MobileBottomNav({ isAuthenticated, onOpenSearch, onOpenMenu }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const lastTap = useRef(0);
+
+  // Managed navigation — falls back to hardcoded if unavailable
+  const { config: navConfig } = useNavigationConfig();
+  const managedMobile = resolveMobileBottomNav(navConfig);
+  const mobileItems = managedMobile || FALLBACK_MOBILE_ITEMS;
 
   const isActive = (to) => {
     const path = to.replace(/^\//, '');
@@ -40,11 +65,11 @@ export default function MobileBottomNav({ isAuthenticated, onOpenSearch, onOpenM
 
   const tabClass = "flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition-colors";
 
-  const renderContentTab = (name, to, Icon) => {
+  const renderContentTab = (name, to, Icon, key) => {
     const active = isActive(to);
     return (
       <Link
-        key={name}
+        key={key || name}
         to={to}
         onClick={() => handleTap(to)}
         aria-label={name}
@@ -57,9 +82,9 @@ export default function MobileBottomNav({ isAuthenticated, onOpenSearch, onOpenM
     );
   };
 
-  const renderActionTab = (name, Icon, onClick, emphasized) => (
+  const renderActionTab = (name, Icon, onClick, emphasized, key) => (
     <button
-      key={name}
+      key={key || name}
       onClick={onClick}
       aria-label={name}
       className={tabClass}
@@ -95,13 +120,24 @@ export default function MobileBottomNav({ isAuthenticated, onOpenSearch, onOpenM
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      {renderContentTab('Home', '/', Home)}
-      {renderContentTab('Directory', '/Directory', Compass)}
-      {renderActionTab('Search', Search, onOpenSearch, true)}
-      {isAuthenticated
-        ? renderContentTab('Dashboard', '/MyDashboard', LayoutGrid)
-        : <div className="flex-1" aria-hidden="true" />}
-      {renderActionTab('Menu', Menu, onOpenMenu, false)}
+      {mobileItems.map((item) => {
+        if (item.type === 'route') {
+          if (item.auth_only && !isAuthenticated) {
+            return <div key={item.id} className="flex-1" aria-hidden="true" />;
+          }
+          const Icon = ICON_REGISTRY[item.icon_key] || Home;
+          return renderContentTab(item.label, item._href, Icon, item.id);
+        }
+        if (item.type === 'search') {
+          const Icon = ICON_REGISTRY[item.icon_key] || Search;
+          return renderActionTab(item.label, Icon, onOpenSearch, item.emphasized, item.id);
+        }
+        if (item.type === 'menu') {
+          const Icon = ICON_REGISTRY[item.icon_key] || Menu;
+          return renderActionTab(item.label, Icon, onOpenMenu, item.emphasized, item.id);
+        }
+        return null;
+      })}
     </nav>
   );
 }

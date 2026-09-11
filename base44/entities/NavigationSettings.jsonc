@@ -1,0 +1,64 @@
+{
+  "name": "NavigationSettings",
+  "type": "object",
+  "description": "Presentation configuration for the public site navigation (desktop header, mobile drawer, mobile bottom nav). Single active record (is_active=true). Stores draft and published configuration separately \u2014 the public navigation reads only published; the Management editor works against draft. Does NOT duplicate ManagedLink records \u2014 stores references and presentation overrides only. Follows the same singleton lifecycle as Home1Settings and FooterSettings.",
+  "properties": {
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Singleton marker \u2014 the active Navigation settings record"
+    },
+    "draft": {
+      "type": "object",
+      "description": "Full draft navigation configuration (desktop_primary, mobile_bottom, display). Edited by admins; not shown publicly until published."
+    },
+    "published": {
+      "type": "object",
+      "description": "Full published navigation configuration. The public Header/Layout reads this. Copied from draft on publish."
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the published configuration was last published"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the draft was last saved"
+    },
+    "updated_by_user_id": {
+      "type": "string",
+      "description": "User ID of the last admin to save the draft or publish"
+    },
+    "has_unpublished_changes": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when draft differs from published \u2014 set on draft save, cleared on publish"
+    }
+  },
+  "required": [
+    "is_active"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

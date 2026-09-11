@@ -55,7 +55,7 @@ export const MANAGEMENT_SECTIONS = [
     items: [
       { name: 'Home',                page: 'management/website/home',        icon: Home,         description: 'Homepage management — Home1 editor' },
       { name: 'INDEX46',             page: 'ManageMotorsportsHome',          icon: Gauge,        description: 'Public motorsports homepage curation' },
-      { name: 'Navigation',          page: 'management/website/navigation',  icon: Navigation,   description: 'Public site navigation (future)' },
+      { name: 'Navigation',          page: 'management/website/navigation',  icon: Navigation,   description: 'Public site navigation — draft, preview, publish' },
       { name: 'Footer',              page: 'management/website/footer',      icon: LayoutDashboard, description: 'Footer groups, links, pages, socials' },
       { name: 'Links',               page: 'management/website/links',       icon: Link2,         description: 'Reusable link system (future)' },
       { name: 'Announcements',       page: 'ManageAnnouncements',           icon: Megaphone,     description: 'Rotating announcement bar' },

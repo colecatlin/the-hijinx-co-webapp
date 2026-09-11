@@ -27,8 +27,10 @@ import Home from '@/pages/Home';
 import OutletHome from '@/pages/OutletHome';
 import ApparelHome from '@/pages/ApparelHome';
 import MarketplaceHome from '@/pages/MarketplaceHome';
+import { useNavigationConfig } from '@/hooks/useNavigationConfig';
+import { resolveDesktopNav } from '@/lib/navResolver';
 
-const navItems = [
+const FALLBACK_NAV_ITEMS = [
   { name: 'Home', page: 'Home', href: '/' },
   { name: 'The Outlet', page: 'OutletHome', sub: [
     { name: 'Stories', page: 'OutletHome' },
@@ -57,6 +59,13 @@ const navItems = [
   { name: 'Marketplace', page: 'MarketplaceHome' },
 ];
 
+// ── Managed navigation ──────────────────────────────────────
+// useNavigationConfig returns published NavigationSettings (or draft
+// for admin preview). resolveDesktopNav converts the managed config into
+// the same { name, page, href, sub } shape the rendering code expects.
+// If the managed config is unavailable (loading, error, no record), we
+// fall back to FALLBACK_NAV_ITEMS — the header never disappears.
+
 // Native-style tab keep-alive: these four destinations stay mounted and
 // hidden when switching between them so their scroll position and in-page
 // state (filters, selections) are preserved across tab switches.
@@ -72,6 +81,12 @@ const isTabRoute = (p) => TAB_ROUTES.includes(p);
 export default function Layout({ children, currentPageName }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  // Managed navigation — falls back to hardcoded if unavailable
+  const { config: navConfig } = useNavigationConfig();
+  const managedNav = resolveDesktopNav(navConfig);
+  const navItems = managedNav || FALLBACK_NAV_ITEMS;
+
   const [searchQuery, setSearchQuery] = useState('');
   const EMPTY_RESULTS = { stories: [], drivers: [], events: [], tracks: [], series: [], teams: [], vehicles: [], media: [], sponsors: [] };
   const [searchResults, setSearchResults] = useState(EMPTY_RESULTS);

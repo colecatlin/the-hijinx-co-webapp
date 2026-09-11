@@ -27,7 +27,7 @@ const PAGE_TITLES = {
   MediaPortal:          { title: 'Media Portal',       subtitle: 'Manage media applications and credentials' },
   // ── Phase 1: Website placeholders ──
   'management/website/home':       { title: 'Home',          subtitle: 'Home editor — the active homepage' },
-  'management/website/navigation': { title: 'Navigation',   subtitle: 'Public site navigation — future' },
+  'management/website/navigation': { title: 'Navigation',   subtitle: 'Public site navigation — draft, preview, publish' },
   'management/website/footer':     { title: 'Footer',        subtitle: 'Footer groups, links, pages, socials' },
   'management/website/links':      { title: 'Links',         subtitle: 'Reusable link system — future' },
   'management/website/seo':        { title: 'SEO',           subtitle: 'SEO management — future' },
