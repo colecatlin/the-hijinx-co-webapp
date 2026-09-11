@@ -41,6 +41,7 @@ const PAGE_TITLES = {
   'management/platform/settings':        { title: 'Settings',           subtitle: 'Platform-wide settings — future' },
   'management/apparel/shopify':          { title: 'Shopify Connection', subtitle: 'Shopify integration configuration — future' },
   'management/discipline':                { title: 'Discipline Colors',  subtitle: 'Manage discipline colors for map pins' },
+  ManageDisciplineColors:                  { title: 'Discipline Colors',  subtitle: 'Manage discipline colors for map pins' },
   'identity-applications':                { title: 'Identity Applications', subtitle: 'Review identity applications' },
   // ── Editorial pages ──
   'management/editorial/story-radar':        { title: 'Story Radar',       subtitle: 'Editorial signal and recommendation dashboard' },
