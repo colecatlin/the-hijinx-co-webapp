@@ -40,6 +40,7 @@ interface AuditTest {
   season_context: boolean;
   verdict: Verdict;
   failure_type: FailureType;
+  category: string;
   notes: string;
 }
 
@@ -544,12 +545,17 @@ export default async function (req) {
     }
   }
 
-  // ── Enrich existing tests with new fields + failure_type ──────────────────
-  for (const t of tests) {
-    (t as any).absolute_canonical = t.canonical_correct; // existing tests check slug presence
-    (t as any).breadcrumb_present = false; // not checked in basic tests
-    (t as any).season_context = false; // not checked in basic tests
-    (t as any).failure_type = classifyFailure(t as any);
+  // ── Enrich existing tests with new fields + failure_type + category ────────
+  const CATEGORIES = ['RESULTS', 'STANDINGS', 'RACERS', 'EVENTS', 'EVENTS', 'EVENTS', 'RESULTS', 'PLATFORM'];
+  for (let i = 0; i < tests.length; i++) {
+    (tests[i] as any).absolute_canonical = tests[i].canonical_correct;
+    (tests[i] as any).breadcrumb_present = false;
+    (tests[i] as any).season_context = false;
+    (tests[i] as any).failure_type = classifyFailure(tests[i] as any);
+    (tests[i] as any).category = CATEGORIES[i] || 'GENERAL';
+  }
+  for (const t of enrichmentTests) {
+    (t as any).category = 'STRUCTURED_DATA';
   }
 
   const allTests = [...tests, ...enrichmentTests];

@@ -61,6 +61,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Announcements',       page: 'ManageAnnouncements',           icon: Megaphone,     description: 'Rotating announcement bar' },
       { name: 'Pop-Ups',             page: 'ManagePopUps',                  icon: Megaphone,     description: 'Landing pop-ups shown on the Home page' },
       { name: 'SEO',                 page: 'management/website/seo',        icon: Search,        description: 'Site-wide SEO defaults, page metadata, social sharing' },
+      { name: 'Search & AI Discovery', page: 'management/website/ai-discovery', icon: Activity,  description: 'Answerability, structured data, schema, canonical, sitemap, robots, crawler access, entity coverage' },
       { name: 'Legacy Homepage Settings', page: 'ManageHomepage',           icon: Home,         description: 'Legacy /Home page editor — retained for rollback' },
       { name: 'Legacy Hero Slides',       href: '/admin/hero-slides',        icon: ImageIcon,    description: 'Legacy hero slides — used by legacy /Home only' },
     ],

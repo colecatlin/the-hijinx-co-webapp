@@ -129,6 +129,7 @@ import WebsiteNavigation from './pages/management/WebsiteNavigation';
 import WebsiteFooter from './pages/management/WebsiteFooter';
 import WebsiteLinks from './pages/management/WebsiteLinks';
 import WebsiteSeo from './pages/management/WebsiteSeo';
+import WebsiteAiDiscovery from './pages/management/WebsiteAiDiscovery';
 import MarketplaceAdmin from './pages/management/Marketplace';
 import CommunityUsers from './pages/management/CommunityUsers';
 import CommunityNewsletter from './pages/management/CommunityNewsletter';
@@ -202,7 +203,7 @@ const MANAGEMENT_SHELL_PAGES = new Set([
   // management/* pages (all render their own ManagementLayout)
   'management/website/home', 'management/website/navigation',
   'management/website/footer', 'management/website/links',
-  'management/website/seo', 'management/marketplace',
+  'management/website/seo', 'management/website/ai-discovery', 'management/marketplace',
   'management/community/users', 'management/community/newsletter',
   'management/media/library', 'management/platform/integrations',
   'management/platform/audit-log', 'management/platform/settings',
@@ -319,6 +320,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/website/footer" element={<LayoutWrapper currentPageName="management/website/footer"><WebsiteFooter /></LayoutWrapper>} />
       <Route path="/management/website/links" element={<LayoutWrapper currentPageName="management/website/links"><WebsiteLinks /></LayoutWrapper>} />
       <Route path="/management/website/seo" element={<LayoutWrapper currentPageName="management/website/seo"><WebsiteSeo /></LayoutWrapper>} />
+      <Route path="/management/website/ai-discovery" element={<LayoutWrapper currentPageName="management/website/ai-discovery"><WebsiteAiDiscovery /></LayoutWrapper>} />
       <Route path="/management/marketplace" element={<LayoutWrapper currentPageName="management/marketplace"><MarketplaceAdmin /></LayoutWrapper>} />
       <Route path="/management/community/users" element={<LayoutWrapper currentPageName="management/community/users"><CommunityUsers /></LayoutWrapper>} />
       <Route path="/management/community/newsletter" element={<LayoutWrapper currentPageName="management/community/newsletter"><CommunityNewsletter /></LayoutWrapper>} />

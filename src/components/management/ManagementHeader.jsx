@@ -30,7 +30,8 @@ const PAGE_TITLES = {
   'management/website/navigation': { title: 'Navigation',   subtitle: 'Public site navigation — draft, preview, publish' },
   'management/website/footer':     { title: 'Footer',        subtitle: 'Footer groups, links, pages, socials' },
   'management/website/links':      { title: 'Links',         subtitle: 'Reusable link system — future' },
-  'management/website/seo':        { title: 'SEO',           subtitle: 'SEO management — future' },
+  'management/website/seo':        { title: 'SEO',           subtitle: 'Site-wide SEO defaults, page metadata, social sharing' },
+  'management/website/ai-discovery': { title: 'Search & AI Discovery', subtitle: 'Manage search metadata and monitor machine-readable answerability' },
   // ── Phase 1: other placeholders ──
   'management/marketplace':              { title: 'Marketplace',        subtitle: 'Listing platform administration — future' },
   'management/community/users':          { title: 'Users',              subtitle: 'User management — future' },
