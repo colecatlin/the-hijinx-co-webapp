@@ -103,7 +103,14 @@ export default function MediaLibraryPicker({ open, onOpenChange, onSelect }) {
 
         {/* Grid */}
         <div className="flex-1 overflow-y-auto -mx-1 px-1">
-          {isLoading ? (
+          {error ? (
+            <div className="py-12 text-center">
+              <p className="text-xs" style={{ color: 'hsl(var(--danger))' }}>Failed to load library</p>
+              <p className="text-[10px] mt-1" style={{ color: 'hsl(var(--foreground-quiet))' }}>
+                Upload or paste URL instead
+              </p>
+            </div>
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-5 h-5 animate-spin" style={{ color: 'hsl(var(--motion))' }} />
             </div>

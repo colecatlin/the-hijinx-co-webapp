@@ -63,9 +63,10 @@ export default function MediaLibraryDetail({ asset, open, onOpenChange }) {
   const handleArchive = async () => {
     setArchiving(true);
     try {
-      await base44.entities.LibraryAsset.update(asset.id, { is_archived: true });
+      const newArchived = !asset.is_archived;
+      await base44.entities.LibraryAsset.update(asset.id, { is_archived: newArchived });
       invalidate();
-      toast.success('Asset archived');
+      toast.success(newArchived ? 'Asset archived' : 'Asset restored');
       onOpenChange?.(false);
     } catch (err) {
       toast.error('Archive failed: ' + (err?.message || 'Unknown error'));
@@ -89,8 +90,16 @@ export default function MediaLibraryDetail({ asset, open, onOpenChange }) {
         style={{ background: 'hsl(var(--surface))', borderLeft: '1px solid hsl(var(--divider))' }}
       >
         <SheetHeader>
-          <SheetTitle style={{ color: 'hsl(var(--foreground))' }}>
+          <SheetTitle style={{ color: 'hsl(var(--foreground))' }} className="flex items-center gap-2">
             {isEditing ? 'Edit Asset' : 'Asset Details'}
+            {asset.is_archived && (
+              <span
+                className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded"
+                style={{ background: 'hsl(var(--warning) / 0.15)', color: 'hsl(var(--warning))' }}
+              >
+                Archived
+              </span>
+            )}
           </SheetTitle>
         </SheetHeader>
 
@@ -212,7 +221,7 @@ export default function MediaLibraryDetail({ asset, open, onOpenChange }) {
                   className="text-destructive hover:text-destructive"
                 >
                   {archiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Archive className="w-3.5 h-3.5" />}
-                  Archive
+                  {asset.is_archived ? 'Restore' : 'Archive'}
                 </Button>
               </>
             ) : (
