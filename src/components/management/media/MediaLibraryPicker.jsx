@@ -26,7 +26,7 @@ export default function MediaLibraryPicker({ open, onOpenChange, onSelect }) {
   const [filter, setFilter] = useState('all');
   const [selectedId, setSelectedId] = useState(null);
 
-  const { data: assets, isLoading } = useMediaLibrary({
+  const { data: assets, isLoading, error } = useMediaLibrary({
     search,
     asset_type: filter,
     sort: 'newest',
