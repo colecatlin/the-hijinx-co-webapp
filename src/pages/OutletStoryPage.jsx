@@ -223,7 +223,7 @@ export default function OutletStoryPage() {
             {/* Cover image */}
             {story.cover_image && (
               <div className="mb-10 -mx-0 overflow-hidden relative">
-                <img src={story.cover_image} alt={story.title} className="w-full object-cover" style={{ maxHeight: '520px' }} />
+                <img src={story.cover_image} alt={story.cover_image_alt || story.title} className="w-full object-cover" style={{ maxHeight: '520px' }} />
                 <div className="absolute top-0 left-0 w-0.5 h-full" style={{ background: OUTLET_CYAN }} />
               </div>
             )}

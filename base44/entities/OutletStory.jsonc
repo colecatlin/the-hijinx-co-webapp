@@ -89,6 +89,10 @@
       "type": "string",
       "description": "Cover image URL"
     },
+    "cover_image_alt": {
+      "type": "string",
+      "description": "Alt text for the cover image. Falls back to story title if empty. Prefilled from LibraryAsset.alt_text when selected from Media Library."
+    },
     "images": {
       "type": "array",
       "items": {

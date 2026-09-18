@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, Loader2, Upload, X } from 'lucide-react';
+import { CheckCircle2, Loader2, X } from 'lucide-react';
+import MediaSelector from '@/components/management/shared/MediaSelector';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -31,6 +32,7 @@ export default function StoryForm({ story, onClose }) {
     primary_category: story?.primary_category || '',
     sub_category: story?.sub_category || '',
     cover_image: story?.cover_image || '',
+    cover_image_alt: story?.cover_image_alt || '',
     location_city: story?.location_city || '',
     location_state: story?.location_state || '',
     location_country: story?.location_country || '',
@@ -40,7 +42,6 @@ export default function StoryForm({ story, onClose }) {
     tags: story?.tags || [],
   });
 
-  const [uploading, setUploading] = useState(false);
   const [tagInput, setTagInput] = useState('');
 
   const queryClient = useQueryClient();
@@ -71,16 +72,6 @@ export default function StoryForm({ story, onClose }) {
     } else {
       setFormData({ ...formData, [field]: value });
     }
-  };
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    setFormData(prev => ({ ...prev, cover_image: file_url }));
-    setUploading(false);
   };
 
   const handleAddTag = () => {
@@ -213,34 +204,12 @@ export default function StoryForm({ story, onClose }) {
           </div>
 
           <div className="col-span-2">
-            <label className="block text-sm font-medium mb-2">Cover Image</label>
-            <div className="space-y-3">
-              {formData.cover_image && (
-                <div className="relative">
-                  <img src={formData.cover_image} alt="Preview" className="w-full h-48 object-cover border border-gray-200 rounded" />
-                  <button
-                    type="button"
-                    onClick={() => handleChange('cover_image', '')}
-                    className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 text-xs rounded hover:bg-red-600"
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-              <label className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded p-6 cursor-pointer hover:bg-gray-50">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
-                <div className="flex flex-col items-center gap-2 text-gray-600">
-                  <Upload className="w-5 h-5" />
-                  <span className="text-sm">{uploading ? 'Uploading...' : 'Click to upload or drag and drop'}</span>
-                </div>
-              </label>
-            </div>
+            <MediaSelector
+              value={{ url: formData.cover_image, alt: formData.cover_image_alt }}
+              onChange={(m) => setFormData(prev => ({ ...prev, cover_image: m.url, cover_image_alt: m.alt }))}
+              label="Cover Image"
+              showPosition={false}
+            />
           </div>
 
           <div>
