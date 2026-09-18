@@ -33,6 +33,7 @@ export default function LegacyHome() {
         title="Motorsports, Culture, and Competition"
         description="HIJINX — where motorsports, media, and culture collide."
         noSuffix={false}
+        noindex
       />
 
       <CultureGrid />

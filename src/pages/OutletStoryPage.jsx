@@ -106,7 +106,7 @@ export default function OutletStoryPage() {
 
   return (
     <div style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
-      <SeoMeta title={story.title} description={storyDesc} image={storyImg} type="article" />
+      <SeoMeta title={story.title} description={storyDesc} image={storyImg} type="article" canonicalPath={`/story/${story.slug}`} />
 
       <MobileBackHeader title={story.title} to={createPageUrl('OutletHome')} />
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
+import SeoMeta from '@/components/system/seoMeta';
 import { getOutletStoryUrl } from '@/lib/storyUrl';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';

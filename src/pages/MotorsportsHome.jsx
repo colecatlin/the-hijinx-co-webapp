@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Search, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import SeoMeta from '@/components/system/seoMeta';
 import StatCard from '@/components/motorsports/StatCard';
 import PlatformShowcase from '@/components/motorsports/PlatformShowcase';
 

@@ -22,7 +22,7 @@ const DIV = 'hsl(var(--divider))';
 export default function MarketplaceHome() {
   return (
     <div className="relative min-h-screen pb-24" style={{ background: 'hsl(var(--canvas))' }}>
-      <SeoMeta title="Marketplace" description="The HIJINX Marketplace — motorsports apparel, parts, memorabilia, and gear." />
+      <SeoMeta pageKey="marketplace" />
 
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 30%, hsl(var(--motion) / 0.10) 0%, transparent 70%)' }} />

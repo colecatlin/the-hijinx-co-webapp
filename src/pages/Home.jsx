@@ -25,10 +25,7 @@ export default function Home() {
 
   return (
     <>
-      <SeoMeta
-        title="Motorsports, Culture, and Competition"
-        description="HIJINX — where motorsports, media, and culture collide."
-      />
+      <SeoMeta pageKey="home" />
       {show(config?.hero) && <Home1Hero config={config?.hero} />}
       {show(config?.next_up) && <Home1NextUp config={config?.next_up} />}
       {show(config?.one_brand) && <Home1OneBrand config={config?.one_brand} />}

@@ -27,55 +27,63 @@ Deno.serve(async (req) => {
 
     const urls = [];
 
-    // ── Static pages ─────────────────────────────────────────────────────────
-    urls.push(staticPage('Home', '1.0', 'daily'));
+    // ── Static pages (canonical public routes only) ──────────────────────────
+    // Homepage canonicalizes to "/" — NOT /Home or /Home1
+    urls.push(`  <url>\n    <loc>${BASE_URL}/</loc>\n    <changefreq>daily</changefreq>\n    <priority>1.0</priority>\n  </url>`);
     urls.push(staticPage('MotorsportsHome', '0.9', 'weekly'));
-    urls.push(staticPage('DriverDirectory', '0.8', 'daily'));
-    urls.push(staticPage('TeamDirectory', '0.8', 'weekly'));
-    urls.push(staticPage('TrackDirectory', '0.8', 'weekly'));
-    urls.push(staticPage('SeriesHome', '0.8', 'weekly'));
-    urls.push(staticPage('EventDirectory', '0.8', 'daily'));
+    urls.push(staticPage('Directory', '0.9', 'daily'));
     urls.push(staticPage('OutletHome', '0.8', 'daily'));
+    urls.push(staticPage('ApparelHome', '0.6', 'weekly'));
+    urls.push(staticPage('MarketplaceHome', '0.6', 'weekly'));
     urls.push(staticPage('Registration', '0.7', 'weekly'));
     urls.push(staticPage('StandingsHome', '0.7', 'weekly'));
-    urls.push(staticPage('ApparelHome', '0.6', 'weekly'));
-    urls.push(staticPage('CreativeServices', '0.6', 'monthly'));
     urls.push(staticPage('About', '0.5', 'monthly'));
     urls.push(staticPage('Contact', '0.5', 'monthly'));
 
-    // ── Driver profiles (prefer slug, fallback to id) ─────────────────────
+    // Legacy routes (/Home, /Home1, /LegacyHome) are NOT included — they
+    // canonicalize to "/" and should not appear as duplicate sitemap entries.
+
+    // ── Racer profiles (canonical /racers/:slug route) ───────────────────────
     for (const d of drivers) {
-      const param = d.slug || d.id;
-      if (!param) continue;
-      const key = d.slug ? `slug=${d.slug}` : `id=${d.id}`;
-      urls.push(`  <url>\n    <loc>${BASE_URL}/DriverProfile?${key}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+      const slug = d.slug;
+      if (slug) {
+        urls.push(`  <url>\n    <loc>${BASE_URL}/racers/${slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+      }
     }
 
-    // ── Team profiles ─────────────────────────────────────────────────────
+    // ── Team profiles ─────────────────────────────────────────────────────────
     for (const t of teams) {
-      const key = t.slug ? `slug=${t.slug}` : `id=${t.id}`;
-      urls.push(`  <url>\n    <loc>${BASE_URL}/TeamProfile?${key}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+      const slug = t.slug;
+      if (slug) {
+        urls.push(`  <url>\n    <loc>${BASE_URL}/Directory?cat=teams</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
+      }
     }
 
-    // ── Track profiles ────────────────────────────────────────────────────
+    // ── Track profiles (canonical /tracks/:slug route) ───────────────────────
     for (const t of tracks) {
-      const key = t.slug ? `slug=${t.slug}` : `id=${t.id}`;
-      urls.push(`  <url>\n    <loc>${BASE_URL}/TrackProfile?${key}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+      const slug = t.slug;
+      if (slug) {
+        urls.push(`  <url>\n    <loc>${BASE_URL}/tracks/${slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+      }
     }
 
-    // ── Series detail ─────────────────────────────────────────────────────
+    // ── Series detail (canonical /series/:slug route) ────────────────────────
     for (const s of series) {
-      const key = s.slug ? `slug=${s.slug}` : `id=${s.id}`;
-      urls.push(`  <url>\n    <loc>${BASE_URL}/SeriesDetail?${key}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+      const slug = s.slug;
+      if (slug) {
+        urls.push(`  <url>\n    <loc>${BASE_URL}/series/${slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+      }
     }
 
-    // ── Event profiles ────────────────────────────────────────────────────
+    // ── Event profiles (canonical /events/:slug route) ───────────────────────
     for (const e of events) {
-      const key = e.slug ? `slug=${e.slug}` : `id=${e.id}`;
-      urls.push(`  <url>\n    <loc>${BASE_URL}/EventProfile?${key}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
+      const slug = e.slug;
+      if (slug) {
+        urls.push(`  <url>\n    <loc>${BASE_URL}/events/${slug}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
+      }
     }
 
-    // ── Outlet stories (slug-based canonical route only) ──────────────────
+    // ── Outlet stories (canonical /story/:slug route only) ───────────────────
     for (const s of stories) {
       if (!s.slug) continue; // skip stories without a slug — not route-ready
       urls.push(`  <url>\n    <loc>${BASE_URL}/story/${s.slug}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`);

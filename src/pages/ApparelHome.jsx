@@ -21,10 +21,7 @@ export default function ApparelHome() {
 
   return (
     <PageShell style={{ background: 'hsl(var(--canvas))', color: FG, minHeight: '100vh' }}>
-      <SeoMeta
-        title="Apparel | Coming Soon"
-        description="New HIJINX apparel shop coming soon."
-      />
+      <SeoMeta pageKey="apparel" />
 
       {/* Coming Soon with background image — image hero keeps dark overlay for legible light text */}
       <div className="min-h-[60vh] md:min-h-[70vh] flex items-center justify-center relative overflow-hidden">

@@ -60,7 +60,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Links',               page: 'management/website/links',       icon: Link2,         description: 'Reusable link system (future)' },
       { name: 'Announcements',       page: 'ManageAnnouncements',           icon: Megaphone,     description: 'Rotating announcement bar' },
       { name: 'Pop-Ups',             page: 'ManagePopUps',                  icon: Megaphone,     description: 'Landing pop-ups shown on the Home page' },
-      { name: 'SEO',                 page: 'management/website/seo',        icon: Search,        description: 'SEO management (future)' },
+      { name: 'SEO',                 page: 'management/website/seo',        icon: Search,        description: 'Site-wide SEO defaults, page metadata, social sharing' },
       { name: 'Legacy Homepage Settings', page: 'ManageHomepage',           icon: Home,         description: 'Legacy /Home page editor — retained for rollback' },
       { name: 'Legacy Hero Slides',       href: '/admin/hero-slides',        icon: ImageIcon,    description: 'Legacy hero slides — used by legacy /Home only' },
     ],

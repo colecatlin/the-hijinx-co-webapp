@@ -94,10 +94,7 @@ export default function Directory() {
 
   return (
     <div className="relative hijinx-canvas-bg" style={{ minHeight: '100vh' }}>
-      <SeoMeta
-        title="Directory · INDEX46"
-        description="The INDEX46 directory — a master database of drivers, teams, tracks, series, events and media."
-      />
+      <SeoMeta pageKey="directory" />
 
       {/* ── MASTHEAD ── */}
       <div className="px-5 sm:px-8 md:px-12 lg:px-20 pt-20 md:pt-24 pb-6">
