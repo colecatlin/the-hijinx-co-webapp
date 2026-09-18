@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import JsonLd from '@/components/shared/JsonLd';
+import EntityFactualSummary from '@/components/shared/EntityFactualSummary';
 import Analytics from '@/components/system/analyticsTracker';
 import { useSearchParams, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -170,9 +172,8 @@ export default function SeriesDetail({ overrideSlug } = {}) {
         description={seriesDesc}
         image={heroImg}
       />
-      {seo?.structured_data && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.structured_data) }} />
-      )}
+      <JsonLd data={seo?.structured_data} extra={seo?.structured_data_extra} />
+      <EntityFactualSummary type="series" data={experienceData} />
 
       <MobileBackHeader tone="light" title={series.name} to="/Directory?cat=series" />
 

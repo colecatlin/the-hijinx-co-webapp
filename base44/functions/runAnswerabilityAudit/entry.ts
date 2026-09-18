@@ -24,6 +24,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 type Verdict = 'PASS' | 'PARTIAL' | 'FAIL';
+type FailureType = 'DATA_COVERAGE' | 'PUBLIC_PRESENTATION' | 'STRUCTURED_DATA' | 'LINKING' | 'NONE';
 
 interface AuditTest {
   question: string;
@@ -34,8 +35,25 @@ interface AuditTest {
   structured_data_present: boolean;
   internal_links_present: boolean;
   canonical_correct: boolean;
+  absolute_canonical: boolean;
+  breadcrumb_present: boolean;
+  season_context: boolean;
   verdict: Verdict;
+  failure_type: FailureType;
   notes: string;
+}
+
+function classifyFailure(t: Omit<AuditTest, 'failure_type'>): FailureType {
+  if (t.verdict === 'PASS') return 'NONE';
+  // Data coverage failure: no source records to answer the question
+  if (!t.answer_present && Object.keys(t.source_entities).length === 0) return 'DATA_COVERAGE';
+  // Structured data failure: answer exists but JSON-LD missing/wrong
+  if (t.answer_present && !t.structured_data_present) return 'STRUCTURED_DATA';
+  // Linking failure: answer + structured data exist but internal links missing
+  if (t.answer_present && t.structured_data_present && !t.internal_links_present) return 'LINKING';
+  // Public presentation failure: data exists but not exposed in HTML
+  if (!t.answer_present && Object.keys(t.source_entities).length > 0) return 'PUBLIC_PRESENTATION';
+  return 'PUBLIC_PRESENTATION';
 }
 
 function verdict(answer: boolean, structured: boolean, links: boolean, canonical: boolean): Verdict {
@@ -378,12 +396,177 @@ export default async function (req) {
     });
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // V2 ENRICHMENT: Call experience functions and verify structured-data quality
+  // ═══════════════════════════════════════════════════════════════════════════
+  const enrichmentTests: AuditTest[] = [];
+
+  // ── V2 TEST: Event structured-data quality (absolute canonical + breadcrumb) ──
+  {
+    const testEvent = (events as any[]).find((e) =>
+      ['Published', 'Live', 'Completed'].includes(e.status) && !e.is_archived && (e.slug || e.canonical_slug)
+    );
+    if (testEvent) {
+      try {
+        const expRes = await base44.asServiceRole.functions.invoke('getEventExperience', {
+          slug: testEvent.slug || testEvent.canonical_slug,
+        }).catch(() => null);
+        const seo = expRes?.data?.seo;
+        const sd = seo?.structured_data;
+        const extra = seo?.structured_data_extra || [];
+        const absoluteCanonical = !!sd?.url && /^https:\/\/[^\/]+\//.test(sd.url) && !sd.url.includes('base44.app') && !sd.url.includes('localhost');
+        const breadcrumbPresent = extra.some((b: any) => b?.['@type'] === 'BreadcrumbList');
+        const structuredTypeCorrect = sd?.['@type'] === 'SportsEvent';
+        const seasonContext = !!testEvent.season && !!(sd?.startDate);
+        enrichmentTests.push({
+          question: `Does the Event page emit correct SportsEvent JSON-LD with absolute canonical URL and BreadcrumbList?`,
+          source_entities: { event: testEvent.id },
+          expected_fact_relationship: 'getEventExperience → seo.structured_data (SportsEvent) + structured_data_extra (BreadcrumbList)',
+          public_page: `/events/${testEvent.slug || testEvent.canonical_slug}`,
+          answer_present: !!sd,
+          structured_data_present: structuredTypeCorrect,
+          internal_links_present: !!(sd?.location?.name) || !!(sd?.organizer?.name),
+          canonical_correct: absoluteCanonical,
+          absolute_canonical: absoluteCanonical,
+          breadcrumb_present: breadcrumbPresent,
+          season_context: seasonContext,
+          verdict: [!!sd, structuredTypeCorrect, absoluteCanonical, breadcrumbPresent].filter(Boolean).length >= 3 ? 'PASS' : 'PARTIAL',
+          failure_type: 'NONE',
+          notes: `@type=${sd?.['@type'] || 'missing'}, url=${sd?.url || 'missing'}, breadcrumb=${breadcrumbPresent}, season=${seasonContext}`,
+        });
+      } catch {
+        enrichmentTests.push({
+          question: 'Event structured-data quality check',
+          source_entities: { event: testEvent.id },
+          expected_fact_relationship: 'getEventExperience → seo.structured_data',
+          public_page: '—',
+          answer_present: false, structured_data_present: false, internal_links_present: false,
+          canonical_correct: false, absolute_canonical: false, breadcrumb_present: false, season_context: false,
+          verdict: 'FAIL', failure_type: 'STRUCTURED_DATA',
+          notes: 'getEventExperience invocation failed',
+        });
+      }
+    }
+  }
+
+  // ── V2 TEST: Series structured-data quality ──
+  {
+    const testSeries = (seriesList as any[]).find((s) =>
+      s.visibility_status === 'live' && !s.is_archived && (s.slug || s.canonical_slug)
+    );
+    if (testSeries) {
+      try {
+        const expRes = await base44.asServiceRole.functions.invoke('getSeriesExperience', {
+          slug: testSeries.slug || testSeries.canonical_slug,
+        }).catch(() => null);
+        const seo = expRes?.data?.seo;
+        const sd = seo?.structured_data;
+        const extra = seo?.structured_data_extra || [];
+        const absoluteCanonical = !!sd?.url && /^https:\/\/[^\/]+\//.test(sd.url) && !sd.url.includes('base44.app');
+        const breadcrumbPresent = extra.some((b: any) => b?.['@type'] === 'BreadcrumbList');
+        const structuredTypeCorrect = sd?.['@type'] === 'SportsOrganization';
+        const seasonContext = !!(expRes?.data?.current_season || expRes?.data?.selected_season);
+        enrichmentTests.push({
+          question: `Does the Series page emit correct SportsOrganization JSON-LD with absolute canonical URL and BreadcrumbList?`,
+          source_entities: { series: testSeries.id },
+          expected_fact_relationship: 'getSeriesExperience → seo.structured_data (SportsOrganization) + structured_data_extra (BreadcrumbList)',
+          public_page: `/series/${testSeries.slug || testSeries.canonical_slug}`,
+          answer_present: !!sd,
+          structured_data_present: structuredTypeCorrect,
+          internal_links_present: !!sd?.url,
+          canonical_correct: absoluteCanonical,
+          absolute_canonical: absoluteCanonical,
+          breadcrumb_present: breadcrumbPresent,
+          season_context: seasonContext,
+          verdict: [!!sd, structuredTypeCorrect, absoluteCanonical, breadcrumbPresent].filter(Boolean).length >= 3 ? 'PASS' : 'PARTIAL',
+          failure_type: 'NONE',
+          notes: `@type=${sd?.['@type'] || 'missing'}, url=${sd?.url || 'missing'}, breadcrumb=${breadcrumbPresent}, season=${seasonContext}`,
+        });
+      } catch {
+        enrichmentTests.push({
+          question: 'Series structured-data quality check',
+          source_entities: { series: testSeries.id },
+          expected_fact_relationship: 'getSeriesExperience → seo.structured_data',
+          public_page: '—',
+          answer_present: false, structured_data_present: false, internal_links_present: false,
+          canonical_correct: false, absolute_canonical: false, breadcrumb_present: false, season_context: false,
+          verdict: 'FAIL', failure_type: 'STRUCTURED_DATA',
+          notes: 'getSeriesExperience invocation failed',
+        });
+      }
+    }
+  }
+
+  // ── V2 TEST: Track structured-data quality ──
+  {
+    const testTrack = (tracks as any[]).find((t) =>
+      t.visibility_status === 'live' && !t.is_archived && (t.slug || t.canonical_slug)
+    );
+    if (testTrack) {
+      try {
+        const expRes = await base44.asServiceRole.functions.invoke('getTrackExperience', {
+          slug: testTrack.slug || testTrack.canonical_slug,
+        }).catch(() => null);
+        const seo = expRes?.data?.seo;
+        const sd = seo?.structured_data;
+        const extra = seo?.structured_data_extra || [];
+        const absoluteCanonical = !!sd?.url && /^https:\/\/[^\/]+\//.test(sd.url) && !sd.url.includes('base44.app');
+        const breadcrumbPresent = extra.some((b: any) => b?.['@type'] === 'BreadcrumbList');
+        const structuredTypeCorrect = sd?.['@type'] === 'Place';
+        enrichmentTests.push({
+          question: `Does the Track page emit correct Place JSON-LD with absolute canonical URL and BreadcrumbList?`,
+          source_entities: { track: testTrack.id },
+          expected_fact_relationship: 'getTrackExperience → seo.structured_data (Place) + structured_data_extra (BreadcrumbList)',
+          public_page: `/tracks/${testTrack.slug || testTrack.canonical_slug}`,
+          answer_present: !!sd,
+          structured_data_present: structuredTypeCorrect,
+          internal_links_present: !!sd?.url,
+          canonical_correct: absoluteCanonical,
+          absolute_canonical: absoluteCanonical,
+          breadcrumb_present: breadcrumbPresent,
+          season_context: false, // tracks don't have season context
+          verdict: [!!sd, structuredTypeCorrect, absoluteCanonical, breadcrumbPresent].filter(Boolean).length >= 3 ? 'PASS' : 'PARTIAL',
+          failure_type: 'NONE',
+          notes: `@type=${sd?.['@type'] || 'missing'}, url=${sd?.url || 'missing'}, breadcrumb=${breadcrumbPresent}`,
+        });
+      } catch {
+        enrichmentTests.push({
+          question: 'Track structured-data quality check',
+          source_entities: { track: testTrack.id },
+          expected_fact_relationship: 'getTrackExperience → seo.structured_data',
+          public_page: '—',
+          answer_present: false, structured_data_present: false, internal_links_present: false,
+          canonical_correct: false, absolute_canonical: false, breadcrumb_present: false, season_context: false,
+          verdict: 'FAIL', failure_type: 'STRUCTURED_DATA',
+          notes: 'getTrackExperience invocation failed',
+        });
+      }
+    }
+  }
+
+  // ── Enrich existing tests with new fields + failure_type ──────────────────
+  for (const t of tests) {
+    (t as any).absolute_canonical = t.canonical_correct; // existing tests check slug presence
+    (t as any).breadcrumb_present = false; // not checked in basic tests
+    (t as any).season_context = false; // not checked in basic tests
+    (t as any).failure_type = classifyFailure(t as any);
+  }
+
+  const allTests = [...tests, ...enrichmentTests];
+
   // ── Summary ───────────────────────────────────────────────────────────────
   const summary = {
-    total: tests.length,
-    passed: tests.filter((t) => t.verdict === 'PASS').length,
-    partial: tests.filter((t) => t.verdict === 'PARTIAL').length,
-    failed: tests.filter((t) => t.verdict === 'FAIL').length,
+    total: allTests.length,
+    passed: allTests.filter((t) => t.verdict === 'PASS').length,
+    partial: allTests.filter((t) => t.verdict === 'PARTIAL').length,
+    failed: allTests.filter((t) => t.verdict === 'FAIL').length,
+    failure_types: {
+      none: allTests.filter((t) => t.failure_type === 'NONE').length,
+      data_coverage: allTests.filter((t) => t.failure_type === 'DATA_COVERAGE').length,
+      public_presentation: allTests.filter((t) => t.failure_type === 'PUBLIC_PRESENTATION').length,
+      structured_data: allTests.filter((t) => t.failure_type === 'STRUCTURED_DATA').length,
+      linking: allTests.filter((t) => t.failure_type === 'LINKING').length,
+    },
     data_coverage: {
       events: (events as any[]).length,
       series: (seriesList as any[]).length,
@@ -399,7 +582,7 @@ export default async function (req) {
     phase: '17B — AI Discovery / Answer Engine Optimization',
     description: 'Architecture test: can a machine answer representative motorsports questions from authoritative INDEX46 entity relationships?',
     summary,
-    tests,
+    tests: allTests,
     computed_at: new Date().toISOString(),
   });
 }

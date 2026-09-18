@@ -9,6 +9,8 @@ import PullToRefresh from '@/components/shared/PullToRefresh';
 import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
 import { Skeleton } from '@/components/ui/skeleton';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import JsonLd from '@/components/shared/JsonLd';
+import EntityFactualSummary from '@/components/shared/EntityFactualSummary';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import ProfileClaimFooter from '@/components/onboarding/ProfileClaimFooter';
 import { MapPin, Calendar, Trophy, Flag, BarChart3, Users, Car, Clock, History, Award, Image as ImageIcon, Info, Globe, Phone, Mail, Ruler, Navigation, Handshake } from 'lucide-react';
@@ -98,6 +100,8 @@ export default function TrackProfile({ overrideSlug } = {}) {
         description={experienceData.seo?.description || track.bio || track.description || `${track.name} track profile on HIJINX.`}
         image={experienceData.seo?.image || heroImage || SITE_FALLBACK_IMAGE}
       />
+      <JsonLd data={experienceData?.seo?.structured_data} extra={experienceData?.seo?.structured_data_extra} />
+      <EntityFactualSummary type="track" data={experienceData} />
 
       {/* Mobile back header */}
       <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['trackExperience', trackSlug] }); }}>

@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useHome1Config } from '@/hooks/useHome1Config';
 import { isSectionVisible } from '@/components/home1/home1Helpers';
-import SeoMeta from '@/components/system/seoMeta';
+import SeoMeta, { SITE_CANONICAL_BASE, SITE_NAME, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import JsonLd from '@/components/shared/JsonLd';
 import Analytics from '@/components/system/analyticsTracker';
 import Home1Hero from '@/components/home1/Home1Hero';
 import Home1NextUp from '@/components/home1/Home1NextUp';
@@ -26,6 +27,24 @@ export default function Home() {
   return (
     <>
       <SeoMeta pageKey="home" />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE_NAME,
+        url: SITE_CANONICAL_BASE,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: `${SITE_CANONICAL_BASE}/Directory?q={search_term_string}`,
+          'query-input': 'required name=search_term_string',
+        },
+      }} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: SITE_NAME,
+        url: SITE_CANONICAL_BASE,
+        logo: SITE_FALLBACK_IMAGE,
+      }} />
       {show(config?.hero) && <Home1Hero config={config?.hero} />}
       {show(config?.next_up) && <Home1NextUp config={config?.next_up} />}
       {show(config?.one_brand) && <Home1OneBrand config={config?.one_brand} />}

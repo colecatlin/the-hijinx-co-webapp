@@ -14,6 +14,7 @@ import {
   type SeriesContext,
 } from '../../shared/seriesExperienceHelpers.ts';
 import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
+import { buildSeriesSchema, buildBreadcrumbSchema } from '../../shared/structuredDataHelpers.ts';
 
 function buildPublicFields(series: any) {
   return {
@@ -595,23 +596,19 @@ function buildSEO(series: any, statistics: any, currentSeason: string | null) {
     `${series.name}${series.discipline ? ` — ${series.discipline}` : ''}${series.sanctioning_body ? ` sanctioned by ${series.sanctioning_body}` : ''}${currentSeason ? ` — ${currentSeason} season` : ''}. ${statistics.events_count} events, ${statistics.classes_count} classes, ${statistics.racers_count} racers.`;
   const image = series.hero_image_url || series.banner_url || series.logo_url || null;
   const url = (series.slug || series.canonical_slug) ? `/series/${series.slug || series.canonical_slug}` : null;
-  const structuredData: any = {
-    '@context': 'https://schema.org',
-    '@type': 'SportsOrganization',
-    name: series.name,
-    description,
-    sport: series.discipline || undefined,
-  };
-  if (image) structuredData.image = image;
-  if (url) structuredData.url = `https://hijinxco.com${url}`;
-  if (series.website_url) structuredData.sameAs = [series.website_url];
-  if (series.sanctioning_body) structuredData.parentOrganization = { '@type': 'Organization', name: series.sanctioning_body };
+  const structuredData = buildSeriesSchema(series, null);
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: 'INDEX46', path: '/MotorsportsHome' },
+    { name: 'Series', path: '/Directory?cat=series' },
+    { name: series.name, path: (series.slug || series.canonical_slug) ? `/series/${series.slug || series.canonical_slug}` : null },
+  ], null);
   return {
     title, description, image, url,
     og_type: 'website', twitter_card: 'summary_large_image',
     og_title: title, og_description: description, og_image: image,
     twitter_title: title, twitter_description: description, twitter_image: image,
     structured_data: structuredData,
+    structured_data_extra: [breadcrumb].filter(Boolean),
   };
 }
 

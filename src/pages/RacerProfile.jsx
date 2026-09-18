@@ -17,6 +17,8 @@
 import React, { useState, useMemo, useEffect, createContext, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import JsonLd from '@/components/shared/JsonLd';
+import EntityFactualSummary from '@/components/shared/EntityFactualSummary';
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -240,9 +242,8 @@ export default function RacerProfile() {
         image={heroImg || profileImg || SITE_FALLBACK_IMAGE}
         type="profile"
       />
-      {experience?.seo?.structured_data && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(experience.seo.structured_data) }} />
-      )}
+      <JsonLd data={experience?.seo?.structured_data} extra={experience?.seo?.structured_data_extra} />
+      <EntityFactualSummary type="racer" data={experience} />
 
       <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', routeSlug] }); }}>
       <MobileBackHeader tone="light" title={fullName} to="/Directory?cat=racers" />

@@ -20,6 +20,8 @@ import { format, differenceInCalendarDays, parseISO, isValid } from 'date-fns';
 import SocialShareButtons from '@/components/shared/SocialShareButtons';
 import { createPageUrl } from '@/components/utils';
 import { isEventPublic } from '@/components/system/publishHelpers';
+import JsonLd from '@/components/shared/JsonLd';
+import EntityFactualSummary from '@/components/shared/EntityFactualSummary';
 
 import EventOverview from '@/components/events/EventOverview';
 import EventScheduleView from '@/components/events/EventScheduleView';
@@ -142,9 +144,8 @@ export default function EventProfile({ routeSlug }) {
         description={eventDesc}
         image={seo?.image || heroImg || undefined}
       />
-      {seo?.structured_data && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(seo.structured_data) }} />
-      )}
+      <JsonLd data={seo?.structured_data} extra={seo?.structured_data_extra} />
+      <EntityFactualSummary type="event" data={experienceData} />
 
       <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['eventExperience', eventId, eventSlug] }); }}>
       <MobileBackHeader tone="light" title={eventTitle} to={createPageUrl('EventDirectory')} />

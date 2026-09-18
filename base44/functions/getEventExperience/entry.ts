@@ -8,6 +8,7 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
+import { buildSportsEventSchema, buildBreadcrumbSchema } from '../../shared/structuredDataHelpers.ts';
 
 async function resolveEvent(base44, slug, event_id) {
   if (slug) {
@@ -495,22 +496,18 @@ function buildSEO(event, track, series, stats) {
   const description = event.description || `${event.name}${series?.name ? ` — ${series.name}` : ''}${locationParts.length > 0 ? ` at ${locationParts.join(', ')}` : ''}${event.event_date ? ` on ${event.event_date}` : ''}. ${stats.total_entries} entries, ${stats.total_classes} classes, ${stats.total_sessions} sessions.`;
   const image = event.event_cover_image_url || event.event_logo_url || track?.image_url || null;
   const url = (event.slug || event.canonical_slug) ? `/events/${event.slug || event.canonical_slug}` : null;
-  const structuredData = {
-    '@context': 'https://schema.org', '@type': 'SportsEvent',
-    name: event.name, startDate: event.event_date || undefined, endDate: event.end_date || undefined,
-    description, eventStatus: event.status === 'Completed' ? 'https://schema.org/EventCompleted' : 'https://schema.org/EventScheduled',
-  };
-  if (image) structuredData.image = image;
-  if (url) structuredData.url = `https://hijinxco.com${url}`;
-  if (track) structuredData.location = { '@type': 'Place', name: track.name, address: { '@type': 'PostalAddress', addressLocality: track.location_city || undefined, addressRegion: track.location_state || undefined, addressCountry: track.location_country || undefined } };
-  if (series) structuredData.organizer = { '@type': 'Organization', name: series.name };
-  if (event.ticket_url) structuredData.offers = { '@type': 'Offer', url: event.ticket_url, availability: 'https://schema.org/InStock' };
-  if (event.broadcast_url) structuredData.broadcastUrl = event.broadcast_url;
+  const structuredData = buildSportsEventSchema(event, track, series, null);
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: 'INDEX46', path: '/MotorsportsHome' },
+    { name: 'Events', path: '/Directory?cat=events' },
+    { name: event.name, path: (event.slug || event.canonical_slug) ? `/events/${event.slug || event.canonical_slug}` : null },
+  ], null);
   return {
     title, description, image, url, og_type: 'website', twitter_card: 'summary_large_image',
     og_title: title, og_description: description, og_image: image,
     twitter_title: title, twitter_description: description, twitter_image: image,
     structured_data: structuredData,
+    structured_data_extra: [breadcrumb].filter(Boolean),
   };
 }
 

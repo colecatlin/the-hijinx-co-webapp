@@ -14,6 +14,7 @@ import {
   type TrackContext,
 } from '../../shared/trackExperienceHelpers.ts';
 import { buildSponsorshipsForTarget, normalizeEntrySponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
+import { buildTrackSchema, buildBreadcrumbSchema } from '../../shared/structuredDataHelpers.ts';
 
 function buildPublicFields(track: any) {
   return {
@@ -559,36 +560,19 @@ function buildSEO(track: any, statistics: any) {
   const image = track.hero_image_url || track.image_url || track.logo_url || null;
   const url = (track.slug || track.canonical_slug) ? `/tracks/${track.slug || track.canonical_slug}` : null;
 
-  const structuredData: any = {
-    '@context': 'https://schema.org',
-    '@type': 'SportsVenue',
-    name: track.name,
-    description,
-  };
-  if (image) structuredData.image = image;
-  if (url) structuredData.url = `https://hijinxco.com${url}`;
-  if (track.website_url) structuredData.sameAs = [track.website_url];
-  if (location) structuredData.address = {
-    '@type': 'PostalAddress',
-    addressLocality: track.location_city || undefined,
-    addressRegion: track.location_state || undefined,
-    addressCountry: track.location_country || undefined,
-  };
-  if (track.latitude && track.longitude) {
-    structuredData.geo = {
-      '@type': 'GeoCoordinates',
-      latitude: track.latitude,
-      longitude: track.longitude,
-    };
-  }
-  if (track.capacity) structuredData.maximumAttendeeCapacity = track.capacity;
-
+  const structuredData = buildTrackSchema(track, null);
+  const breadcrumb = buildBreadcrumbSchema([
+    { name: 'INDEX46', path: '/MotorsportsHome' },
+    { name: 'Tracks', path: '/Directory?cat=tracks' },
+    { name: track.name, path: (track.slug || track.canonical_slug) ? `/tracks/${track.slug || track.canonical_slug}` : null },
+  ], null);
   return {
     title, description, image, url,
     og_type: 'website', twitter_card: 'summary_large_image',
     og_title: title, og_description: description, og_image: image,
     twitter_title: title, twitter_description: description, twitter_image: image,
     structured_data: structuredData,
+    structured_data_extra: [breadcrumb].filter(Boolean),
   };
 }
 

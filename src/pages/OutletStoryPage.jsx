@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import SeoMeta, { SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
+import SeoMeta, { SITE_FALLBACK_IMAGE, SITE_CANONICAL_BASE, SITE_NAME } from '@/components/system/seoMeta';
+import JsonLd from '@/components/shared/JsonLd';
 import Analytics from '@/components/system/analyticsTracker';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -107,6 +108,27 @@ export default function OutletStoryPage() {
   return (
     <div style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
       <SeoMeta title={story.title} description={storyDesc} image={storyImg} type="article" canonicalPath={`/story/${story.slug}`} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'NewsArticle',
+        headline: story.title,
+        description: storyDesc || undefined,
+        datePublished: story.published_date || undefined,
+        dateModified: story.updated_date || undefined,
+        image: [story.cover_image].filter(Boolean),
+        url: `${SITE_CANONICAL_BASE}/story/${story.slug}`,
+        author: story.author ? { '@type': 'Person', name: story.author, jobTitle: story.author_title || undefined } : undefined,
+        articleSection: story.primary_category || undefined,
+        keywords: story.tags && story.tags.length > 0 ? story.tags.join(', ') : undefined,
+        publisher: { '@type': 'Organization', name: SITE_NAME, logo: { '@type': 'ImageObject', url: SITE_FALLBACK_IMAGE } },
+      }} extra={[{
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'The Outlet', item: `${SITE_CANONICAL_BASE}/OutletHome` },
+          { '@type': 'ListItem', position: 2, name: story.title, item: `${SITE_CANONICAL_BASE}/story/${story.slug}` },
+        ],
+      }]} />
 
       <MobileBackHeader title={story.title} to={createPageUrl('OutletHome')} />
 

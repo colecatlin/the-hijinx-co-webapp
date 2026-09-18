@@ -18,6 +18,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveRacerProfile, loadRacerProfileContext } from '../../shared/racerProfileExperienceHelpers.ts';
 import { buildSponsorshipsForTarget, normalizeDriverSponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
+import { buildPersonSchema, buildBreadcrumbSchema } from '../../shared/structuredDataHelpers.ts';
 
 export default async function(req) {
   const base44 = createClientFromRequest(req);
@@ -317,12 +318,14 @@ export default async function(req) {
     canonical_url: `/racers/${rp.slug}`,
     og_type: 'profile', og_title: `${fullName} — Racer Profile`, og_description: description, og_image: heroImg || null,
     twitter_card: 'summary_large_image', twitter_title: `${fullName} — Racer Profile`, twitter_description: description, twitter_image: heroImg || null,
-    structured_data: {
-      '@context': 'https://schema.org', '@type': 'Person', name: fullName, description: rp.bio || description,
-      image: rp.profile_image_url || heroImg, jobTitle: rp.career_status || 'Racing Competitor', knowsAbout: rp.primary_discipline || null,
-      birthPlace: rp.hometown_city ? { '@type': 'Place', name: [rp.hometown_city, rp.hometown_state, rp.hometown_country].filter(Boolean).join(', ') } : null,
-      url: `/racers/${rp.slug}`, sameAs: [rp.website_url, rp.instagram_url, rp.facebook_url, rp.x_url, rp.youtube_url, rp.tiktok_url].filter(Boolean),
-    },
+    structured_data: buildPersonSchema(rp, null),
+    structured_data_extra: [
+      buildBreadcrumbSchema([
+        { name: 'INDEX46', path: '/MotorsportsHome' },
+        { name: 'Racers', path: '/Directory?cat=racers' },
+        { name: fullName, path: rp.slug ? `/racers/${rp.slug}` : null },
+      ], null),
+    ].filter(Boolean),
   };
 
   // Phase 17B: Unified sponsorship read (modern Sponsorship + legacy DriverSponsor fallback)
