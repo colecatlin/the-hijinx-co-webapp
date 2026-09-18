@@ -69,6 +69,7 @@ export default function MotorsportsHome() {
 
   return (
     <div className="relative" style={{ background: 'hsl(var(--canvas))' }}>
+      <SeoMeta pageKey="index46" />
 
       {/* ── FULL PAGE TEXTURE OVERLAY (faint) ── */}
       <div className="absolute inset-0 z-[1] pointer-events-none" style={{ backgroundImage: `url('https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/f16fb8e35_BGRND46Page.png')`, backgroundRepeat: 'repeat', backgroundSize: '1024px auto', opacity: 0.05 }} />

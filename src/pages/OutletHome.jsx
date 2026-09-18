@@ -188,6 +188,7 @@ export default function OutletHome() {
   return (
     <PullToRefresh onRefresh={refetchStories}>
     <div style={{ background: 'hsl(var(--canvas))', minHeight: '100vh' }}>
+      <SeoMeta pageKey="outlet" />
 
       {/* ── MASTHEAD ── */}
       <div style={{ borderBottom: '1px solid hsl(var(--divider))' }}>
