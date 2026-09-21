@@ -35,7 +35,7 @@ function HomeEditor() {
   const [publishedAt, setPublishedAt] = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['home1Settings'],
     queryFn: () => base44.functions.invoke('getHome1Settings'),
     staleTime: 30 * 1000,
@@ -114,8 +114,25 @@ function HomeEditor() {
     return (
       <ManagementShell title="Home" subtitle="Homepage presentation configuration">
         <div className="py-12 text-center">
-          <div className="w-6 h-6 border-2 border-divider border-t-motion rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-foreground-quiet mt-3">Loading configuration...</p>
+          {error ? (
+            <div className="space-y-2">
+              <p className="text-xs text-danger font-medium">Failed to load configuration</p>
+              <p className="text-xs text-foreground-quiet break-words max-w-md mx-auto">
+                {error?.message || 'Unknown error'}
+              </p>
+              <button
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['home1Settings'] })}
+                className="text-xs text-motion underline mt-2"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="w-6 h-6 border-2 border-divider border-t-motion rounded-full animate-spin mx-auto" />
+              <p className="text-xs text-foreground-quiet mt-3">Loading configuration...</p>
+            </>
+          )}
         </div>
       </ManagementShell>
     );
