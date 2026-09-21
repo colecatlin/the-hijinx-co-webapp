@@ -1,8 +1,27 @@
-import React from 'react';
-import { Activity, Database, Globe, FileCode, Link2, CheckCircle2, XCircle, MinusCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, Database, Globe, FileCode, Link2, CheckCircle2, XCircle, MinusCircle, Cpu, Play } from 'lucide-react';
 import { SectionCard, StatCard, PriorityBadge, StatusBadge } from './shared';
+import { base44 } from '@/api/base44Client';
+
+const FACT_INTENTS_SUPPORTED = 24;
+const FACT_INTENTS_UNSUPPORTED = 1;
+const SEMANTIC_AMBIGUITIES = 1;
 
 export default function AiDiscoveryOverview({ diagnostics, auditResult, onRunAudit, auditRunning }) {
+  const [factTests, setFactTests] = useState(null);
+  const [factTestsRunning, setFactTestsRunning] = useState(false);
+
+  const runFactTests = async () => {
+    setFactTestsRunning(true);
+    try {
+      const res = await base44.functions.invoke('runFactResolverTests', {});
+      setFactTests(res?.data || res);
+    } catch (err) {
+      setFactTests({ error: err?.message || 'Failed to run fact resolver tests' });
+    } finally {
+      setFactTestsRunning(false);
+    }
+  };
   const entityCounts = diagnostics?.entity_counts || {};
   const canonical = diagnostics?.canonical || {};
 
@@ -95,6 +114,57 @@ export default function AiDiscoveryOverview({ diagnostics, auditResult, onRunAud
               <span className="text-foreground-quiet">{check.detail}</span>
             </div>
           ))}
+        </div>
+      </SectionCard>
+
+      {/* ── Fact Architecture ────────────────────────────────────────────── */}
+      <SectionCard title="Fact Architecture" icon={Cpu}>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard label="Supported Intents" value={FACT_INTENTS_SUPPORTED} priority="HEALTHY" />
+            <StatCard label="Unsupported Intents" value={FACT_INTENTS_UNSUPPORTED} priority="NEEDS_ATTENTION" sublabel="Championship designation" />
+            <StatCard label="Semantic Ambiguities" value={SEMANTIC_AMBIGUITIES} priority="NEEDS_ATTENTION" sublabel="Winner semantics" />
+            <StatCard label="Resolver Status" value="ACTIVE" priority="HEALTHY" />
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: 'hsl(var(--divider) / 0.5)' }}>
+            <div className="text-xs text-foreground-quiet">
+              {factTests ? (
+                <span>
+                  {factTests.summary?.resolved || 0} resolved ·{' '}
+                  {factTests.summary?.no_data || 0} no data ·{' '}
+                  {factTests.summary?.insufficient_context || 0} insufficient ·{' '}
+                  {factTests.summary?.unsupported || 0} unsupported
+                </span>
+              ) : (
+                <span>Deterministic fact resolver — 27 representative test cases</span>
+              )}
+            </div>
+            <button
+              onClick={runFactTests}
+              disabled={factTestsRunning}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-motion text-white hover:bg-motion-hover disabled:opacity-50 transition-colors"
+            >
+              <Play className="w-3 h-3" />
+              {factTestsRunning ? 'Running...' : 'Run Fact Tests'}
+            </button>
+          </div>
+
+          {factTests?.error && (
+            <p className="text-xs text-danger">{factTests.error}</p>
+          )}
+
+          {factTests?.results && factTests.results.filter((r) => r.status === 'UNSUPPORTED').length > 0 && (
+            <div className="pt-2 border-t" style={{ borderColor: 'hsl(var(--divider) / 0.5)' }}>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-foreground-quiet mb-1.5">Unsupported Fact Types</p>
+              {factTests.results.filter((r) => r.status === 'UNSUPPORTED').map((r, i) => (
+                <div key={i} className="text-xs text-foreground-secondary py-0.5">
+                  <span className="font-medium">{r.label}</span>
+                  <span className="text-foreground-quiet ml-2">— {r.reason}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </SectionCard>
     </div>
