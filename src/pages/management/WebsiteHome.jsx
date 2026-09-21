@@ -43,7 +43,7 @@ function HomeEditor() {
 
   useEffect(() => {
     if (data?.data && draft === null) {
-      const d = data.data.draft;
+      const d = data.data.draft || {};
       setDraft(d);
       setSavedDraft(JSON.parse(JSON.stringify(d)));
       setHasUnpublishedChanges(data.data.has_unpublished_changes ?? false);
@@ -110,7 +110,7 @@ function HomeEditor() {
     }
   };
 
-  if (isLoading || draft === null) {
+  if (isLoading || !draft) {
     return (
       <ManagementShell title="Home" subtitle="Homepage presentation configuration">
         <div className="py-12 text-center">
