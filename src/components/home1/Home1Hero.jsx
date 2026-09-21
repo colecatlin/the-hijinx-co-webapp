@@ -19,7 +19,7 @@ const HERO_DEFAULTS = {
   desktop_image_position: '68% center',
   mobile_image_position: 'center center',
   cta1: { enabled: true, label: 'EXPLORE THE HIJINX WORLD', destination: { type: 'none' }, style: 'solid' },
-  cta2: { enabled: true, label: 'WATCH THE FILM', destination: { type: 'none' }, style: 'outline' },
+  cta2: { enabled: false, label: 'WATCH THE FILM', destination: { type: 'none' }, style: 'outline' },
   right_side_phrase: 'Different Terrain.\nSame People.',
   show_right_side_phrase: true,
   bottom_editorial: 'RACE WEEKENDS // NEW DROPS // REAL STORIES // OPPORTUNITY // ALL IN MOTION',
