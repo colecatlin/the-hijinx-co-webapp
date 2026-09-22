@@ -41,6 +41,9 @@ async function loadTeamContext(base44, team) {
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+    if (!user || user.role !== 'admin') return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+
     const body = await req.json().catch(() => ({}));
     const { slug, team_id } = body;
     if (!slug && !team_id) return Response.json({ error: "slug or team_id is required" }, { status: 400 });

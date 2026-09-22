@@ -11,6 +11,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'entity_id and holder_media_user_id are required' }, { status: 400 });
     }
 
+    // Authorization: admin, entity collaborator (owner/editor), or the media holder themselves
+    if (user.role !== 'admin') {
+      // Check if caller is the media holder
+      const mediaUsers = await base44.asServiceRole.entities.MediaUser.filter({ id: holder_media_user_id }).catch(() => []);
+      const isMediaHolder = mediaUsers.length > 0 && mediaUsers[0].user_id === user.id;
+
+      if (!isMediaHolder) {
+        // Check entity collaborator authority
+        const collaborators = await base44.asServiceRole.entities.EntityCollaborator.filter({
+          user_id: user.id, entity_id,
+        }).catch(() => []);
+        const hasEntityAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
+        if (!hasEntityAccess) {
+          return Response.json({ error: 'Forbidden: not authorized to view this agreement' }, { status: 403 });
+        }
+      }
+    }
+
     const filter = { entity_id, holder_media_user_id };
     if (event_id) filter.event_id = event_id;
     if (request_id) filter.request_id = request_id;

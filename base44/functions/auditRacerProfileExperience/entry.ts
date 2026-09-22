@@ -9,6 +9,9 @@ import { resolveRacerProfile, loadRacerProfileContext } from '../../shared/racer
 
 export default async function(req) {
   const base44 = createClientFromRequest(req);
+  const user = await base44.auth.me().catch(() => null);
+  if (!user || user.role !== 'admin') return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+
   const body = await req.json().catch(() => ({}));
   const { slug, racer_profile_id } = body;
 

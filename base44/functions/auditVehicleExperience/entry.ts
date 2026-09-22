@@ -16,6 +16,9 @@ async function resolveVehicle(base44, slug, vehicle_id) {
 export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+    if (!user || user.role !== 'admin') return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+
     const body = await req.json().catch(() => ({}));
     const { slug, vehicle_id } = body;
     if (!slug && !vehicle_id) return Response.json({ error: "slug or vehicle_id is required" }, { status: 400 });

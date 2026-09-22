@@ -129,14 +129,8 @@ export const TRIGGER_POLICY = {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    let isAdmin = false;
-    try {
-      const user = await base44.auth.me();
-      isAdmin = user?.role === 'admin';
-    } catch (_) {
-      isAdmin = true; // internal service call
-    }
-    if (!isAdmin) return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
+    const user = await base44.auth.me().catch(() => null);
+    if (!user || user.role !== 'admin') return Response.json({ error: 'Forbidden: admin only' }, { status: 403 });
     return Response.json({ success: true, policy: TRIGGER_POLICY });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
