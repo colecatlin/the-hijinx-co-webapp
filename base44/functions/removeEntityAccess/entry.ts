@@ -22,9 +22,16 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Only entity owners can remove access' }, { status: 403 });
   }
 
-  // Safety: do not allow removing an owner via this route
-  const targetCollab = ownerCollabs.find(c => c.id === collaborator_id);
-  if (targetCollab && targetCollab.role === 'owner') {
+  // Load the target collaborator record by ID and verify it belongs to the
+  // caller's entity (prevents IDOR — deleting another entity's collaborator).
+  const targetRecord = await base44.asServiceRole.entities.EntityCollaborator.get(collaborator_id).catch(() => null);
+  if (!targetRecord) {
+    return Response.json({ error: 'Collaborator record not found' }, { status: 404 });
+  }
+  if (targetRecord.entity_type !== entity_type || targetRecord.entity_id !== entity_id) {
+    return Response.json({ error: 'Collaborator does not belong to the specified entity' }, { status: 403 });
+  }
+  if (targetRecord.role === 'owner') {
     return Response.json({ error: 'Cannot remove owner access through this route. Use admin tools.' }, { status: 400 });
   }
 

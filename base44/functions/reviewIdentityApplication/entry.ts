@@ -15,9 +15,10 @@
  * On needs_more_info: marks the application and surfaces admin notes to the applicant.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.44';
+import { generateSecureNumericCode } from '../../shared/secureAccessCode.ts';
 
 function generateNumericCode() {
-  return Math.floor(10000000 + Math.random() * 90000000).toString();
+  return generateSecureNumericCode();
 }
 
 async function generateUniqueCode(base44) {

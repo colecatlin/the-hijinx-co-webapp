@@ -15,6 +15,15 @@ Deno.serve(async (req) => {
     const { event_id, session_id } = await req.json();
     if (!event_id) return Response.json({ error: 'event_id required' }, { status: 400 });
 
+    // Restrict to admins or confirmed event officials (same gate as getEventOperationalSnapshot)
+    if (user.role !== 'admin') {
+      const officials = await base44.asServiceRole.entities.EventOfficial.filter({
+        event_id, user_id: user.id,
+      });
+      const permitted = officials.some(o => ['Confirmed', 'Active'].includes(o.status));
+      if (!permitted) return Response.json({ error: 'Forbidden: admin or event official role required' }, { status: 403 });
+    }
+
     // Parallel fetch
     const [event, sessions, entries, results, standings, officials, sessionNotes, incidents, gridLineups] = await Promise.all([
       base44.asServiceRole.entities.Event.get(event_id),

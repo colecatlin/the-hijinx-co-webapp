@@ -36,7 +36,9 @@ export default async function(req) {
     }
 
     const isAdmin = user.role === 'admin';
-    const isAllowlisted = source_operation && isAllowlistedDriverWrite(source_operation);
+    // Compatibility service bypass is admin-only — never trust a client-supplied
+    // source_operation for non-admin callers (CWE-807).
+    const isAllowlisted = isAdmin && source_operation && isAllowlistedDriverWrite(source_operation);
 
     let allowed = false;
     let reason = '';
@@ -44,7 +46,7 @@ export default async function(req) {
     let eventType;
 
     if (isAllowlisted) {
-      // Allowlisted compatibility service — always allowed
+      // Allowlisted compatibility service (admin only) — always allowed
       allowed = true;
       reason = `Allowlisted compatibility service: ${source_operation}`;
       authSource = 'compat_service';

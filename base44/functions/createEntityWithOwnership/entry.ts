@@ -1,7 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { generateSecureNumericCode } from '../../shared/secureAccessCode.ts';
 
 function generateNumericCode() {
-  return Math.floor(10000000 + Math.random() * 90000000).toString();
+  return generateSecureNumericCode();
 }
 
 async function generateUniqueCode(base44) {
