@@ -27,6 +27,7 @@ import TeamAchievementsGrid from '@/components/teams/TeamAchievementsGrid';
 import TeamStatisticsBreakdown from '@/components/teams/TeamStatisticsBreakdown';
 import TeamRosterPanel from '@/components/teams/TeamRosterPanel';
 import TeamCompletenessIndicator from '@/components/teams/TeamCompletenessIndicator';
+import TabScrollFade from '@/components/shared/TabScrollFade';
 
 function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
   if (!dateStr) return 'TBA';
@@ -187,12 +188,13 @@ export default function TeamProfile() {
       </div>
 
       {/* ── NAV BAR ── */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+      <div className="bg-white border-b border-gray-200 sticky top-14 z-30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2 pb-0">
             <EntityBreadcrumbs entityType="Team" entityName={team?.name} />
           </div>
-          <div className="flex gap-1 overflow-x-auto">
+          <div className="flex gap-1 overflow-x-auto relative">
+            <TabScrollFade tone="light" />
             {TABS.map(tab => {
               const Icon = tab.icon;
               return (
@@ -420,7 +422,13 @@ export default function TeamProfile() {
                 </div>
               )}
             </div>
-            <TeamScheduleResults teamId={team.id} />
+            <TeamScheduleResults
+              teamId={team.id}
+              initialPrograms={driverPrograms}
+              initialEvents={allEvents}
+              initialDrivers={rosterDrivers}
+              initialResults={results}
+            />
           </div>
         )}
 

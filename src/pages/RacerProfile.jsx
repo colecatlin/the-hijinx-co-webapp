@@ -54,6 +54,7 @@ import ProfileCompletenessIndicator from '@/components/racerprofile/ProfileCompl
 import StatisticsBreakdown from '@/components/racerprofile/StatisticsBreakdown';
 import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
 import PullToRefresh from '@/components/shared/PullToRefresh';
+import TabScrollFade from '@/components/shared/TabScrollFade';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -345,15 +346,18 @@ export default function RacerProfile() {
         )}
 
         {/* TAB NAV */}
-        <div className="flex gap-1 overflow-x-auto border-b border-gray-200 mt-2 mb-6 scrollbar-hide sticky top-16 z-30 bg-white">
-          {TABS.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-xs font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${
-                activeTab === tab.id ? 'text-[#232323] border-b-2 border-[#00FFDA] -mb-px' : 'text-gray-400 hover:text-[#232323]'
-              }`}>
-              {tab.label}
-            </button>
-          ))}
+        <div className="border-b border-gray-200 mt-2 mb-6 sticky top-14 z-30 bg-white">
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide relative">
+            <TabScrollFade tone="light" />
+            {TABS.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-3 text-xs font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${
+                  activeTab === tab.id ? 'text-[#232323] border-b-2 border-[#00FFDA] -mb-px' : 'text-gray-400 hover:text-[#232323]'
+                }`}>
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* OVERVIEW */}
@@ -637,7 +641,15 @@ export default function RacerProfile() {
             {driverShape && (
               <div>
                 <h2 className="text-2xl font-black text-[#232323] mb-4">Standings & Rankings</h2>
-                <ResultsPanel driverId={driverShape.id} />
+                <ResultsPanel
+                  driverId={driverShape.id}
+                  initialResults={results}
+                  initialStandings={standings}
+                  initialEvents={allEvents}
+                  initialSeries={allSeries}
+                  initialClasses={allClasses}
+                  initialPrograms={programs}
+                />
               </div>
             )}
           </div>

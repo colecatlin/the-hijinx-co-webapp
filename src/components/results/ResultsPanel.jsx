@@ -8,20 +8,21 @@ import { Trophy, TrendingUp } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Renders race-by-race results for a given filter (driver_id, event_id, or track via events)
-export default function ResultsPanel({ driverId, eventId, seriesName, className: classFilter }) {
-  const { data: results = [], isLoading: loadingResults } = useQuery({
+export default function ResultsPanel({ driverId, eventId, seriesName, className: classFilter, initialResults, initialStandings, initialEvents, initialSeries, initialClasses, initialPrograms }) {
+  const { data: results = initialResults || [], isLoading: loadingResults } = useQuery({
     queryKey: ['results-panel', driverId, eventId, seriesName],
     queryFn: () => {
       if (driverId) return base44.entities.Results.filter({ driver_id: driverId });
       if (eventId) return base44.entities.Results.filter({ event_id: eventId });
       return [];
     },
-    enabled: !!(driverId || eventId),
+    enabled: !!(driverId || eventId) && !initialResults,
   });
 
-  const { data: events = [] } = useQuery({
+  const { data: events = initialEvents || [] } = useQuery({
     queryKey: ['events-panel'],
     queryFn: () => base44.entities.Event.list(),
+    enabled: !initialEvents,
   });
 
   const { data: drivers = [] } = useQuery({
@@ -30,30 +31,32 @@ export default function ResultsPanel({ driverId, eventId, seriesName, className:
     enabled: !!eventId, // only need for event view
   });
 
-  const { data: allSeries = [] } = useQuery({
+  const { data: allSeries = initialSeries || [] } = useQuery({
     queryKey: ['series-panel'],
     queryFn: () => base44.entities.Series.list(),
+    enabled: !initialSeries,
   });
 
-  const { data: allClasses = [] } = useQuery({
+  const { data: allClasses = initialClasses || [] } = useQuery({
     queryKey: ['classes-panel'],
     queryFn: () => base44.entities.SeriesClass.list(),
+    enabled: !initialClasses,
   });
 
-  const { data: allPrograms = [] } = useQuery({
+  const { data: allPrograms = initialPrograms || [] } = useQuery({
     queryKey: ['programs-panel', driverId],
     queryFn: () => base44.entities.DriverProgram.filter({ driver_id: driverId }),
-    enabled: !!driverId,
+    enabled: !!driverId && !initialPrograms,
   });
 
   // Standings for championship view
-  const { data: standings = [], isLoading: loadingStandings } = useQuery({
+  const { data: standings = initialStandings || [], isLoading: loadingStandings } = useQuery({
     queryKey: ['standings-panel', driverId],
     queryFn: () => {
       if (driverId) return base44.entities.Standings.filter({ driver_id: driverId });
       return [];
     },
-    enabled: !!driverId,
+    enabled: !!driverId && !initialStandings,
   });
 
   const getEventName = (eventId) => events.find(e => e.id === eventId)?.name || 'Unknown Event';

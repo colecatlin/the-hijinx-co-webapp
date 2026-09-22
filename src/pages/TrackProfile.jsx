@@ -28,6 +28,7 @@ import TrackGallery from '@/components/tracks/TrackGallery';
 import TrackVisitorGuide from '@/components/tracks/TrackVisitorGuide';
 import TrackCompletenessIndicator from '@/components/tracks/TrackCompletenessIndicator';
 import TrackMapPanel from '@/components/tracks/TrackMapPanel';
+import TabScrollFade from '@/components/shared/TabScrollFade';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: MapPin },
@@ -142,20 +143,23 @@ export default function TrackProfile({ overrideSlug } = {}) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 overflow-x-auto border-b border-divider mb-6 scrollbar-hide sticky top-16 z-30 bg-canvas">
-          {TABS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setActiveTab(id)}
-              className="flex items-center gap-1.5 px-3 py-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px"
-              style={{
-                color: activeTab === id ? 'hsl(var(--motion))' : 'hsl(var(--foreground-quiet))',
-                borderColor: activeTab === id ? 'hsl(var(--motion))' : 'transparent',
-              }}
-            >
-              <Icon className="w-3.5 h-3.5" /> {label}
-            </button>
-          ))}
+        <div className="border-b border-divider mb-6 sticky top-14 z-30 bg-canvas">
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide relative">
+            <TabScrollFade tone="dark" />
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className="flex items-center gap-1.5 px-3 py-3 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px"
+                style={{
+                  color: activeTab === id ? 'hsl(var(--motion))' : 'hsl(var(--foreground-quiet))',
+                  borderColor: activeTab === id ? 'hsl(var(--motion))' : 'transparent',
+                }}
+              >
+                <Icon className="w-3.5 h-3.5" /> {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

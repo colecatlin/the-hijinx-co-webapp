@@ -32,6 +32,7 @@ import EventStandingsImpact from '@/components/events/EventStandingsImpact';
 import EventTimeline from '@/components/events/EventTimeline';
 import EventVenueInfo from '@/components/events/EventVenueInfo';
 import EventMediaSection from '@/components/events/EventMediaSection';
+import TabScrollFade from '@/components/shared/TabScrollFade';
 
 function safeDateFormat(dateStr, fmt = 'MMMM d, yyyy') {
   if (!dateStr) return 'TBA';
@@ -179,12 +180,13 @@ export default function EventProfile({ routeSlug }) {
       </div>
 
       {/* NAV */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+      <div className="bg-white border-b border-gray-200 sticky top-14 z-30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2">
             <EntityBreadcrumbs entityType="Event" entityName={event.name} />
           </div>
-          <div className="flex gap-1 overflow-x-auto">
+          <div className="flex gap-1 overflow-x-auto relative">
+            <TabScrollFade tone="light" />
             {TABS.map(tab => {
               const Icon = tab.icon;
               return (

@@ -5,14 +5,14 @@ import { Loader2, Calendar, Trophy } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
-export default function TeamScheduleResults({ teamId }) {
+export default function TeamScheduleResults({ teamId, initialPrograms, initialEvents, initialDrivers, initialResults }) {
   const [activeSection, setActiveSection] = useState('schedule');
 
   // Get all driver programs for this team
-  const { data: driverPrograms = [] } = useQuery({
+  const { data: driverPrograms = initialPrograms || [] } = useQuery({
     queryKey: ['teamDriverPrograms', teamId],
     queryFn: () => base44.entities.DriverProgram.filter({ team_id: teamId }),
-    enabled: !!teamId,
+    enabled: !!teamId && !initialPrograms,
   });
 
   // Get unique driver IDs from programs
@@ -22,7 +22,7 @@ export default function TeamScheduleResults({ teamId }) {
   const seriesNames = [...new Set(driverPrograms.map(dp => dp.series_name).filter(Boolean))];
 
   // Fetch events from past results AND upcoming events from series
-  const { data: events = [], isLoading: loadingEvents } = useQuery({
+  const { data: events = initialEvents || [], isLoading: loadingEvents } = useQuery({
     queryKey: ['teamEvents', teamId, driverIds, seriesNames],
     queryFn: async () => {
       const allEvents = [];
@@ -51,11 +51,11 @@ export default function TeamScheduleResults({ teamId }) {
       return [...new Map(allEvents.map(e => [e.id, e])).values()]
         .sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
     },
-    enabled: driverIds.length > 0,
+    enabled: driverIds.length > 0 && !initialEvents,
   });
 
   // Fetch driver data
-  const { data: drivers = [] } = useQuery({
+  const { data: drivers = initialDrivers || [] } = useQuery({
     queryKey: ['teamDrivers', driverIds],
     queryFn: async () => {
       if (driverIds.length === 0) return [];
@@ -66,11 +66,11 @@ export default function TeamScheduleResults({ teamId }) {
       }
       return allDrivers;
     },
-    enabled: driverIds.length > 0,
+    enabled: driverIds.length > 0 && !initialDrivers,
   });
 
   // Fetch results for this team's drivers
-  const { data: results = [], isLoading: loadingResults } = useQuery({
+  const { data: results = initialResults || [], isLoading: loadingResults } = useQuery({
     queryKey: ['teamResults', driverIds],
     queryFn: async () => {
       if (driverIds.length === 0) return [];
@@ -83,7 +83,7 @@ export default function TeamScheduleResults({ teamId }) {
       
       return allResults.sort((a, b) => new Date(b.event_id) - new Date(a.event_id));
     },
-    enabled: driverIds.length > 0,
+    enabled: driverIds.length > 0 && !initialResults,
   });
 
   // Split events and results

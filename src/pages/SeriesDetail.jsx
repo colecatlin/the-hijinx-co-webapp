@@ -29,6 +29,7 @@ import SeriesHistory from '@/components/series/SeriesHistory';
 import SeriesTracks from '@/components/series/SeriesTracks';
 import SeriesSponsors from '@/components/series/SeriesSponsors';
 import SeriesMedia from '@/components/series/SeriesMedia';
+import TabScrollFade from '@/components/shared/TabScrollFade';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: MapPin },
@@ -222,12 +223,13 @@ export default function SeriesDetail({ overrideSlug } = {}) {
       )}
 
       {/* NAV */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 sticky top-14 z-30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-2 pt-2">
             <Link to="/Directory?cat=series" className="text-xs text-gray-500 hover:text-black mr-4">← Series</Link>
           </div>
-          <div className="flex gap-1 overflow-x-auto">
+          <div className="flex gap-1 overflow-x-auto relative">
+            <TabScrollFade tone="light" />
             {TABS.map(tab => {
               const Icon = tab.icon;
               return (

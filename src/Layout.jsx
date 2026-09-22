@@ -250,6 +250,14 @@ export default function Layout({ children, currentPageName }) {
           <div className="lg:hidden flex items-center justify-between px-4 h-14" style={{ borderBottom: '1px solid hsl(var(--divider))', background: 'hsl(var(--surface) / 0.92)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
             <HijinxLogo to="/" iconClassName="h-5 w-auto" wordmarkClassName="h-7 w-auto" className="gap-2" />
             <div className="flex items-center gap-1">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2 rounded-lg transition-colors flex items-center justify-center"
+                style={{ color: 'hsl(var(--foreground-secondary))' }}
+                aria-label="Search"
+              >
+                <Search className="w-4 h-4" />
+              </button>
               {!isHibernated && <CartIcon style={{ color: 'hsl(var(--foreground-secondary))' }} />}
             </div>
           </div>
