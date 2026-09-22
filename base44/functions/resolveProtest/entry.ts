@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
         event_id: protest.event_id, user_id: user.id,
       });
       const permitted = officials.some(
-        (o) => ALLOWED_ROLES.includes(o.role) && ['Invited', 'Confirmed', 'Active'].includes(o.status)
+        (o) => ALLOWED_ROLES.includes(o.role) && ['Confirmed', 'Active'].includes(o.status)
       );
       if (!permitted) return Response.json({ error: 'Forbidden: canReviewProtest required' }, { status: 403 });
     }

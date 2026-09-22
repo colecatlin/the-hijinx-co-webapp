@@ -3,6 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const {
       asset_id,
@@ -19,16 +21,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch the asset
-    const asset = await base44.entities.MediaAsset.list().then((all) =>
-      all.find((a) => a.id === asset_id)
-    );
+    // Fetch the asset via service role for authorization check
+    const assets = await base44.asServiceRole.entities.MediaAsset.filter({ id: asset_id });
+    const asset = assets[0];
 
     if (!asset) {
       return Response.json(
         { error: 'Asset not found' },
         { status: 404 }
       );
+    }
+
+    // Authorization: caller must be admin, asset uploader, or collaborator on the governing entity
+    if (user.role !== 'admin') {
+      const isUploader = asset.uploaded_by_media_user_id === user.id || asset.created_by_id === user.id;
+      if (!isUploader) {
+        const links = await base44.asServiceRole.entities.AssetLink.filter({ asset_id });
+        const entityIds = [...new Set(links.map(l => l.subject_id).filter(Boolean))];
+        const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({ user_id: user.id });
+        const isCollaborator = collabs.some(c => entityIds.includes(c.entity_id));
+        if (!isCollaborator) {
+          return Response.json({ error: 'Forbidden: not authorized for this asset' }, { status: 403 });
+        }
+      }
     }
 
     const reasons = [];

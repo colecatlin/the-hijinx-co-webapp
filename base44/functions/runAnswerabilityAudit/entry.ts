@@ -67,6 +67,10 @@ function verdict(answer: boolean, structured: boolean, links: boolean, canonical
 
 export default async function (req) {
   const base44 = createClientFromRequest(req);
+  const user = await base44.auth.me().catch(() => null);
+  if (!user || user.role !== 'admin') {
+    return Response.json({ error: 'Admin access required' }, { status: 403 });
+  }
 
   const tests: AuditTest[] = [];
 

@@ -9,10 +9,23 @@ Deno.serve(async (req) => {
     const { request_id } = await req.json();
     if (!request_id) return Response.json({ error: 'request_id required' }, { status: 400 });
 
-    const credReq = await base44.entities.CredentialRequest.get(request_id);
+    const credReq = await base44.asServiceRole.entities.CredentialRequest.get(request_id);
     if (!credReq) return Response.json({ error: 'Request not found' }, { status: 404 });
 
-    const allTemplates = await base44.entities.WaiverTemplate.filter({ active: true });
+    // Authorization: caller must be the request holder, admin, or collaborator on the target entity
+    if (user.role !== 'admin') {
+      const isHolder = credReq.holder_media_user_id === user.id;
+      if (!isHolder) {
+        const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
+          user_id: user.id, entity_id: credReq.target_entity_id,
+        });
+        if (!collabs.length) {
+          return Response.json({ error: 'Forbidden: not authorized for this request' }, { status: 403 });
+        }
+      }
+    }
+
+    const allTemplates = await base44.asServiceRole.entities.WaiverTemplate.filter({ active: true });
     const results = [];
     const seen = new Set();
 

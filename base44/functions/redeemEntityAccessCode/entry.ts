@@ -96,6 +96,19 @@ Deno.serve(async (req) => {
       return Response.json({ ok: false, error: 'Missing required field: code' }, { status: 400 });
     }
 
+    // ── Rate limiting: max 5 failed attempts per user per hour ──────────────
+    const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+    const recentFailures = await base44.asServiceRole.entities.OperationLog.filter({
+      operation_type: 'entity_access_code_redeemed',
+      status: 'error',
+    });
+    const userRecentFailures = recentFailures.filter(
+      (log) => log.metadata?.user_id === user_id && log.created_at && log.created_at >= oneHourAgo
+    );
+    if (userRecentFailures.length >= 5) {
+      return Response.json({ ok: false, error: 'Too many failed attempts. Please try again later.' }, { status: 429 });
+    }
+
     // Trust the authenticated session only — never client-supplied identity.
     // This prevents an attacker from redeeming a victim's invitation code by
     // supplying the victim's email alongside their own user_id.

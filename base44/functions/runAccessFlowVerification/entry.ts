@@ -78,7 +78,11 @@ Deno.serve(async (req) => {
     failures.push('wrong_email_ok check threw: ' + e.message);
   } finally {
     if (tempInviteId) {
-      await base44.asServiceRole.entities.Invitation.delete(tempInviteId).catch(() => {});
+      const deleted = await base44.asServiceRole.entities.Invitation.delete(tempInviteId)
+        .then(() => true).catch(() => false);
+      if (!deleted) {
+        warnings.push(`Diagnostic invitation ${tempInviteId} could not be deleted — manual cleanup may be needed`);
+      }
     }
   }
 

@@ -45,10 +45,10 @@ Deno.serve(async (req) => {
         event_id: record.event_id, user_id: user.id,
       });
       const canPerform = officials.some(
-        (o) => PERFORM_ROLES.includes(o.role) && ['Invited', 'Confirmed', 'Active'].includes(o.status)
+        (o) => PERFORM_ROLES.includes(o.role) && ['Confirmed', 'Active'].includes(o.status)
       );
       const canApprove = officials.some(
-        (o) => APPROVE_ROLES.includes(o.role) && ['Invited', 'Confirmed', 'Active'].includes(o.status)
+        (o) => APPROVE_ROLES.includes(o.role) && ['Confirmed', 'Active'].includes(o.status)
       );
       if (!canPerform && !canApprove) {
         return Response.json({ error: 'Forbidden: canPerformTechInspection or canApproveTechResults required' }, { status: 403 });

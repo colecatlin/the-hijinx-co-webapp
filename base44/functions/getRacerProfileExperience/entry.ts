@@ -35,7 +35,7 @@ export default async function(req) {
   if (!racerProfile) return Response.json({ error: 'RacerProfile not found', racerProfile: null });
 
   if (!allow_draft && (racerProfile.is_archived || racerProfile.visibility !== 'live')) {
-    return Response.json({ error: 'Profile not public', racerProfile: null });
+    return Response.json({ error: 'RacerProfile not found', racerProfile: null });
   }
 
   const ctx = await loadRacerProfileContext(base44, racerProfile);

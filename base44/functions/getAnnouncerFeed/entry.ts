@@ -24,20 +24,21 @@ Deno.serve(async (req) => {
       if (!permitted) return Response.json({ error: 'Forbidden: admin or event official role required' }, { status: 403 });
     }
 
-    // Parallel fetch
-    const [event, sessions, entries, results, standings, officials, sessionNotes, incidents, gridLineups] = await Promise.all([
-      base44.asServiceRole.entities.Event.get(event_id),
+    // Fetch event first so standings can be scoped to the event's series
+    const event = await base44.asServiceRole.entities.Event.get(event_id);
+    if (!event) return Response.json({ error: 'Event not found' }, { status: 404 });
+
+    // Parallel fetch — standings scoped to this event's series only
+    const [sessions, entries, results, standings, officials, sessionNotes, incidents, gridLineups] = await Promise.all([
       base44.asServiceRole.entities.Session.filter({ event_id }),
       base44.asServiceRole.entities.Entry.filter({ event_id }),
       base44.asServiceRole.entities.Results.filter({ event_id }),
-      base44.asServiceRole.entities.Standings.filter({ series_id: undefined }).catch(() => []),
+      base44.asServiceRole.entities.Standings.filter({ series_id: event.series_id }).catch(() => []),
       base44.asServiceRole.entities.EventOfficial.filter({ event_id }).catch(() => []),
       base44.asServiceRole.entities.SessionNote.filter({ event_id }, '-created_at', 20).catch(() => []),
       base44.asServiceRole.entities.Incident.filter({ event_id }).catch(() => []),
       base44.asServiceRole.entities.GridLineup.filter({ event_id }).catch(() => []),
     ]);
-
-    if (!event) return Response.json({ error: 'Event not found' }, { status: 404 });
 
     // Get driver IDs from entries for bio lookup
     const driverIds = [...new Set(entries.map(e => e.driver_id).filter(Boolean))];

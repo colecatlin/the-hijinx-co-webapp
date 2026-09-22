@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
         event_id: penalty.event_id, user_id: user.id,
       });
       const permitted = officials.some(
-        o => REVERSE_ROLES.includes(o.role) && ['Invited', 'Confirmed', 'Active'].includes(o.status)
+        o => REVERSE_ROLES.includes(o.role) && ['Confirmed', 'Active'].includes(o.status)
       );
       if (!permitted) return Response.json({ error: 'Forbidden: Race Director or Chief Steward required' }, { status: 403 });
     }

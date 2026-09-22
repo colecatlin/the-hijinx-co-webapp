@@ -33,7 +33,7 @@ function hasCompOpsPermission(officials, permKey) {
   };
   return officials.some((o) => {
     const allowed = ROLE_MAP[o.role] || [];
-    return allowed.includes(permKey) && ['Invited', 'Confirmed', 'Active'].includes(o.status);
+    return allowed.includes(permKey) && ['Confirmed', 'Active'].includes(o.status);
   });
 }
 

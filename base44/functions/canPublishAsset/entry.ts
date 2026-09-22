@@ -14,6 +14,22 @@ Deno.serve(async (req) => {
     const asset = assets[0];
     if (!asset) return Response.json({ error: 'Asset not found' }, { status: 404 });
 
+    // Authorization: caller must be admin, asset uploader, or collaborator on the governing entity
+    if (user.role !== 'admin') {
+      const isUploader = asset.uploaded_by_media_user_id === user.id || asset.created_by_id === user.id;
+      if (!isUploader) {
+        const links = await base44.asServiceRole.entities.AssetLink.filter({ asset_id });
+        const entityIds = [...new Set(links.map(l => l.subject_id).filter(Boolean))];
+        const collabs = await base44.asServiceRole.entities.EntityCollaborator.filter({
+          user_id: user.id,
+        });
+        const isCollaborator = collabs.some(c => entityIds.includes(c.entity_id));
+        if (!isCollaborator) {
+          return Response.json({ error: 'Forbidden: not authorized for this asset' }, { status: 403 });
+        }
+      }
+    }
+
     // Load asset links to determine governing entity
     const links = await base44.asServiceRole.entities.AssetLink.filter({ asset_id });
 

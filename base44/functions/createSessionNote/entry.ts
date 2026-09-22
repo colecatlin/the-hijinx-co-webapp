@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
         event_id, user_id: user.id,
       });
       const permitted = officials.some(
-        (o) => NOTE_ROLES.includes(o.role) && ['Invited', 'Confirmed', 'Active'].includes(o.status)
+        (o) => NOTE_ROLES.includes(o.role) && ['Confirmed', 'Active'].includes(o.status)
       );
       if (!permitted) return Response.json({ error: 'Forbidden: canCreateSessionNote required' }, { status: 403 });
     }

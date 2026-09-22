@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
         event_id: penalty.event_id, user_id: user.id,
       });
       const permitted = officials.some(
-        o => APPLY_ROLES.includes(o.role) && ['Invited', 'Confirmed', 'Active'].includes(o.status)
+        o => APPLY_ROLES.includes(o.role) && ['Confirmed', 'Active'].includes(o.status)
       );
       if (!permitted) {
         return Response.json({ error: 'Forbidden: canApplyPenalty required' }, { status: 403 });
