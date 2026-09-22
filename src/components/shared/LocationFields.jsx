@@ -4,6 +4,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, CheckCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { US_STATES } from '@/constants/usStates';
+import { COUNTRIES, COUNTRIES_WITH_REGIONS } from '@/components/shared/countriesData';
+
+// Normalize country values so 'USA' and 'United States' both resolve to the
+// canonical COUNTRIES key 'USA'. This fixes the existing mismatch where forms
+// default to 'USA' but Google Places returns 'United States'.
+const COUNTRY_ALIASES = { 'United States': 'USA', 'United States of America': 'USA' };
+function normalizeCountry(value) {
+  if (!value) return value;
+  if (COUNTRIES.includes(value)) return value;
+  return COUNTRY_ALIASES[value] || value;
+}
+
+// US_STATES uses {value, label} objects; COUNTRIES_WITH_REGIONS stores plain
+// string arrays. Normalize both to [{value, label}] for Select rendering.
+function getRegionOptions(country) {
+  const normalized = normalizeCountry(country);
+  if (normalized === 'USA') return US_STATES;
+  const regions = COUNTRIES_WITH_REGIONS[normalized];
+  if (!regions) return null;
+  return regions.map(r => ({ value: r, label: r }));
+}
 
 let googleScriptLoaded = false;
 let googleScriptLoading = false;
@@ -90,7 +111,7 @@ export default function LocationFields({
       setTimeout(() => {
         onCityChange(city);
         onStateChange(state);
-        onCountryChange(country);
+        onCountryChange(normalizeCountry(country));
         setSearchValue(place.formatted_address || `${city}, ${state}, ${country}`);
         setConfirmed(true);
       }, 0);
@@ -140,32 +161,53 @@ export default function LocationFields({
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{stateLabel}</label>
-            {(!countryValue || countryValue === 'United States') ? (
-              <Select value={stateValue || ''} onValueChange={(v) => { onStateChange(v); setConfirmed(false); }}>
-                <SelectTrigger className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}>
-                  <SelectValue placeholder="State" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {US_STATES.map(s => (
-                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                value={stateValue || ''}
-                onChange={(e) => { onStateChange(e.target.value); setConfirmed(false); }}
-                className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}
-              />
-            )}
+            {(() => {
+              const regionOptions = getRegionOptions(countryValue);
+              if (regionOptions) {
+                // Preserve a stored state value that is not in the list (legacy data)
+                const hasStored = stateValue && !regionOptions.some(o => o.value === stateValue);
+                return (
+                  <Select value={stateValue || ''} onValueChange={(v) => { onStateChange(v); setConfirmed(false); }}>
+                    <SelectTrigger className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}>
+                      <SelectValue placeholder={countryValue === 'USA' ? 'State' : 'Region'} />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {hasStored && <SelectItem value={stateValue}>{stateValue}</SelectItem>}
+                      {regionOptions.map(s => (
+                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                );
+              }
+              return (
+                <Input
+                  value={stateValue || ''}
+                  onChange={(e) => { onStateChange(e.target.value); setConfirmed(false); }}
+                  className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}
+                />
+              );
+            })()}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">{countryLabel}</label>
-            <Input
-              value={countryValue || ''}
-              onChange={(e) => { onCountryChange(e.target.value); setConfirmed(false); }}
-              className={`h-8 text-sm ${errors.country ? 'border-red-500' : ''}`}
-            />
+            <Select value={normalizeCountry(countryValue) || ''} onValueChange={(v) => { onCountryChange(v); setConfirmed(false); }}>
+              <SelectTrigger className={`h-8 text-sm ${errors.country ? 'border-red-500' : ''}`}>
+                <SelectValue placeholder="Country" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                {(() => {
+                  const normalized = normalizeCountry(countryValue);
+                  if (normalized && !COUNTRIES.includes(normalized)) {
+                    return <SelectItem value={normalized}>{normalized}</SelectItem>;
+                  }
+                  return null;
+                })()}
+                {COUNTRIES.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}

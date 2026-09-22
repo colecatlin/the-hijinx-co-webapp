@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { ORGANIZATION_TYPES, getOrganizationType } from '@/config/organizationRegistry';
+import { COUNTRIES } from '@/components/shared/countriesData';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 /**
  * OrganizationCreateModal — the reusable creation flow. Rendered full-page by
@@ -77,7 +79,25 @@ export default function OrganizationCreateModal({ onClose }) {
             {getOrganizationType(type).supportsLocation && (
               <div className="grid grid-cols-2 gap-3">
                 <Field label="City"><Input value={form.location_city} onChange={(v) => set('location_city', v)} /></Field>
-                <Field label="Country"><Input value={form.location_country} onChange={(v) => set('location_country', v)} /></Field>
+                <Field label="Country">
+                  <Select value={form.location_country || ''} onValueChange={(v) => set('location_country', v)}>
+                    <SelectTrigger className="w-full h-9 rounded-lg text-sm bg-surface-interactive border border-divider text-foreground focus:border-motion focus:outline-none">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {(() => {
+                        const stored = form.location_country;
+                        if (stored && !COUNTRIES.includes(stored)) {
+                          return <SelectItem value={stored}>{stored}</SelectItem>;
+                        }
+                        return null;
+                      })()}
+                      {COUNTRIES.map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
               </div>
             )}
           </div>
