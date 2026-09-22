@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.43';
 import Stripe from 'npm:stripe@14';
 import { secrets } from 'base44:runtime';
+import { serverOrigin } from '../../shared/safeRedirectUrl.ts';
 
 export default async function(req) {
   try {
@@ -19,7 +20,7 @@ export default async function(req) {
     }
 
     const stripe = new Stripe(secrets.get('STRIPE_SECRET_KEY'));
-    const origin = req.headers.get('origin') || '';
+    const origin = serverOrigin(req);
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: membership.stripe_customer_id,

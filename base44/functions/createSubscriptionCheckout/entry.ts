@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.43';
 import Stripe from 'npm:stripe@14';
 import { secrets } from 'base44:runtime';
+import { createSafeUrlValidator, serverOrigin } from '../../shared/safeRedirectUrl.ts';
 
 export default async function(req) {
   try {
@@ -20,20 +21,11 @@ export default async function(req) {
     }
 
     const stripe = new Stripe(secrets.get('STRIPE_SECRET_KEY'));
-    const origin = req.headers.get('origin') || '';
 
-    // Validate redirect URLs to prevent open redirect attacks.
-    // Only allow relative paths or URLs matching the request origin.
-    const safeUrl = (url) => {
-      if (!url || typeof url !== 'string') return null;
-      // Reject protocol-relative URLs (//evil.com) — only allow paths starting with exactly one /
-      if (url.startsWith('/') && !url.startsWith('//')) return `${origin}${url}`;
-      try {
-        const parsed = new URL(url);
-        if (parsed.origin === origin) return url;
-      } catch {}
-      return null;
-    };
+    // Validate redirect URLs against the server-verified origin (not the
+    // client-controlled Origin header) to prevent open redirect attacks.
+    const safeUrl = createSafeUrlValidator(req);
+    const origin = serverOrigin(req);
     const safeSuccessUrl = safeUrl(success_url) || `${origin}/membership?status=success&session_id={CHECKOUT_SESSION_ID}`;
     const safeCancelUrl = safeUrl(cancel_url) || `${origin}/membership?status=canceled`;
 

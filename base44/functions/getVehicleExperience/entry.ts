@@ -72,6 +72,12 @@ export default async function(req) {
     const { slug, vehicle_id, allow_draft = false } = body;
     if (!slug && !vehicle_id) return Response.json({ error: "slug or vehicle_id is required" }, { status: 400 });
 
+    // allow_draft is admin-only — prevents anonymous access to draft vehicles
+    if (allow_draft) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') return Response.json({ error: "Vehicle not found" }, { status: 404 });
+    }
+
     const vehicle = await resolveVehicle(base44, slug, vehicle_id);
     if (!vehicle) return Response.json({ error: "Vehicle not found" }, { status: 404 });
     if (vehicle.visibility_status === "draft" && !allow_draft) return Response.json({ error: "Vehicle not found" }, { status: 404 });

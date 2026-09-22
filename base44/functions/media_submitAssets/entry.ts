@@ -10,18 +10,34 @@ Deno.serve(async (req) => {
     }
 
     const {
-      uploader_media_user_id,
+      uploader_media_user_id: clientMediaUserId,
       assets,
       requirement_id,
       request_id,
       event_id,
     } = await req.json();
 
-    if (!uploader_media_user_id || !assets || assets.length === 0) {
+    if (!assets || assets.length === 0) {
       return Response.json(
-        { error: 'Missing uploader_media_user_id or assets' },
+        { error: 'Missing assets' },
         { status: 400 }
       );
+    }
+
+    // Resolve the uploader's MediaUser from the authenticated user —
+    // never trust a client-supplied media user id (IDOR prevention).
+    let uploader_media_user_id = clientMediaUserId;
+    if (user.role !== 'admin') {
+      const myMediaUsers = await base44.asServiceRole.entities.MediaUser.filter({ user_id: user.id });
+      if (myMediaUsers.length === 0) {
+        return Response.json({ error: 'No media user profile found for authenticated user' }, { status: 403 });
+      }
+      uploader_media_user_id = myMediaUsers[0].id;
+    } else {
+      // Admin must still supply a valid media user id
+      if (!uploader_media_user_id) {
+        return Response.json({ error: 'Missing uploader_media_user_id' }, { status: 400 });
+      }
     }
 
     const asset_ids = [];

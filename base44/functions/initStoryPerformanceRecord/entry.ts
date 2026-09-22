@@ -47,7 +47,8 @@ async function initPerformanceRecord(base44, storyId) {
   );
   const existingRow = existing[0] ?? null;
 
-  const payload = {
+  // Build base payload (metadata only — scores are NOT zeroed on update)
+  const basePayload = {
     story_id:          storyId,
     story_title:       story.title ?? '',
     story_slug:        story.slug ?? '',
@@ -58,20 +59,25 @@ async function initPerformanceRecord(base44, storyId) {
     tags:              story.tags ?? [],
     recommendation_id: rec?.id ?? null,
     radar_originated:  !!rec,
-    // Scores initialized to 0 — updated by calculateStoryPerformanceScore
+    last_computed_at:   now,
+  };
+
+  // Scores initialized to 0 only on CREATE — never zero existing scores on update
+  const createPayload = {
+    ...basePayload,
     performance_score:  0,
     virality_score:     0,
     longevity_score:    0,
     engagement_score:   0,
-    last_computed_at:   now,
   };
 
   let metricsId;
   if (existingRow) {
-    await base44.asServiceRole.entities.StoryPerformanceMetrics.update(existingRow.id, payload);
+    // Update metadata only — preserve existing computed scores
+    await base44.asServiceRole.entities.StoryPerformanceMetrics.update(existingRow.id, basePayload);
     metricsId = existingRow.id;
   } else {
-    const created = await base44.asServiceRole.entities.StoryPerformanceMetrics.create(payload);
+    const created = await base44.asServiceRole.entities.StoryPerformanceMetrics.create(createPayload);
     metricsId = created.id;
   }
 
@@ -110,14 +116,18 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
 
-    // Entity automation path
+    // Entity automation path — authenticate before processing
     if (!body.story_id && body.event?.entity_id) {
       const data = body.data ?? {};
-      if (data.status === 'published') {
-        const result = await initPerformanceRecord(base44, body.event.entity_id);
-        return Response.json(result);
+      if (data.status !== 'published') {
+        return Response.json({ skipped: true, reason: 'Story not published yet' });
       }
-      return Response.json({ skipped: true, reason: 'Story not published yet' });
+      // Require authentication for the entity automation path to prevent
+      // anonymous callers from wiping performance metrics.
+      const autoUser = await base44.auth.me().catch(() => null);
+      if (!autoUser) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      const result = await initPerformanceRecord(base44, body.event.entity_id);
+      return Response.json(result);
     }
 
     // Direct admin call

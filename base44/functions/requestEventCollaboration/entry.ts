@@ -18,6 +18,19 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // Authority check: admin or owner/editor collaborator on the track or series
+    if (user.role !== 'admin') {
+      const targetEntityId = requestedByType === 'track' ? trackId : seriesId;
+      const collaborators = await base44.entities.EntityCollaborator.filter({
+        user_id: user.id,
+        entity_id: targetEntityId,
+      });
+      const hasAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
+      if (!hasAccess) {
+        return Response.json({ ok: false, error: 'Not authorized to request collaboration for this entity' }, { status: 403 });
+      }
+    }
+
     // Create or get EventCollaboration
     const existing = await base44.asServiceRole.entities.EventCollaboration.filter({
       event_id: eventId,
@@ -41,15 +54,9 @@ Deno.serve(async (req) => {
       collaboration = existing[0];
     }
 
-    // Update Event to pending states (unless admin initiated)
-    const eventUpdate = {
-      track_publish_state: 'pending',
-      series_publish_state: 'pending',
-      publish_ready: false,
-      public_status: 'draft'
-    };
-
-    await base44.asServiceRole.entities.Event.update(eventId, eventUpdate);
+    // NOTE: Do not reset event publish states as a side effect of a
+    // collaboration request. The mutual-publish workflow manages publish
+    // states through the accept/reject flow, not the request itself.
 
     // Log operation
     await base44.asServiceRole.entities.OperationLog.create({

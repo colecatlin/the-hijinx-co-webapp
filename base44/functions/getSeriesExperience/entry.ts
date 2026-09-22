@@ -619,6 +619,12 @@ export default async function(req) {
     const { slug, series_id, season_year, allow_draft = false } = body;
     if (!slug && !series_id) return Response.json({ error: 'slug or series_id is required' }, { status: 400 });
 
+    // allow_draft is admin-only — prevents anonymous access to draft/unpublished series
+    if (allow_draft) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') return Response.json({ error: 'Series not found' }, { status: 404 });
+    }
+
     const series = await resolveSeries(base44, slug, series_id);
     if (!series) return Response.json({ error: 'Series not found' }, { status: 404 });
     if (!isSeriesPublic(series) && !allow_draft) return Response.json({ error: 'Series not found' }, { status: 404 });

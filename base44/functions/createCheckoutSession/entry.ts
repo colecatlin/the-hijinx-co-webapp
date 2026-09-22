@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 import Stripe from 'npm:stripe@14';
+import { createSafeUrlValidator, serverOrigin } from '../../shared/safeRedirectUrl.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
@@ -46,19 +47,10 @@ Deno.serve(async (req) => {
     const hasDigital = productRecords.some(p => p.product_type === 'digital');
     const orderType = hasPhysical && hasDigital ? 'mixed' : hasPhysical ? 'physical' : 'digital';
 
-    // Validate redirect URLs to prevent open redirect attacks.
-    // Only allow relative paths or URLs matching the request origin.
-    const origin = req.headers.get('origin') || '';
-    const safeUrl = (url) => {
-      if (!url || typeof url !== 'string') return null;
-      // Reject protocol-relative URLs (//evil.com) — only allow paths starting with exactly one /
-      if (url.startsWith('/') && !url.startsWith('//')) return `${origin}${url}`;
-      try {
-        const parsed = new URL(url);
-        if (parsed.origin === origin) return url;
-      } catch {}
-      return null;
-    };
+    // Validate redirect URLs against the server-verified origin (not the
+    // client-controlled Origin header) to prevent open redirect attacks.
+    const safeUrl = createSafeUrlValidator(req);
+    const origin = serverOrigin(req);
     const safeSuccessUrl = safeUrl(success_url) || `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`;
     const safeCancelUrl = safeUrl(cancel_url) || `${origin}/checkout-cancel`;
 

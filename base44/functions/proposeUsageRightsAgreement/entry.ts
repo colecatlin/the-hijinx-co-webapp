@@ -12,6 +12,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'entity_id, holder_media_user_id, and rights_text are required' }, { status: 400 });
     }
 
+    // Authorization: admin, entity owner/editor collaborator, or the agreement's media holder
+    const isAdmin = user.role === 'admin';
+    if (!isAdmin) {
+      // Check entity collaborator authority
+      const collaborators = await base44.asServiceRole.entities.EntityCollaborator.filter({
+        user_id: user.id,
+        entity_id,
+      });
+      const hasEntityAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
+
+      // Check media holder ownership
+      let isMediaHolder = false;
+      if (!hasEntityAccess) {
+        const mediaUsers = await base44.asServiceRole.entities.MediaUser.filter({ id: holder_media_user_id });
+        isMediaHolder = mediaUsers.length > 0 && mediaUsers[0].user_id === user.id;
+      }
+
+      if (!hasEntityAccess && !isMediaHolder) {
+        return Response.json({ error: 'Not authorized to create or modify this usage-rights agreement' }, { status: 403 });
+      }
+    }
+
     const now = new Date().toISOString();
 
     // Find existing active agreement for this combo

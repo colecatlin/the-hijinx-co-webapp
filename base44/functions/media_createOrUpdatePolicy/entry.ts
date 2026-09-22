@@ -43,6 +43,11 @@ Deno.serve(async (req) => {
     let operationType = null;
 
     if (policy_id) {
+      // Verify the policy belongs to the claimed entity (prevents IDOR)
+      const existingPolicy = await base44.asServiceRole.entities.Policy.get(policy_id);
+      if (!existingPolicy) return Response.json({ error: 'Policy not found' }, { status: 404 });
+      if (existingPolicy.entity_id !== entity_id) return Response.json({ error: 'Forbidden: policy does not belong to this entity' }, { status: 403 });
+
       // Update existing policy
       policy = await base44.entities.Policy.update(policy_id, {
         policy_type,

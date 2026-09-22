@@ -78,6 +78,12 @@ export default async function(req) {
     const { slug, team_id, allow_draft = false } = body;
     if (!slug && !team_id) return Response.json({ error: "slug or team_id is required" }, { status: 400 });
 
+    // allow_draft is admin-only — prevents anonymous access to draft teams
+    if (allow_draft) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') return Response.json({ error: "Team not found" }, { status: 404 });
+    }
+
     const team = await resolveTeam(base44, slug, team_id);
     if (!team) return Response.json({ error: "Team not found" }, { status: 404 });
     if (team.visibility_status === "draft" && !allow_draft) return Response.json({ error: "Team not found" }, { status: 404 });

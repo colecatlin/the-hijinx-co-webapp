@@ -40,15 +40,28 @@ Deno.serve(async (req) => {
     const eventRecord = event[0];
     const collaborationRecord = collab[0];
 
+    // Authority check: admin or owner/editor collaborator of the track/series
+    if (user.role !== 'admin') {
+      const targetEntityId = responderType === 'track' ? collaborationRecord.track_id : collaborationRecord.series_id;
+      const collaborators = await base44.entities.EntityCollaborator.filter({
+        user_id: user.id,
+        entity_id: targetEntityId,
+      });
+      const hasAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
+      if (!hasAccess) {
+        return Response.json({ ok: false, error: 'Not authorized to respond for this entity' }, { status: 403 });
+      }
+    }
+
     // Update EventCollaboration acceptance
     const collabUpdate = {};
     if (responderType === 'track') {
       collabUpdate.track_acceptance = decision === 'accepted' ? 'accepted' : 'rejected';
-      collabUpdate.track_accepted_by_user_id = userId || user.id || user.email;
+      collabUpdate.track_accepted_by_user_id = user.id;
       collabUpdate.track_accepted_date = new Date().toISOString();
     } else if (responderType === 'series') {
       collabUpdate.series_acceptance = decision === 'accepted' ? 'accepted' : 'rejected';
-      collabUpdate.series_accepted_by_user_id = userId || user.id || user.email;
+      collabUpdate.series_accepted_by_user_id = user.id;
       collabUpdate.series_accepted_date = new Date().toISOString();
     }
 

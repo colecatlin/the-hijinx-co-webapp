@@ -518,6 +518,12 @@ export default async function(req) {
     const { slug, event_id, allow_draft = false } = body;
     if (!slug && !event_id) return Response.json({ error: 'slug or event_id is required' }, { status: 400 });
 
+    // allow_draft is admin-only — prevents anonymous access to draft/unpublished/archived content
+    if (allow_draft) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') return Response.json({ error: 'Event not found' }, { status: 404 });
+    }
+
     const event = await resolveEvent(base44, slug, event_id);
     if (!event) return Response.json({ error: 'Event not found' }, { status: 404 });
     if (!isEventPublic(event) && !allow_draft) return Response.json({ error: 'Event not found' }, { status: 404 });

@@ -32,12 +32,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Credential request not found' }, { status: 404 });
     }
 
-    // Authority check: verify reviewer_user_id can act for issuer_entity_id
+    // Authority check: derive the issuing entity from the credential request
+    // itself (its target entity), not from a client-supplied issuer_entity_id.
+    // This prevents a collaborator on entity A from approving credentials
+    // targeting entity B.
+    const effectiveIssuerEntityId = credentialRequest.target_entity_id;
+    if (issuer_entity_id !== effectiveIssuerEntityId) {
+      return Response.json({ error: 'issuer_entity_id must match the credential request target entity' }, { status: 403 });
+    }
     const isAdmin = user.role === 'admin';
     if (!isAdmin) {
       const collaborators = await base44.entities.EntityCollaborator.filter({
         user_id: user.id,
-        entity_id: issuer_entity_id,
+        entity_id: effectiveIssuerEntityId,
       });
       const hasAccess = collaborators.some(c => ['owner', 'editor'].includes(c.role));
       if (!hasAccess) {

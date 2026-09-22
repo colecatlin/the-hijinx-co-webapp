@@ -25,6 +25,12 @@ export default async function(req) {
   const body = await req.json().catch(() => ({}));
   const { slug, racer_profile_id, allow_draft = false } = body;
 
+  // allow_draft is admin-only — prevents anonymous access to archived/draft profiles
+  if (allow_draft) {
+    const user = await base44.auth.me().catch(() => null);
+    if (!user || user.role !== 'admin') return Response.json({ error: 'RacerProfile not found', racerProfile: null });
+  }
+
   const racerProfile = await resolveRacerProfile(base44, slug, racer_profile_id);
   if (!racerProfile) return Response.json({ error: 'RacerProfile not found', racerProfile: null });
 

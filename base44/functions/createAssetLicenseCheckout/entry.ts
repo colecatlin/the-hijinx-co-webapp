@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import Stripe from 'npm:stripe@14.25.0';
+import { createSafeUrlValidator, serverOrigin } from '../../shared/safeRedirectUrl.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
 
@@ -73,18 +74,10 @@ Deno.serve(async (req) => {
     // 8. Calculate revenue split from the authoritative agreement
     const split = calculateRevenueSplit(licensePriceCents, agreement);
 
-    // 9. Validate redirect URLs to prevent open redirect attacks.
-    // Only allow relative paths or URLs matching the request origin.
-    const origin = req.headers.get('origin') || '';
-    const safeUrl = (url) => {
-      if (!url || typeof url !== 'string') return null;
-      if (url.startsWith('/') && !url.startsWith('//')) return `${origin}${url}`;
-      try {
-        const parsed = new URL(url);
-        if (parsed.origin === origin) return url;
-      } catch {}
-      return null;
-    };
+    // 9. Validate redirect URLs against the server-verified origin (not the
+    // client-controlled Origin header) to prevent open redirect attacks.
+    const safeUrl = createSafeUrlValidator(req);
+    const origin = serverOrigin(req);
     const safeSuccessUrl = safeUrl(successUrl) || `${origin}/MediaHome?license=success`;
     const safeCancelUrl = safeUrl(cancelUrl) || `${origin}/MediaHome?license=cancelled`;
 

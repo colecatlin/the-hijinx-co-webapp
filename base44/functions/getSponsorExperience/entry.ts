@@ -29,6 +29,12 @@ export default async function(req: Request): Promise<Response> {
     const body = await req.json().catch(() => ({}));
     const { slug, organization_id, allow_draft = false } = body;
 
+    // allow_draft is admin-only — prevents anonymous access to draft sponsors
+    if (allow_draft) {
+      const user = await base44.auth.me().catch(() => null);
+      if (!user || user.role !== 'admin') return Response.json({ error: 'Sponsor not found' }, { status: 404 });
+    }
+
     if (!slug && !organization_id) {
       return Response.json({ error: 'slug or organization_id is required' }, { status: 400 });
     }
