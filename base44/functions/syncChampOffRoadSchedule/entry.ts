@@ -20,6 +20,8 @@
  * Admin-only: requires authenticated admin user.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.38';
+import { reportImportRun } from '../../shared/importSheetWriter.ts';
+import { waitUntil } from 'base44:runtime';
 
 const SERIES_NAME = 'Championship Off-Road';
 const SERIES_SLUG = 'champ-off-road';
@@ -214,6 +216,22 @@ Deno.serve(async (req) => {
         }
       }
     }
+
+    waitUntil(reportImportRun(base44, {
+      import_name: 'syncChampOffRoadSchedule',
+      actor: user.email,
+      source: 'champoffroad',
+      status: 'completed',
+      counts: {
+        read: schedule.length,
+        created: tracksCreated + eventsCreated,
+        updated: eventsUpdated,
+        skipped: eventsUnchanged,
+        failed: 0,
+      },
+      domains: ['series', 'tracks', 'events'],
+      problems: [],
+    }));
 
     return Response.json({
       success: true,

@@ -20,6 +20,8 @@ import {
   findSourceLinks, createSourceLink, readOnlyIdentityMatch,
   resolveSeries, resolveClass, findCompatibleDrivers, validateSourceLinkRecords,
 } from '../../shared/driverImportHelpers.ts';
+import { reportImportRun } from '../../shared/importSheetWriter.ts';
+import { waitUntil } from 'base44:runtime';
 
 Deno.serve(async (req) => {
   try {
@@ -451,6 +453,36 @@ Deno.serve(async (req) => {
       person_identities_created: personIdentitiesCreated, racer_profiles_created: racerProfilesCreated,
       season_participations_created: seasonParticipationsCreated, drivers_created: driversCreated,
     };
+
+    // Report into the master workbook. Best-effort by design: the run above is
+    // already committed, and reportImportRun never throws.
+    const problemRows = rowResults
+      .filter(function (r) {
+        return r.resolution_status === 'blocked' || r.resolution_status === 'error' || r.resolution_status === 'review';
+      })
+      .map(function (r) {
+        return {
+          reference: r.row_index !== undefined ? 'row ' + r.row_index : (r.name || r.driver_name || ''),
+          action: r.resolution_status === 'error' ? 'failed' : 'skipped',
+          reason: (r.errors && r.errors.length > 0 && r.errors[0].message) || r.failed_step || r.resolution_status,
+        };
+      });
+
+    waitUntil(reportImportRun(base44, {
+      import_name: 'importDriversBulk',
+      actor: user.email,
+      source: 'bulk_driver_import',
+      status: isDryRun ? 'dry_run' : 'completed',
+      counts: {
+        read: rows.length,
+        created: createdRows,
+        updated: resolvedRows,
+        skipped: readyRows + reviewRows + blockedRows,
+        failed: errorRows,
+      },
+      domains: isDryRun ? [] : ['racers'],
+      problems: problemRows,
+    }));
 
     return Response.json({ success: true, dry_run: isDryRun, season_year: normalizedSeasonYear, summary, rows: rowResults });
 

@@ -1,0 +1,81 @@
+{
+  "name": "ImportSheetConfig",
+  "type": "object",
+  "description": "Singleton configuration for the master import workbook. Records which Google Sheets workbook the platform writes import results into, which tabs exist, and the outcome of the last write. The workbook is written BY the platform and never read back into it \u2014 this record is the only link between the two. Single active record (is_active=true).",
+  "properties": {
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Singleton marker \u2014 the active import workbook configuration"
+    },
+    "spreadsheet_id": {
+      "type": "string",
+      "description": "Google Sheets spreadsheet ID (the editing identity, from /spreadsheets/d/<id>). Never the published /pubhtml key, which is read-only."
+    },
+    "spreadsheet_url": {
+      "type": "string",
+      "description": "The editing link as pasted by the admin, kept for display"
+    },
+    "spreadsheet_title": {
+      "type": "string",
+      "description": "Workbook title read from Google on setup, denormalized for display"
+    },
+    "domain_tabs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Domain tab names written at setup \u2014 the tabs the platform owns and rewrites"
+    },
+    "last_setup_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the workbook skeleton was last built or refreshed in place"
+    },
+    "last_refresh_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the detail tabs were last brought up to date, by an import or a manual refresh"
+    },
+    "tab_refresh_state": {
+      "type": "object",
+      "description": "Per-tab map of { tab_name: { refreshed_at, rows } } \u2014 the timestamp of the last successful rewrite and the row count written"
+    },
+    "last_write_error": {
+      "type": "string",
+      "description": "The most recent write failure (permissions, quota, workbook renamed or deleted). Surfaced in the app rather than failing silently."
+    },
+    "last_write_error_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the most recent write failure occurred"
+    }
+  },
+  "required": [
+    "is_active",
+    "spreadsheet_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

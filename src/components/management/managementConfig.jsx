@@ -176,6 +176,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'Ad Analytics',       page: 'AdvertisementAnalytics',           icon: BarChart3,    description: 'Advertisement performance analytics' },
       { name: 'RaceCore Data Health', page: 'Diagnostics',                    icon: Database,     description: 'Opens RaceCore data diagnostics (peer system)' },
       { name: 'Discipline Colors',  page: 'management/discipline',            icon: Palette,      description: 'Manage discipline colors for map pins' },
+      { name: 'Import Workbook',    page: 'management/platform/import-workbook', icon: FileSpreadsheet, description: 'Master workbook every import reports into — connect it and keep its tabs current' },
       { name: 'Integrations',       page: 'management/platform/integrations',  icon: Plug,         description: 'Platform integrations (future)' },
       { name: 'Audit Log',          page: 'management/platform/audit-log',    icon: ScrollText,   description: 'Administrative change history (future)' },
       { name: 'Settings',          page: 'management/platform/settings',     icon: Settings,     description: 'Platform-wide settings (future)' },

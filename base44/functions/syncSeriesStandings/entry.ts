@@ -1,4 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { reportImportRun } from '../../shared/importSheetWriter.ts';
+import { waitUntil } from 'base44:runtime';
 
 Deno.serve(async (req) => {
   try {
@@ -153,6 +155,36 @@ Return the complete JSON array with ALL drivers. Do not stop at 10 or 20 — get
         results.push({ series_id: series.id, series_name: series.name, status: 'error', error: seriesErr.message });
       }
     }
+
+    // Standings have no domain tab, so this run reports to the log and its
+    // per-series problems rather than rewriting a record tab.
+    let createdTotal = 0;
+    let updatedTotal = 0;
+    const problemRows = [];
+    for (const r of results) {
+      if (r.status === 'error') {
+        problemRows.push({ reference: r.series_name || r.series_id, action: 'failed', reason: r.error || 'Series sync failed' });
+      } else {
+        createdTotal += r.created || 0;
+        updatedTotal += r.updated || 0;
+      }
+    }
+
+    waitUntil(reportImportRun(base44, {
+      import_name: 'syncSeriesStandings',
+      actor: user.email,
+      source: 'series_standings',
+      status: problemRows.length > 0 ? 'completed_with_issues' : 'completed',
+      counts: {
+        read: seriesToSync.length,
+        created: createdTotal,
+        updated: updatedTotal,
+        skipped: 0,
+        failed: problemRows.length,
+      },
+      domains: [],
+      problems: problemRows,
+    }));
 
     return Response.json({ success: true, results });
   } catch (error) {

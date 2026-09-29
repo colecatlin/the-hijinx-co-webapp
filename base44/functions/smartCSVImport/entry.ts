@@ -20,6 +20,19 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { ensureRaceCoreId } from '../../shared/racecoreId.ts';
 import { resolveParticipationForEntry } from '../../shared/entryParticipationResolver.ts';
+import { reportImportRun } from '../../shared/importSheetWriter.ts';
+import { waitUntil } from 'base44:runtime';
+
+// Which workbook tab an imported entity type lands in. Entities with no domain
+// tab still report to the log; they simply rewrite nothing.
+const REPORT_DOMAIN_BY_ENTITY = {
+  Driver: 'racers',
+  Team: 'teams',
+  Organization: 'organizations',
+  Track: 'tracks',
+  Series: 'series',
+  Event: 'events',
+};
 
 const SOURCE_ENTITY_TYPES = new Set(['Driver', 'Team', 'Track', 'Series', 'Event']);
 
@@ -637,6 +650,35 @@ Deno.serve(async (req) => {
       diagnostics = { integrity_status: 'unknown', import_status: 'success_with_warnings', summary: 'Diagnostics could not run' };
       if (import_status === 'success') import_status = 'success_with_warnings';
     }
+
+    // Report into the master workbook. Best-effort: the import is already
+    // committed above and reportImportRun never throws.
+    const reportDomain = REPORT_DOMAIN_BY_ENTITY[entityName];
+    const problemRows = (errors || []).map(function (e) {
+      const ref = e && e.row !== undefined ? 'row ' + e.row
+        : e && e.row_index !== undefined ? 'row ' + e.row_index : '';
+      return {
+        reference: ref,
+        action: 'failed',
+        reason: (e && (e.message || e.error || e.reason)) || 'Row failed to import',
+      };
+    });
+
+    waitUntil(reportImportRun(base44, {
+      import_name: 'smartCSVImport:' + entityName,
+      actor: user.email,
+      source: 'csv_upload',
+      status: import_status,
+      counts: {
+        read: rows.length,
+        created: created,
+        updated: updated,
+        skipped: skipped,
+        failed: errors.length,
+      },
+      domains: reportDomain ? [reportDomain] : [],
+      problems: problemRows,
+    }));
 
     return Response.json({
       entityName,
