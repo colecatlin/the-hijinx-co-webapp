@@ -61,6 +61,9 @@ export default async function (req) {
     // Public — published only, fall back to defaults
     return Response.json({ published: record.published || defaults });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    // Surface the real cause in the function logs — previously this was swallowed,
+    // leaving only a bare "POST → 500" with no diagnostic detail.
+    console.error('getHome1Settings failed:', error?.message || String(error), error?.stack || '');
+    return Response.json({ error: error?.message || 'Failed to load configuration' }, { status: 500 });
   }
 }

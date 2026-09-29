@@ -118,7 +118,7 @@ function HomeEditor() {
             <div className="space-y-2">
               <p className="text-xs text-danger font-medium">Failed to load configuration</p>
               <p className="text-xs text-foreground-quiet break-words max-w-md mx-auto">
-                {error?.message || 'Unknown error'}
+                {error?.response?.data?.error || error?.message || 'Unknown error'}
               </p>
               <button
                 onClick={() => queryClient.invalidateQueries({ queryKey: ['home1Settings'] })}
