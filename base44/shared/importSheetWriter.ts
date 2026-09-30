@@ -409,14 +409,17 @@ function noteFor(tab) {
  * of its own — a note sitting above the values would become the first choice in
  * every dropdown that reads the tab. Values therefore start at row 2.
  */
-function referenceNoteRequests(sheetId, columnCount, noteColumn) {
-  return [
-    {
-      updateSheetProperties: {
-        properties: { sheetId: sheetId, gridProperties: { frozenRowCount: 1, columnCount: columnCount } },
-        fields: 'gridProperties.frozenRowCount,gridProperties.columnCount',
-      },
+function freezeRowRequest(sheetId, frozenRowCount) {
+  return {
+    updateSheetProperties: {
+      properties: { sheetId: sheetId, gridProperties: { frozenRowCount: frozenRowCount } },
+      fields: 'gridProperties.frozenRowCount',
     },
+  };
+}
+
+function noteFormatRequests(sheetId, noteColumn) {
+  return [
     {
       repeatCell: {
         range: gridRange(sheetId, 0, 1, 0, 1),
@@ -432,6 +435,19 @@ function referenceNoteRequests(sheetId, columnCount, noteColumn) {
       },
     },
   ];
+}
+
+/** Widen a tab before writing into it, so a wide write is never refused. */
+async function growColumns(token, spreadsheetId, sheetId, columnCount) {
+  if (sheetId === undefined) return;
+  await batchUpdateSpreadsheet(token, spreadsheetId, [
+    {
+      updateSheetProperties: {
+        properties: { sheetId: sheetId, gridProperties: { columnCount: columnCount } },
+        fields: 'gridProperties.columnCount',
+      },
+    },
+  ]);
 }
 
 /**
@@ -456,8 +472,8 @@ async function buildRecordReferenceTabs(base44, token, spreadsheetId, sheetIds) 
     source.values.forEach(function (value) { rows.push([value]); });
     await writeValues(token, spreadsheetId, rangeOf(source.tab, 'A1'), rows);
     await batchUpdateSpreadsheet(token, spreadsheetId,
-      referenceNoteRequests(sheetId, 1, 1).concat([
-        { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 1 } } },
+      [freezeRowRequest(sheetId, 1)].concat(noteFormatRequests(sheetId, 1), [
+        { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 2 } } },
       ]));
   }
 }
@@ -477,11 +493,12 @@ async function writeCountriesTab(token, spreadsheetId, sheetIds) {
     rows.push([country.name, country.code, flag ? '=IMAGE("' + flag + '")' : '']);
   });
 
+  await growColumns(token, spreadsheetId, sheetId, 3);
   await clearTab(token, spreadsheetId, TAB_REF_COUNTRIES, 1);
   // USER_ENTERED, so the flag column lands as an image rather than as text.
   await writeValuesEntered(token, spreadsheetId, rangeOf(TAB_REF_COUNTRIES, 'A1'), rows);
   await batchUpdateSpreadsheet(token, spreadsheetId,
-    referenceNoteRequests(sheetId, 3, 1).concat([
+    [freezeRowRequest(sheetId, 1)].concat(noteFormatRequests(sheetId, 1), [
       { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 3 } } },
     ]));
 }
@@ -518,10 +535,11 @@ async function writeStatesTab(token, spreadsheetId, sheetIds, namedRanges) {
     }));
   }
 
+  await growColumns(token, spreadsheetId, sheetId, band.length);
   await clearTab(token, spreadsheetId, TAB_REF_STATES, 1);
   await writeValues(token, spreadsheetId, rangeOf(TAB_REF_STATES, 'A1'), rows);
 
-  const requests: any[] = referenceNoteRequests(sheetId, band.length, 1).concat([
+  const requests: any[] = [freezeRowRequest(sheetId, 2)].concat(noteFormatRequests(sheetId, 1), [
     {
       repeatCell: {
         range: gridRange(sheetId, 1, 2, 0, band.length),

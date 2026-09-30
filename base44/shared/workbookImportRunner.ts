@@ -189,12 +189,40 @@ async function commitCoreRecord(ctx, domain, payload) {
   };
 }
 
+/**
+ * Judge a row's country/region pairs, and settle both on the platform's own
+ * spelling while we are here.
+ *
+ * A country or a region the list does not hold holds the whole row back — with
+ * the value and the column named, so the row can be corrected and run again. The
+ * rest of the run is untouched by it, and the row is left unstamped so it is
+ * reconsidered rather than forgotten.
+ */
+function checkLocations(domain, fields) {
+  for (const pair of domain.locationPairs || []) {
+    const verdict = checkLocationPair(fields[pair.country], fields[pair.state]);
+    if (!verdict.ok) {
+      return {
+        ok: false,
+        note: pair.label + ' — ' + verdict.reason +
+          ' (' + (verdict.field === 'country' ? pair.country : pair.state) + ')',
+      };
+    }
+    if (verdict.country) fields[pair.country] = verdict.country;
+    if (verdict.state) fields[pair.state] = verdict.state;
+  }
+  return { ok: true, note: '' };
+}
+
 /** One typed row, all the way through. */
 async function processRow(ctx, domain, fields, sheetRow) {
   const missing = requiredColumnNames(domain).filter(function (column) { return !fields[column]; });
   if (missing.length > 0) {
     return { action: 'skipped', note: 'Missing ' + missing.join(', ') + '.' };
   }
+
+  const locations = checkLocations(domain, fields);
+  if (!locations.ok) return { action: 'skipped', note: locations.note };
 
   const payload = compactPayload(domain.toPayload(fields));
 
