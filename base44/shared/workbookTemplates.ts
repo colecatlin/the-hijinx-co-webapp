@@ -20,6 +20,19 @@ export type TemplateColumn = {
   required?: boolean;
 };
 
+/**
+ * A country/region pair inside one row — the state cell offers that country's
+ * own regions, and the import judges the two together.
+ */
+export type LocationPair = {
+  /** Column holding the country. */
+  country: string;
+  /** Column holding the state or region. */
+  state: string;
+  /** What the pair is, in the row's own words (Hometown, Headquarters, …). */
+  label: string;
+};
+
 export type WorkbookDomain = {
   key: string;
   tab: string;
@@ -33,6 +46,8 @@ export type WorkbookDomain = {
   /** Key of this domain's own record inside the resolution engine's payload. */
   primaryResolutionKey: string;
   intro: string;
+  /** Country/region pairs in this tab's rows. Empty when the tab has none. */
+  locationPairs: LocationPair[];
   columns: TemplateColumn[];
   toPayload: (row: Record<string, string>) => Record<string, unknown>;
 };
@@ -70,6 +85,7 @@ const RACERS: WorkbookDomain = {
   pipelineType: 'driver',
   primaryResolutionKey: 'driver',
   intro: 'One row per racer. The platform creates the racer’s profile, identity record and competitive record together.',
+  locationPairs: [{ country: 'hometown_country', state: 'hometown_state', label: 'Hometown' }],
   columns: [
     { name: 'first_name', required: true, note: 'Given name. Required.' },
     { name: 'last_name', required: true, note: 'Family name. Required.' },
@@ -77,10 +93,10 @@ const RACERS: WorkbookDomain = {
     { name: 'primary_discipline', note: 'Main discipline — choose from the Ref · Disciplines tab.' },
     { name: 'date_of_birth', note: 'YYYY-MM-DD. The strongest signal for telling two people with the same name apart.' },
     { name: 'hometown_city', note: 'Hometown city.' },
-    { name: 'hometown_state', note: 'Hometown state or region.' },
-    { name: 'hometown_country', note: 'Hometown country.' },
+    { name: 'hometown_state', note: 'Hometown state — the list follows the country in this row.' },
+    { name: 'hometown_country', note: 'Hometown country — choose from Ref · Countries.' },
     { name: 'racing_base_city', note: 'Where the racer is based, if it differs from the hometown.' },
-    { name: 'racing_base_state', note: 'State or region of the racing base.' },
+    { name: 'racing_base_state', note: 'State or region of the racing base. Free text — this row carries no country for it.' },
     { name: 'career_status', note: 'Free text — Active, Retired, and so on.' },
     { name: 'contact_email', note: 'Contact email.' },
     { name: 'external_uid', note: 'An ID this racer already has elsewhere. Strongest possible match signal — fill it whenever you have one.' },
@@ -112,11 +128,12 @@ const TEAMS: WorkbookDomain = {
   pipelineType: 'team',
   primaryResolutionKey: 'team',
   intro: 'One row per team.',
+  locationPairs: [{ country: 'country', state: 'headquarters_state', label: 'Headquarters' }],
   columns: [
     { name: 'name', required: true, note: 'Team name. Required.' },
     { name: 'headquarters_city', note: 'Headquarters city.' },
-    { name: 'headquarters_state', note: 'Headquarters state or region.' },
-    { name: 'country', note: 'Country.' },
+    { name: 'headquarters_state', note: 'Headquarters state — the list follows the country in this row.' },
+    { name: 'country', note: 'Country — choose from Ref · Countries.' },
     { name: 'primary_discipline', note: 'Main discipline — choose from the Ref · Disciplines tab.' },
     { name: 'team_level', note: 'Free text — Pro, Sportsman, and so on.' },
     { name: 'founded_year', note: 'Four-digit year.' },
@@ -144,6 +161,7 @@ const ORGANIZATIONS: WorkbookDomain = {
   pipelineType: null,
   primaryResolutionKey: 'organization',
   intro: 'One row per organization — sponsors, vendors, manufacturers and the other commercial partners.',
+  locationPairs: [{ country: 'location_country', state: 'location_state', label: 'Location' }],
   columns: [
     { name: 'name', required: true, note: 'Organization name. Required. A name that already exists on the platform is skipped, never merged.' },
     { name: 'type', required: true, note: 'One of: Sponsor, Vendor, Manufacturer, OEM, BroadcastPartner, Venue, SanctioningBody, MarketingAgency, SafetyCrew, HospitalityPartner, RetailPartner, TechnologyProvider, League, Club, Association, Other.' },
@@ -152,8 +170,8 @@ const ORGANIZATIONS: WorkbookDomain = {
     { name: 'tagline', note: 'Short identity line.' },
     { name: 'description', note: 'Public description.' },
     { name: 'location_city', note: 'City.' },
-    { name: 'location_state', note: 'State or region.' },
-    { name: 'location_country', note: 'Country.' },
+    { name: 'location_state', note: 'State or region — the list follows the country in this row.' },
+    { name: 'location_country', note: 'Country — choose from Ref · Countries.' },
     { name: 'contact_email', note: 'Contact email.' },
     { name: 'logo_url', note: 'Logo image address.' },
     { name: 'external_uid', note: 'An ID this organization already has elsewhere. Strongest match signal.' },
@@ -183,11 +201,12 @@ const TRACKS: WorkbookDomain = {
   pipelineType: 'track',
   primaryResolutionKey: 'track',
   intro: 'One row per track.',
+  locationPairs: [{ country: 'location_country', state: 'location_state', label: 'Location' }],
   columns: [
     { name: 'name', required: true, note: 'Track name. Required.' },
     { name: 'location_city', required: true, note: 'City. Required — the platform will not create a track without one.' },
-    { name: 'location_state', note: 'State or region.' },
-    { name: 'location_country', required: true, note: 'Country. Required — the platform will not create a track without one.' },
+    { name: 'location_state', note: 'State or region — the list follows the country in this row.' },
+    { name: 'location_country', required: true, note: 'Country — choose from Ref · Countries. Required — the platform will not create a track without one.' },
     { name: 'track_type', note: 'Free text — Short Course, Oval, Road Course, and so on.' },
     { name: 'surface_type', note: 'Free text — Dirt, Asphalt, and so on.' },
     { name: 'length', note: 'Track length as a number.' },
@@ -215,6 +234,7 @@ const SERIES: WorkbookDomain = {
   pipelineType: 'series',
   primaryResolutionKey: 'series',
   intro: 'One row per series.',
+  locationPairs: [],
   columns: [
     { name: 'name', required: true, note: 'Series name. Required.' },
     { name: 'full_name', note: 'Full or official name, where it differs from the short name above.' },
@@ -245,6 +265,7 @@ const EVENTS: WorkbookDomain = {
   pipelineType: 'event',
   primaryResolutionKey: 'event',
   intro: 'One row per event. Fill the Series and Track columns with the platform_id of the records in those two tabs — import those tabs first.',
+  locationPairs: [],
   columns: [
     { name: 'name', required: true, note: 'Event name. Required.' },
     { name: 'event_date', required: true, note: 'YYYY-MM-DD. Required.' },

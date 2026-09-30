@@ -144,6 +144,8 @@ async function ensureWorkbook(token, spreadsheetId) {
   const byTitle = {};
   existing.forEach(function (p) { byTitle[p.title] = p.sheetId; });
 
+  let namedRanges = meta.namedRanges || [];
+
   const missing = allTabTitles().filter(function (t) { return byTitle[t] === undefined; });
   if (missing.length > 0) {
     await batchUpdateSpreadsheet(token, spreadsheetId, missing.map(function (title) {
@@ -151,9 +153,14 @@ async function ensureWorkbook(token, spreadsheetId) {
     }));
     const refreshed = await getSpreadsheet(token, spreadsheetId);
     (refreshed.sheets || []).forEach(function (s) { byTitle[s.properties.title] = s.properties.sheetId; });
+    namedRanges = refreshed.namedRanges || namedRanges;
   }
 
-  return { title: (meta.properties || {}).title || '', sheetIds: byTitle };
+  return {
+    title: (meta.properties || {}).title || '',
+    sheetIds: byTitle,
+    namedRanges: namedRanges,
+  };
 }
 
 /** Clear a tab's content below its header rows before a full rewrite. */
@@ -393,27 +400,45 @@ export async function writeRowStamps(base44, config, domain, updates) {
 // reference tabs
 // ════════════════════════════════════════════════════════════════════
 
-function distinctValues(records, columnPattern) {
-  const seen = {};
-  records.forEach(function (record) {
-    Object.keys(record || {}).forEach(function (key) {
-      if (!columnPattern.test(key)) return;
-      const value = flattenValue(record[key]);
-      if (value !== '' && value.length < 80) seen[value] = true;
-    });
-  });
-  return Object.keys(seen).sort();
+function noteFor(tab) {
+  return (REFERENCE_TABS.find(function (r) { return r.tab === tab; }) || {}).note || 'Lookup only.';
 }
 
-async function buildReferenceTabs(base44, token, spreadsheetId, sheetIds) {
-  const allRecords = [];
-  for (const domain of DOMAINS) {
-    const rows = await base44.asServiceRole.entities[domain.entity]
-      .list('-updated_date', 2000)
-      .catch(function () { return []; });
-    (rows || []).forEach(function (r) { allRecords.push(r); });
-  }
+/**
+ * Every reference tab carries its note BESIDE its title on row 1, never on a row
+ * of its own — a note sitting above the values would become the first choice in
+ * every dropdown that reads the tab. Values therefore start at row 2.
+ */
+function referenceNoteRequests(sheetId, columnCount, noteColumn) {
+  return [
+    {
+      updateSheetProperties: {
+        properties: { sheetId: sheetId, gridProperties: { frozenRowCount: 1, columnCount: columnCount } },
+        fields: 'gridProperties.frozenRowCount,gridProperties.columnCount',
+      },
+    },
+    {
+      repeatCell: {
+        range: gridRange(sheetId, 0, 1, 0, 1),
+        cell: { userEnteredFormat: { textFormat: { bold: true } } },
+        fields: 'userEnteredFormat.textFormat.bold',
+      },
+    },
+    {
+      repeatCell: {
+        range: gridRange(sheetId, 0, 1, noteColumn, noteColumn + 1),
+        cell: { userEnteredFormat: { textFormat: { italic: true, fontSize: 8 } } },
+        fields: 'userEnteredFormat.textFormat',
+      },
+    },
+  ];
+}
 
+/**
+ * The three lookup lists still built from what the platform holds: the fixed
+ * visibility values, the disciplines, and the racing classes in use.
+ */
+async function buildRecordReferenceTabs(base44, token, spreadsheetId, sheetIds) {
   const disciplines = await base44.asServiceRole.entities.Discipline.list().catch(function () { return []; });
   const classes = await base44.asServiceRole.entities.SeriesClass.list('-created_date', 2000).catch(function () { return []; });
 
@@ -421,35 +446,118 @@ async function buildReferenceTabs(base44, token, spreadsheetId, sheetIds) {
     { tab: TAB_REF_VISIBILITY, values: STATIC_VISIBILITY },
     { tab: TAB_REF_DISCIPLINES, values: (disciplines || []).map(function (d) { return d.name; }).filter(Boolean).sort() },
     { tab: TAB_REF_CLASSES, values: Array.from(new Set((classes || []).map(function (c) { return c.class_name; }).filter(Boolean))).sort() },
-    { tab: TAB_REF_COUNTRIES, values: distinctValues(allRecords, /country/i) },
-    { tab: TAB_REF_STATES, values: distinctValues(allRecords, /_state$/i) },
   ];
 
   for (const source of sources) {
     const sheetId = sheetIds[source.tab];
     if (sheetId === undefined) continue;
     await clearTab(token, spreadsheetId, source.tab, 1);
-    const note = (REFERENCE_TABS.find(function (r) { return r.tab === source.tab; }) || {}).note || 'Lookup only.';
-    const rows = [[source.tab.replace('Ref · ', '') + ' (lookup only)'], [note]];
+    const rows = [[source.tab.replace('Ref · ', '') + ' (lookup only)', noteFor(source.tab)]];
     source.values.forEach(function (value) { rows.push([value]); });
     await writeValues(token, spreadsheetId, rangeOf(source.tab, 'A1'), rows);
-    await batchUpdateSpreadsheet(token, spreadsheetId, [
-      {
-        updateSheetProperties: {
-          properties: { sheetId: sheetId, gridProperties: { frozenRowCount: 2 } },
-          fields: 'gridProperties.frozenRowCount',
-        },
-      },
-      {
-        repeatCell: {
-          range: gridRange(sheetId, 0, 1, 0, 1),
-          cell: { userEnteredFormat: { textFormat: { bold: true } } },
-          fields: 'userEnteredFormat.textFormat.bold',
-        },
-      },
-      { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 1 } } },
-    ]);
+    await batchUpdateSpreadsheet(token, spreadsheetId,
+      referenceNoteRequests(sheetId, 1, 1).concat([
+        { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 1 } } },
+      ]));
   }
+}
+
+/**
+ * Ref · Countries — the platform's whole country list: one row per country with
+ * its name, its two-letter code and its flag. This tab is the source of every
+ * country dropdown in the workbook.
+ */
+async function writeCountriesTab(token, spreadsheetId, sheetIds) {
+  const sheetId = sheetIds[TAB_REF_COUNTRIES];
+  if (sheetId === undefined) return;
+
+  const rows: string[][] = [['Countries (lookup only)', noteFor(TAB_REF_COUNTRIES)]];
+  COUNTRIES.forEach(function (country) {
+    const flag = flagUrl(country.name, 40);
+    rows.push([country.name, country.code, flag ? '=IMAGE("' + flag + '")' : '']);
+  });
+
+  await clearTab(token, spreadsheetId, TAB_REF_COUNTRIES, 1);
+  // USER_ENTERED, so the flag column lands as an image rather than as text.
+  await writeValuesEntered(token, spreadsheetId, rangeOf(TAB_REF_COUNTRIES, 'A1'), rows);
+  await batchUpdateSpreadsheet(token, spreadsheetId,
+    referenceNoteRequests(sheetId, 3, 1).concat([
+      { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: 3 } } },
+    ]));
+}
+
+/**
+ * Ref · States — the country band on row 2, each country's regions stacked
+ * beneath it in that country's own column.
+ *
+ * Every band column gets a named range (states_<CODE>). That name is what lets a
+ * state cell in a record tab read the regions of the country sitting beside it
+ * in its own row, so the state list follows the country without the two ever
+ * being able to drift apart.
+ */
+async function writeStatesTab(token, spreadsheetId, sheetIds, namedRanges) {
+  const sheetId = sheetIds[TAB_REF_STATES];
+  if (sheetId === undefined) return;
+
+  const band = REGION_COUNTRY_NAMES.map(function (name) {
+    const country = resolveCountry(name);
+    return {
+      name: name,
+      code: country ? country.code : '',
+      regions: REGIONS_BY_COUNTRY[name] || [],
+    };
+  });
+  const depth = band.reduce(function (max, entry) { return Math.max(max, entry.regions.length); }, 0);
+
+  const rows: string[][] = [['States (lookup only)', noteFor(TAB_REF_STATES)]];
+  rows.push(band.map(function (entry) { return entry.name; }));
+  for (let level = 0; level < depth; level++) {
+    rows.push(band.map(function (entry) {
+      const region = entry.regions[level];
+      return region ? region.name : '';
+    }));
+  }
+
+  await clearTab(token, spreadsheetId, TAB_REF_STATES, 1);
+  await writeValues(token, spreadsheetId, rangeOf(TAB_REF_STATES, 'A1'), rows);
+
+  const requests: any[] = referenceNoteRequests(sheetId, band.length, 1).concat([
+    {
+      repeatCell: {
+        range: gridRange(sheetId, 1, 2, 0, band.length),
+        cell: { userEnteredFormat: { textFormat: { bold: true } } },
+        fields: 'userEnteredFormat.textFormat.bold',
+      },
+    },
+    { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: band.length } } },
+  ]);
+
+  // The named ranges are ours to manage. They are rebuilt from this run's band,
+  // so a country that gained or lost regions cannot leave a stale list behind.
+  (namedRanges || []).forEach(function (range) {
+    if (String(range.name || '').indexOf('states_') === 0) {
+      requests.push({ deleteNamedRange: { namedRangeId: range.namedRangeId } });
+    }
+  });
+  band.forEach(function (entry, index) {
+    if (!entry.code || entry.regions.length === 0) return;
+    requests.push({
+      addNamedRange: {
+        namedRange: {
+          name: statesRangeName(entry.code),
+          range: gridRange(sheetId, 2, 2 + entry.regions.length, index, index + 1),
+        },
+      },
+    });
+  });
+
+  await batchUpdateSpreadsheet(token, spreadsheetId, requests);
+}
+
+async function buildReferenceTabs(base44, token, spreadsheetId, sheetIds, namedRanges) {
+  await buildRecordReferenceTabs(base44, token, spreadsheetId, sheetIds);
+  await writeCountriesTab(token, spreadsheetId, sheetIds);
+  await writeStatesTab(token, spreadsheetId, sheetIds, namedRanges);
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -476,6 +584,10 @@ async function writeReadMe(token, spreadsheetId, sheetIds, config) {
     [''],
     ['Clashes are never merged'],
     ['A row that matches a record the platform already holds is skipped, left exactly as you typed it, and flagged in Problems with the record it matched. Nothing already on the platform is overwritten by this workbook.'],
+    [''],
+    ['Countries and regions come from the reference tabs'],
+    ['Ref · Countries holds every country the platform accepts, and Ref · States holds each country\u2019s own regions. The state list in a row follows the country typed in that row.'],
+    ['A row whose country or region is not on those lists is held back and listed in Problems, naming the value and the column. Correct it and run the import again — the rest of the run is unaffected.'],
     [''],
     ['New records arrive as drafts'],
     ['Imported records are created in a draft state, so nothing reaches the public site until it is published from the app.'],
@@ -654,7 +766,7 @@ export async function setupImportSheet(base44, input) {
   for (const domain of DOMAINS) {
     await writeTemplateTab(token, spreadsheetId, workbook.sheetIds, domain, true);
   }
-  await buildReferenceTabs(base44, token, spreadsheetId, workbook.sheetIds);
+  await buildReferenceTabs(base44, token, spreadsheetId, workbook.sheetIds, workbook.namedRanges);
 
   const existing = await getImportSheetConfig(base44);
   const record = {
@@ -714,7 +826,7 @@ export async function refreshImportSheet(base44, input) {
     if (onlyKeys && onlyKeys.indexOf(domain.key) === -1) continue;
     await writeTemplateTab(token, spreadsheetId, workbook.sheetIds, domain, false);
   }
-  if (!onlyKeys) await buildReferenceTabs(base44, token, spreadsheetId, workbook.sheetIds);
+  if (!onlyKeys) await buildReferenceTabs(base44, token, spreadsheetId, workbook.sheetIds, workbook.namedRanges);
 
   await saveImportSheetConfig(base44, config, {
     last_refresh_at: runStartedAt,

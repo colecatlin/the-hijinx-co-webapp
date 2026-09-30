@@ -410,21 +410,24 @@ export function statesRangeName(countryCode: string): string {
  * A country we hold no regions for accepts any region text.
  */
 export function checkLocationPair(countryValue: unknown, stateValue: unknown): {
-  ok: boolean; country: string; state: string; reason: string;
+  ok: boolean; country: string; state: string; reason: string; field: 'country' | 'state' | '';
 } {
   const rawCountry = text(countryValue);
   const rawState = text(stateValue);
 
-  if (!rawCountry) return { ok: true, country: '', state: rawState, reason: '' };
+  if (!rawCountry) return { ok: true, country: '', state: rawState, reason: '', field: '' };
 
   const country = resolveCountry(rawCountry);
   if (!country) {
-    return { ok: false, country: rawCountry, state: rawState, reason: '"' + rawCountry + '" is not a country the platform holds.' };
+    return {
+      ok: false, country: rawCountry, state: rawState, field: 'country',
+      reason: '"' + rawCountry + '" is not a country the platform holds.',
+    };
   }
 
   const regions = regionsFor(country.name);
   if (!rawState || !regions) {
-    return { ok: true, country: country.name, state: rawState, reason: '' };
+    return { ok: true, country: country.name, state: rawState, reason: '', field: '' };
   }
 
   const wanted = rawState.toLowerCase();
@@ -433,10 +436,10 @@ export function checkLocationPair(countryValue: unknown, stateValue: unknown): {
   });
   if (!match) {
     return {
-      ok: false, country: country.name, state: rawState,
+      ok: false, country: country.name, state: rawState, field: 'state',
       reason: '"' + rawState + '" is not a region of ' + country.name + '.',
     };
   }
 
-  return { ok: true, country: country.name, state: match.name, reason: '' };
+  return { ok: true, country: country.name, state: match.name, reason: '', field: '' };
 }

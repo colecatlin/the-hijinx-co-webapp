@@ -23,6 +23,7 @@ import {
   getImportSheetConfig, readWorkbookTabs, writeRowStamps, mergeTabState,
 } from './importSheetWriter.ts';
 import { resolveSponsorOrganization } from './organizationResolution.ts';
+import { checkLocationPair } from './countryReference.ts';
 
 const EXTRA_ORGANIZATION_FIELDS = [
   'industry', 'tagline', 'description',
