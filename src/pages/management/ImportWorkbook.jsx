@@ -5,21 +5,24 @@ import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import AdminGuard from '@/components/management/AdminGuard';
 import WorkbookConnectPanel from '@/components/management/importsheet/WorkbookConnectPanel';
+import WorkbookImportPanel from '@/components/management/importsheet/WorkbookImportPanel';
 import WorkbookTabStatus from '@/components/management/importsheet/WorkbookTabStatus';
 import WorkbookRecentRuns from '@/components/management/importsheet/WorkbookRecentRuns';
 
 /**
- * Import Workbook — connect the master workbook and keep its detail tabs current.
+ * Import Workbook — the six record tabs are the import templates.
  *
- * The workbook is written BY the platform and never read back: there is no
- * push, no import-from-sheet, and no approval gate. This page only connects it
- * and refreshes tabs on demand.
+ * Type rows into the tabs in the workbook, then Check or Import here. One pass
+ * covers every tab, so adding racers, teams, tracks, series, events and
+ * organizations no longer means running several separate imports.
  */
 export default function ImportWorkbook() {
   const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [busyTab, setBusyTab] = useState('');
+  const [runMode, setRunMode] = useState('');
+  const [runResult, setRunResult] = useState(null);
 
   const { data: configs, isLoading } = useQuery({
     queryKey: ['importSheetConfig'],
@@ -43,7 +46,9 @@ export default function ImportWorkbook() {
     setError('');
     setBusy(true);
     try {
-      await base44.functions.invoke('importSheetSetup', { spreadsheet_url: url });
+      await base44.functions.invoke('importSheetSetup', url
+        ? { spreadsheet_url: url }
+        : { spreadsheet_id: config.spreadsheet_id });
       await queryClient.invalidateQueries({ queryKey: ['importSheetConfig'] });
     } catch (err) {
       setError(errorText(err));
@@ -65,12 +70,28 @@ export default function ImportWorkbook() {
     }
   };
 
+  const handleRun = async (mode) => {
+    setError('');
+    setRunMode(mode);
+    setRunResult(null);
+    try {
+      const res = await base44.functions.invoke('importFromWorkbook', { mode });
+      setRunResult(res.data);
+      await queryClient.invalidateQueries({ queryKey: ['importSheetConfig'] });
+      await queryClient.invalidateQueries({ queryKey: ['importSheetRuns'] });
+    } catch (err) {
+      setError(errorText(err));
+    } finally {
+      setRunMode('');
+    }
+  };
+
   return (
     <ManagementLayout currentPage="management/platform/import-workbook">
       <AdminGuard>
         <ManagementShell
           title="Import Workbook"
-          subtitle="Every import reports into one master workbook — what came in, what was created, what was skipped and why"
+          subtitle="The six record tabs are the import templates — type rows into them and pull every tab in with one action"
         >
           {isLoading ? (
             <p className="text-xs text-foreground-quiet">Loading workbook configuration…</p>
@@ -84,14 +105,24 @@ export default function ImportWorkbook() {
 
               {config ? (
                 <>
+                  <WorkbookImportPanel
+                    ready={!!config}
+                    busy={runMode}
+                    result={runResult}
+                    onRun={handleRun}
+                  />
                   <WorkbookTabStatus config={config} busyTab={busyTab} onRefresh={handleRefresh} />
                   <WorkbookRecentRuns runs={runs} />
                   <p className="text-[10px] text-foreground-quiet">
-                    Reading and filtering happen in the workbook itself — Import Log,
-                    Problems, the domain tabs and the reference tabs are all there.
+                    Rows you type into a tab stay there. An import only writes the platform columns beside
+                    each row — the Read Me tab in the workbook explains the rest.
                   </p>
                 </>
-              ) : null}
+              ) : (
+                <p className="text-xs text-foreground-quiet">
+                  Connect a workbook to build the six record templates.
+                </p>
+              )}
             </div>
           )}
         </ManagementShell>

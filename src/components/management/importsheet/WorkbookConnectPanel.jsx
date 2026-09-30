@@ -8,12 +8,16 @@ import { AlertTriangle, FileSpreadsheet } from 'lucide-react';
  *
  * Only the EDITING link works — the published /pubhtml key is a separate,
  * read-only handle, so it is called out rather than silently rejected later.
+ * Once a workbook is connected the link box can be left empty: rebuilding and
+ * re-connecting reuse the workbook already on record.
  */
 export default function WorkbookConnectPanel({ config, busy, onConnect }) {
   const [url, setUrl] = useState('');
 
+  const canSubmit = !!url.trim() || !!config;
+
   const submit = () => {
-    if (!url.trim()) return;
+    if (!canSubmit) return;
     onConnect(url.trim());
   };
 
@@ -28,8 +32,7 @@ export default function WorkbookConnectPanel({ config, busy, onConnect }) {
         <div className="space-y-1 text-xs text-foreground-secondary">
           <p className="font-semibold text-foreground">{config.spreadsheet_title || 'Connected workbook'}</p>
           <p className="break-all font-mono text-[10px] text-foreground-quiet">{config.spreadsheet_id}</p>
-          <p>Setup last run: {config.last_setup_at || '—'}</p>
-          <p>Detail tabs last refreshed: {config.last_refresh_at || '—'}</p>
+          <p>Templates last built: {config.last_setup_at || '—'}</p>
         </div>
       ) : (
         <p className="text-xs text-foreground-secondary">
@@ -49,13 +52,19 @@ export default function WorkbookConnectPanel({ config, busy, onConnect }) {
         <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://docs.google.com/spreadsheets/d/…/edit"
+          placeholder={config ? 'Leave empty to rebuild this workbook' : 'https://docs.google.com/spreadsheets/d/…/edit'}
           className="text-xs"
         />
-        <Button onClick={submit} disabled={busy || !url.trim()} size="sm" className="whitespace-nowrap">
-          {busy ? 'Building…' : config ? 'Rebuild workbook' : 'Connect & build'}
+        <Button onClick={submit} disabled={busy || !canSubmit} size="sm" className="whitespace-nowrap">
+          {busy ? 'Building…' : config ? 'Rebuild templates' : 'Connect & build'}
         </Button>
       </div>
+
+      {config ? (
+        <p className="text-[10px] text-foreground-quiet">
+          Rebuilding rewrites the six template tabs from the top and clears anything typed into them.
+        </p>
+      ) : null}
     </section>
   );
 }

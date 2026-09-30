@@ -79,6 +79,14 @@ export function colLetter(index) {
   return out;
 }
 
+/** Read one range as a grid of rows. */
+export async function readValues(token, spreadsheetId, range) {
+  return sheetsFetch(
+    token,
+    SHEETS_API + '/' + spreadsheetId + '/values/' + encodeURIComponent(range) + '?majorDimension=ROWS'
+  );
+}
+
 /** Write one range. */
 export async function writeValues(token, spreadsheetId, range, values) {
   return sheetsFetch(
