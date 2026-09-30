@@ -214,10 +214,9 @@ STAMP_COLUMNS.forEach(function (column) {
  * A country column reads the platform's whole country list, and a state column
  * reads the platform's whole region list. A dropdown belongs to the entire column,
  * and Sheets resolves its source once for that column — one list per column, not
- * one per row — so the country a row pairs with cannot re-point the list.
- * The pairing is therefore shown and judged where it honestly can be: a region
- * that does not belong to the country on its row turns red in the sheet, and the
- * import holds that row back.
+ * one per row — so the country a row pairs with cannot re-point the list. The
+ * pairing is therefore judged by the import, against the same country reference,
+ * and a region that does not belong to its row's country is held back there.
  *
  * Every rule is non-strict: an admin may type a value the list does not hold, and
  * the import is what decides whether it can become a record.
@@ -262,32 +261,6 @@ function dropdownRules(sheetId, domain, columns) {
     const stateIndex = columns.indexOf(pair.state);
     if (countryIndex === -1 || stateIndex === -1) return;
     requests.push(listRule(regionSource, stateIndex));
-
-    // The sheet can still show the pairing live: a region that does not belong to
-    // the country beside it turns red as it is typed, exactly as the import would
-    // hold that row back.
-    const countryLetter = colLetter(countryIndex);
-    const stateLetter = colLetter(stateIndex);
-    requests.push({
-      addConditionalFormatRule: {
-        rule: {
-          ranges: [gridRange(sheetId, 2, 5000, stateIndex, stateIndex + 1)],
-          booleanRule: {
-            condition: {
-              type: 'CUSTOM_FORMULA',
-              values: [{
-                userEnteredValue: '=AND($' + countryLetter + '3<>"", $' + stateLetter + '3<>"",' +
-                  ' IFERROR(COUNTIF(INDIRECT("states_"&VLOOKUP($' + countryLetter + '3,' +
-                  quoteTab(TAB_REF_COUNTRIES) + '!$A$2:$B$' + COUNTRY_LAST_ROW + ',2,FALSE)), $' +
-                  stateLetter + '3), -1)=0)',
-              }],
-            },
-            format: { backgroundColor: { red: 0.98, green: 0.9, blue: 0.9 } },
-          },
-        },
-        index: 0,
-      },
-    });
   });
 
   return requests;
@@ -646,7 +619,7 @@ async function writeReadMe(token, spreadsheetId, sheetIds, config) {
     [''],
     ['Countries and regions come from the reference tabs'],
     ['Ref · Countries holds every country the platform accepts, Ref · Regions every region it accepts, and Ref · States shows each country\u2019s own regions side by side while you type. The country and state columns take their dropdowns from those lists.'],
-    ['The country and its region have to belong together. A region that does not belong to the country on its row turns red as you type, and the import holds that row back and lists it in Problems — as it does for a country or region that is not on those lists at all. Correct it and run the import again; the rest of the run is unaffected.'],
+    ['The country and its region have to belong together. A row whose region does not belong to the country beside it — or whose country or region is not on those lists at all — is held back and listed in Problems, naming the value and the column. Correct it and run the import again; the rest of the run is unaffected.'],
     [''],
     ['New records arrive as drafts'],
     ['Imported records are created in a draft state, so nothing reaches the public site until it is published from the app.'],
