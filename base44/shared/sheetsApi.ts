@@ -55,7 +55,7 @@ export async function sheetsFetch(token, url, init) {
 export async function getSpreadsheet(token, spreadsheetId) {
   return sheetsFetch(
     token,
-    SHEETS_API + '/' + spreadsheetId + '?fields=properties.title,sheets.properties'
+    SHEETS_API + '/' + spreadsheetId + '?fields=properties.title,sheets.properties,namedRanges'
   );
 }
 
@@ -92,6 +92,18 @@ export async function writeValues(token, spreadsheetId, range, values) {
   return sheetsFetch(
     token,
     SHEETS_API + '/' + spreadsheetId + '/values/' + encodeURIComponent(range) + '?valueInputOption=RAW',
+    { method: 'PUT', body: JSON.stringify({ values: values }) }
+  );
+}
+
+/**
+ * Write one range with the input interpreted (USER_ENTERED), so a cell holding
+ * a formula lands as a formula rather than as literal text.
+ */
+export async function writeValuesEntered(token, spreadsheetId, range, values) {
+  return sheetsFetch(
+    token,
+    SHEETS_API + '/' + spreadsheetId + '/values/' + encodeURIComponent(range) + '?valueInputOption=USER_ENTERED',
     { method: 'PUT', body: JSON.stringify({ values: values }) }
   );
 }

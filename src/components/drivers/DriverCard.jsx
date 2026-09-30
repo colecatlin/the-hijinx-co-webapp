@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import CountryFlag from '@/components/shared/CountryFlag';
+import { flagCode } from '@/lib/countryReference';
 import { getDriverProfileUrl } from '@/lib/driverUrl';
 import { MapPin } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -43,25 +44,10 @@ export default function DriverCard({ driver, program, programs = [], allSeries =
 
   const bibNumber = program?.bib_number || program?.vehicle_number || driver.primary_number;
   
-  // Country code mapping
-  const countryCodeMap = {
-    'United States': 'USA',
-    'Canada': 'CAN',
-    'Mexico': 'MEX',
-    'United Kingdom': 'GBR',
-    'Germany': 'DEU',
-    'France': 'FRA',
-    'Italy': 'ITA',
-    'Spain': 'ESP',
-    'Australia': 'AUS',
-    'Japan': 'JPN',
-    'China': 'CHN',
-    'India': 'IND',
-    'Brazil': 'BRA',
-    'Argentina': 'ARG',
-  };
-  
-  const countryAbbr = driver.hometown_country ? countryCodeMap[driver.hometown_country] || driver.hometown_country.substring(0, 3).toUpperCase() : '';
+  // Country abbreviation — resolved from the platform's one country list.
+  const countryAbbr = driver.hometown_country
+    ? (flagCode(driver.hometown_country) || driver.hometown_country.substring(0, 3)).toUpperCase()
+    : '';
   const hometown = [driver.hometown_city, driver.hometown_state, countryAbbr].filter(Boolean).join(', ');
 
   return (

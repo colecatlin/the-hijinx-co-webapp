@@ -4,26 +4,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, CheckCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { US_STATES } from '@/constants/usStates';
-import { COUNTRIES, COUNTRIES_WITH_REGIONS } from '@/components/shared/countriesData';
+import { COUNTRIES, canonicalCountryName, regionsFor } from '@/components/shared/countriesData';
 
-// Normalize country values so 'USA' and 'United States' both resolve to the
-// canonical COUNTRIES key 'USA'. This fixes the existing mismatch where forms
-// default to 'USA' but Google Places returns 'United States'.
-const COUNTRY_ALIASES = { 'United States': 'USA', 'United States of America': 'USA' };
+// Every accepted spelling — 'USA', 'US', 'United States', 'United States of
+// America' — resolves to the one spelling the platform uses: the country list's
+// own name. Forms default to 'USA' while Google Places returns 'United States',
+// and both land on the same country.
 function normalizeCountry(value) {
-  if (!value) return value;
-  if (COUNTRIES.includes(value)) return value;
-  return COUNTRY_ALIASES[value] || value;
+  return canonicalCountryName(value) || value;
 }
 
-// US_STATES uses {value, label} objects; COUNTRIES_WITH_REGIONS stores plain
-// string arrays. Normalize both to [{value, label}] for Select rendering.
+// Regions come from the country list, so the lists offered here are the same
+// ones the workbook offers. US states keep the two-letter code the app's forms
+// store; every other country offers its region names.
 function getRegionOptions(country) {
   const normalized = normalizeCountry(country);
-  if (normalized === 'USA') return US_STATES;
-  const regions = COUNTRIES_WITH_REGIONS[normalized];
+  if (normalized === 'United States') return US_STATES;
+  const regions = regionsFor(normalized);
   if (!regions) return null;
-  return regions.map(r => ({ value: r, label: r }));
+  return regions.map(r => ({ value: r.name, label: r.name }));
 }
 
 let googleScriptLoaded = false;
@@ -169,7 +168,7 @@ export default function LocationFields({
                 return (
                   <Select value={stateValue || ''} onValueChange={(v) => { onStateChange(v); setConfirmed(false); }}>
                     <SelectTrigger className={`h-8 text-sm ${errors.state || errors.headquarters_state ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder={countryValue === 'USA' ? 'State' : 'Region'} />
+                      <SelectValue placeholder={normalizeCountry(countryValue) === 'United States' ? 'State' : 'Region'} />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                       {hasStored && <SelectItem value={stateValue}>{stateValue}</SelectItem>}

@@ -21,13 +21,20 @@
 
 import {
   extractSpreadsheetId, getSheetsToken, getSpreadsheet,
-  quoteTab, rangeOf, colLetter, readValues, writeValues, batchWriteValues,
+  quoteTab, rangeOf, colLetter, readValues, writeValues, writeValuesEntered, batchWriteValues,
   appendValues, batchUpdateSpreadsheet, gridRange, flattenValue, sheetsFetch, SHEETS_API,
 } from './sheetsApi.ts';
 
 import {
   WORKBOOK_DOMAINS, STAMP_COLUMNS, STAMP_COLUMN_NAMES, templateColumns, inputColumnNames,
 } from './workbookTemplates.ts';
+
+import {
+  COUNTRIES, REGION_COUNTRY_NAMES, REGIONS_BY_COUNTRY, resolveCountry, flagUrl, statesRangeName,
+} from './countryReference.ts';
+
+/** Last row of the country list on Ref · Countries — its dropdown range. */
+const COUNTRY_LAST_ROW = COUNTRIES.length + 1;
 
 export const TAB_READ_ME = 'Read Me';
 export const TAB_SUMMARY = 'Summary';
@@ -52,8 +59,8 @@ const REFERENCE_TABS = [
   { tab: TAB_REF_VISIBILITY, note: 'Lookup only — visibility values accepted by the platform. Do not type new values here.' },
   { tab: TAB_REF_DISCIPLINES, note: 'Lookup only — disciplines present on the platform. Populated from the Discipline entity.' },
   { tab: TAB_REF_CLASSES, note: 'Lookup only — racing classes present on the platform. Populated from SeriesClass.' },
-  { tab: TAB_REF_COUNTRIES, note: 'Lookup only — countries already present on platform records.' },
-  { tab: TAB_REF_STATES, note: 'Lookup only — states and regions already present on platform records.' },
+  { tab: TAB_REF_COUNTRIES, note: 'Lookup only — every country the platform accepts, spelled the one way it is stored. Written from the platform\'s country list; do not type here.' },
+  { tab: TAB_REF_STATES, note: 'Lookup only — each country\'s own regions, stacked under that country in the band row above. The state dropdowns follow the country chosen in the same row. Do not type here.' },
 ];
 
 const STATIC_VISIBILITY = ['live', 'draft', 'public', 'private', 'archived', 'Active', 'Inactive', 'Upcoming', 'Completed'];
@@ -182,33 +189,60 @@ STAMP_COLUMNS.forEach(function (column) {
   STAMP_COLUMNS_BY_NAME[column.name] = column;
 });
 
-/** Dropdowns keep controlled values from drifting. Unmatched columns stay free text. */
-function dropdownRules(sheetId, columns) {
+/**
+ * Dropdowns keep controlled values from drifting.
+ *
+ * A country column reads the platform's whole country list. A state column that
+ * has a country in the same row reads THAT country's own regions, through the
+ * named range the States tab publishes for it — so choosing Canada re-points the
+ * state cell to Alberta. A state column with no country in its row stays free
+ * text, because no list could honestly be offered for it.
+ *
+ * Every rule is non-strict: an admin may type a value the list does not hold, and
+ * the import is what decides whether it can become a record.
+ */
+function dropdownRules(sheetId, domain, columns) {
   const requests = [];
+
+  const listRule = function (source: string, index: number) {
+    return {
+      setDataValidation: {
+        range: gridRange(sheetId, 2, 5000, index, index + 1),
+        rule: {
+          condition: { type: 'ONE_OF_RANGE', values: [{ userEnteredValue: source }] },
+          strict: false,
+          showCustomUi: true,
+        },
+      },
+    };
+  };
+
   const apply = function (patterns, sourceTab) {
     columns.forEach(function (column, index) {
       const matches = patterns.some(function (re) { return re.test(column); });
       if (!matches) return;
-      requests.push({
-        setDataValidation: {
-          range: gridRange(sheetId, 2, 5000, index, index + 1),
-          rule: {
-            condition: {
-              type: 'ONE_OF_RANGE',
-              values: [{ userEnteredValue: '=' + quoteTab(sourceTab) + '!$A$2:$A$400' }],
-            },
-            strict: false,
-            showCustomUi: true,
-          },
-        },
-      });
+      requests.push(listRule('=' + quoteTab(sourceTab) + '!$A$2:$A$400', index));
     });
   };
+
   apply([/^visibility/i], TAB_REF_VISIBILITY);
   apply([/^primary_discipline$/i, /^discipline$/i], TAB_REF_DISCIPLINES);
   apply([/^class_name$/i, /^name_of_class/i], TAB_REF_CLASSES);
-  apply([/country/i], TAB_REF_COUNTRIES);
-  apply([/_state$/i, /_province$/i], TAB_REF_STATES);
+
+  const countrySource = '=' + quoteTab(TAB_REF_COUNTRIES) + '!$A$2:$A$' + COUNTRY_LAST_ROW;
+  columns.forEach(function (column, index) {
+    if (/country/i.test(column)) requests.push(listRule(countrySource, index));
+  });
+
+  (domain.locationPairs || []).forEach(function (pair) {
+    const countryIndex = columns.indexOf(pair.country);
+    const stateIndex = columns.indexOf(pair.state);
+    if (countryIndex === -1 || stateIndex === -1) return;
+    const formula = '=INDIRECT("states_"&VLOOKUP($' + colLetter(countryIndex) + '3,' +
+      quoteTab(TAB_REF_COUNTRIES) + '!$A$2:$B$' + COUNTRY_LAST_ROW + ',2,FALSE))';
+    requests.push(listRule(formula, stateIndex));
+  });
+
   return requests;
 }
 
@@ -280,7 +314,7 @@ async function writeTemplateTab(token, spreadsheetId, sheetIds, domain, clearDat
     },
     { autoResizeDimensions: { dimensions: { sheetId: sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: header.length } } },
   ].concat(
-    dropdownRules(sheetId, header),
+    dropdownRules(sheetId, domain, header),
     actionIndex >= 0 ? actionFormatting(sheetId, header.length, actionIndex, 2, 'domain') : []
   ));
 }
