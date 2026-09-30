@@ -21,8 +21,9 @@ export type TemplateColumn = {
 };
 
 /**
- * A country/region pair inside one row — the state cell offers that country's
- * own regions, and the import judges the two together.
+ * A country/region pair inside one row — the state cell offers the platform's region
+ * list, and the import judges the two together, holding back a region that does not
+ * belong to the country on its row.
  */
 export type LocationPair = {
   /** Column holding the country. */
@@ -93,7 +94,7 @@ const RACERS: WorkbookDomain = {
     { name: 'primary_discipline', note: 'Main discipline — choose from the Ref · Disciplines tab.' },
     { name: 'date_of_birth', note: 'YYYY-MM-DD. The strongest signal for telling two people with the same name apart.' },
     { name: 'hometown_city', note: 'Hometown city.' },
-    { name: 'hometown_state', note: 'Hometown state — the list follows the country in this row.' },
+    { name: 'hometown_state', note: 'Hometown state — choose from Ref · Regions; it must belong to the country in this row.' },
     { name: 'hometown_country', note: 'Hometown country — choose from Ref · Countries.' },
     { name: 'racing_base_city', note: 'Where the racer is based, if it differs from the hometown.' },
     { name: 'racing_base_state', note: 'State or region of the racing base. Free text — this row carries no country for it.' },
@@ -132,7 +133,7 @@ const TEAMS: WorkbookDomain = {
   columns: [
     { name: 'name', required: true, note: 'Team name. Required.' },
     { name: 'headquarters_city', note: 'Headquarters city.' },
-    { name: 'headquarters_state', note: 'Headquarters state — the list follows the country in this row.' },
+    { name: 'headquarters_state', note: 'Headquarters state — choose from Ref · Regions; it must belong to the country in this row.' },
     { name: 'country', note: 'Country — choose from Ref · Countries.' },
     { name: 'primary_discipline', note: 'Main discipline — choose from the Ref · Disciplines tab.' },
     { name: 'team_level', note: 'Free text — Pro, Sportsman, and so on.' },
@@ -170,7 +171,7 @@ const ORGANIZATIONS: WorkbookDomain = {
     { name: 'tagline', note: 'Short identity line.' },
     { name: 'description', note: 'Public description.' },
     { name: 'location_city', note: 'City.' },
-    { name: 'location_state', note: 'State or region — the list follows the country in this row.' },
+    { name: 'location_state', note: 'State or region — choose from Ref · Regions; it must belong to the country in this row.' },
     { name: 'location_country', note: 'Country — choose from Ref · Countries.' },
     { name: 'contact_email', note: 'Contact email.' },
     { name: 'logo_url', note: 'Logo image address.' },
@@ -205,7 +206,7 @@ const TRACKS: WorkbookDomain = {
   columns: [
     { name: 'name', required: true, note: 'Track name. Required.' },
     { name: 'location_city', required: true, note: 'City. Required — the platform will not create a track without one.' },
-    { name: 'location_state', note: 'State or region — the list follows the country in this row.' },
+    { name: 'location_state', note: 'State or region — choose from Ref · Regions; it must belong to the country in this row.' },
     { name: 'location_country', required: true, note: 'Country — choose from Ref · Countries. Required — the platform will not create a track without one.' },
     { name: 'track_type', note: 'Free text — Short Course, Oval, Road Course, and so on.' },
     { name: 'surface_type', note: 'Free text — Dirt, Asphalt, and so on.' },

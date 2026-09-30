@@ -36,6 +36,16 @@ import {
 /** Last row of the country list on Ref · Countries — its dropdown range. */
 const COUNTRY_LAST_ROW = COUNTRIES.length + 1;
 
+/** Every region the platform holds, once each — the list the state columns offer. */
+const ALL_REGION_NAMES = Array.from(new Set(
+  REGION_COUNTRY_NAMES.reduce(function (all, name) {
+    return all.concat((REGIONS_BY_COUNTRY[name] || []).map(function (region) { return region.name; }));
+  }, [])
+)).sort();
+
+/** Last row of the region list on Ref · Regions — the state columns' dropdown range. */
+const REGION_LAST_ROW = ALL_REGION_NAMES.length + 1;
+
 export const TAB_READ_ME = 'Read Me';
 export const TAB_SUMMARY = 'Summary';
 export const TAB_LOG = 'Import Log';
@@ -45,6 +55,7 @@ export const TAB_REF_VISIBILITY = 'Ref · Visibility';
 export const TAB_REF_DISCIPLINES = 'Ref · Disciplines';
 export const TAB_REF_CLASSES = 'Ref · Classes';
 export const TAB_REF_COUNTRIES = 'Ref · Countries';
+export const TAB_REF_REGIONS = 'Ref · Regions';
 export const TAB_REF_STATES = 'Ref · States';
 
 /** One tab per import domain. Tab names are stable — never change between runs. */
@@ -60,7 +71,8 @@ const REFERENCE_TABS = [
   { tab: TAB_REF_DISCIPLINES, note: 'Lookup only — disciplines present on the platform. Populated from the Discipline entity.' },
   { tab: TAB_REF_CLASSES, note: 'Lookup only — racing classes present on the platform. Populated from SeriesClass.' },
   { tab: TAB_REF_COUNTRIES, note: 'Lookup only — every country the platform accepts, spelled the one way it is stored. Written from the platform\'s country list; do not type here.' },
-  { tab: TAB_REF_STATES, note: 'Lookup only — each country\'s own regions, stacked under that country in the band row above. The state dropdowns follow the country chosen in the same row. Do not type here.' },
+  { tab: TAB_REF_REGIONS, note: 'Lookup only — every region the platform accepts, spelled the one way it is stored. This is the list the state columns offer; whether a region belongs to the country on its own row is judged at import. Do not type here.' },
+  { tab: TAB_REF_STATES, note: 'Lookup only — each country\'s own regions, stacked under that country in the band row above, for reference while typing. Do not type here.' },
 ];
 
 const STATIC_VISIBILITY = ['live', 'draft', 'public', 'private', 'archived', 'Active', 'Inactive', 'Upcoming', 'Completed'];
@@ -199,11 +211,13 @@ STAMP_COLUMNS.forEach(function (column) {
 /**
  * Dropdowns keep controlled values from drifting.
  *
- * A country column reads the platform's whole country list. A state column that
- * has a country in the same row reads THAT country's own regions, through the
- * named range the States tab publishes for it — so choosing Canada re-points the
- * state cell to Alberta. A state column with no country in its row stays free
- * text, because no list could honestly be offered for it.
+ * A country column reads the platform's whole country list, and a state column
+ * reads the platform's whole region list. A dropdown belongs to the entire column,
+ * and Sheets resolves its source once for that column — one list per column, not
+ * one per row — so the country a row pairs with cannot re-point the list.
+ * The pairing is therefore shown and judged where it honestly can be: a region
+ * that does not belong to the country on its row turns red in the sheet, and the
+ * import holds that row back.
  *
  * Every rule is non-strict: an admin may type a value the list does not hold, and
  * the import is what decides whether it can become a record.
@@ -241,13 +255,39 @@ function dropdownRules(sheetId, domain, columns) {
     if (/country/i.test(column)) requests.push(listRule(countrySource, index));
   });
 
+  const regionSource = '=' + quoteTab(TAB_REF_REGIONS) + '!$A$2:$A$' + REGION_LAST_ROW;
+
   (domain.locationPairs || []).forEach(function (pair) {
     const countryIndex = columns.indexOf(pair.country);
     const stateIndex = columns.indexOf(pair.state);
     if (countryIndex === -1 || stateIndex === -1) return;
-    const formula = '=INDIRECT("states_"&VLOOKUP($' + colLetter(countryIndex) + '3,' +
-      quoteTab(TAB_REF_COUNTRIES) + '!$A$2:$B$' + COUNTRY_LAST_ROW + ',2,FALSE))';
-    requests.push(listRule(formula, stateIndex));
+    requests.push(listRule(regionSource, stateIndex));
+
+    // The sheet can still show the pairing live: a region that does not belong to
+    // the country beside it turns red as it is typed, exactly as the import would
+    // hold that row back.
+    const countryLetter = colLetter(countryIndex);
+    const stateLetter = colLetter(stateIndex);
+    requests.push({
+      addConditionalFormatRule: {
+        rule: {
+          ranges: [gridRange(sheetId, 2, 5000, stateIndex, stateIndex + 1)],
+          booleanRule: {
+            condition: {
+              type: 'CUSTOM_FORMULA',
+              values: [{
+                userEnteredValue: '=AND($' + countryLetter + '3<>"", $' + stateLetter + '3<>"",' +
+                  ' IFERROR(COUNTIF(INDIRECT("states_"&VLOOKUP($' + countryLetter + '3,' +
+                  quoteTab(TAB_REF_COUNTRIES) + '!$A$2:$B$' + COUNTRY_LAST_ROW + ',2,FALSE)), $' +
+                  stateLetter + '3), -1)=0)',
+              }],
+            },
+            format: { backgroundColor: { red: 0.98, green: 0.9, blue: 0.9 } },
+          },
+        },
+        index: 0,
+      },
+    });
   });
 
   return requests;
@@ -451,8 +491,9 @@ async function growColumns(token, spreadsheetId, sheetId, columnCount) {
 }
 
 /**
- * The three lookup lists still built from what the platform holds: the fixed
- * visibility values, the disciplines, and the racing classes in use.
+ * The lookup lists still built from what the platform holds: the fixed visibility
+ * values, the disciplines, the racing classes in use, and the platform's whole
+ * region list.
  */
 async function buildRecordReferenceTabs(base44, token, spreadsheetId, sheetIds) {
   const disciplines = await base44.asServiceRole.entities.Discipline.list().catch(function () { return []; });
@@ -462,6 +503,7 @@ async function buildRecordReferenceTabs(base44, token, spreadsheetId, sheetIds) 
     { tab: TAB_REF_VISIBILITY, values: STATIC_VISIBILITY },
     { tab: TAB_REF_DISCIPLINES, values: (disciplines || []).map(function (d) { return d.name; }).filter(Boolean).sort() },
     { tab: TAB_REF_CLASSES, values: Array.from(new Set((classes || []).map(function (c) { return c.class_name; }).filter(Boolean))).sort() },
+    { tab: TAB_REF_REGIONS, values: ALL_REGION_NAMES },
   ];
 
   for (const source of sources) {
@@ -507,10 +549,9 @@ async function writeCountriesTab(token, spreadsheetId, sheetIds) {
  * Ref · States — the country band on row 2, each country's regions stacked
  * beneath it in that country's own column.
  *
- * Every band column gets a named range (states_<CODE>). That name is what lets a
- * state cell in a record tab read the regions of the country sitting beside it
- * in its own row, so the state list follows the country without the two ever
- * being able to drift apart.
+ * Every band column gets a named range (states_<CODE>), so a country's own regions
+ * can be referred to by name from the sheet — the band is the readable view, and
+ * the names are there for anything built on top of it.
  */
 async function writeStatesTab(token, spreadsheetId, sheetIds, namedRanges) {
   const sheetId = sheetIds[TAB_REF_STATES];
@@ -604,8 +645,8 @@ async function writeReadMe(token, spreadsheetId, sheetIds, config) {
     ['A row that matches a record the platform already holds is skipped, left exactly as you typed it, and flagged in Problems with the record it matched. Nothing already on the platform is overwritten by this workbook.'],
     [''],
     ['Countries and regions come from the reference tabs'],
-    ['Ref · Countries holds every country the platform accepts, and Ref · States holds each country\u2019s own regions. The state list in a row follows the country typed in that row.'],
-    ['A row whose country or region is not on those lists is held back and listed in Problems, naming the value and the column. Correct it and run the import again — the rest of the run is unaffected.'],
+    ['Ref · Countries holds every country the platform accepts, Ref · Regions every region it accepts, and Ref · States shows each country\u2019s own regions side by side while you type. The country and state columns take their dropdowns from those lists.'],
+    ['The country and its region have to belong together. A region that does not belong to the country on its row turns red as you type, and the import holds that row back and lists it in Problems — as it does for a country or region that is not on those lists at all. Correct it and run the import again; the rest of the run is unaffected.'],
     [''],
     ['New records arrive as drafts'],
     ['Imported records are created in a draft state, so nothing reaches the public site until it is published from the app.'],
