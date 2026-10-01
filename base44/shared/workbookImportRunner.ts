@@ -14,6 +14,14 @@
  * is not flagged again on every later run. A row that failed for want of data
  * is not stamped, so it stays waiting and is retried until it is fixed or
  * deleted.
+ *
+ * RaceCore IDs are minted inside a row's own commit, never in a later pass. A
+ * racer row is the case that matters: it settles on the racer profile the row
+ * produced, and the racer-profile resolver mints that profile's RACR ID as part
+ * of the same commit — so this run reads the resolver's result rather than
+ * minting a second ID on top of it. The other families the workbook creates
+ * (teams, tracks, series, events, organizations) have no ID family in the
+ * platform's RaceCore ID architecture, so those rows are stamped without one.
  */
 
 import {
@@ -129,11 +137,17 @@ async function resolveOrganization(ctx, domain, payload) {
 /**
  * Commit one typed row through the established pipeline. Driver rows go through
  * person-identity resolution first, exactly as the CSV import does, so the
- * identity chain stays intact.
+ * identity chain stays intact — and then settle on the racer profile the row
+ * produced, which is where the row's RaceCore ID comes from.
  */
 async function commitCoreRecord(ctx, domain, payload) {
-  if (domain.pipelineType === 'driver') {
-    const displayName = String((payload.first_name || '') + ' ' + (payload.last_name || '')).trim();
+  const isRacer = domain.pipelineType === 'driver';
+  const displayName = isRacer
+    ? String((payload.first_name || '') + ' ' + (payload.last_name || '')).trim()
+    : '';
+  let personIdentityId = null;
+
+  if (isRacer) {
     const identityReply = await ctx.base44.functions.invoke('resolvePersonIdentity', {
       raw_driver_name: displayName,
       raw_dob: payload.date_of_birth || null,
@@ -153,6 +167,7 @@ async function commitCoreRecord(ctx, domain, payload) {
     if (identity.action === 'REVIEW') {
       return { action: 'skipped', note: 'Possible match to a person already on the platform — needs review before creating.' };
     }
+    personIdentityId = identity.identity_id || null;
   }
 
   const prepReply = await ctx.base44.functions.invoke('prepareSourcePayloadForSync', {
@@ -179,13 +194,76 @@ async function commitCoreRecord(ctx, domain, payload) {
   // Team, Series, Event, Driver — not the internal Entity-layer row, because
   // that is what other records reference (an Event points at a Track id).
   const record = synced.source_record || synced.entity_record;
-  if (synced.source_action === 'created') {
+  const created = synced.source_action === 'created';
+
+  // A racer row settles on the racer profile: it is the public identity, it is
+  // the record that carries the RACR ID, and the racer-profile resolver mints
+  // that ID as part of this row's own commit. Reading the resolver's result is
+  // what keeps this run from minting a second ID on top of the one it assigned.
+  if (isRacer) {
+    return settleRacerProfile(ctx, personIdentityId, displayName, record, created);
+  }
+
+  if (created) {
     return { action: 'created', note: '', record: record };
   }
   return {
     action: 'skipped',
     note: 'Matched a record already on the platform — left as it was.',
     record: record,
+  };
+}
+
+/**
+ * Settle one racer row on its racer profile.
+ *
+ * The driver record above comes first — entries and results point at it — and the
+ * profile is resolved against the same person identity. A row is only stamped
+ * once the profile exists and carries its RaceCore ID: anything less and the row
+ * is left unstamped, so it stays waiting for the next run rather than being
+ * marked settled with a blank ID.
+ */
+async function settleRacerProfile(ctx, personIdentityId, displayName, driverRecord, driverCreated) {
+  if (!personIdentityId) {
+    return { action: 'failed', note: 'The row’s person identity could not be determined, so no racer profile was resolved.' };
+  }
+
+  const reply = await ctx.base44.functions.invoke('resolveRacerProfile', {
+    person_identity_id: personIdentityId,
+    creation_reason: 'racer_import',
+    allow_create: true,
+    display_name: displayName || null,
+    legacy_driver_id: (driverRecord && driverRecord.id) || null,
+  });
+  const profile = reply && reply.data;
+
+  if (!profile || profile.error) {
+    return { action: 'failed', note: (profile && profile.error) || 'The racer profile resolver did not answer.' };
+  }
+  if (profile.resolution_status === 'review') {
+    return { action: 'skipped', note: 'This racer already has more than one profile — needs a human decision before this row can settle.' };
+  }
+  if (profile.resolution_status === 'blocked' || profile.resolution_status === 'not_found') {
+    return { action: 'skipped', note: profile.error || 'The racer profile resolver held this row back.' };
+  }
+  if (!profile.racecore_id) {
+    return { action: 'failed', note: 'The racer profile was resolved but its RaceCore ID could not be assigned. The row is left waiting so the next run tries again.' };
+  }
+
+  const racerRecord = {
+    id: profile.racer_profile_id,
+    display_name: displayName || '',
+    slug: profile.slug || '',
+    racecore_id: profile.racecore_id,
+  };
+
+  if (driverCreated || profile.resolution_status === 'created') {
+    return { action: 'created', note: '', record: racerRecord };
+  }
+  return {
+    action: 'skipped',
+    note: 'Matched a racer already on the platform — the row is stamped with their profile.',
+    record: racerRecord,
   };
 }
 
@@ -273,7 +351,7 @@ export async function runWorkbookImport(base44, input) {
 
   const tabResults = [];
   const problems = [];
-  const counts = { read: 0, created: 0, skipped: 0, failed: 0 };
+  const counts = { read: 0, created: 0, skipped: 0, failed: 0, racecore_ids: 0 };
   const stateByTab = {};
 
   for (const key of Object.keys(tabs)) {
@@ -287,6 +365,7 @@ export async function runWorkbookImport(base44, input) {
     let skipped = 0;
     let failed = 0;
     let unmatchedSkips = 0;
+    let racecoreIds = 0;
 
     for (const row of entry.rows) {
       const fields = rowToObject(entry.columns, row.values);
@@ -304,10 +383,17 @@ export async function runWorkbookImport(base44, input) {
         outcome = { action: 'failed', note: (error && error.message) || 'The row could not be processed.' };
       }
 
-      if (outcome.action === 'created') created++;
-      else if (outcome.action === 'failed') failed++;
-      else if (outcome.action === 'create') created++;            // check mode: would create
-      else {
+      if (outcome.action === 'created') {
+        created++;
+        if (outcome.record && outcome.record.racecore_id) racecoreIds++;
+      } else if (outcome.action === 'failed') failed++;
+      else if (outcome.action === 'create') {                     // check mode: would create
+        created++;
+        // A racer row is settled on its racer profile, and the resolver mints
+        // that profile's RaceCore ID as part of the row's commit — so this is
+        // what the run would stamp, families with no ID family excluded.
+        if (domainDef.racecoreEntity) racecoreIds++;
+      } else {
         skipped++;
         if (!outcome.record) unmatchedSkips++;
       }
@@ -342,12 +428,14 @@ export async function runWorkbookImport(base44, input) {
       created: created,
       skipped: skipped,
       failed: failed,
+      racecore_ids: racecoreIds,
     });
 
     counts.read += processed;
     counts.created += created;
     counts.skipped += skipped;
     counts.failed += failed;
+    counts.racecore_ids += racecoreIds;
 
     stateByTab[domainDef.tab] = {
       waiting: commit ? failed + unmatchedSkips : processed,

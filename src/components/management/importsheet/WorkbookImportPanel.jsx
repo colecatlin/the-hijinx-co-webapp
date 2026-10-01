@@ -42,6 +42,9 @@ export default function WorkbookImportPanel({ ready, busy, result, onRun }) {
             </span>
             <span className="text-foreground">Read {result.counts?.read || 0}</span>
             <span className="text-motion">{result.mode === 'check' ? 'Would create' : 'Created'} {result.counts?.created || 0}</span>
+            <span className="text-foreground">
+              {result.mode === 'check' ? 'Would receive a RaceCore ID' : 'RaceCore IDs assigned'} {result.counts?.racecore_ids || 0}
+            </span>
             <span className="text-warning">Skipped {result.counts?.skipped || 0}</span>
             <span className="text-danger">Failed {result.counts?.failed || 0}</span>
           </div>
@@ -60,6 +63,7 @@ export default function WorkbookImportPanel({ ready, busy, result, onRun }) {
                   <span className="text-foreground-secondary">
                     {t.waiting || 0} waiting · <span className="text-motion">{t.created || 0} {result.mode === 'check' ? 'to create' : 'created'}</span> ·{' '}
                     <span className="text-warning">{t.skipped || 0} skipped</span>
+                    {t.racecore_ids ? <span className="text-foreground"> · {t.racecore_ids} IDs</span> : null}
                     {t.failed ? <span className="text-danger"> · {t.failed} failed</span> : null}
                   </span>
                 </li>

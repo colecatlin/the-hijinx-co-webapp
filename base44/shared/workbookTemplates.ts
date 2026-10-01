@@ -46,6 +46,12 @@ export type WorkbookDomain = {
   pipelineType: string | null;
   /** Key of this domain's own record inside the resolution engine's payload. */
   primaryResolutionKey: string;
+  /**
+   * The record in this family that carries a RaceCore ID, or null where the
+   * family has none. A racer row settles on its racer profile, which is why a
+   * racer row leaves the import already carrying an ID.
+   */
+  racecoreEntity: string | null;
   intro: string;
   /** Country/region pairs in this tab's rows. Empty when the tab has none. */
   locationPairs: LocationPair[];
@@ -60,7 +66,7 @@ export type WorkbookDomain = {
 export const STAMP_COLUMNS: TemplateColumn[] = [
   { name: 'platform_name', note: 'Written by the platform — the record as it is stored.' },
   { name: 'platform_id', note: 'Written by the platform. Once filled, this row is already on the platform and is never created a second time. Clear it to make the row try again.' },
-  { name: 'platform_racecore_id', note: 'Written by the platform — RaceCore ID, where the record has one.' },
+  { name: 'platform_racecore_id', note: 'Written by the platform — the record’s RaceCore ID, filled in as the row is imported. A racer row carries the profile it produced; the other tabs are left blank because those record families have no ID family yet.' },
   { name: 'platform_slug', note: 'Written by the platform — the slug used in the record’s public address.' },
   { name: 'last_action', note: 'Written by the platform: created, skipped or failed.' },
   { name: 'last_run_at', note: 'Written by the platform — when the run last looked at this row.' },
@@ -85,6 +91,7 @@ const RACERS: WorkbookDomain = {
   engineEntity: 'Driver',
   pipelineType: 'driver',
   primaryResolutionKey: 'driver',
+  racecoreEntity: 'RacerProfile',
   intro: 'One row per racer. The platform creates the racer’s profile, identity record and competitive record together.',
   locationPairs: [{ country: 'hometown_country', state: 'hometown_state', label: 'Hometown' }],
   columns: [
@@ -128,6 +135,7 @@ const TEAMS: WorkbookDomain = {
   engineEntity: 'Team',
   pipelineType: 'team',
   primaryResolutionKey: 'team',
+  racecoreEntity: null,
   intro: 'One row per team.',
   locationPairs: [{ country: 'country', state: 'headquarters_state', label: 'Headquarters' }],
   columns: [
@@ -161,6 +169,7 @@ const ORGANIZATIONS: WorkbookDomain = {
   engineEntity: 'Organization',
   pipelineType: null,
   primaryResolutionKey: 'organization',
+  racecoreEntity: null,
   intro: 'One row per organization — sponsors, vendors, manufacturers and the other commercial partners.',
   locationPairs: [{ country: 'location_country', state: 'location_state', label: 'Location' }],
   columns: [
@@ -201,6 +210,7 @@ const TRACKS: WorkbookDomain = {
   engineEntity: 'Track',
   pipelineType: 'track',
   primaryResolutionKey: 'track',
+  racecoreEntity: null,
   intro: 'One row per track.',
   locationPairs: [{ country: 'location_country', state: 'location_state', label: 'Location' }],
   columns: [
@@ -234,6 +244,7 @@ const SERIES: WorkbookDomain = {
   engineEntity: 'Series',
   pipelineType: 'series',
   primaryResolutionKey: 'series',
+  racecoreEntity: null,
   intro: 'One row per series.',
   locationPairs: [],
   columns: [
@@ -265,6 +276,7 @@ const EVENTS: WorkbookDomain = {
   engineEntity: 'Event',
   pipelineType: 'event',
   primaryResolutionKey: 'event',
+  racecoreEntity: null,
   intro: 'One row per event. Fill the Series and Track columns with the platform_id of the records in those two tabs — import those tabs first.',
   locationPairs: [],
   columns: [

@@ -1,7 +1,7 @@
 {
   "name": "ImportSheetConfig",
   "type": "object",
-  "description": "Singleton configuration for the master import workbook. Records which Google Sheets workbook the platform writes import results into, which tabs exist, and the outcome of the last write. The workbook is written BY the platform and never read back into it \u2014 this record is the only link between the two. Single active record (is_active=true).",
+  "description": "Singleton configuration for the master import workbook. Records which Google Sheets workbook the platform imports from and stamps results into, which tabs exist, and the outcome of the last write. The workbook is read by the platform on every import run and stamped back as each row settles \u2014 this record is the link between the two. Single active record (is_active=true).",
   "properties": {
     "is_active": {
       "type": "boolean",
