@@ -23,6 +23,9 @@ export default function ImportWorkbook() {
   const [busyTab, setBusyTab] = useState('');
   const [runMode, setRunMode] = useState('');
   const [runResult, setRunResult] = useState(null);
+  // A run stops after this many rows per tab so a large tab can be worked
+  // through in passes instead of one request that would never finish.
+  const [batchSize, setBatchSize] = useState(150);
 
   const { data: configs, isLoading } = useQuery({
     queryKey: ['importSheetConfig'],
@@ -75,7 +78,7 @@ export default function ImportWorkbook() {
     setRunMode(mode);
     setRunResult(null);
     try {
-      const res = await base44.functions.invoke('importFromWorkbook', { mode });
+      const res = await base44.functions.invoke('importFromWorkbook', { mode, limit: batchSize });
       setRunResult(res.data);
       await queryClient.invalidateQueries({ queryKey: ['importSheetConfig'] });
       await queryClient.invalidateQueries({ queryKey: ['importSheetRuns'] });
@@ -110,6 +113,8 @@ export default function ImportWorkbook() {
                     busy={runMode}
                     result={runResult}
                     onRun={handleRun}
+                    batchSize={batchSize}
+                    onBatchSizeChange={setBatchSize}
                   />
                   <WorkbookTabStatus config={config} busyTab={busyTab} onRefresh={handleRefresh} />
                   <WorkbookRecentRuns runs={runs} />

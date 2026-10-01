@@ -10,7 +10,8 @@
  * mode 'check' decides everything and writes nothing — not to the platform, not
  * to the sheet. mode 'import' commits and stamps each row in place.
  *
- * Input:  { mode: 'check' | 'import', tab?: <tab name or key, default 'all'> }
+ * Input:  { mode: 'check' | 'import', tab?: <tab name or key, default 'all'>,
+ *           limit?: <max rows per tab — omit for every row> }
  * Output: { mode, counts, tabs, problems }
  *
  * Admin only.
@@ -30,7 +31,7 @@ export default async function (req) {
     const body = await req.json().catch(function () { return {}; });
     const mode = body.mode === 'import' ? 'import' : 'check';
 
-    const result = await runWorkbookImport(base44, { mode: mode, tab: body.tab || 'all' });
+    const result = await runWorkbookImport(base44, { mode: mode, tab: body.tab || 'all', limit: body.limit });
 
     if (mode === 'import') {
       const domains = result.tabs.map(function (t) { return t.key; });

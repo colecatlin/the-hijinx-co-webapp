@@ -318,10 +318,15 @@ async function processRow(ctx, domain, fields, sheetRow) {
 /**
  * Run the workbook import. mode 'check' decides every row and writes nothing;
  * mode 'import' commits and stamps each row in place.
+ *
+ * settings.limit caps how many waiting rows each tab processes in one run, so a
+ * large tab can be tried out on a handful of rows first. Omitted = every row.
  */
 export async function runWorkbookImport(base44, input) {
   const settings = input || {};
   const commit = settings.mode === 'import';
+  const requestedLimit = Number(settings.limit);
+  const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.floor(requestedLimit) : null;
 
   const user = await base44.auth.me();
   const config = await getImportSheetConfig(base44);
@@ -368,6 +373,7 @@ export async function runWorkbookImport(base44, input) {
     let racecoreIds = 0;
 
     for (const row of entry.rows) {
+      if (limit && processed >= limit) break;
       const fields = rowToObject(entry.columns, row.values);
 
       const hasInput = inputCols.some(function (column) { return fields[column]; });

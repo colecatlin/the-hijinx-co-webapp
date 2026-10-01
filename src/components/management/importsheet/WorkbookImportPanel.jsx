@@ -1,15 +1,20 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Upload, ScanSearch, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 /**
  * One action for the whole workbook: Check reads every tab and reports what
  * would happen without writing anything; Import does it and stamps each row in
  * place. The tab-by-tab result is the answer to "what is waiting?".
+ *
+ * Rows per run bounds each pass: a large tab is worked through in batches
+ * rather than one request long enough to time out.
  */
-export default function WorkbookImportPanel({ ready, busy, result, onRun }) {
+export default function WorkbookImportPanel({ ready, busy, result, onRun, batchSize, onBatchSizeChange }) {
   const problems = (result && result.problems) || [];
   const tabs = (result && result.tabs) || [];
+  const bounded = !!result && (result.counts?.read || 0) >= batchSize;
 
   return (
     <section className="rounded-lg border border-divider bg-surface p-4 space-y-3">
@@ -32,7 +37,26 @@ export default function WorkbookImportPanel({ ready, busy, result, onRun }) {
           <Upload className="mr-1 w-3.5 h-3.5" />
           {busy === 'import' ? 'Importing…' : 'Import'}
         </Button>
+        <label className="ml-auto flex items-center gap-2 text-[11px] text-foreground-secondary">
+          Rows per run
+          <Input
+            type="number"
+            min={1}
+            value={batchSize}
+            onChange={(e) => {
+              const next = parseInt(e.target.value, 10);
+              onBatchSizeChange(Number.isFinite(next) && next > 0 ? next : 1);
+            }}
+            disabled={!!busy}
+            className="h-8 w-20 text-xs"
+          />
+        </label>
       </div>
+
+      <p className="text-[10px] text-foreground-quiet">
+        One run stops after this many rows per tab, so a big tab can be pulled in over a few passes —
+        press again to continue where it left off. Large batches take minutes to finish.
+      </p>
 
       {result ? (
         <div className="space-y-3">
@@ -52,6 +76,12 @@ export default function WorkbookImportPanel({ ready, busy, result, onRun }) {
           {result.mode === 'check' ? (
             <p className="text-[10px] text-foreground-quiet">
               Nothing has been written — not to the platform, not to the sheet. Run Import to apply it.
+            </p>
+          ) : null}
+
+          {bounded ? (
+            <p className="text-[10px] text-warning">
+              This run stopped at the batch size — rows are still waiting. Press {result.mode === 'check' ? 'Check' : 'Import'} again for the next batch.
             </p>
           ) : null}
 
