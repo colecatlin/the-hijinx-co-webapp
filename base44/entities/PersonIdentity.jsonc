@@ -1,7 +1,7 @@
 {
   "name": "PersonIdentity",
   "type": "object",
-  "description": "Root identity anchor for a human competitor across all series, seasons, and data sources. Phase 8: Owns the User \u2192 PersonIdentity \u2192 RacerProfile \u2192 SeasonParticipation ownership chain. Claim status and owner_user_id live here (not on Driver or RacerProfile).",
+  "description": "Root identity anchor for a human competitor across all series, seasons, and data sources. Phase 8: Owns the User \u2192 PersonIdentity \u2192 RacerProfile \u2192 SeasonParticipation ownership chain. Claim status and owner_user_id live here (not on Driver or RacerProfile). Canonical racer build: read access is restricted to platform admins and the owning racer (their own record) \u2014 approved racer managers read through the backend experience function, never through this entity directly. This record holds date of birth, licence number and claim evidence, so it is never public.",
   "properties": {
     "status": {
       "type": "string",
@@ -33,7 +33,7 @@
     },
     "canonical_name": {
       "type": "string",
-      "description": "Display name used on all public-facing records"
+      "description": "Authoritative human name. Owned here \u2014 RacerProfile.display_name and the legacy Driver names are compatibility copies kept in step by updateCanonicalRacerIdentity."
     },
     "legal_name": {
       "type": "string",
@@ -42,13 +42,14 @@
     "date_of_birth": {
       "type": "string",
       "format": "date",
-      "description": "Primary identity disambiguator. Change requires admin elevation."
+      "description": "Primary identity disambiguator. Change requires admin elevation. Never returned to public clients."
     },
     "nationality": {
       "type": "string"
     },
     "hometown_city": {
-      "type": "string"
+      "type": "string",
+      "description": "Authoritative hometown city. Compatibility copies exist on RacerProfile (and Driver while it remains required)."
     },
     "hometown_state": {
       "type": "string"
@@ -58,7 +59,7 @@
     },
     "canonical_driver_id": {
       "type": "string",
-      "description": "The active Driver profile ID representing this identity publicly"
+      "description": "Legacy compatibility pointer to the Driver record representing this identity. Set only when a deterministic surviving Driver exists \u2014 never fabricated."
     },
     "merged_driver_ids": {
       "type": "array",
@@ -74,7 +75,7 @@
     },
     "license_number": {
       "type": "string",
-      "description": "Racing license number \u2014 high-confidence disambiguator"
+      "description": "Racing license number \u2014 high-confidence disambiguator. Never returned to public clients."
     },
     "numeric_id": {
       "type": "string",
@@ -140,7 +141,7 @@
     },
     "claim_evidence": {
       "type": "object",
-      "description": "Phase 8: Evidence submitted with the claim. Shape: { license_number, date_of_birth, contact_email, notes, attachment_urls }.",
+      "description": "Phase 8: Evidence submitted with the claim. Shape: { license_number, date_of_birth, contact_email, notes, attachment_urls }. Admin-only: never included in a public projection.",
       "properties": {
         "license_number": {
           "type": "string"
@@ -198,7 +199,7 @@
           }
         }
       },
-      "description": "Phase 8: Append-only audit trail of all claim lifecycle events."
+      "description": "Phase 8: Append-only audit trail of all claim lifecycle events. Admin-only."
     },
     "claim_reviewed_by": {
       "type": "string",
@@ -241,7 +242,18 @@
         "role": "admin"
       }
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "data.owner_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
       "user_condition": {
         "role": "admin"

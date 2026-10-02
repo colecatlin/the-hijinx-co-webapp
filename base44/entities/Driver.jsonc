@@ -21,11 +21,11 @@
     "date_of_birth": {
       "type": "string",
       "format": "date",
-      "description": "Date of birth"
+      "description": "Date of birth. Never returned to public clients."
     },
     "contact_email": {
       "type": "string",
-      "description": "Contact email address"
+      "description": "Contact email address. Never returned to public clients."
     },
     "represented_by": {
       "type": "string",
@@ -33,15 +33,15 @@
     },
     "hometown_city": {
       "type": "string",
-      "description": "Hometown city (birthplace)"
+      "description": "Hometown city (birthplace). Compatibility copy \u2014 PersonIdentity is authoritative."
     },
     "hometown_state": {
       "type": "string",
-      "description": "Hometown state or region (birthplace)"
+      "description": "Hometown state or region (birthplace). Compatibility copy."
     },
     "hometown_country": {
       "type": "string",
-      "description": "Hometown country (birthplace/nationality)"
+      "description": "Hometown country (birthplace/nationality). Compatibility copy."
     },
     "racing_base_city": {
       "type": "string",
@@ -182,11 +182,11 @@
     },
     "bio": {
       "type": "string",
-      "description": "Full public biography for the driver"
+      "description": "Full public biography for the driver. Compatibility copy \u2014 RacerProfile is authoritative."
     },
     "tagline": {
       "type": "string",
-      "description": "Short headline or identity statement"
+      "description": "Short headline or identity statement. Compatibility copy."
     },
     "hero_image_url": {
       "type": "string",
@@ -262,7 +262,21 @@
         "role": "admin"
       }
     },
-    "read": null,
+    "read": {
+      "$or": [
+        {
+          "data.visibility_status": "live"
+        },
+        {
+          "data.owner_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
       "user_condition": {
         "role": "admin"

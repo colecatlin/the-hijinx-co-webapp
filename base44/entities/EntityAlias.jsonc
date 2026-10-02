@@ -1,13 +1,14 @@
 {
   "name": "EntityAlias",
   "type": "object",
-  "description": "Universal alias record for any canonical entity in RaceCore. Append-only \u2014 never delete, only deactivate. Every alias belongs to exactly one canonical entity. Phase 17A: Organization added to entity_type enum for sponsor/partner name alias resolution.",
+  "description": "Universal alias record for any canonical entity in RaceCore. Append-only \u2014 never delete, only deactivate. Every alias belongs to exactly one canonical entity. Phase 17A: Organization added to entity_type enum for sponsor/partner name alias resolution. Canonical racer build: RacerProfile added so a retired public slug is retained here and keeps resolving to the same racer; a historical slug is never reassigned.",
   "properties": {
     "entity_type": {
       "type": "string",
       "enum": [
         "Driver",
         "PersonIdentity",
+        "RacerProfile",
         "Team",
         "Track",
         "Series",
@@ -17,7 +18,7 @@
         "Event",
         "Organization"
       ],
-      "description": "The type of entity this alias belongs to. Phase 17A: Organization added for sponsor/partner name alias resolution."
+      "description": "The type of entity this alias belongs to. Phase 17A: Organization added for sponsor/partner name alias resolution. Canonical racer build: RacerProfile added for retired public slug history."
     },
     "entity_id": {
       "type": "string",
@@ -47,7 +48,7 @@
         "legacy",
         "manual"
       ],
-      "description": "Classification of this alias"
+      "description": "Classification of this alias. A retired RacerProfile slug uses historical_name."
     },
     "confidence": {
       "type": "number",
@@ -56,7 +57,7 @@
     "active": {
       "type": "boolean",
       "default": true,
-      "description": "False = deactivated alias (never deleted, only deactivated)"
+      "description": "False = deactivated alias (never deleted, only deactivated). A retired slug alias stays active so the old address keeps resolving."
     },
     "source": {
       "type": "string",

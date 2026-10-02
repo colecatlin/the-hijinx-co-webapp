@@ -1,7 +1,7 @@
 {
   "name": "SeasonParticipation",
   "type": "object",
-  "description": "One RacerProfile's relationship to one Series during one season year and racer type. Thin model \u2014 no event-specific context. Intended resolver uniqueness key: racer_profile_id + series_id + season_year + racer_type. Compound unique constraints are not supported in Base44 entity schemas; uniqueness enforcement is deferred to the future resolver function.",
+  "description": "One RacerProfile's competitive relationship to one Series during one season year and racer type \u2014 the authoritative season-specific competition context. Carries the season's class, team, car number and vehicle. A racer may hold several participations in one season; is_primary decides primary display only and never hides a secondary record. Thin model \u2014 no event-specific context. Intended resolver uniqueness key: racer_profile_id + series_id + season_year + racer_type. Compound unique constraints are not supported in Base44 entity schemas; uniqueness enforcement is deferred to the resolver function.",
   "properties": {
     "racecore_id": {
       "type": "string",
@@ -22,6 +22,22 @@
     "series_id": {
       "type": "string",
       "description": "Reference to Series"
+    },
+    "series_class_id": {
+      "type": "string",
+      "description": "Reference to SeriesClass \u2014 the class this racer competes in for this series and season. Must belong to series_id. Nullable when the series has no class context."
+    },
+    "team_id": {
+      "type": "string",
+      "description": "Reference to Team for this series and season. Nullable \u2014 privateer entries have none."
+    },
+    "car_number": {
+      "type": "string",
+      "description": "Race number used in this series and season. Nullable \u2014 falls back to the legacy Driver primary_number for display."
+    },
+    "vehicle_id": {
+      "type": "string",
+      "description": "Reference to Vehicle used for this series and season. Nullable."
     },
     "season_year": {
       "type": "string",
@@ -53,7 +69,7 @@
     "is_primary": {
       "type": "boolean",
       "default": false,
-      "description": "Indicates primary participation when a racer has multiple in one season"
+      "description": "Indicates primary participation when a racer has multiple in one season. Display preference only \u2014 never removes or hides a secondary participation."
     },
     "is_archived": {
       "type": "boolean",

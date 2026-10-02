@@ -1,7 +1,7 @@
 {
   "name": "EntityCollaborator",
   "type": "object",
-  "description": "Single source of truth for person-to-organization relationships and scoped access. Legacy role field (owner/editor) retained for backwards compatibility until all consumers migrate to role_key + permission_level.",
+  "description": "Single source of truth for person-to-organization relationships and scoped access. Legacy role field (owner/editor) retained for backwards compatibility until all consumers migrate to role_key + permission_level. Canonical racer build: RacerProfile is now a legal entity_type, so an approved RacerProfile manager reuses this one collaborator architecture rather than a second permission system.",
   "properties": {
     "user_id": {
       "type": "string",
@@ -15,6 +15,7 @@
       "type": "string",
       "enum": [
         "Driver",
+        "RacerProfile",
         "Team",
         "Track",
         "Series",
@@ -24,7 +25,7 @@
         "Manufacturer",
         "MediaOutlet"
       ],
-      "description": "Type of organization being managed. Extensible \u2014 the Organization Platform registry maps each value to its base44 entity."
+      "description": "Type of organization being managed. Extensible \u2014 the Organization Platform registry maps each value to its base44 entity. RacerProfile allows approved racer managers without a second permission system."
     },
     "entity_id": {
       "type": "string",
@@ -49,7 +50,7 @@
     },
     "role_key": {
       "type": "string",
-      "description": "The role the user requested or was granted (e.g. track_staff, team_member, series_official, media, driver, owner). Replaces the legacy two-value role field with a flexible, registry-driven key."
+      "description": "The role the user requested or was granted (e.g. track_staff, team_member, series_official, media, driver, owner, racer_manager). Replaces the legacy two-value role field with a flexible, registry-driven key."
     },
     "status": {
       "type": "string",
