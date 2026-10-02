@@ -39,6 +39,7 @@
  * Admin only.
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { matchPersonIdentity } from '../../shared/personIdentityMatcher.ts';
 
 // ── Normalization ──────────────────────────────────────────────────────────────
 
@@ -269,63 +270,33 @@ Deno.serve(async (req) => {
 
     // ── RESOLVE ENTITIES (read-only) ───────────────────────────────────────────
 
-    // PersonIdentity (Driver rows only) — lightweight probe, no DB writes
+    // PersonIdentity (Driver rows only) — read-only probe through the one shared
+    // identity matcher, so a dry run and a real import always agree.
     if (entity_type === 'Driver' && displayName) {
-      trace.push(`Probing PersonIdentity for "${displayName}"`);
-      const norm = normalizeDriverName(displayName);
+      trace.push(`Probing PersonIdentity for "${displayName}" (shared identity matcher)`);
+      const match = await matchPersonIdentity(sr, {
+        name: displayName,
+        dob: normalized_data.date_of_birth || null,
+        license_number: normalized_data.license_number || null,
+        external_uid: normalized_data.external_uid || null,
+        series_name: normalized_data.series_name || null,
+      });
+      const identityAction = match.action;
+      const identityConfidence = match.confidence;
+      const identitySignals = match.signals;
+      const identity = match.identity;
 
-      // Check external_uid first
-      let identity = null;
-      let identityAction = 'NEW_IDENTITY';
-      let identitySignals = [];
-      let identityConfidence = 0;
-
-      if (normalized_data.external_uid) {
-        const rows = await sr.entities.PersonIdentity.filter({ external_uid: normalized_data.external_uid }).catch(() => []);
-        if (rows.length > 0) { identity = rows[0]; identityAction = 'ATTACHED'; identityConfidence = 100; identitySignals = ['external_uid_exact:100']; }
-      }
-      if (!identity && norm) {
-        const allIdentities = await sr.entities.PersonIdentity.filter({ status: 'active' }).catch(() => []);
-        const allAliases = await sr.entities.IdentityAlias.filter({ active: true }).catch(() => []);
-        const aliasMap = new Map();
-        for (const a of allAliases) {
-          const k = a.alias_normalized || normalizeDriverName(a.alias_name);
-          if (k) { if (!aliasMap.has(k)) aliasMap.set(k, []); aliasMap.get(k).push(a); }
-        }
-        let best = 0, bestId = null, bestSigs = [];
-        for (const id of allIdentities) {
-          if (id.status === 'merged') continue;
-          let s = 0; const sigs = [];
-          if (normalized_data.date_of_birth && id.date_of_birth && normalized_data.date_of_birth !== id.date_of_birth) continue;
-          if (normalized_data.date_of_birth && id.date_of_birth && normalized_data.date_of_birth === id.date_of_birth) { s += 90; sigs.push('dob_exact:90'); }
-          const idNorm = normalizeDriverName(id.canonical_name);
-          if (idNorm && norm === idNorm) { s += 55; sigs.push('canonical_name_match:55'); }
-          if (id.legal_name) { const ln = normalizeDriverName(id.legal_name); if (ln && norm === ln) { s += 85; sigs.push('legal_name_exact:85'); } }
-          const ams = aliasMap.get(norm) || [];
-          for (const a of ams) {
-            if (a.identity_id !== id.id) continue;
-            const w = { legal: 85, abbreviation: 75, informal: 70, nickname: 60, surname_first: 55 }[a.alias_type] || 50;
-            s += w; sigs.push(`alias_${a.alias_type}:${w}`); break;
-          }
-          if (s > best) { best = s; bestId = id; bestSigs = sigs; }
-        }
-        if (bestId && best > 0) {
-          identityConfidence = Math.min(best, 100);
-          identitySignals = bestSigs;
-          identity = bestId;
-          if (identityConfidence >= 95) identityAction = 'ATTACHED';
-          else if (identityConfidence >= 80) identityAction = 'REVIEW';
-          else identityAction = 'NEW_IDENTITY';
-          // DOB/License hard gates
-          if (identity && normalized_data.date_of_birth && identity.date_of_birth && normalized_data.date_of_birth !== identity.date_of_birth) {
-            identityAction = 'BLOCKED'; identityConfidence = 0; identitySignals.push('HARD_GATE:DOB_CONFLICT');
-          }
-        }
-      }
-      resolutions.identity = { action: identityAction, identity_id: identity?.id || null, identity_name: identity?.canonical_name || null, confidence: identityConfidence, signals: identitySignals, reason: identityAction === 'BLOCKED' ? 'DOB_CONFLICT' : identityAction === 'REVIEW' ? 'score_below_threshold' : 'ok' };
+      resolutions.identity = {
+        action: identityAction,
+        identity_id: match.identity_id,
+        identity_name: identity?.canonical_name || null,
+        confidence: identityConfidence,
+        signals: identitySignals,
+        reason: match.reason,
+      };
       trace.push(`PersonIdentity: ${identityAction} (confidence ${identityConfidence})`);
-      if (identityAction === 'BLOCKED') errors.push(`Identity BLOCKED: DOB conflict for "${displayName}"`);
-      if (identityAction === 'REVIEW') warnings.push(`Identity REVIEW required for "${displayName}" (confidence ${identityConfidence})`);
+      if (identityAction === 'BLOCKED') errors.push(`Identity BLOCKED: ${match.reason} for "${displayName}"`);
+      if (identityAction === 'REVIEW') warnings.push(`Identity REVIEW required for "${displayName}" (${match.reason}, confidence ${identityConfidence})`);
     }
 
     // Driver

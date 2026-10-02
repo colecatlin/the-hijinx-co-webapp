@@ -19,6 +19,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveRacerProfile, loadRacerProfileContext } from '../../shared/racerProfileExperienceHelpers.ts';
 import { buildSponsorshipsForTarget, normalizeDriverSponsorLegacy } from '../../shared/sponsorshipReadHelpers.ts';
 import { buildPersonSchema, buildBreadcrumbSchema } from '../../shared/structuredDataHelpers.ts';
+import {
+  toPublicIdentity, toPublicRacerProfile, toPublicLegacyDriver, toPublicParticipation,
+  toPublicEntry, toPublicResult, toPublicStanding, toPublicCareerStats,
+} from '../../shared/racerPublicProjection.ts';
 
 export default async function(req) {
   const base44 = createClientFromRequest(req);
@@ -30,6 +34,10 @@ export default async function(req) {
     const user = await base44.auth.me().catch(() => null);
     if (!user || user.role !== 'admin') return Response.json({ error: 'RacerProfile not found', racerProfile: null });
   }
+
+  // The viewer decides only which authorization flags the projection carries.
+  // No private identity data is ever included because of who is asking.
+  const viewer = await base44.auth.me().catch(() => null);
 
   const racerProfile = await resolveRacerProfile(base44, slug, racer_profile_id);
   if (!racerProfile) return Response.json({ error: 'RacerProfile not found', racerProfile: null });
@@ -340,6 +348,55 @@ export default async function(req) {
     legacySponsors: legacyDriverSponsors,
   });
 
+  // ── PUBLIC-SAFE IDENTITY PROJECTION (never the raw record) ──
+  const isAdmin = !!viewer && viewer.role === 'admin';
+  const isOwner = !!(identityRecord && viewer && identityRecord.claim_status === 'claimed'
+    && identityRecord.owner_user_id === viewer.id);
+  let isManager = false;
+  if (viewer && !isAdmin && !isOwner) {
+    const collaborators = await base44.asServiceRole.entities.EntityCollaborator
+      .filter({ entity_type: 'RacerProfile', entity_id: rp.id, status: 'approved' }).catch(() => []);
+    isManager = (collaborators || []).some((c: any) => c && c.user_id === viewer.id
+      && (c.permission_level === 'admin' || c.permission_level === 'staff'));
+  }
+  const identityProjection = identityRecord
+    ? Object.assign(toPublicIdentity(identityRecord), {
+        is_owner: isOwner, is_manager: isManager, is_admin: isAdmin,
+        can_manage: isAdmin || isOwner || isManager,
+      })
+    : null;
+
+  // ── CURRENT RACING CONTEXT (canonical source: active SeasonParticipation) ──
+  const activeParticipations = (ctx.participations as any[]).filter((p: any) =>
+    p && p.status !== 'Archived' && !p.is_archived);
+  const primaryParticipation = activeParticipations.find((p: any) => p.is_primary === true)
+    || activeParticipations[0] || null;
+  const contextProgram = (driverPrograms as any[]).find((p: any) => p.status === 'active')
+    || (driverPrograms as any[])[0] || null;
+  const contextSeriesId = primaryParticipation?.series_id || contextProgram?.series_id || ctx.legacyDriver?.primary_series_id || null;
+  const contextClassId = primaryParticipation?.series_class_id || contextProgram?.series_class_id || ctx.legacyDriver?.primary_class_id || null;
+  const contextTeamId = primaryParticipation?.team_id || ctx.legacyDriver?.team_id || null;
+  const currentContext = {
+    source: primaryParticipation ? 'SeasonParticipation' : (contextProgram ? 'DriverProgram' : (ctx.legacyDriver ? 'Driver (legacy fallback)' : null)),
+    series: contextSeriesId ? { id: contextSeriesId, name: seriesMap.get(contextSeriesId)?.name || null } : null,
+    class: contextClassId ? { id: contextClassId, name: classMap.get(contextClassId)?.class_name || null } : null,
+    team: contextTeamId ? { id: contextTeamId, name: teamMap.get(contextTeamId)?.name || null } : null,
+    car_number: primaryParticipation?.car_number || ctx.legacyDriver?.primary_number || null,
+    vehicle: primaryParticipation?.vehicle_id
+      ? { id: primaryParticipation.vehicle_id, name: vehicleMap.get(primaryParticipation.vehicle_id)?.nickname || vehicleMap.get(primaryParticipation.vehicle_id)?.name || null }
+      : null,
+    participations: activeParticipations.map((p: any) => ({
+      id: p.id, racecore_id: p.racecore_id || null,
+      series_id: p.series_id || null, series_name: seriesMap.get(p.series_id)?.name || null,
+      series_class_id: p.series_class_id || null,
+      class_name: p.series_class_id ? classMap.get(p.series_class_id)?.class_name || null : null,
+      team_id: p.team_id || null, team_name: p.team_id ? teamMap.get(p.team_id)?.name || null : null,
+      car_number: p.car_number || null, season_year: p.season_year || null,
+      racer_type: p.racer_type || null, status: p.status || null,
+      is_primary: p.is_primary === true,
+    })),
+  };
+
   return Response.json({
     racerProfile: {
       id: rp.id, slug: rp.slug, display_name: fullName, racecore_id: rp.racecore_id,
@@ -351,7 +408,8 @@ export default async function(req) {
       website_url: rp.website_url, instagram_url: rp.instagram_url, facebook_url: rp.facebook_url, tiktok_url: rp.tiktok_url, x_url: rp.x_url, youtube_url: rp.youtube_url,
       is_claimed: rp.is_claimed, visibility: rp.visibility,
     },
-    identity: identityRecord ? { id: identityRecord.id, racecore_id: identityRecord.racecore_id, canonical_name: identityRecord.canonical_name, claim_status: identityRecord.claim_status, owner_user_id: identityRecord.owner_user_id, nationality: identityRecord.nationality } : null,
+    identity: identityProjection,
+    current_context: currentContext,
     legacy_driver_id: ctx.legacyDriverId,
     timeline: timeline.slice(0, 100), timeline_count: timeline.length,
     statistics, achievements, achievements_unlocked_count: achievements.filter((a: any) => a.unlocked).length,
@@ -368,25 +426,50 @@ export default async function(req) {
     // Phase 7 mobile optimization: return the full raw page dataset so the
     // public RacerProfile page can render from a single backend call instead
     // of issuing 17 client-side list queries.
+    // Explicitly constructed public-safe projections — never raw entity objects.
+    // Identity, legacy Driver and the competition records are reduced to the
+    // fields the public page renders; claim evidence, claim history, DOB,
+    // licence, contact email, access codes and ownership metadata cannot be
+    // expressed by these builders.
     page_data: {
-      racerProfile: rp,
-      identity: identityRecord,
-      legacyDriver: ctx.legacyDriver,
-      media: ctx.driverMedia?.[0] || null,
-      careerStats: ctx.careerStats,
-      participations: ctx.participations,
-      entries: ctx.racerEntries,
-      results: ctx.racerResults,
-      standings: ctx.racerStandings,
-      programs: ctx.driverPrograms,
-      careerEntries: ctx.careerEntries,
-      sponsors: ctx.driverSponsors,
+      racerProfile: toPublicRacerProfile(rp),
+      identity: identityProjection,
+      legacyDriver: toPublicLegacyDriver(ctx.legacyDriver),
+      media: ctx.driverMedia?.[0] ? {
+        headshot_url: ctx.driverMedia[0].headshot_url || null,
+        hero_image_url: ctx.driverMedia[0].hero_image_url || null,
+        gallery_urls: ctx.driverMedia[0].gallery_urls || [],
+        highlight_video_url: ctx.driverMedia[0].highlight_video_url || null,
+      } : null,
+      careerStats: toPublicCareerStats(ctx.careerStats),
+      participations: (ctx.participations as any[]).map((p: any) => toPublicParticipation(p)),
+      entries: (ctx.racerEntries as any[]).map((e: any) => toPublicEntry(e)),
+      results: (ctx.racerResults as any[]).map((r: any) => toPublicResult(r)),
+      standings: (ctx.racerStandings as any[]).map((s: any) => toPublicStanding(s)),
+      programs: (ctx.driverPrograms as any[]).map((p: any) => ({
+        id: p.id, driver_id: p.driver_id, program_type: p.program_type,
+        series_id: p.series_id, series_class_id: p.series_class_id, event_id: p.event_id,
+        team_id: p.team_id, car_number: p.car_number, status: p.status,
+        start_year: p.start_year, end_year: p.end_year, participation_status: p.participation_status,
+      })),
+      careerEntries: (ctx.careerEntries as any[]).map((c: any) => ({
+        id: c.id, year: c.year, team_id: c.team_id, team_name_override: c.team_name_override,
+        series_id: c.series_id, series_name_override: c.series_name_override,
+        class_id: c.class_id, class_name_override: c.class_name_override,
+        vehicle: c.vehicle, number: c.number, starts: c.starts, wins: c.wins,
+        podiums: c.podiums, championship_position: c.championship_position,
+      })),
+      sponsors: (ctx.driverSponsors as any[]).map((s: any) => ({
+        id: s.id, sponsor_name: s.sponsor_name, logo_url: s.logo_url, website_url: s.website_url,
+        tier: s.tier, is_primary: s.is_primary, start_date: s.start_date, end_date: s.end_date, status: s.status,
+      })),
       series: ctx.allSeries,
       classes: ctx.allClasses,
       events: ctx.allEvents,
       tracks: ctx.allTracks,
       sessions: ctx.allSessions,
       teams: ctx.allTeams,
+      current_context: currentContext,
     },
   });
 }

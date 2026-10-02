@@ -31,6 +31,7 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { ensureRaceCoreId } from '../../shared/racecoreId.ts';
+import { generateUniqueRacerSlug } from '../../shared/racerSlugService.ts';
 
 const APPROVED_CREATION_REASONS = [
   'racer_import',
@@ -139,7 +140,16 @@ export default async function(req) {
 
     // ── If exactly one, reuse it ────────────────────────────────────────
     if (existingProfiles.length === 1) {
-      const profile = existingProfiles[0];
+      let profile = existingProfiles[0];
+
+      // Server-side slug backfill — a profile with no public slug cannot be published.
+      if (!profile.slug && profile.display_name) {
+        const backfilledSlug = await generateUniqueRacerSlug(sr, profile.display_name, { exclude_profile_id: profile.id });
+        if (backfilledSlug) {
+          await sr.entities.RacerProfile.update(profile.id, { slug: backfilledSlug }).catch(() => null);
+          profile = { ...profile, slug: backfilledSlug };
+        }
+      }
 
       // Ensure it has a racecore_id (idempotent)
       const idResult = await ensureRaceCoreId(base44, 'RacerProfile', profile.id);
@@ -221,11 +231,10 @@ export default async function(req) {
       }, { status: 400 });
     }
 
-    // ── Generate slug with collision detection ─────────────────────────
-    const baseSlug = slugify(resolvedDisplayName);
-    const uniqueSlug = await generateUniqueSlug(sr, baseSlug);
+    // ── Generate the slug server-side (direct candidate check, deterministic suffix) ──
+    const uniqueSlug = await generateUniqueRacerSlug(sr, resolvedDisplayName);
 
-    // ── Create RacerProfile ─────────────────────────────────────────────
+    // ── Create RacerProfile — public fields seeded from authoritative input ──
     const newProfileData = {
       person_identity_id: person_identity_id,
       display_name: resolvedDisplayName,
@@ -233,7 +242,24 @@ export default async function(req) {
       visibility: 'draft',
       is_claimed: false,
       is_archived: false,
+      hometown_city: identity.hometown_city || null,
+      hometown_state: identity.hometown_state || null,
+      hometown_country: identity.hometown_country || null,
     };
+
+    // Only seed public persona fields when a valid value was actually supplied.
+    if (body.career_status && ['Novice', 'Amateur', 'Semi-Professional', 'Professional'].includes(body.career_status)) {
+      newProfileData.career_status = body.career_status;
+    }
+    if (body.primary_discipline && typeof body.primary_discipline === 'string' && body.primary_discipline.trim()) {
+      newProfileData.primary_discipline = body.primary_discipline.trim();
+    }
+    for (const field of ['bio', 'tagline', 'profile_image_url', 'hero_image_url', 'website_url',
+      'instagram_url', 'facebook_url', 'tiktok_url', 'x_url', 'youtube_url', 'racing_base_city',
+      'racing_base_state', 'racing_base_country']) {
+      const value = body[field];
+      if (typeof value === 'string' && value.trim()) newProfileData[field] = value.trim();
+    }
 
     // Set legacy_driver_id only when explicitly provided
     if (legacy_driver_id && typeof legacy_driver_id === 'string') {

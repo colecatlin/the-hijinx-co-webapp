@@ -4,6 +4,7 @@
  * Extracted from importDriversBulk to keep the main function file manageable.
  * These helpers are specific to the identity-first bulk driver import flow.
  */
+import { matchPersonIdentity } from './personIdentityMatcher.ts';
 
 // ── Normalization helpers ────────────────────────────────────────────────────
 
@@ -140,106 +141,25 @@ export async function createSourceLink(sr, linkData) {
 }
 
 // ── Read-only identity matching (for dry-run) ────────────────────────────────
+// Delegates to the single shared matcher so a dry run and a real import can
+// never reach different conclusions about the same person. Read-only: it makes
+// no writes of any kind.
 
 export async function readOnlyIdentityMatch(sr, rawDriverName, rawSeriesName, fixtureIds) {
-  const normalizedName = normalizeIdentityName(rawDriverName);
-  if (!normalizedName) {
-    return { action: 'NEW_IDENTITY', identity_id: null, confidence: 0, signals: [] };
-  }
-
-  let bestScore = 0;
-  let bestCandidate = null;
-  const signals = [];
-
-  const allIdentities = await sr.entities.PersonIdentity
-    .filter({ status: 'active' }).catch(() => []);
-
-  const allAliases = await sr.entities.IdentityAlias
-    .filter({ active: true }).catch(() => []);
-
-  const aliasMap = new Map();
-  for (const alias of allAliases) {
-    const key = alias.alias_normalized || normalizeIdentityName(alias.alias_name);
-    if (!key) continue;
-    if (!aliasMap.has(key)) aliasMap.set(key, []);
-    aliasMap.get(key).push(alias);
-  }
-
-  for (const identity of allIdentities) {
-    if (identity.status === 'merged') continue;
-    if (fixtureIds && fixtureIds.has(identity.id)) continue;
-
-    let score = 0;
-    const candidateSignals = [];
-
-    const identityNorm = normalizeIdentityName(identity.canonical_name);
-    if (identityNorm && normalizedName === identityNorm) {
-      score += 55;
-      candidateSignals.push('canonical_name_match:55');
-    }
-
-    if (identity.legal_name) {
-      const legalNorm = normalizeIdentityName(identity.legal_name);
-      if (legalNorm && normalizedName === legalNorm) {
-        score += 85;
-        candidateSignals.push('legal_name_exact:85');
-      }
-    }
-
-    const aliasMatches = aliasMap.get(normalizedName) || [];
-    for (const alias of aliasMatches) {
-      if (alias.identity_id !== identity.id) continue;
-      const typeWeights = {
-        legal: 85, abbreviation: 75, informal: 70,
-        nickname: 60, surname_first: 55, source_variant: 50,
-        manual: 50, maiden_name: 45, married_name: 45,
-      };
-      const w = typeWeights[alias.alias_type] || 50;
-      score += w;
-      candidateSignals.push('alias_' + alias.alias_type + ':' + w);
-      break;
-    }
-
-    if (rawSeriesName && identity.data_source === rawSeriesName) {
-      score += 15;
-      candidateSignals.push('series_history:15');
-    }
-    if (identity.confidence_level === 'verified') {
-      score += 30;
-      candidateSignals.push('manual_verified_bonus:30');
-    }
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestCandidate = { identity, signals: candidateSignals };
-    }
-  }
-
-  if (bestCandidate && bestScore > 0) {
-    const confidence = Math.min(bestScore, 100);
-    signals.push(...bestCandidate.signals);
-
-    let action;
-    if (confidence >= 95) action = 'ATTACHED';
-    else if (confidence >= 80) action = 'REVIEW';
-    else action = 'NEW_IDENTITY';
-
-    return {
-      action,
-      identity_id: bestCandidate.identity.id,
-      identity: bestCandidate.identity,
-      confidence,
-      confidence_level: confidenceLevelFromScore(confidence),
-      signals,
-    };
-  }
-
+  const excluded = fixtureIds && typeof fixtureIds.forEach === 'function' ? Array.from(fixtureIds) : [];
+  const match = await matchPersonIdentity(sr, {
+    name: rawDriverName,
+    series_name: rawSeriesName || null,
+    exclude_identity_ids: excluded,
+  });
   return {
-    action: 'NEW_IDENTITY',
-    identity_id: null,
-    confidence: 0,
-    confidence_level: 'unverified',
-    signals,
+    action: match.action,
+    identity_id: match.identity_id,
+    identity: match.identity,
+    confidence: match.confidence,
+    confidence_level: match.confidence_level,
+    signals: match.signals,
+    reason: match.reason,
   };
 }
 

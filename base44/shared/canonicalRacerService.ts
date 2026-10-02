@@ -29,6 +29,7 @@ import {
   hasTrustedEvidence,
 } from './personIdentityMatcher.ts';
 import { slugify, generateUniqueRacerSlug, recordRacerSlugHistory } from './racerSlugService.ts';
+import { resolveSeries, resolveClass, validateSourceLinkRecords } from './driverImportHelpers.ts';
 import { validateRacerRelationshipGraph } from './racerRelationshipGraph.ts';
 
 const CAREER_STATUS_MAP: Record<string, string> = {
@@ -438,7 +439,6 @@ export async function upsertCanonicalRacer(
   } else if (!seriesValue && seasonYear) {
     reviewReasons.push('PARTICIPATION_CONTEXT_INCOMPLETE: a season year was supplied without a series — no participation was created.');
   } else if (seriesValue && seasonYear) {
-    const { resolveSeries, resolveClass } = await import('./driverImportHelpers.ts');
     const seriesResult = await resolveSeries(sr, seriesValue);
     if (seriesResult.status !== 'ok') {
       reviewReasons.push('PARTICIPATION_CONTEXT_INCOMPLETE: series "' + seriesValue + '" could not be resolved deterministically (' + (seriesResult.error || seriesResult.status) + ').');
@@ -508,7 +508,6 @@ export async function upsertCanonicalRacer(
 
   // ── 5. Idempotency link ──────────────────────────────────────────────────
   if (sourceKey) {
-    const { validateSourceLinkRecords } = await import('./driverImportHelpers.ts');
     const linkPayload: Record<string, any> = {
       source_key: sourceKey,
       source_type: sourceType,

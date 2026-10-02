@@ -131,6 +131,7 @@ export function toPublicResult(result: any) {
     event_id: result.event_id || null,
     session_id: result.session_id || null,
     session_type: result.session_type || null,
+    driver_id: result.driver_id || null,
     entry_id: result.entry_id || null,
     participation_id: result.participation_id || null,
     series_id: result.series_id || null,

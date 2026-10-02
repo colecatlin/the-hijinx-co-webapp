@@ -1,137 +1,143 @@
 /**
- * autoMatchResultsToDrivers.js
+ * autoMatchResultsToDrivers — result → racer linkage through the shared matcher.
  *
- * Called by entity automation on Results create.
- * Also supports manual batch mode: { batch: true }
+ * Rewritten by the canonical racer build:
+ *   · surname-only matching is GONE — a last name can never attach a result
+ *   · matching runs through base44/shared/personIdentityMatcher.ts
+ *   · a result is only written when the matcher returns a trusted ATTACHED and
+ *     a deterministic legacy Driver can be resolved from the identity
+ *   · it never creates a PersonIdentity or a Driver — a name in a results file
+ *     is not proof of a new human
  *
- * Logic:
- *   1. Skip if result already has a confident driver_id (matched_via != 'unmatched').
- *   2. Try to match driver_name against canonical Driver records.
- *   3. Exact normalized match → link.
- *   4. Single last-name match → link with lower confidence flag.
- *   5. Ambiguous or no match → log, skip, do not write.
- *   6. Never overwrite an existing driver_id that was set via upsertOperationalResult
- *      (these already have normalized_result_key set, indicating confident linkage).
+ * Outcomes: MATCHED | REVIEW_REQUIRED | NO_MATCH | BLOCKED
  *
- * Input (automation): { event: { entity_id }, data: { ...result } }
- * Input (batch):      { batch: true, limit?: number }
- *
- * Output: { ok, action, result_id, driver_id? }
+ * Called by entity automation on Results create, and supports manual batch mode
+ * { batch: true }. Admin-authenticated before any service-role access.
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { matchPersonIdentity } from '../../shared/personIdentityMatcher.ts';
 
-function normalizeName(name) {
-  return (name || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9 ]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function buildDriverIndex(drivers) {
-  const byFull = {};   // normalized full name → [driver]
-  const byLast = {};   // normalized last name → [driver]
-
-  for (const d of drivers) {
-    const full = normalizeName(`${d.first_name} ${d.last_name}`);
-    if (!byFull[full]) byFull[full] = [];
-    byFull[full].push(d);
-
-    // Also index normalized_name if present
-    if (d.normalized_name) {
-      const norm = normalizeName(d.normalized_name);
-      if (!byFull[norm]) byFull[norm] = [];
-      if (!byFull[norm].includes(d)) byFull[norm].push(d);
-    }
-
-    const last = normalizeName(d.last_name || '');
-    if (last) {
-      if (!byLast[last]) byLast[last] = [];
-      byLast[last].push(d);
-    }
+async function resolveCanonicalDriver(sr: any, identity: any): Promise<any | null> {
+  if (identity?.canonical_driver_id) {
+    const driver = await sr.entities.Driver.get(identity.canonical_driver_id).catch(() => null);
+    if (driver) return driver;
   }
-
-  return { byFull, byLast };
-}
-
-function matchDriver(driverName, index) {
-  if (!driverName) return { type: 'no_name' };
-  const norm = normalizeName(driverName);
-
-  // 1. Exact full-name match
-  const exact = index.byFull[norm];
-  if (exact?.length === 1) return { type: 'exact', driver: exact[0] };
-  if (exact?.length > 1)   return { type: 'ambiguous', reason: `Multiple drivers match "${driverName}"` };
-
-  // 2. Last-name-only match (single)
-  const parts = norm.split(' ');
-  const lastName = parts[parts.length - 1];
-  if (lastName && lastName.length > 2) {
-    const byLast = index.byLast[lastName];
-    if (byLast?.length === 1) return { type: 'last_name', driver: byLast[0] };
-    if (byLast?.length > 1)   return { type: 'ambiguous', reason: `Ambiguous last name "${lastName}" for "${driverName}"` };
+  const profiles = await sr.entities.RacerProfile
+    .filter({ person_identity_id: identity.id, is_archived: false }).catch(() => []);
+  for (const profile of (profiles || [])) {
+    if (!profile || !profile.legacy_driver_id) continue;
+    const driver = await sr.entities.Driver.get(profile.legacy_driver_id).catch(() => null);
+    if (driver) return driver;
   }
-
-  return { type: 'unmatched' };
+  const links = await sr.entities.DriverImportIdentityLink
+    .filter({ person_identity_id: identity.id, is_archived: false }).catch(() => []);
+  for (const link of (links || [])) {
+    if (!link || !link.legacy_driver_id) continue;
+    const driver = await sr.entities.Driver.get(link.legacy_driver_id).catch(() => null);
+    if (driver) return driver;
+  }
+  return null;
 }
 
-async function processResult(db, result, index) {
-  // Skip: already has a driver_id AND was set via a confident normalized key path
+async function processResult(sr: any, result: any, actor: any) {
   if (result.driver_id && result.normalized_result_key) {
-    return { action: 'skipped_confident', result_id: result.id };
+    return { action: 'MATCHED', already: true, result_id: result.id };
+  }
+  const name = result.driver_name || result.raw_driver_name || null;
+  if (!name) {
+    return { action: 'NO_MATCH', result_id: result.id, reason: 'no driver name on the result' };
   }
 
-  // Skip: already has driver_id and no driver_name to improve on
-  if (result.driver_id && !result.driver_name) {
-    return { action: 'skipped_has_id', result_id: result.id };
-  }
+  const match = await matchPersonIdentity(sr, { name });
 
-  const match = matchDriver(result.driver_name, index);
-
-  if (match.type === 'exact' || match.type === 'last_name') {
-    const driver = match.driver;
-    await db.entities.Results.update(result.id, {
-      driver_id: driver.id,
-      // Don't overwrite normalized_result_key if already set
-      ...(result.session_id && !result.normalized_result_key && {
-        normalized_result_key: `result:${result.session_id}:${driver.id}`,
-      }),
-    });
-    return {
-      action: 'linked',
-      result_id: result.id,
-      driver_id: driver.id,
-      match_type: match.type,
-      driver_name: result.driver_name,
-    };
-  }
-
-  if (match.type === 'ambiguous') {
-    await db.entities.OperationLog.create({
-      operation_type: 'result_driver_match_ambiguous',
+  if (match.action === 'BLOCKED') {
+    await sr.entities.OperationLog.create({
+      operation_type: 'result_driver_match_blocked',
       entity_name: 'Results',
       entity_id: result.id,
       status: 'warning',
-      message: match.reason,
-      metadata: { result_id: result.id, driver_name: result.driver_name, reason: match.reason },
-    }).catch(() => {});
-    return { action: 'ambiguous', result_id: result.id, driver_name: result.driver_name };
+      message: 'Trusted identity conflict for "' + name + '" (' + match.reason + ')',
+      metadata: { result_id: result.id, name, signals: match.signals },
+    }).catch(() => null);
+    return { action: 'BLOCKED', result_id: result.id, reason: match.reason, signals: match.signals };
   }
 
-  return { action: 'unmatched', result_id: result.id, driver_name: result.driver_name };
+  if (match.action === 'REVIEW') {
+    await sr.entities.OperationLog.create({
+      operation_type: 'result_driver_match_review_required',
+      entity_name: 'Results',
+      entity_id: result.id,
+      status: 'warning',
+      message: 'Result for "' + name + '" needs human confirmation (' + match.reason + ')',
+      metadata: { result_id: result.id, name, identity_id: match.identity_id, signals: match.signals },
+    }).catch(() => null);
+    return { action: 'REVIEW_REQUIRED', result_id: result.id, identity_id: match.identity_id, reason: match.reason };
+  }
+
+  if (match.action === 'NEW_IDENTITY') {
+    await sr.entities.OperationLog.create({
+      operation_type: 'result_driver_match_no_match',
+      entity_name: 'Results',
+      entity_id: result.id,
+      status: 'info',
+      message: 'No known racer matches "' + name + '" — no identity was created from a results row',
+      metadata: { result_id: result.id, name },
+    }).catch(() => null);
+    return { action: 'NO_MATCH', result_id: result.id, reason: 'no known racer' };
+  }
+
+  // ATTACHED — a trusted signal confirmed the human. Resolve the compatibility Driver.
+  const driver = await resolveCanonicalDriver(sr, match.identity);
+  if (!driver) {
+    await sr.entities.OperationLog.create({
+      operation_type: 'result_driver_match_review_required',
+      entity_name: 'Results',
+      entity_id: result.id,
+      status: 'warning',
+      message: 'Identity matched for "' + name + '" but no legacy Driver could be resolved deterministically',
+      metadata: { result_id: result.id, name, identity_id: match.identity_id },
+    }).catch(() => null);
+    return { action: 'REVIEW_REQUIRED', result_id: result.id, identity_id: match.identity_id, reason: 'no deterministic legacy Driver' };
+  }
+
+  const patch: Record<string, any> = { driver_id: driver.id };
+  if (match.identity_id) patch.identity_id = match.identity_id;
+  // Entry already identifies the racer — derive the rest from it rather than re-matching.
+  if (result.entry_id) {
+    const entry = await sr.entities.Entry.get(result.entry_id).catch(() => null);
+    if (entry) {
+      if (!result.participation_id && entry.participation_id) patch.participation_id = entry.participation_id;
+      if (!result.series_id && entry.series_id) patch.series_id = entry.series_id;
+      if (!result.series_class_id && entry.series_class_id) patch.series_class_id = entry.series_class_id;
+      if (!result.team_id && entry.team_id) patch.team_id = entry.team_id;
+    }
+  }
+  if (result.session_id && !result.normalized_result_key) {
+    patch.normalized_result_key = 'result:' + result.session_id + ':' + driver.id;
+  }
+
+  await sr.entities.Results.update(result.id, patch);
+  await sr.entities.OperationLog.create({
+    operation_type: 'result_driver_matched',
+    entity_name: 'Results',
+    entity_id: result.id,
+    status: 'success',
+    message: 'Result matched to ' + name + ' through the shared identity matcher',
+    metadata: { result_id: result.id, driver_id: driver.id, identity_id: match.identity_id, confidence: match.confidence, signals: match.signals },
+    performed_by: actor?.id || null,
+  }).catch(() => null);
+
+  return {
+    action: 'MATCHED', result_id: result.id, driver_id: driver.id,
+    identity_id: match.identity_id, confidence: match.confidence, match_type: 'identity_trusted',
+  };
 }
 
-Deno.serve(async (req) => {
+export default async function(req) {
   try {
     const base44 = createClientFromRequest(req);
 
-    // ── AUTHORIZATION GATE (mandatory, before any service-role access) ──
-    // This function performs service-role writes on official Results records
-    // (re-linking driver IDs, mutating normalized keys). Both the single-result
-    // and batch paths MUST pass authentication + admin authorization before
-    // any database access. A specific result_id must NOT bypass this gate.
+    // ── AUTHORIZATION GATE (before any service-role access) ──
     let user;
     try {
       user = await base44.auth.me();
@@ -139,58 +145,42 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    if (user.role !== 'admin') {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
+    if (user.role !== 'admin') return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
 
     const body = await req.json().catch(() => ({}));
+    const sr = base44.asServiceRole;
+    const actor = { id: user.id, full_name: user.full_name };
 
-    // Resolve target result id. Batch mode (no id, or body.batch=true).
     const entityId = body?.event?.entity_id || body?.data?.id || body?.result_id;
-    const isBatch = !entityId || !!body?.batch;
 
-    const db = base44.asServiceRole;
-
-    // Pre-load all drivers once
-    const allDrivers = await db.entities.Driver.list('-created_date', 2000);
-    const index = buildDriverIndex(allDrivers);
-
-    // --- Entity automation path (single result) ---
     if (entityId && !body?.batch) {
-      const results = await db.entities.Results.filter({ id: entityId }).catch(() => []);
-      const result = results?.[0];
+      const results = await sr.entities.Results.filter({ id: entityId }).catch(() => []);
+      const result = (results || [])[0];
       if (!result) return Response.json({ ok: false, error: 'Result not found' }, { status: 404 });
-
-      const outcome = await processResult(db, result, index);
+      const outcome = await processResult(sr, result, actor);
       return Response.json({ ok: true, ...outcome });
     }
 
-    // --- Batch mode: process all unlinked results ---
     const limit = body?.limit || 500;
-    const allResults = await db.entities.Results.list('-created_date', limit);
-    const unlinked = allResults.filter(r => !r.driver_id && r.driver_name);
+    const allResults = await sr.entities.Results.list('-created_date', limit);
+    const unlinked = (allResults || []).filter((r: any) => !r.driver_id && (r.driver_name || r.raw_driver_name));
 
-    const outcomes = [];
+    const outcomes: any[] = [];
     for (const result of unlinked) {
-      const outcome = await processResult(db, result, index);
-      outcomes.push(outcome);
+      outcomes.push(await processResult(sr, result, actor));
     }
-
-    const linked   = outcomes.filter(o => o.action === 'linked').length;
-    const ambiguous = outcomes.filter(o => o.action === 'ambiguous').length;
-    const unmatched = outcomes.filter(o => o.action === 'unmatched').length;
 
     return Response.json({
       ok: true,
-      total_checked: allResults.length,
+      total_checked: (allResults || []).length,
       unlinked_processed: unlinked.length,
-      linked,
-      ambiguous,
-      unmatched,
+      matched: outcomes.filter((o) => o.action === 'MATCHED').length,
+      review_required: outcomes.filter((o) => o.action === 'REVIEW_REQUIRED').length,
+      no_match: outcomes.filter((o) => o.action === 'NO_MATCH').length,
+      blocked: outcomes.filter((o) => o.action === 'BLOCKED').length,
       outcomes,
     });
-
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-});
+}
