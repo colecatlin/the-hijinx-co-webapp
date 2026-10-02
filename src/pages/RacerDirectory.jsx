@@ -234,7 +234,6 @@ export default function RacerDirectory() {
                     media={media}
                     programClassName={programClassName}
                     isRookie={isRookie}
-                    nonClickable={!isAdmin}
                   />
                 );
               })}

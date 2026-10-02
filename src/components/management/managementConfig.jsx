@@ -10,6 +10,7 @@ import {
   FileCheck,
   Link2, Navigation, ShoppingBag, Store,
   Plug, ScrollText, Camera, FileSpreadsheet,
+  UserCheck,
 } from 'lucide-react';
 
 /**
@@ -177,6 +178,7 @@ export const MANAGEMENT_SECTIONS = [
       { name: 'RaceCore Data Health', page: 'Diagnostics',                    icon: Database,     description: 'Opens RaceCore data diagnostics (peer system)' },
       { name: 'Discipline Colors',  page: 'management/discipline',            icon: Palette,      description: 'Manage discipline colors for map pins' },
       { name: 'Import Workbook',    page: 'management/platform/import-workbook', icon: FileSpreadsheet, description: 'Master workbook every import reports into — connect it and keep its tabs current' },
+      { name: 'Racer Data Health',  page: 'management/platform/racer-data-health', icon: UserCheck,    description: 'Canonical racer chain health, relationship repair, career stats and draft publication' },
       { name: 'Integrations',       page: 'management/platform/integrations',  icon: Plug,         description: 'Platform integrations (future)' },
       { name: 'Audit Log',          page: 'management/platform/audit-log',    icon: ScrollText,   description: 'Administrative change history (future)' },
       { name: 'Settings',          page: 'management/platform/settings',     icon: Settings,     description: 'Platform-wide settings (future)' },

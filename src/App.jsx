@@ -139,6 +139,7 @@ import PlatformAuditLog from './pages/management/PlatformAuditLog';
 import PlatformSettings from './pages/management/PlatformSettings';
 import ApparelShopify from './pages/management/ApparelShopify';
 import ImportWorkbook from './pages/management/ImportWorkbook';
+import RacerDataHealth from './pages/management/RacerDataHealth';
 
 // R9BI: Helper component to redirect /race-core/:base/:id → /racecore/:base/:id
 function RaceCoreEditorRedirect({ base }) {
@@ -209,6 +210,7 @@ const MANAGEMENT_SHELL_PAGES = new Set([
   'management/media/library', 'management/platform/integrations',
   'management/platform/audit-log', 'management/platform/settings',
   'management/platform/import-workbook',
+  'management/platform/racer-data-health',
   'management/apparel/shopify',
   // management/editorial/* pages
   'management/editorial/story-radar', 'management/editorial/recommendations',
@@ -332,6 +334,7 @@ const AuthenticatedApp = () => {
       <Route path="/management/platform/settings" element={<LayoutWrapper currentPageName="management/platform/settings"><PlatformSettings /></LayoutWrapper>} />
       <Route path="/management/apparel/shopify" element={<LayoutWrapper currentPageName="management/apparel/shopify"><ApparelShopify /></LayoutWrapper>} />
       <Route path="/management/platform/import-workbook" element={<LayoutWrapper currentPageName="management/platform/import-workbook"><ImportWorkbook /></LayoutWrapper>} />
+      <Route path="/management/platform/racer-data-health" element={<LayoutWrapper currentPageName="management/platform/racer-data-health"><RacerDataHealth /></LayoutWrapper>} />
       {/* R9BI: /management/media/* now redirect to canonical /racecore/media/* (handled above) */}
       <Route path="/MediaHome" element={<LayoutWrapper currentPageName="MediaHome"><OnboardingGuard><MediaHome /></OnboardingGuard></LayoutWrapper>} />
       <Route path="/creators" element={<Navigate to="/Directory?cat=creators" replace />} />

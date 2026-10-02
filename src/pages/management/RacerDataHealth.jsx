@@ -87,15 +87,16 @@ export default function RacerDataHealth() {
   };
 
   const handleRecalculate = () => withBusy('Recalculating career statistics…', async () => {
-    const response = await base44.functions.invoke('getRacerDataHealth', { mode: 'drafts' });
-    const candidates = (response?.data?.drafts || []).map((d) => d.racer_profile_id);
+    // Career statistics are derived summaries owned by the identity, so the
+    // recalculation runs per identity rather than per legacy Driver.
+    const profiles = await base44.entities.RacerProfile.list('-created_date', 100);
+    const identityIds = Array.from(
+      new Set((profiles || []).map((p) => p.person_identity_id).filter(Boolean)),
+    );
     let recalculated = 0;
     let failed = 0;
-    for (const racerProfileId of candidates.slice(0, 50)) {
+    for (const identityId of identityIds.slice(0, 50)) {
       try {
-        const profile = await base44.functions.invoke('getRacerProfileExperience', { racer_profile_id: racerProfileId, allow_draft: true });
-        const identityId = profile?.data?.page_data?.identity?.id;
-        if (!identityId) continue;
         await base44.functions.invoke('recalculateDriverCareerStats', { identity_id: identityId });
         recalculated += 1;
       } catch {
