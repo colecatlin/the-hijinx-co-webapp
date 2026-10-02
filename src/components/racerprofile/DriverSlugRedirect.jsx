@@ -39,25 +39,21 @@ export default function DriverSlugRedirect() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
   const [racerProfileSlug, setRacerProfileSlug] = useState(null);
+  const [legacyFallback, setLegacyFallback] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       if (!slug) { setChecking(false); return; }
       try {
-        // Find the legacy Driver by canonical_slug or slug
-        const byCanonical = await base44.entities.Driver.filter({ canonical_slug: slug }).catch(() => []);
-        let driver = byCanonical?.[0];
-        if (!driver) {
-          const bySlug = await base44.entities.Driver.filter({ slug }).catch(() => []);
-          driver = bySlug?.[0];
-        }
-        if (!driver) { setChecking(false); return; }
-
-        // Find the RacerProfile linked to this Driver
-        const rp = await resolveRacerProfileByLegacyDriverId(driver.id, { allowDraft: true });
-        if (!cancelled && rp?.slug) {
-          setRacerProfileSlug(rp.slug);
+        // Server-side resolution: the legacy Driver record is not readable by
+        // public clients (it carries date of birth and contact email), so the
+        // lookup happens in the backend and only the routing answer comes back.
+        const response = await base44.functions.invoke('resolveLegacyDriverRoute', { slug });
+        const result = response?.data || {};
+        if (!cancelled) {
+          if (result.racer_profile_slug) setRacerProfileSlug(result.racer_profile_slug);
+          setLegacyFallback(!!result.found && result.public === true && !result.racer_profile_slug);
         }
       } catch (_) {
         // ignore — fall through to legacy page
@@ -82,7 +78,20 @@ export default function DriverSlugRedirect() {
     );
   }
 
-  // No RacerProfile found — render the legacy DriverProfile page
-  // so existing bookmarks continue to work without breaking.
-  return <DriverProfile />;
+  // No canonical RacerProfile publicly available — render the legacy
+  // DriverProfile page only for the admin-preview case, so a draft racer
+  // never becomes visible through the old route.
+  if (legacyFallback) return <DriverProfile />;
+
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center px-6">
+      <div className="text-center">
+        <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-motion">Not Found</p>
+        <h1 className="mt-3 text-2xl font-black text-foreground">This racer page isn’t available</h1>
+        <p className="mt-2 text-sm text-foreground-secondary">
+          The racer may not have been published yet, or the address has changed.
+        </p>
+      </div>
+    </div>
+  );
 }

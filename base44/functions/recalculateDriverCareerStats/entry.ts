@@ -215,6 +215,39 @@ Deno.serve(async (req) => {
     const by_series = Object.values(seriesMap).map(s => ({ ...s, seasons: s.seasons.size }));
     const by_class = Object.values(classMap);
 
+    // ── Championships — derived from official championship-level Standings ──
+    // A championship is a Standings record at rank/position 1 for a series,
+    // class, season and participation context that represents final standings.
+    // Never hard-coded, never inferred from a single race result.
+    const championshipKeys = new Set();
+    let championshipCount = 0;
+    const standingRows = [];
+    if (use_modern_chain && participationIds.length > 0) {
+      for (const pid of participationIds) {
+        const rows = await sr.entities.Standings.filter({ participation_id: pid }).catch(() => []);
+        for (const s of rows) if (s) standingRows.push(s);
+      }
+    }
+    for (const did of allDriverIds) {
+      const rows = await sr.entities.Standings.filter({ driver_id: did }).catch(() => []);
+      for (const s of rows) if (s) standingRows.push(s);
+    }
+    for (const standing of standingRows) {
+      if (!standing || standing.is_archived) continue;
+      if (standing.record_status && ['under_review', 'partial', 'superseded'].includes(standing.record_status)) continue;
+      const rank = standing.rank != null ? standing.rank : standing.position;
+      if (rank !== 1) continue;
+      const key = [
+        standing.series_id || 'series',
+        standing.series_class_id || 'overall',
+        standing.season_year || 'season',
+        standing.participation_id || standing.driver_id || 'unknown',
+      ].join('|');
+      if (championshipKeys.has(key)) continue;
+      championshipKeys.add(key);
+      championshipCount++;
+    }
+
     const statsIdentityKey = `career_stats:${resolvedIdentityId || primaryDriverId}:career_total:::`;
 
     const statsData = {
@@ -230,7 +263,7 @@ Deno.serve(async (req) => {
       career_dns,
       career_dsq,
       career_points_total,
-      championships: 0,
+      championships: championshipCount,
       seasons_count: seasonSet.size,
       series_count: seriesSet.size,
       first_start_date: first_start_date || null,

@@ -39,6 +39,7 @@
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import { ensureRaceCoreId } from '../../shared/racecoreId.ts';
+import { waitUntil } from 'base44:runtime';
 
 const VALID_RESULT_SESSION_TYPES = new Set(['Practice', 'Qualifying', 'Heat', 'LCQ', 'Final']);
 
@@ -616,6 +617,27 @@ Deno.serve(async (req) => {
       event_id: record.event_id || null,
       notes: 'source_path: ' + source_path + ' resolution: ' + resolutionMethod,
     }).catch(() => {});
+
+    // ── Career statistics recalculate when an official result is published ──
+    // Results stay the raw truth; DriverCareerStats is the derived summary and
+    // is refreshed here rather than on every profile page view.
+    const isOfficialNow = record.published === true || record.status_state === 'Official';
+    const statsIdentityId = participation?.person_identity_id || null;
+    if (isOfficialNow && statsIdentityId) {
+      const recalculation = base44.functions
+        .invoke('recalculateDriverCareerStats', { identity_id: statsIdentityId })
+        .catch(async (e: any) => {
+          await sr.entities.OperationLog.create({
+            operation_type: 'career_stats_recalculation_failed',
+            entity_name: 'DriverCareerStats',
+            entity_id: statsIdentityId,
+            status: 'warning',
+            message: 'Career statistics recalculation failed after publishing a result: ' + (e?.message || 'unknown error'),
+            metadata: { identity_id: statsIdentityId, result_id: record.id },
+          }).catch(() => {});
+        });
+      waitUntil(recalculation);
+    }
 
     return Response.json({
       ...contract,
