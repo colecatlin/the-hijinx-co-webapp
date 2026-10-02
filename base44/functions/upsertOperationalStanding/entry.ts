@@ -9,6 +9,7 @@
  * Output: { action: 'created'|'updated', record }
  */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { waitUntil } from 'base44:runtime';
 
 function normalizeName(name) {
   if (!name) return '';
@@ -145,6 +146,39 @@ Deno.serve(async (req) => {
       status: 'success',
       metadata: { entity_type: 'standings', source_path, normalized_standing_key: normalizedKey, matched_by: matchMethod },
     }).catch(() => {});
+
+    // ── Career statistics recalculate on an official championship standing ──
+    // A rank-1 standing is the championship context; the derived summary is
+    // refreshed here, never on a public page request.
+    const rankValue = record.rank != null ? record.rank : record.position;
+    if (rankValue === 1) {
+      let statsIdentityId = null;
+      if (record.participation_id) {
+        const participation = await base44.asServiceRole.entities.SeasonParticipation
+          .get(record.participation_id).catch(() => null);
+        statsIdentityId = participation?.person_identity_id || null;
+      }
+      if (!statsIdentityId && record.driver_id) {
+        const identities = await base44.asServiceRole.entities.PersonIdentity
+          .filter({ canonical_driver_id: record.driver_id }).catch(() => []);
+        if ((identities || []).length === 1) statsIdentityId = identities[0].id;
+      }
+      if (statsIdentityId) {
+        const recalculation = base44.functions
+          .invoke('recalculateDriverCareerStats', { identity_id: statsIdentityId })
+          .catch(async (e) => {
+            await base44.asServiceRole.entities.OperationLog.create({
+              operation_type: 'career_stats_recalculation_failed',
+              entity_name: 'DriverCareerStats',
+              entity_id: statsIdentityId,
+              status: 'warning',
+              message: 'Career statistics recalculation failed after a championship standing: ' + (e?.message || 'unknown error'),
+              metadata: { identity_id: statsIdentityId, standing_id: record.id },
+            }).catch(() => {});
+          });
+        waitUntil(recalculation);
+      }
+    }
 
     return Response.json({ action, record, normalized_key: normalizedKey, match_method: matchMethod });
 

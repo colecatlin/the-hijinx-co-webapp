@@ -257,34 +257,39 @@ export default function QuickAddDriverDialog({ open, onOpenChange, onCreated }) 
     setCreating(true);
     try {
       const createdIds = [];
-      // Build payloads (numeric_id + slug generated per-row, with uniqueness check).
-      const payloads = [];
+      // Canonical creation: the admin-authenticated backend service builds the
+      // identity → profile → legacy Driver chain and generates every slug,
+      // RaceCore ID and access code server-side. Nothing is generated here.
+      const outcomes = [];
       for (const row of validRows) {
-        const numeric_id = await ensureUniqueNumericId();
-        const className = row.primary_class_id
-          ? classesBySeries[row.primary_series_id]?.find((c) => c.id === row.primary_class_id)?.class_name
-          : undefined;
-        payloads.push({
-          first_name: row.first_name.trim(),
-          last_name: row.last_name.trim(),
-          primary_number: row.primary_number || undefined,
-          primary_series_id: row.primary_series_id || undefined,
-          primary_class_id: row.primary_class_id || undefined,
-          // Stash class name is not a stored field on Driver, but consumers can
-          // resolve via SeriesClass id later — kept lean for quick add.
-          numeric_id,
-          slug: `${slugBase(row.first_name, row.last_name)}-${numeric_id}`,
+        const response = await base44.functions.invoke('upsertCanonicalRacer', {
+          racer: {
+            first_name: row.first_name.trim(),
+            last_name: row.last_name.trim(),
+            primary_number: row.primary_number || null,
+            series: row.primary_series_id || null,
+            series_class: row.primary_class_id || null,
+            source_type: 'quick_add',
+            source_name: 'Management Quick Add',
+            creation_reason: 'admin_create',
+          },
         });
-        // className intentionally ignored at create-time — Driver schema has no
-        // class_name field; class linkage lives on DriverProgram / Entry records.
-        void className;
+        const result = response?.data || {};
+        outcomes.push(result);
+        if (result.racer_profile_id) createdIds.push(result.racer_profile_id);
       }
 
-      const created = await base44.entities.Driver.bulkCreate(payloads);
-      createdIds.push(...created.map((r) => r.id));
-
       await queryClient.invalidateQueries({ queryKey: ['drivers'] });
-      toast.success(`${createdIds.length} driver${createdIds.length === 1 ? '' : 's'} created`);
+      const needsReview = outcomes.filter((o) => o.review_required).length;
+      const reviewReasons = Array.from(new Set(outcomes.flatMap((o) => o.review_reasons || [])));
+      if (needsReview > 0) {
+        toast.warning(
+          `${createdIds.length} racer${createdIds.length === 1 ? '' : 's'} created · ${needsReview} need review: ` +
+          (reviewReasons[0] || 'check the Racer Data Health view'),
+        );
+      } else {
+        toast.success(`${createdIds.length} racer${createdIds.length === 1 ? '' : 's'} created`);
+      }
       handleClose(false);
       reset();
       if (onCreated && createdIds[0]) onCreated(createdIds[0]);
