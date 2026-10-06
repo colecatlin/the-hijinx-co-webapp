@@ -101,12 +101,46 @@ export default function RacerDirectory() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Canonical season context — SeasonParticipation is the authoritative link
+  // between a RacerProfile and its current series, class, team and car number.
+  const { data: allParticipations = [] } = useQuery({
+    queryKey: ['seasonParticipations-for-racers'],
+    queryFn: () => base44.entities.SeasonParticipation.list('-created_date', 500),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: allCareerStats = [] } = useQuery({
+    queryKey: ['careerStats-for-racers'],
+    queryFn: () => base44.entities.DriverCareerStats.list('-updated_date', 500),
+    staleTime: 5 * 60 * 1000,
+  });
+
   // Build program map by driver_id
   const programsByDriver = useMemo(() => {
     const m = {};
     (allPrograms || []).forEach(p => { if (p.driver_id) { if (!m[p.driver_id]) m[p.driver_id] = []; m[p.driver_id].push(p); } });
     return m;
   }, [allPrograms]);
+
+  // Primary SeasonParticipation per RacerProfile
+  const participationByProfile = useMemo(() => {
+    const m = {};
+    (allParticipations || []).forEach(p => {
+      if (!p.racer_profile_id) return;
+      const existing = m[p.racer_profile_id];
+      if (!existing || (p.is_primary && !existing.is_primary)) m[p.racer_profile_id] = p;
+    });
+    return m;
+  }, [allParticipations]);
+
+  // Identity-scoped career totals (only racers with recorded starts)
+  const careerStatsByIdentity = useMemo(() => {
+    const m = {};
+    (allCareerStats || []).forEach(s => {
+      if (!s.identity_id || s.scope_type !== 'career_total' || !s.career_starts) return;
+      m[s.identity_id] = s;
+    });
+    return m;
+  }, [allCareerStats]);
 
   const uniqueSeries = useMemo(() => {
     const names = [...new Set((allPrograms || []).map(p => p.series_id ? allSeries.find(s => s.id === p.series_id)?.name : p.series_name).filter(Boolean))];
@@ -222,6 +256,17 @@ export default function RacerDirectory() {
                 const programClassName = (classProgram?.series_class_id ? allClasses.find(c => c.id === classProgram.series_class_id)?.class_name : null) || classProgram?.class_name || null;
                 const isRookie = activePrograms.some(p => p.is_rookie) || (!activePrograms.length && driverPrograms.some(p => p.is_rookie));
 
+                // Canonical fallbacks — used only when the legacy program
+                // compatibility path supplied no team or class.
+                const participation = participationByProfile[rp.id] || null;
+                const canonicalClass = (participation?.series_class_id
+                  ? allClasses.find(c => c.id === participation.series_class_id)?.class_name
+                  : null) || null;
+                const canonicalTeam = participation?.team_id
+                  ? allTeams.find(t => t.id === participation.team_id) || null
+                  : null;
+                const stats = rp.person_identity_id ? careerStatsByIdentity[rp.person_identity_id] : null;
+
                 return (
                   <RacerCard
                     key={rp.id}
@@ -230,10 +275,17 @@ export default function RacerDirectory() {
                     program={primaryProgram}
                     programs={driverPrograms}
                     allSeries={allSeries}
-                    team={team}
+                    team={team || canonicalTeam}
                     media={media}
-                    programClassName={programClassName}
+                    programClassName={programClassName || canonicalClass}
                     isRookie={isRookie}
+                    overallStats={stats ? {
+                      available: true,
+                      wins: stats.career_wins || 0,
+                      podiums: stats.career_podiums || 0,
+                      top5: stats.career_top5 || 0,
+                      top10: stats.career_top10 || 0,
+                    } : null}
                   />
                 );
               })}
