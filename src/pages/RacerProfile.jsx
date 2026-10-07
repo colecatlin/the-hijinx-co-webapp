@@ -325,7 +325,6 @@ export default function RacerProfile() {
           {className && <div><span className="text-white/40">Class: </span><span className="text-white/80">{className}</span></div>}
           {racerProfile.nicknames?.length > 0 && <div><span className="text-white/40">Known As: </span><span className="text-white/80 italic">"{racerProfile.nicknames.join('", "')}"</span></div>}
           {racingBase && <div><span className="text-white/40">Racing Base: </span><span className="text-white/80">{racingBase}</span></div>}
-          {racerProfile.racecore_id && <div className="font-mono"><span className="text-white/40">RaceCore ID: </span><span className="text-teal-400">{racerProfile.racecore_id}</span></div>}
         </div>
       </div>
 
