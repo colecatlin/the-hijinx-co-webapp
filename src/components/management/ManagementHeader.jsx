@@ -62,11 +62,12 @@ export default function ManagementHeader({ currentPage }) {
 
   return (
     <div className="bg-surface-elevated border-b border-divider shadow-sm px-6 py-3 flex items-center gap-4 shrink-0">
-      {/* Back button */}
+      {/* Home button — returns to the public website homepage (matches RaceCore's HIJINX button) */}
       <button
         type="button"
-        onClick={() => navigate(-1)}
-        aria-label="Go back"
+        onClick={() => navigate('/')}
+        aria-label="Go to website home"
+        title="Back to website home"
         className="w-8 h-8 rounded-lg flex items-center justify-center text-foreground-secondary hover:text-foreground hover:bg-surface-interactive transition-colors shrink-0"
       >
         <ArrowLeft className="w-4 h-4" />
