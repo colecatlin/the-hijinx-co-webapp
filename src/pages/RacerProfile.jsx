@@ -100,14 +100,21 @@ export default function RacerProfile() {
   const { data: isAuthenticated } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), ...DQ });
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), enabled: !!isAuthenticated, ...DQ });
 
+  // The viewer's identity decides whether a draft profile may be shown, so the
+  // experience request must not fire before that is known: on a cold page load
+  // it would ask as an anonymous visitor, get "RacerProfile not found" for a
+  // draft racer, and cache that answer for the rest of the session.
+  const isAdminViewer = user?.role === 'admin';
+  const viewerResolved = isAuthenticated !== undefined && (isAuthenticated === false || user !== undefined);
+
   // Single source of truth: getRacerProfileExperience returns both the
   // computed experience (timeline, stats, achievements) AND the raw page
   // dataset (profile, identity, entries, results, etc.) so the page renders
   // from one backend call instead of 17 client-side list queries.
   const { data: experienceData, isLoading } = useQuery({
-    queryKey: ['racerProfileExperience', routeSlug],
-    queryFn: () => base44.functions.invoke('getRacerProfileExperience', { slug: routeSlug, allow_draft: user?.role === 'admin' }),
-    enabled: !!routeSlug,
+    queryKey: ['racerProfileExperience', routeSlug, isAdminViewer],
+    queryFn: () => base44.functions.invoke('getRacerProfileExperience', { slug: routeSlug, allow_draft: isAdminViewer }),
+    enabled: !!routeSlug && viewerResolved,
     ...applyExperienceQueryOptions(),
   });
   const experience = experienceData?.data || experienceData || null;
@@ -159,7 +166,7 @@ export default function RacerProfile() {
     );
   }
 
-  if (isLoading) {
+  if (!viewerResolved || isLoading) {
     return (
       <PageShell className="bg-white">
         <Skeleton className="w-full h-[360px]" />
