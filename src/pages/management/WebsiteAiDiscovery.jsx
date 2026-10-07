@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { rateLimitRetry } from '@/lib/rateLimitRetry';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import AdminGuard from '@/components/management/AdminGuard';
 import ManagementShell from '@/components/management/ManagementShell';
@@ -29,6 +30,7 @@ export default function WebsiteAiDiscovery() {
     queryKey: ['aiDiscoveryDiagnostics'],
     queryFn: () => base44.functions.invoke('getAiDiscoveryDiagnostics'),
     staleTime: 60 * 1000,
+    ...rateLimitRetry,
   });
 
   // ── Run Answerability Audit (explicit) ──────────────────────────────────────

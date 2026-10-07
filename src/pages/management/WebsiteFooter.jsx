@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { rateLimitRetry } from '@/lib/rateLimitRetry';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import AdminGuard from '@/components/management/AdminGuard';
@@ -39,6 +40,7 @@ function FooterEditor() {
     queryKey: ['footerSettings'],
     queryFn: () => base44.functions.invoke('getFooterSettings'),
     staleTime: 30 * 1000,
+    ...rateLimitRetry,
   });
 
   useEffect(() => {

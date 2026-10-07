@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { rateLimitRetry } from '@/lib/rateLimitRetry';
 
 /**
  * useHome1Config — loads Home configuration once for the public Home1 page.
@@ -18,9 +19,10 @@ export function useHome1Config() {
   const isPreview = new URLSearchParams(location.search).get('preview') === 'home-draft';
 
   const { data: response, isLoading, error } = useQuery({
-    queryKey: ['home1Settings', isPreview ? 'draft' : 'published'],
+    queryKey: ['home1Settings'],
     queryFn: () => base44.functions.invoke('getHome1Settings'),
     staleTime: 5 * 60 * 1000,
+    ...rateLimitRetry,
   });
 
   const body = response?.data || response;

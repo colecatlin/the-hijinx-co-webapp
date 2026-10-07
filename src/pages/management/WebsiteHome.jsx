@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { rateLimitRetry } from '@/lib/rateLimitRetry';
 import ManagementLayout from '@/components/management/ManagementLayout';
 import ManagementShell from '@/components/management/ManagementShell';
 import AdminGuard from '@/components/management/AdminGuard';
@@ -35,10 +36,11 @@ function HomeEditor() {
   const [publishedAt, setPublishedAt] = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, failureCount } = useQuery({
     queryKey: ['home1Settings'],
     queryFn: () => base44.functions.invoke('getHome1Settings'),
     staleTime: 30 * 1000,
+    ...rateLimitRetry,
   });
 
   useEffect(() => {
@@ -130,7 +132,9 @@ function HomeEditor() {
           ) : (
             <>
               <div className="w-6 h-6 border-2 border-divider border-t-motion rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-foreground-quiet mt-3">Loading configuration...</p>
+              <p className="text-xs text-foreground-quiet mt-3">
+                {failureCount > 0 ? 'Temporarily rate-limited — retrying…' : 'Loading configuration...'}
+              </p>
             </>
           )}
         </div>

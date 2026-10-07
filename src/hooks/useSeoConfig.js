@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { rateLimitRetry } from '@/lib/rateLimitRetry';
 
 /**
  * useSeoConfig — loads SEO configuration for the public SeoMeta component.
@@ -20,9 +21,10 @@ export function useSeoConfig() {
   const isPreview = new URLSearchParams(location.search).get('preview') === 'seo-draft';
 
   const { data: response, isLoading, error } = useQuery({
-    queryKey: ['seoSettings', isPreview ? 'draft' : 'published'],
+    queryKey: ['seoSettings'],
     queryFn: () => base44.functions.invoke('getSeoSettings'),
     staleTime: 5 * 60 * 1000,
+    ...rateLimitRetry,
   });
 
   const body = response?.data || response;

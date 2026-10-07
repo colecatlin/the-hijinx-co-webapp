@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { rateLimitRetry } from '@/lib/rateLimitRetry';
 
 /**
  * useFooterConfig — loads Footer configuration once for the public Footer.
@@ -15,9 +16,10 @@ export function useFooterConfig() {
   const isPreview = new URLSearchParams(location.search).get('preview') === 'footer-draft';
 
   const { data: response, isLoading, error } = useQuery({
-    queryKey: ['footerSettings', isPreview ? 'draft' : 'published'],
+    queryKey: ['footerSettings'],
     queryFn: () => base44.functions.invoke('getFooterSettings'),
     staleTime: 5 * 60 * 1000,
+    ...rateLimitRetry,
   });
 
   const body = response?.data || response;

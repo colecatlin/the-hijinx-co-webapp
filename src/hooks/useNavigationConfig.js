@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { rateLimitRetry } from '@/lib/rateLimitRetry';
 
 /**
  * useNavigationConfig — loads Navigation configuration once for the public
@@ -19,9 +20,10 @@ export function useNavigationConfig() {
   const isPreview = new URLSearchParams(location.search).get('preview') === 'navigation-draft';
 
   const { data: response, isLoading, error } = useQuery({
-    queryKey: ['navigationSettings', isPreview ? 'draft' : 'published'],
+    queryKey: ['navigationSettings'],
     queryFn: () => base44.functions.invoke('getNavigationSettings'),
     staleTime: 5 * 60 * 1000,
+    ...rateLimitRetry,
   });
 
   const body = response?.data || response;
