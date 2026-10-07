@@ -93,16 +93,6 @@ export default function RacerCard({ racerProfile, legacyDriver = null, program =
                 </svg>
               </div>
             </div>
-            {overallStats?.available && (
-              <div className="bg-gray-50 border-t border-gray-300 px-4 py-2">
-                <div className="flex justify-around text-center">
-                  <div><div className="text-lg font-black text-[#232323]">{overallStats.wins}</div><div className="text-xs text-gray-600">W</div></div>
-                  <div><div className="text-lg font-black text-[#232323]">{overallStats.podiums}</div><div className="text-xs text-gray-600">P</div></div>
-                  <div><div className="text-lg font-black text-[#232323]">{overallStats.top5}</div><div className="text-xs text-gray-600">T5</div></div>
-                  <div><div className="text-lg font-black text-[#232323]">{overallStats.top10}</div><div className="text-xs text-gray-600">T10</div></div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -151,17 +141,15 @@ export default function RacerCard({ racerProfile, legacyDriver = null, program =
               </div>
             )}
           </div>
-          {overallStats?.available && (
-            <div className="bg-white border border-gray-300 rounded p-2 mb-2">
-              <div className="flex justify-around text-center gap-1">
-                <div><div className="text-sm font-black text-[#232323]">{overallStats.wins}</div><div className="text-2xs text-gray-600">W</div></div>
-                <div><div className="text-sm font-black text-[#232323]">{overallStats.podiums}</div><div className="text-2xs text-gray-600">P</div></div>
-                <div><div className="text-sm font-black text-[#232323]">{overallStats.top5}</div><div className="text-2xs text-gray-600">T5</div></div>
-                <div><div className="text-sm font-black text-[#232323]">{overallStats.top10}</div><div className="text-2xs text-gray-600">T10</div></div>
+          <div className="mt-auto pt-3 border-t border-gray-300">
+            {overallStats?.available && (
+              <div className="flex justify-around text-center gap-1 pb-2">
+                <div><div className="text-xs font-black text-[#232323]">{overallStats.wins}</div><div className="text-[9px] uppercase tracking-wide text-gray-500">Wins</div></div>
+                <div><div className="text-xs font-black text-[#232323]">{overallStats.podiums}</div><div className="text-[9px] uppercase tracking-wide text-gray-500">Podiums</div></div>
+                <div><div className="text-xs font-black text-[#232323]">{overallStats.top5}</div><div className="text-[9px] uppercase tracking-wide text-gray-500">Top5s</div></div>
+                <div><div className="text-xs font-black text-[#232323]">{overallStats.top10}</div><div className="text-[9px] uppercase tracking-wide text-gray-500">Top10s</div></div>
               </div>
-            </div>
-          )}
-          <div className="mt-auto pt-2 border-t border-gray-300">
+            )}
             <div className="flex items-center justify-end">
               {!nonClickable && (
                 <button type="button" onClick={handleProfileClick} className="text-2xs text-[#232323] hover:text-[#00FFDA] font-medium transition-colors cursor-pointer">
