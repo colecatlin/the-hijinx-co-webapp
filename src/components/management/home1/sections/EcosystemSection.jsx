@@ -14,9 +14,14 @@ export default function EcosystemSection({ value = {}, onChange }) {
   const v = value;
   const set = (field, val) => onChange({ ...v, [field]: val });
 
-  const updateTile = (idx, field, val) => {
+  const updateTile = (idx, field, val) => updateTileFields(idx, { [field]: val });
+
+  // Single-source tile patch: one handler must apply every field together, since
+  // each helper call reads the same props snapshot and a second call would
+  // overwrite the first one's tile.
+  const updateTileFields = (idx, fields) => {
     const tiles = [...(v.tiles || [])];
-    tiles[idx] = { ...tiles[idx], [field]: val };
+    tiles[idx] = { ...tiles[idx], ...fields };
     set('tiles', tiles);
   };
 
@@ -81,8 +86,8 @@ export default function EcosystemSection({ value = {}, onChange }) {
               </div>
               <MediaSelector
                 label="Tile image"
-                value={{ url: tile.image || '' }}
-                onChange={(m) => updateTile(idx, 'image', m.url)}
+                value={{ url: tile.image || '', alt: tile.alt || '' }}
+                onChange={(m) => updateTileFields(idx, { image: m.url, alt: m.alt || '' })}
                 showPosition={false}
               />
             </div>

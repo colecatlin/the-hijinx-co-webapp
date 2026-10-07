@@ -98,7 +98,21 @@ function HomeEditor() {
   };
 
   const handleSave = () => saveMutation.mutate({ draft });
-  const handlePublish = () => publishMutation.mutate();
+
+  // Publish always ships what's on screen: unsaved edits are saved to the draft
+  // first, then that draft is copied to the published configuration. If the save
+  // is rejected, publishing is abandoned so a stale config is never published.
+  const handlePublish = async () => {
+    if (isDirty) {
+      try {
+        const res = await saveMutation.mutateAsync({ draft });
+        if (!res?.data?.ok) return;
+      } catch {
+        return; // failure already surfaced as a toast
+      }
+    }
+    publishMutation.mutate();
+  };
   const handlePreview = () => {
     // Save draft first if there are unsaved changes, then open preview
     if (isDirty) {

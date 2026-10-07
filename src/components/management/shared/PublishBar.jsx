@@ -72,7 +72,9 @@ export default function PublishBar({
           <Save className="w-3.5 h-3.5 mr-1.5" />
           {isSaving ? 'Saving...' : 'Save Draft'}
         </Button>
-        <Button size="sm" onClick={onPublish} disabled={isDirty || isPublishing || !hasUnpublishedChanges}>
+        {/* Publish ships the current screen state — it saves the draft itself
+            when there are unsaved edits, so it is never blocked by isDirty. */}
+        <Button size="sm" onClick={onPublish} disabled={isPublishing || isSaving || (!hasUnpublishedChanges && !isDirty)}>
           <UploadCloud className="w-3.5 h-3.5 mr-1.5" />
           {isPublishing ? 'Publishing...' : 'Publish'}
         </Button>
