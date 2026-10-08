@@ -2,9 +2,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { mergeConfig, resolveCta, resolvePicture } from './home1Helpers';
-
-const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/c7e783970_generated_image.png';
+import { mergeConfig, resolveCta } from './home1Helpers';
 
 const SECONDARY_WORDS_DEFAULT = ['PEOPLE', 'PLACES', 'PROGRESS', 'NO LIMITS'];
 
@@ -15,7 +13,7 @@ const CLOSING_DEFAULTS = {
   accent_text: '',
   supporting_line_1: 'Racers. Builders. Fans. Creators.',
   supporting_line_2: 'Everyone has a place here.',
-  background_image: BG_IMAGE,
+  background_image: '',
   desktop_image_position: 'center center',
   mobile_image_position: 'center center',
   cta: {
@@ -40,7 +38,8 @@ export default function Home1BePartOfSomethingBigger({ config }) {
   const y = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : ['-6%', '6%']);
   const scale = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1, 1] : [1.08, 1]);
 
-  const bgImage = resolvePicture(v.background_image, BG_IMAGE);
+  // No photo configured — the media area stays blank on the solid backdrop below.
+  const bgImage = v.background_image || '';
   const words = v.right_side_words || SECONDARY_WORDS_DEFAULT;
   const cta = resolveCta(v.cta);
 
@@ -67,7 +66,7 @@ export default function Home1BePartOfSomethingBigger({ config }) {
       style={{ background: 'hsl(var(--canvas))' }}
     >
       {/* Cinematic image */}
-      <div className="relative w-full" style={{ height: 'clamp(420px, 46vw, 520px)' }}>
+      <div className="relative w-full" style={{ height: 'clamp(420px, 46vw, 520px)', background: '#232323' }}>
         <motion.div
           className="absolute inset-0"
           style={{ y, scale }}

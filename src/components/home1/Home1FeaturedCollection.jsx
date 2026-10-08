@@ -2,17 +2,11 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowRight, Truck, Wrench, Globe } from 'lucide-react';
-import { mergeConfig, resolveCta, resolvePicture } from './home1Helpers';
+import { mergeConfig, resolveCta } from './home1Helpers';
 
 const BONE = '#FFF8F5';
 const OIL = '#232323';
 const TEAL = '#00AAB5';
-
-const LIFESTYLE_IMG =
-  'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/627c0f160_generated_image.png';
-
-const FALLBACK_IMG =
-  'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80';
 
 const USE_CASES = ['TRACKSIDE', 'TRAVEL', 'WORKSHOP', 'EVERYDAY'];
 const DECOR_STACK = ['PEOPLE', 'PLACES', 'PROGRESS', 'NO LIMITS'];
@@ -28,7 +22,7 @@ const FEATURED_DEFAULTS = {
   eyebrow: 'Current Drop',
   headline: 'Featured Products',
   supporting_copy: 'Tees. Hoodies. Headwear. More.',
-  lifestyle_image: LIFESTYLE_IMG,
+  lifestyle_image: '',
   desktop_image_position: 'center center',
   mobile_image_position: 'center center',
   product_mode: 'newest',
@@ -50,7 +44,8 @@ function formatPrice(p, currency = 'USD') {
 
 export default function Home1FeaturedCollection({ config }) {
   const v = mergeConfig(FEATURED_DEFAULTS, config);
-  const lifestyleImage = resolvePicture(v.lifestyle_image, LIFESTYLE_IMG);
+  // No photo configured — the media area stays blank on the solid backdrop below.
+  const lifestyleImage = v.lifestyle_image || '';
 
   const { data, isLoading } = useQuery({
     queryKey: ['home1ShopifyFeatured', v.product_mode, v.shopify_collection_handle, v.product_display_count],
@@ -74,7 +69,7 @@ export default function Home1FeaturedCollection({ config }) {
         {/* Main layout — 55/45 desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-6 lg:gap-8">
           {/* ── LEFT — lifestyle / lookbook image with editorial overlays ── */}
-          <div className="relative w-full overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-full">
+          <div className="relative w-full overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-full" style={{ background: OIL }}>
             {lifestyleImage ? (
               <img
                 src={lifestyleImage}
@@ -208,12 +203,14 @@ export default function Home1FeaturedCollection({ config }) {
                         className="relative aspect-square overflow-hidden"
                         style={{ background: '#f0ece6' }}
                       >
-                        <img
-                          src={p.image_url || FALLBACK_IMG}
-                          alt={p.image_alt || p.name}
-                          loading="lazy"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                        />
+                        {p.image_url ? (
+                          <img
+                            src={p.image_url}
+                            alt={p.image_alt || p.name}
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                          />
+                        ) : null}
                       </div>
                       {/* Name (bold) + price (thin) */}
                       <div className="pt-2 flex items-baseline justify-between gap-2">

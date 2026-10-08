@@ -9,9 +9,6 @@ const BONE = '#FFF8F5';
 const OIL = '#232323';
 const RASP = '#D33F49';
 
-const FALLBACK_IMG =
-  'https://images.unsplash.com/photo-1502920917128-1aa1c652f298?auto=format&fit=crop&w=1400&q=80';
-
 const FROM_OUTLET_DEFAULTS = {
   enabled: true,
   eyebrow: 'Media // Stories // Motorsports',
@@ -155,12 +152,14 @@ export default function Home1FromTheOutlet({ config }) {
               {lead && (
                 <Link to={storyUrl(lead)} className="group relative block overflow-hidden" style={{ background: OIL }}>
                   <div className="relative aspect-[16/9] overflow-hidden">
-                    <img
-                      src={lead.cover_image || FALLBACK_IMG}
-                      alt={lead.title}
-                      loading="lazy"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                    />
+                    {lead.cover_image ? (
+                      <img
+                        src={lead.cover_image}
+                        alt={lead.title}
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                      />
+                    ) : null}
                     <div
                       className="absolute inset-0"
                       style={{
@@ -223,12 +222,14 @@ export default function Home1FromTheOutlet({ config }) {
                     <Link to={storyUrl(s)} className="group flex gap-4 py-3.5 items-start">
                       {/* Thumbnail */}
                       <div className="relative w-[38%] shrink-0 aspect-[4/3] overflow-hidden bg-[#f0ece6]">
-                        <img
-                          src={s.cover_image || FALLBACK_IMG}
-                          alt={s.title}
-                          loading="lazy"
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-                        />
+                        {s.cover_image ? (
+                          <img
+                            src={s.cover_image}
+                            alt={s.title}
+                            loading="lazy"
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                          />
+                        ) : null}
                       </div>
                       {/* Info */}
                       <div className="flex-1 min-w-0">

@@ -2,9 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Play, ArrowRight } from 'lucide-react';
-import { mergeConfig, resolveCta, resolvePicture } from './home1Helpers';
-
-const HERO_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/15d41358e_generated_image.png';
+import { mergeConfig, resolveCta } from './home1Helpers';
 
 const HERO_DEFAULTS = {
   enabled: true,
@@ -14,7 +12,7 @@ const HERO_DEFAULTS = {
   headline_line3: 'TOMORROW.',
   accent_line: 'TOMORROW.',
   supporting_copy: 'Connecting people, products, stories and technology to keep the culture moving forward.',
-  desktop_media_url: HERO_IMAGE,
+  desktop_media_url: '',
   mobile_media_url: '',
   desktop_image_position: '68% center',
   mobile_image_position: 'center center',
@@ -76,7 +74,8 @@ export default function Home1Hero({ config }) {
   const v = mergeConfig(HERO_DEFAULTS, config);
   const reduceMotion = useReducedMotion();
 
-  const heroImage = resolvePicture(v.desktop_media_url, HERO_IMAGE);
+  // No photo configured — the media area stays blank on the section's solid backdrop.
+  const heroImage = v.desktop_media_url || '';
   const bgPosition = v.desktop_image_position || '68% center';
 
   return (

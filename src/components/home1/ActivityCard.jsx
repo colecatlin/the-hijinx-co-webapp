@@ -8,15 +8,6 @@ const RASP = '#D33F49';
 const DENIM = '#1E3A5F';
 const GREY = '#6B6B6B';
 
-const FALLBACK_SEEDS = {
-  INDEX46: '1502920917128-1aa1c652f298',
-  RACECORE: '1568605117036-5fe5e7bab8b7',
-  HIJINX: '1556906781-9a412961c28c',
-  OUTLET: '1601362840410-2f0b3a4a7e76',
-  MARKETPLACE: '1518770660439-4636190af475',
-  COMMUNITY: '1485827404703-89b55fcc5950',
-};
-
 const SOURCE_STYLES = {
   INDEX46: { bg: OIL, text: '#FFFFFF', label: 'INDEX46' },
   RACECORE: { bg: DENIM, text: '#FFFFFF', label: 'RACECORE' },
@@ -26,14 +17,8 @@ const SOURCE_STYLES = {
   COMMUNITY: { bg: '#FFFFFF', text: OIL, label: 'COMMUNITY', border: OIL },
 };
 
-function fallbackImg(source) {
-  const seed = FALLBACK_SEEDS[source] || FALLBACK_SEEDS.INDEX46;
-  return `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&w=800&q=80`;
-}
-
 export default function ActivityCard({ item }) {
   const s = SOURCE_STYLES[item.source] || SOURCE_STYLES.INDEX46;
-  const img = item.image || fallbackImg(item.source);
 
   const cardClass = 'group flex flex-col bg-white border transition-colors hover:border-[#232323]';
   const cardStyle = { borderColor: 'rgba(35,35,35,0.15)', borderRadius: '2px' };
@@ -42,12 +27,14 @@ export default function ActivityCard({ item }) {
     <>
       {/* 1. IMAGE — fixed 16:9, object-cover */}
       <div className="relative aspect-[16/9] overflow-hidden bg-[#f0ece6]">
-        <img
-          src={img}
-          alt={item.title}
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-        />
+        {item.image ? (
+          <img
+            src={item.image}
+            alt={item.title}
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+          />
+        ) : null}
         {/* 2. SOURCE TAG — upper-left overlay */}
         <span
           className="absolute top-2.5 left-2.5 inline-flex items-center px-2 py-0.5 font-mono text-[8px] tracking-[0.18em] uppercase font-bold"
