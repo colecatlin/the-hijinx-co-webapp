@@ -215,11 +215,11 @@ const TRACKS: WorkbookDomain = {
   locationPairs: [{ country: 'location_country', state: 'location_state', label: 'Location' }],
   columns: [
     { name: 'name', required: true, note: 'Track name. Required.' },
+    { name: 'address_line1', note: 'Street address — the track’s physical address (e.g. 1000 Race Track Road). Shown on the public track page.' },
+    { name: 'address_line2', note: 'Second address line — gate, suite or building, only if there is one.' },
     { name: 'location_city', required: true, note: 'City. Required — the platform will not create a track without one.' },
     { name: 'location_state', note: 'State or region — choose from Ref · Regions; it must belong to the country in this row.' },
     { name: 'location_country', required: true, note: 'Country — choose from Ref · Countries. Required — the platform will not create a track without one.' },
-    { name: 'address_line1', note: 'Street address — the track’s physical address (e.g. 1000 Race Track Road). Shown on the public track page.' },
-    { name: 'address_line2', note: 'Second address line — gate, suite or building, only if there is one.' },
     { name: 'zip_code', note: 'Postal / ZIP code.' },
     { name: 'track_type', note: 'Free text — Short Course, Oval, Road Course, and so on.' },
     { name: 'surface_type', note: 'Free text — Dirt, Asphalt, and so on.' },
