@@ -222,7 +222,16 @@ STAMP_COLUMNS.forEach(function (column) {
  * the import is what decides whether it can become a record.
  */
 function dropdownRules(sheetId, domain, columns) {
-  const requests = [];
+  // A column keeps whatever dropdown it was given last time, so the whole band is
+  // cleared before this run's set is applied. A template whose columns move — the
+  // address lines added above the city, say — would otherwise leave its old
+  // dropdowns sitting on the wrong columns.
+  const requests = [{
+    setDataValidation: {
+      range: gridRange(sheetId, 2, 5000, 0, columns.length),
+      rule: null,
+    },
+  }];
 
   const listRule = function (source: string, index: number) {
     return {
