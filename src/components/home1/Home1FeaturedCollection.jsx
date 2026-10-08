@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { ArrowRight, Truck, Wrench, Globe } from 'lucide-react';
-import { mergeConfig, resolveCta } from './home1Helpers';
+import { mergeConfig, resolveCta, resolvePicture } from './home1Helpers';
 
 const BONE = '#FFF8F5';
 const OIL = '#232323';
@@ -50,6 +50,7 @@ function formatPrice(p, currency = 'USD') {
 
 export default function Home1FeaturedCollection({ config }) {
   const v = mergeConfig(FEATURED_DEFAULTS, config);
+  const lifestyleImage = resolvePicture(v.lifestyle_image, LIFESTYLE_IMG);
 
   const { data, isLoading } = useQuery({
     queryKey: ['home1ShopifyFeatured', v.product_mode, v.shopify_collection_handle, v.product_display_count],
@@ -74,13 +75,15 @@ export default function Home1FeaturedCollection({ config }) {
         <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-6 lg:gap-8">
           {/* ── LEFT — lifestyle / lookbook image with editorial overlays ── */}
           <div className="relative w-full overflow-hidden aspect-[4/5] lg:aspect-auto lg:h-full">
-            <img
-              src={v.lifestyle_image || LIFESTYLE_IMG}
-              alt="HIJINX apparel worn in a motorsports paddock"
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: v.desktop_image_position || 'center center' }}
-            />
+            {lifestyleImage ? (
+              <img
+                src={lifestyleImage}
+                alt="HIJINX apparel worn in a motorsports paddock"
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: v.desktop_image_position || 'center center' }}
+              />
+            ) : null}
             {/* Subtle bottom gradient for legibility */}
             <div
               className="absolute inset-0"

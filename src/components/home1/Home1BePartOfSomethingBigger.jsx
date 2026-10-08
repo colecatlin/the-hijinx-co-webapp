@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { mergeConfig, resolveCta } from './home1Helpers';
+import { mergeConfig, resolveCta, resolvePicture } from './home1Helpers';
 
 const BG_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/c7e783970_generated_image.png';
 
@@ -40,7 +40,7 @@ export default function Home1BePartOfSomethingBigger({ config }) {
   const y = useTransform(scrollYProgress, [0, 1], reduceMotion ? [0, 0] : ['-6%', '6%']);
   const scale = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1, 1] : [1.08, 1]);
 
-  const bgImage = v.background_image || BG_IMAGE;
+  const bgImage = resolvePicture(v.background_image, BG_IMAGE);
   const words = v.right_side_words || SECONDARY_WORDS_DEFAULT;
   const cta = resolveCta(v.cta);
 
@@ -72,13 +72,15 @@ export default function Home1BePartOfSomethingBigger({ config }) {
           className="absolute inset-0"
           style={{ y, scale }}
         >
-          <img
-            src={bgImage}
-            alt="People walking through a race paddock at golden hour"
-            className="w-full h-full object-cover"
-            loading="lazy"
-            style={{ filter: 'saturate(1.05) contrast(1.05)', objectPosition: v.desktop_image_position }}
-          />
+          {bgImage ? (
+            <img
+              src={bgImage}
+              alt="People walking through a race paddock at golden hour"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              style={{ filter: 'saturate(1.05) contrast(1.05)', objectPosition: v.desktop_image_position }}
+            />
+          ) : null}
         </motion.div>
 
         {/* Cinematic gradient */}

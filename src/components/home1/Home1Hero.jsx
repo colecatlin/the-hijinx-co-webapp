@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Play, ArrowRight } from 'lucide-react';
-import { mergeConfig, resolveCta } from './home1Helpers';
+import { mergeConfig, resolveCta, resolvePicture } from './home1Helpers';
 
 const HERO_IMAGE = 'https://media.base44.com/images/public/69875e8c5d41c7f087ed1b90/15d41358e_generated_image.png';
 
@@ -76,7 +76,7 @@ export default function Home1Hero({ config }) {
   const v = mergeConfig(HERO_DEFAULTS, config);
   const reduceMotion = useReducedMotion();
 
-  const heroImage = v.desktop_media_url || HERO_IMAGE;
+  const heroImage = resolvePicture(v.desktop_media_url, HERO_IMAGE);
   const bgPosition = v.desktop_image_position || '68% center';
 
   return (
@@ -85,18 +85,20 @@ export default function Home1Hero({ config }) {
       style={{ minHeight: '460px', background: '#232323' }}
     >
       {/* Background image layer — very slow scale-in */}
-      <motion.div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: bgPosition,
-          willChange: 'transform',
-        }}
-        initial={reduceMotion ? false : { scale: 1.08 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 14, ease: 'easeOut' }}
-      />
+      {heroImage ? (
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: bgPosition,
+            willChange: 'transform',
+          }}
+          initial={reduceMotion ? false : { scale: 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 14, ease: 'easeOut' }}
+        />
+      ) : null}
 
       {/* Base readability overlay */}
       <div className="absolute inset-0" style={{ background: 'rgba(35,35,35,0.28)' }} />

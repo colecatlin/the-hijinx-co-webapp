@@ -23,6 +23,13 @@ export function mergeConfig(defaults, overrides) {
   return result;
 }
 
+// Picture fields: a field that was never configured falls back to the
+// section's built-in picture, but a field that was deliberately cleared
+// (empty string) stays cleared — a deleted picture must never come back.
+export function resolvePicture(configured, fallback) {
+  return configured === undefined || configured === null ? fallback : configured;
+}
+
 // CTA resolver — resolves structured destination to a usable href
 // Returns null for invalid/hidden CTAs, { href: null, isLink: false, ... } for enabled-but-linkless CTAs
 export function resolveCta(cta) {

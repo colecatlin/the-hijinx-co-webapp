@@ -86,13 +86,16 @@ function EcosystemTile({ tile }) {
 
   const tileContent = (
     <>
-      {/* Image */}
-      <img
-        src={tile.image}
-        alt={tile.alt || tile.title}
-        loading="lazy"
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-      />
+      {/* Image — rendered only when the tile actually has one. An empty src
+          resolves to the page URL, which paints a stale or broken picture. */}
+      {tile.image ? (
+        <img
+          src={tile.image}
+          alt={tile.alt || tile.title}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        />
+      ) : null}
       {/* Dark gradient overlay */}
       <div
         className="absolute inset-0"
