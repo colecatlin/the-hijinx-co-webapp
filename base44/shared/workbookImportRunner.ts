@@ -19,9 +19,10 @@
  * racer row is the case that matters: it settles on the racer profile the row
  * produced, and the racer-profile resolver mints that profile's RACR ID as part
  * of the same commit — so this run reads the resolver's result rather than
- * minting a second ID on top of it. The other families the workbook creates
- * (teams, tracks, series, events, organizations) have no ID family in the
- * platform's RaceCore ID architecture, so those rows are stamped without one.
+ * minting a second ID on top of it, and a track row settles on the track it
+ * matched, so it carries that track's ID. The other families the workbook creates
+ * (teams, series, events, organizations) have no ID family in the platform's
+ * RaceCore ID architecture, so those rows are stamped without one.
  */
 
 import {
@@ -64,10 +65,19 @@ async function resolveCoreRecord(ctx, domain, payload, sheetRow) {
   const own = (data.entity_resolution || {})[domain.primaryResolutionKey];
   if (own) {
     if (own.action === 'MATCH_EXISTING' || own.action === 'MATCH_ALIAS') {
+      // The resolution engine answers with the id and the name alone, so the
+      // record itself is read back: the row is stamped with the record it
+      // settled on, which is where its slug and RaceCore ID come from.
+      let matched = null;
+      try {
+        matched = await ctx.sr.entities[domain.entity].get(own.entity_id);
+      } catch (e) {
+        matched = null;
+      }
       return {
         action: 'skipped',
         note: 'Already on the platform — matched by ' + (own.match_type || 'name') + '. Nothing was changed.',
-        record: { id: own.entity_id, name: own.entity_name },
+        record: matched || { id: own.entity_id, name: own.entity_name },
       };
     }
     if (own.action === 'REVIEW_REQUIRED') {

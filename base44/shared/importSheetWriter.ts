@@ -613,7 +613,7 @@ async function writeReadMe(token, spreadsheetId, sheetIds, config) {
     ['What the platform writes — never type in these columns'],
     ['platform_name, platform_id, platform_racecore_id, platform_slug, last_action, last_run_at, last_note.'],
     ['Once platform_id is filled the row is already on the platform and will never be created a second time. Clear the platform columns to make a row try again.'],
-    ['platform_racecore_id is filled in by the run itself, as the row is imported — never in a later pass. A racer row is stamped with the ID of the racer profile it produced. The other tabs are left blank there: those record families have no ID family yet, so there is nothing to mint.'],
+    ['platform_racecore_id is filled in by the run itself, as the row is imported — never in a later pass. A racer row is stamped with the ID of the racer profile it produced, a track row with the ID of the track it settled on. The remaining tabs are left blank there: those record families have no ID family yet, so there is nothing to mint.'],
     [''],
     ['Clashes are never merged'],
     ['A row that matches a record the platform already holds is skipped, left exactly as you typed it, and flagged in Problems with the record it matched. Nothing already on the platform is overwritten by this workbook.'],

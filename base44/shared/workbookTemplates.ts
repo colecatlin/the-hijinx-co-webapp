@@ -48,8 +48,8 @@ export type WorkbookDomain = {
   primaryResolutionKey: string;
   /**
    * The record in this family that carries a RaceCore ID, or null where the
-   * family has none. A racer row settles on its racer profile, which is why a
-   * racer row leaves the import already carrying an ID.
+   * family has none. A racer row settles on its racer profile and a track row on
+   * the track it matched, which is why those rows leave the import carrying an ID.
    */
   racecoreEntity: string | null;
   intro: string;
@@ -66,7 +66,7 @@ export type WorkbookDomain = {
 export const STAMP_COLUMNS: TemplateColumn[] = [
   { name: 'platform_name', note: 'Written by the platform — the record as it is stored.' },
   { name: 'platform_id', note: 'Written by the platform. Once filled, this row is already on the platform and is never created a second time. Clear it to make the row try again.' },
-  { name: 'platform_racecore_id', note: 'Written by the platform — the record’s RaceCore ID, filled in as the row is imported. A racer row carries the profile it produced; the other tabs are left blank because those record families have no ID family yet.' },
+  { name: 'platform_racecore_id', note: 'Written by the platform — the record’s RaceCore ID, filled in as the row is imported. A racer row carries the racer profile it produced and a track row the track it settled on; the remaining tabs are left blank because those record families have no ID family yet.' },
   { name: 'platform_slug', note: 'Written by the platform — the slug used in the record’s public address.' },
   { name: 'last_action', note: 'Written by the platform: created, skipped or failed.' },
   { name: 'last_run_at', note: 'Written by the platform — when the run last looked at this row.' },
@@ -210,7 +210,7 @@ const TRACKS: WorkbookDomain = {
   engineEntity: 'Track',
   pipelineType: 'track',
   primaryResolutionKey: 'track',
-  racecoreEntity: null,
+  racecoreEntity: 'Track',
   intro: 'One row per track.',
   locationPairs: [{ country: 'location_country', state: 'location_state', label: 'Location' }],
   columns: [

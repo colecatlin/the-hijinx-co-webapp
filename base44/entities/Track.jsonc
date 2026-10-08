@@ -134,6 +134,10 @@
       "type": "string",
       "description": "UID from external data source for deduplication"
     },
+    "racecore_id": {
+      "type": "string",
+      "description": "Immutable RaceCore ID (TRCK + 9 digits). Backend-generated."
+    },
     "sync_last_seen_at": {
       "type": "string",
       "format": "date-time",
@@ -155,7 +159,7 @@
     },
     "archive_reason": {
       "type": "string",
-      "description": "R9CS: Reason for archiving"
+      "description": "R9CS: Reason for archiving this record"
     },
     "bio": {
       "type": "string",
