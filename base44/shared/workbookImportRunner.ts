@@ -230,20 +230,25 @@ async function commitCoreRecord(ctx, domain, payload) {
   // track is stamped with a blank platform_racecore_id. Mint one now — with the
   // same duplicate-name/address guard the outbound sync uses — so the stamp
   // carries the ID the row was waiting for.
+  let idNote = '';
   if (domain.racecoreEntity && record && !record.racecore_id && ctx.commit) {
     const idResult = await ensureIdWithDuplicateCheck(ctx.base44, domain, record);
     if (idResult.ok) {
       try { record = await ctx.sr.entities[domain.entity].get(record.id); }
       catch (e) { /* keep the original read */ }
+    } else if (!idResult.skipped) {
+      idNote = 'RaceCore ID could not be assigned: ' + idResult.reason;
+    } else {
+      idNote = 'RaceCore ID held back: ' + idResult.reason;
     }
   }
 
   if (created) {
-    return { action: 'created', note: '', record: record };
+    return { action: 'created', note: idNote, record: record };
   }
   return {
     action: 'skipped',
-    note: 'Matched a record already on the platform — left as it was.',
+    note: 'Matched a record already on the platform — left as it was.' + (idNote ? ' ' + idNote : ''),
     record: record,
   };
 }
