@@ -1,0 +1,59 @@
+{
+  "name": "Daily Workbook Sync",
+  "description": "Runs the daily workbook import (new rows \u2192 platform) then the outbound sync (platform records \u2192 workbook), using RaceCore IDs as the authoritative cross-system identifier. Runs every day at 10am UTC.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 10 * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "daily_workbook_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_daily_import": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "runDailyWorkbookImport",
+            "args": {}
+          },
+          "then": "sync_to_workbook",
+          "x-base44": {
+            "title": "Run daily import",
+            "description": "Import eligible workbook rows into the platform"
+          }
+        }
+      },
+      {
+        "sync_to_workbook": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncPlatformToWorkbook",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sync to workbook",
+            "description": "Push platform records back to the workbook"
+          }
+        }
+      }
+    ]
+  }
+}
