@@ -214,7 +214,7 @@ async function commitCoreRecord(ctx, domain, payload) {
   // The record the sheet should carry is the record-type itself — Track,
   // Team, Series, Event, Driver — not the internal Entity-layer row, because
   // that is what other records reference (an Event points at a Track id).
-  const record = synced.source_record || synced.entity_record;
+  let record = synced.source_record || synced.entity_record;
   const created = synced.source_action === 'created';
 
   // A racer row settles on the racer profile: it is the public identity, it is
@@ -223,6 +223,19 @@ async function commitCoreRecord(ctx, domain, payload) {
   // what keeps this run from minting a second ID on top of the one it assigned.
   if (isRacer) {
     return settleRacerProfile(ctx, personIdentityId, displayName, record, created);
+  }
+
+  // Non-racer records (tracks, teams, series, events): the sync pipeline creates
+  // the record but does not mint a RaceCore ID. Without this, a newly created
+  // track is stamped with a blank platform_racecore_id. Mint one now — with the
+  // same duplicate-name/address guard the outbound sync uses — so the stamp
+  // carries the ID the row was waiting for.
+  if (domain.racecoreEntity && record && !record.racecore_id && ctx.commit) {
+    const idResult = await ensureIdWithDuplicateCheck(ctx.base44, domain, record);
+    if (idResult.ok) {
+      try { record = await ctx.sr.entities[domain.entity].get(record.id); }
+      catch (e) { /* keep the original read */ }
+    }
   }
 
   if (created) {
