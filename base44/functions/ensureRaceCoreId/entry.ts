@@ -1,18 +1,20 @@
 /**
  * ensureRaceCoreId — HTTP handler.
  *
- * Assigns a RaceCore ID to an existing record only when racecore_id is empty.
- * If the record already has a racecore_id, returns it without generating a new one.
+ * Assigns a RaceCore ID to an existing record using registry-backed issuance.
+ * Checks family health, reserves a sequence in the permanent issuance ledger,
+ * then attaches it to the source entity. Fail-closed on any conflict.
  *
  * Input:  { entity_type: "PersonIdentity", entity_id: "internal-id" }
- * Output: { success, entity_type, entity_id, racecore_id, generated }
+ * Output: IssuanceResult (success, racecore_id, generated, error, blocked, etc.)
  *
- * Phase 2 supported entity types: PersonIdentity, RacerProfile, SeasonParticipation
+ * Supported entity types: PersonIdentity, RacerProfile, SeasonParticipation,
+ * Driver, Entry, Results, Standings, Track.
  *
  * Admin only.
  */
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { ensureRaceCoreId as doEnsure } from '../../shared/racecoreId.ts';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
+import { ensureRaceCoreId as doEnsure } from '../../shared/racecoreRegistry.ts';
 
 export default async function(req) {
   try {
@@ -33,7 +35,8 @@ export default async function(req) {
     const result = await doEnsure(base44, body.entity_type, body.entity_id);
 
     if (!result.success) {
-      return Response.json(result, { status: 400 });
+      const status = result.blocked ? 423 : 400; // 423 Locked for blocked families
+      return Response.json(result, { status });
     }
 
     return Response.json(result);

@@ -12,6 +12,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { resolveRaceCoreId, isRaceCoreAttempt } from '../../shared/racecoreRegistry.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -149,7 +150,19 @@ Deno.serve(async (req) => {
     // ── Resolve track ──
     if (row.track_id || row.track_name) {
       const trackId = row.track_id;
-      if (trackId) {
+      if (trackId && isRaceCoreAttempt(String(trackId))) {
+        // RaceCore ID attempt — use the shared exact-one resolver, no name fallback.
+        const result = await resolveRaceCoreId(base44.asServiceRole, String(trackId), 'Track');
+        if (result.outcome === 'RESOLVED' && result.base44_id) {
+          resolved.track_id = result.base44_id;
+        } else {
+          unresolved.push({
+            field: 'track_id',
+            reason: `RaceCore ID "${trackId}" resolution failed: ${result.error || result.outcome}`,
+            value: trackId
+          });
+        }
+      } else if (trackId) {
         const track = await base44.asServiceRole.entities.Track.get(trackId).catch(() => null);
         if (track) {
           resolved.track_id = trackId;

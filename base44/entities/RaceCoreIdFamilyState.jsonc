@@ -1,0 +1,96 @@
+{
+  "name": "RaceCoreIdFamilyState",
+  "type": "object",
+  "description": "Per-family health state for RaceCore ID issuance. One record per supported prefix (PERS, RACR, PART, DRVR, ENTR, RSLT, STND, TRCK). Controls whether new IDs may be issued for that family. A family may issue new IDs ONLY when status is HEALTHY. Any conflict or uncertainty blocks issuance for that family while leaving other healthy families unaffected. Backend-only: all operations are admin-only.",
+  "properties": {
+    "prefix": {
+      "type": "string",
+      "enum": [
+        "PERS",
+        "RACR",
+        "PART",
+        "DRVR",
+        "ENTR",
+        "RSLT",
+        "STND",
+        "TRCK"
+      ],
+      "description": "The four-letter family prefix. One record per prefix."
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "The canonical entity type for this family (PersonIdentity, RacerProfile, etc.)."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "MIGRATION_PENDING",
+        "HEALTHY",
+        "BLOCKED_DUPLICATE_ID",
+        "BLOCKED_COUNTER_CONFLICT",
+        "BLOCKED_REGISTRY_CONFLICT",
+        "BLOCKED_FORMAT_CONFLICT",
+        "BLOCKED_OWNERSHIP_CONFLICT",
+        "BLOCKED_INTEGRITY_FAILURE"
+      ],
+      "default": "MIGRATION_PENDING",
+      "description": "Current issuance health state. MIGRATION_PENDING = not yet initialized. HEALTHY = may issue. BLOCKED_* = explicit conflict, issuance disabled."
+    },
+    "blocked_reason": {
+      "type": "string",
+      "description": "Human-readable explanation of why the family is blocked, including specific conflicting record IDs and sequences."
+    },
+    "last_checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the family state was last verified by an integrity check."
+    },
+    "initialized_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the family successfully completed initialization and backfill."
+    },
+    "last_issued_sequence": {
+      "type": "number",
+      "default": 0,
+      "description": "Mirror of the counter's last_issued_number for cross-check. Updated on each successful issuance."
+    },
+    "highest_backfilled_sequence": {
+      "type": "number",
+      "default": 0,
+      "description": "The highest sequence number found among existing valid IDs during backfill. Counters must never go below this."
+    },
+    "total_issuances": {
+      "type": "number",
+      "default": 0,
+      "description": "Count of issuance registry records for this prefix."
+    }
+  },
+  "required": [
+    "prefix",
+    "entity_type",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

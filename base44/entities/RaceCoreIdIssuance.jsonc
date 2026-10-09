@@ -1,0 +1,149 @@
+{
+  "name": "RaceCoreIdIssuance",
+  "type": "object",
+  "description": "Permanent issuance ledger for every RaceCore ID ever issued. One record per issued ID. This is the authoritative historical record of identity issuance \u2014 it survives source entity archival and hard deletion. Records are never deleted; an ID whose source is gone keeps its issuance row with is_source_deleted=true so the sequence stays permanently reserved. Backend-only: all operations are admin-only.",
+  "properties": {
+    "racecore_id": {
+      "type": "string",
+      "description": "The full RaceCore ID, e.g. TRCK000000001. Immutable once written."
+    },
+    "prefix": {
+      "type": "string",
+      "enum": [
+        "PERS",
+        "RACR",
+        "PART",
+        "DRVR",
+        "ENTR",
+        "RSLT",
+        "STND",
+        "TRCK"
+      ],
+      "description": "The four-letter family prefix."
+    },
+    "sequence_number": {
+      "type": "number",
+      "description": "The numeric sequence (1-999999999). Immutable once written."
+    },
+    "entity_type": {
+      "type": "string",
+      "description": "The canonical entity type this ID was issued for (PersonIdentity, RacerProfile, etc.)."
+    },
+    "source_record_id": {
+      "type": "string",
+      "description": "The Base44 internal record ID the ID was originally attached to. Retained permanently even after the source is deleted."
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the ID was issued (for backfilled historical IDs, the backfill timestamp)."
+    },
+    "issued_by": {
+      "type": "string",
+      "description": "User ID of the admin who issued the ID, or 'system_migration' for backfilled historical IDs."
+    },
+    "issuance_status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "RETIRED"
+      ],
+      "default": "ACTIVE",
+      "description": "ACTIVE = in operational use. RETIRED = explicitly retired from active use. Retired IDs remain permanently reserved \u2014 the sequence is never recycled."
+    },
+    "retired_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the ID was explicitly retired, if applicable."
+    },
+    "retired_by": {
+      "type": "string",
+      "description": "User ID of the admin who retired the ID."
+    },
+    "retirement_reason": {
+      "type": "string",
+      "description": "Reason for retirement, if applicable."
+    },
+    "is_source_archived": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the source entity is archived. Archival does NOT retire the ID \u2014 it remains ACTIVE and permanently owned. This flag is informational for audit."
+    },
+    "is_source_deleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "True when the source entity has been hard-deleted. The issuance record is retained permanently so the sequence can never be reused."
+    },
+    "source_deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the source entity deletion was detected, if applicable."
+    },
+    "migration_source": {
+      "type": "string",
+      "description": "How this issuance entered the registry: 'backfill' (existing ID reconciled during family initialization) or 'new_issuance' (minted after HEALTHY)."
+    },
+    "history": {
+      "type": "array",
+      "default": [],
+      "description": "Append-only audit trail of lifecycle events for this issuance.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "issued",
+              "backfilled",
+              "retired",
+              "source_archived",
+              "source_deleted",
+              "source_restored"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actor": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "racecore_id",
+    "prefix",
+    "sequence_number",
+    "entity_type",
+    "source_record_id",
+    "issued_at",
+    "issuance_status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

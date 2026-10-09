@@ -34,6 +34,7 @@ import {
 import { resolveSponsorOrganization } from './organizationResolution.ts';
 import { checkLocationPair } from './countryReference.ts';
 import { ensureIdWithDuplicateCheck } from './workbookSyncHelpers.ts';
+import { resolveRaceCoreId, isRaceCoreAttempt } from './racecoreRegistry.ts';
 
 const EXTRA_ORGANIZATION_FIELDS = [
   'industry', 'tagline', 'description',
@@ -333,24 +334,31 @@ function checkLocations(domain, fields) {
 
 /**
  * Resolve RaceCore ID cross-references in an event payload to platform entity
- * IDs. The RaceCore ID is the workbook's front-facing identifier — admins paste
- * a track's TRCK ID into track_id — but the platform's foreign keys need the
- * underlying record id. A value that is not a RaceCore ID (no known prefix) is
- * left untouched so legacy platform-id references still work.
+ * IDs. A recognized RaceCore ID attempt (4 letters + digits) is resolved via the
+ * shared exact-one resolver with expected family TRCK — never name fallback.
+ * Legacy Base44 Track IDs (24-hex-char strings) are left untouched.
+ *
+ * Returns { payload, error } — if error is set the Event row must be blocked.
  */
 async function resolveEventRaceCoreRefs(ctx, payload) {
   const out = Object.assign({}, payload);
-  const RACECORE_RE = /^(TRCK|SERX|TEAM)/;
 
-  if (out.track_id && RACECORE_RE.test(String(out.track_id))) {
-    try {
-      const rows = await ctx.sr.entities.Track.filter({ racecore_id: out.track_id });
-      out.track_id = rows.length > 0 ? rows[0].id : null;
-    } catch (e) { out.track_id = null; }
+  if (out.track_id && isRaceCoreAttempt(String(out.track_id))) {
+    const result = await resolveRaceCoreId(ctx.sr, String(out.track_id), 'Track');
+    if (result.outcome === 'RESOLVED' && result.base44_id) {
+      out.track_id = result.base44_id;
+    } else {
+      // Any resolution failure blocks the Event row. Do NOT fall back to
+      // name matching, do NOT set track_id = null and continue.
+      return {
+        payload: out,
+        error: 'Track RaceCore ID resolution failed: ' + (result.error || result.outcome) +
+          ' (input: ' + out.track_id + ')',
+      };
+    }
   }
-  // Series and Team have no RaceCore ID family yet — their cross-references
-  // stay as platform ids until those families are added.
-  return out;
+  // Legacy Base44 Track IDs (not RaceCore attempts) are left untouched.
+  return { payload: out, error: null };
 }
 
 /** One typed row, all the way through. */
@@ -366,7 +374,11 @@ async function processRow(ctx, domain, fields, sheetRow) {
   let payload = compactPayload(domain.toPayload(fields));
 
   if (domain.pipelineType === 'event') {
-    payload = await resolveEventRaceCoreRefs(ctx, payload);
+    const refResult = await resolveEventRaceCoreRefs(ctx, payload);
+    if (refResult.error) {
+      return { action: 'skipped', note: refResult.error };
+    }
+    payload = refResult.payload;
   }
 
   if (domain.pipelineType === null) {
