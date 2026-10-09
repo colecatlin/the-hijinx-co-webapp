@@ -8,6 +8,7 @@ import WorkbookConnectPanel from '@/components/management/importsheet/WorkbookCo
 import WorkbookImportPanel from '@/components/management/importsheet/WorkbookImportPanel';
 import WorkbookTabStatus from '@/components/management/importsheet/WorkbookTabStatus';
 import WorkbookRecentRuns from '@/components/management/importsheet/WorkbookRecentRuns';
+import WorkbookDailySyncPanel from '@/components/management/importsheet/WorkbookDailySyncPanel';
 
 /**
  * Import Workbook — the six record tabs are the import templates.
@@ -116,6 +117,7 @@ export default function ImportWorkbook() {
                     batchSize={batchSize}
                     onBatchSizeChange={setBatchSize}
                   />
+                  <WorkbookDailySyncPanel ready={!!config} />
                   <WorkbookTabStatus config={config} busyTab={busyTab} onRefresh={handleRefresh} />
                   <WorkbookRecentRuns runs={runs} />
                   <p className="text-[10px] text-foreground-quiet">
