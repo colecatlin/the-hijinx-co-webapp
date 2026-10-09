@@ -83,7 +83,7 @@ export function getDefaultHome1Config() {
         {
           key: 'SHOP', enabled: true, title: 'SHOP HIJINX', descriptor: 'APPAREL + COLLECTIONS',
           support: 'Gear for the ones who keep it moving.', cta_label: 'SHOP NOW',
-          image: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80',
+          image: '',
           alt: 'HIJINX apparel — hoodie and cap laid out race weekend',
           accent_word: null, cta_style: 'solid',
           destination: { type: 'internal_page', internal_page: '/ApparelHome', entity_type: '', entity_id: '', entity_slug: '', entity_name: '', external_url: '', open_in_new_tab: false },
@@ -92,7 +92,7 @@ export function getDefaultHome1Config() {
         {
           key: 'OUTLET', enabled: true, title: 'THE OUTLET', descriptor: 'STORIES + MEDIA + CULTURE',
           support: 'The pulse of motorsports.', cta_label: 'READ STORIES',
-          image: 'https://images.unsplash.com/photo-1502920917128-1aa1c652f298?auto=format&fit=crop&w=1200&q=80',
+          image: '',
           alt: 'Photographer with camera covering a race event in the paddock',
           accent_word: null, cta_style: 'outline',
           destination: { type: 'internal_page', internal_page: '/OutletHome', entity_type: '', entity_id: '', entity_slug: '', entity_name: '', external_url: '', open_in_new_tab: false },
@@ -101,7 +101,7 @@ export function getDefaultHome1Config() {
         {
           key: 'INDEX46', enabled: true, title: 'INDEX46', descriptor: 'MOTORSPORTS INFORMATION',
           support: 'Drivers. Teams. Tracks. Series. Events.', cta_label: 'EXPLORE',
-          image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab8b7?auto=format&fit=crop&w=900&q=80',
+          image: '',
           alt: 'Off-road truck mid-air at a desert race',
           accent_word: null, cta_style: 'ghost',
           destination: { type: 'internal_page', internal_page: '/MotorsportsHome', entity_type: '', entity_id: '', entity_slug: '', entity_name: '', external_url: '', open_in_new_tab: false },
@@ -110,7 +110,7 @@ export function getDefaultHome1Config() {
         {
           key: 'MARKETPLACE', enabled: true, title: 'MARKETPLACE', descriptor: 'BUY // SELL // BUILD',
           support: 'Parts. Builds. Equipment. Opportunity.', cta_label: 'BROWSE',
-          image: 'https://images.unsplash.com/photo-1601362840410-2f0b3a4a7e76?auto=format&fit=crop&w=900&q=80',
+          image: '',
           alt: 'Race trailer interior with tires and parts',
           accent_word: null, cta_style: 'ghost',
           destination: { type: 'internal_page', internal_page: '/MarketplaceHome', entity_type: '', entity_id: '', entity_slug: '', entity_name: '', external_url: '', open_in_new_tab: false },
@@ -119,7 +119,7 @@ export function getDefaultHome1Config() {
         {
           key: 'RACECORE', enabled: true, title: 'RACE CORE', descriptor: 'RACER TOOLS + OPERATIONS',
           support: 'Built for competitors.', cta_label: 'GET STARTED',
-          image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80',
+          image: '',
           alt: 'Laptop displaying race timing and operations data',
           accent_word: 'CORE', cta_style: 'ghost',
           destination: { type: 'internal_page', internal_page: '/racecore', entity_type: '', entity_id: '', entity_slug: '', entity_name: '', external_url: '', open_in_new_tab: false },
@@ -128,7 +128,7 @@ export function getDefaultHome1Config() {
         {
           key: 'COMMUNITY', enabled: true, title: 'COMMUNITY', descriptor: 'PEOPLE + OPPORTUNITY',
           support: 'Racers. Creators. Fans. All in motion.', cta_label: 'JOIN IN',
-          image: 'https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=900&q=80',
+          image: '',
           alt: 'Group of racers and crew gathered together in the paddock',
           accent_word: null, cta_style: 'ghost',
           destination: { type: 'internal_page', internal_page: '/join', entity_type: '', entity_id: '', entity_slug: '', entity_name: '', external_url: '', open_in_new_tab: false },
