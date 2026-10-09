@@ -287,7 +287,7 @@ const EVENTS: WorkbookDomain = {
   pipelineType: 'event',
   primaryResolutionKey: 'event',
   racecoreEntity: null,
-  intro: 'One row per event. Fill the Series and Track columns with the platform_id of the records in those two tabs — import those tabs first.',
+  intro: 'One row per event. Fill the Track column with the track’s RaceCore ID (TRCK…) from the Tracks tab — that is the front-facing identifier. Series does not have a RaceCore ID yet, so use the series name. Import those tabs first.',
   locationPairs: [],
   columns: [
     { name: 'name', required: true, note: 'Event name. Required.' },

@@ -331,6 +331,28 @@ function checkLocations(domain, fields) {
   return { ok: true, note: '' };
 }
 
+/**
+ * Resolve RaceCore ID cross-references in an event payload to platform entity
+ * IDs. The RaceCore ID is the workbook's front-facing identifier — admins paste
+ * a track's TRCK ID into track_id — but the platform's foreign keys need the
+ * underlying record id. A value that is not a RaceCore ID (no known prefix) is
+ * left untouched so legacy platform-id references still work.
+ */
+async function resolveEventRaceCoreRefs(ctx, payload) {
+  const out = Object.assign({}, payload);
+  const RACECORE_RE = /^(TRCK|SERX|TEAM)/;
+
+  if (out.track_id && RACECORE_RE.test(String(out.track_id))) {
+    try {
+      const rows = await ctx.sr.entities.Track.filter({ racecore_id: out.track_id });
+      out.track_id = rows.length > 0 ? rows[0].id : null;
+    } catch (e) { out.track_id = null; }
+  }
+  // Series and Team have no RaceCore ID family yet — their cross-references
+  // stay as platform ids until those families are added.
+  return out;
+}
+
 /** One typed row, all the way through. */
 async function processRow(ctx, domain, fields, sheetRow) {
   const missing = requiredColumnNames(domain).filter(function (column) { return !fields[column]; });
@@ -341,7 +363,11 @@ async function processRow(ctx, domain, fields, sheetRow) {
   const locations = checkLocations(domain, fields);
   if (!locations.ok) return { action: 'skipped', note: locations.note };
 
-  const payload = compactPayload(domain.toPayload(fields));
+  let payload = compactPayload(domain.toPayload(fields));
+
+  if (domain.pipelineType === 'event') {
+    payload = await resolveEventRaceCoreRefs(ctx, payload);
+  }
 
   if (domain.pipelineType === null) {
     return resolveOrganization(ctx, domain, payload);
