@@ -62,10 +62,12 @@ export async function checkDuplicateNameOrAddress(sr, domain, record) {
       try { nameMatches = await sr.entities.Track.filter({ normalized_name: name }); }
       catch (e) { nameMatches = []; }
     }
-    const city = record.location_city;
-    const country = record.location_country;
-    if (city && country) {
-      try { addressMatches = await sr.entities.Track.filter({ location_city: city, location_country: country }); }
+    // Address line is the real physical-street differentiator — two tracks can
+    // share a city and country but not a street address. City+country alone is
+    // never a duplicate signal.
+    const addressLine = String(record.address_line1 || '').toLowerCase().trim();
+    if (addressLine) {
+      try { addressMatches = await sr.entities.Track.filter({ address_line1: record.address_line1 }); }
       catch (e) { addressMatches = []; }
     }
   } else if (entity === 'RacerProfile') {
@@ -95,25 +97,11 @@ export async function checkDuplicateNameOrAddress(sr, domain, record) {
         (nameMatches[0].name || nameMatches[0].display_name || nameMatches[0].id) + ').',
     };
   }
-  // Address alone is NOT a blocker — multiple tracks can legitimately share a
-  // city and country (two different circuits in the same town). Only block when
-  // the address collision involves a record that also shares a similar name,
-  // which is the real signal that this might be a duplicate entry under a variant
-  // spelling. A unique name with a shared address is a different record.
   if (addressMatches.length > 0) {
-    const recordName = normalizeName(record.name || record.display_name || '');
-    const sameNameAtAddress = addressMatches.filter(function (r) {
-      const otherName = normalizeName(r.name || r.display_name || '');
-      return otherName && (otherName === recordName ||
-        otherName.indexOf(recordName) !== -1 || recordName.indexOf(otherName) !== -1);
-    });
-    if (sameNameAtAddress.length > 0) {
-      return {
-        hasDuplicate: true,
-        reason: 'Duplicate — another ' + entity + ' in the same city has a matching or similar name (' +
-          (sameNameAtAddress[0].name || sameNameAtAddress[0].display_name || sameNameAtAddress[0].id) + ').',
-      };
-    }
+    return {
+      hasDuplicate: true,
+      reason: 'Duplicate address — another ' + entity + ' shares the same street address.',
+    };
   }
 
   return { hasDuplicate: false, reason: '' };
