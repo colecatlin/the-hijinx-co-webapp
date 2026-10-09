@@ -33,6 +33,7 @@ import {
 } from './importSheetWriter.ts';
 import { resolveSponsorOrganization } from './organizationResolution.ts';
 import { checkLocationPair } from './countryReference.ts';
+import { ensureIdWithDuplicateCheck } from './workbookSyncHelpers.ts';
 
 const EXTRA_ORGANIZATION_FIELDS = [
   'industry', 'tagline', 'description',
@@ -73,6 +74,16 @@ async function resolveCoreRecord(ctx, domain, payload, sheetRow) {
         matched = await ctx.sr.entities[domain.entity].get(own.entity_id);
       } catch (e) {
         matched = null;
+      }
+      // If the matched record has no RaceCore ID yet, backfill one now — but
+      // only in commit mode and only when no duplicate name or address is
+      // found. A conflict is flagged, never silently minted.
+      if (matched && !matched.racecore_id && domain.racecoreEntity && ctx.commit) {
+        const idResult = await ensureIdWithDuplicateCheck(ctx.base44, domain, matched);
+        if (idResult.ok) {
+          try { matched = await ctx.sr.entities[domain.entity].get(own.entity_id); }
+          catch (e) { /* keep the original read */ }
+        }
       }
       return {
         action: 'skipped',
