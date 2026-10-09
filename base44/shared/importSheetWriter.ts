@@ -299,6 +299,7 @@ function actionFormatting(sheetId, columnCount, actionColumnIndex, firstDataRowI
   }
   return [
     rule('created', { red: 0.9, green: 0.97, blue: 0.92 }),
+    rule('synced', { red: 0.88, green: 0.93, blue: 0.99 }),
     rule('skipped', { red: 1, green: 0.96, blue: 0.85 }),
     rule('failed', { red: 0.98, green: 0.9, blue: 0.9 }),
   ];
