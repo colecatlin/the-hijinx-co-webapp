@@ -55,11 +55,20 @@ export default async function (req) {
         continue;
       }
 
-      const workbookMap = {};
+      // Build two maps: by RaceCore ID (primary) and by platform_id (Base44
+      // record ID). Rows imported before the racecore_id stamp was written
+      // back carry platform_id but a blank platform_racecore_id — matching by
+      // platform_id lets the sync stamp the racecore_id on those rows
+      // instead of appending a duplicate.
+      const workbookByRaceCoreId = {};
+      const workbookByPlatformId = {};
       for (const row of tabData.rows) {
         const fields = rowToObject(tabData.columns, row.values);
         if (fields.platform_racecore_id) {
-          workbookMap[fields.platform_racecore_id] = row.sheet_row;
+          workbookByRaceCoreId[fields.platform_racecore_id] = row.sheet_row;
+        }
+        if (fields.platform_id) {
+          workbookByPlatformId[fields.platform_id] = row.sheet_row;
         }
       }
 
@@ -110,15 +119,20 @@ export default async function (req) {
           continue;
         }
 
-        // ── Match the workbook row by RaceCore ID ──
-        if (workbookMap[racecoreId]) {
-          // Update stamp columns only — never touch the admin's input columns
+        // ── Match the workbook row by RaceCore ID, then by platform_id ──
+        const matchRow = workbookByRaceCoreId[racecoreId] || workbookByPlatformId[workingRecord.id];
+        if (matchRow) {
+          // Update stamp columns only — never touch the admin's input columns.
+          // When matched by platform_id (racecore_id stamp was blank), the
+          // stamp now carries the racecore_id — backfilling it in place.
           const stamp = Object.assign({}, stampFromRecord(workingRecord, ''), {
             last_action: 'synced',
             last_run_at: new Date().toISOString(),
-            last_note: 'Updated from platform',
+            last_note: workbookByRaceCoreId[racecoreId]
+              ? 'Updated from platform'
+              : 'Updated from platform — racecore_id stamped',
           });
-          stamps.push({ sheet_row: workbookMap[racecoreId], stamp: stamp });
+          stamps.push({ sheet_row: matchRow, stamp: stamp });
           counts.synced++;
         } else {
           // Append a new row with the record's data and RaceCore ID
