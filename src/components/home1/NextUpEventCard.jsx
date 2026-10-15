@@ -84,6 +84,9 @@ export default function NextUpEventCard({ event, series, track, discipline }) {
             <img
               src={trackOutline}
               alt={`${track?.name || 'Track'} layout`}
+              loading="lazy"
+              decoding="async"
+              fetchpriority="low"
               className="w-full h-full object-contain"
               style={{ filter: 'grayscale(1) opacity(0.85)' }}
             />
@@ -101,6 +104,8 @@ export default function NextUpEventCard({ event, series, track, discipline }) {
             src={image}
             alt={event.name}
             loading="lazy"
+            decoding="async"
+            fetchpriority="low"
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             style={{ filter: 'contrast(1.05) saturate(0.96)' }}
           />

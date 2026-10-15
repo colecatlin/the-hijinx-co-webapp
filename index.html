@@ -12,6 +12,15 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
+    <!-- Image host warm-up: DNS + TLS are resolved before the first image is requested,
+         so the first photograph on the page does not wait on a connection setup. -->
+    <link rel="preconnect" href="https://qtrypzzcjebvfcihiynt.supabase.co" />
+    <link rel="dns-prefetch" href="https://qtrypzzcjebvfcihiynt.supabase.co" />
+    <link rel="preconnect" href="https://cdn.shopify.com" />
+    <link rel="dns-prefetch" href="https://cdn.shopify.com" />
+    <link rel="preconnect" href="https://media.base44.com" />
+    <link rel="dns-prefetch" href="https://media.base44.com" />
+
     <!-- Open Graph -->
     <meta property="og:site_name" content="Hijinx" />
     <meta property="og:title" content="Hijinx — Motorsports, Culture & Competition" />

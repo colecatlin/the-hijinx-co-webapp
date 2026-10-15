@@ -87,16 +87,25 @@ export default function Home1Hero({ config }) {
       {heroImage ? (
         <motion.div
           className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: bgPosition,
-            willChange: 'transform',
-          }}
+          style={{ willChange: 'transform' }}
           initial={reduceMotion ? false : { scale: 1.08 }}
           animate={{ scale: 1 }}
           transition={{ duration: 14, ease: 'easeOut' }}
-        />
+        >
+          {/* Above-the-fold hero — the largest element on the page, so it is the
+              metric that decides how "fast" the page feels. It renders as a real
+              <img> (not a CSS background) with eager loading and high fetch
+              priority so the browser starts it before anything below the fold. */}
+          <img
+            src={heroImage}
+            alt=""
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: bgPosition }}
+          />
+        </motion.div>
       ) : null}
 
       {/* Base readability overlay */}

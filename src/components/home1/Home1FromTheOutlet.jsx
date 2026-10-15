@@ -157,6 +157,8 @@ export default function Home1FromTheOutlet({ config }) {
                         src={lead.cover_image}
                         alt={lead.title}
                         loading="lazy"
+                        decoding="async"
+                        fetchpriority="low"
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                       />
                     ) : null}
@@ -227,6 +229,8 @@ export default function Home1FromTheOutlet({ config }) {
                             src={s.cover_image}
                             alt={s.title}
                             loading="lazy"
+                            decoding="async"
+                            fetchpriority="low"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                           />
                         ) : null}

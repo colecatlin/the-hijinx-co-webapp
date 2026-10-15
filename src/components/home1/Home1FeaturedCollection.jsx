@@ -75,6 +75,8 @@ export default function Home1FeaturedCollection({ config }) {
                 src={lifestyleImage}
                 alt="HIJINX apparel worn in a motorsports paddock"
                 loading="lazy"
+                decoding="async"
+                fetchpriority="low"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{ objectPosition: v.desktop_image_position || 'center center' }}
               />
@@ -208,6 +210,8 @@ export default function Home1FeaturedCollection({ config }) {
                             src={p.image_url}
                             alt={p.image_alt || p.name}
                             loading="lazy"
+                            decoding="async"
+                            fetchpriority="low"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                           />
                         ) : null}

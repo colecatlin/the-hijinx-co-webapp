@@ -77,6 +77,8 @@ export default function Home1BePartOfSomethingBigger({ config }) {
               alt="People walking through a race paddock at golden hour"
               className="w-full h-full object-cover"
               loading="lazy"
+              decoding="async"
+              fetchpriority="low"
               style={{ filter: 'saturate(1.05) contrast(1.05)', objectPosition: v.desktop_image_position }}
             />
           ) : null}

@@ -32,6 +32,8 @@ export default function ActivityCard({ item }) {
             src={item.image}
             alt={item.title}
             loading="lazy"
+            decoding="async"
+            fetchpriority="low"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
           />
         ) : null}
