@@ -116,7 +116,7 @@ export default function RacerCard({
                     {firstName[0] || ''}
                     {lastName[0] || ''}
                   </div>
-                  {bibNumber && <div className="mt-3 text-7xl font-black text-foreground-quiet/60">{bibNumber}</div>}
+                  {bibNumber && <div className="mt-3 text-7xl font-black text-foreground-quiet">{bibNumber}</div>}
                 </div>
               )}
 

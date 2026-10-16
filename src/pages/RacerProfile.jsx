@@ -193,7 +193,7 @@ export default function RacerProfile() {
         <MobileBackHeader tone="dark" title={fullName} to="/Directory?cat=racers" />
 
         {isAdminViewer && racerProfile.visibility !== 'live' && (
-          <div className="border-b border-warning/40 bg-warning/10 px-6 py-2 text-center">
+          <div className="border-b border-warning bg-surface-elevated px-6 py-2 text-center">
             <span className="text-xs font-semibold tracking-wide text-warning">
               ADMIN PREVIEW — This profile is {racerProfile.visibility} and not visible to the public.
             </span>

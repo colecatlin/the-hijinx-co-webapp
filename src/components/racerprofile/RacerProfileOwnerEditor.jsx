@@ -130,14 +130,14 @@ export default function RacerProfileOwnerEditor({ racerProfile, identity, user, 
   return (
     <div>
       {error && (
-        <div className="mb-3 flex items-start gap-2 rounded-lg border border-danger/40 bg-danger/10 p-2.5">
+        <div className="mb-3 flex items-start gap-2 rounded-lg border border-danger bg-surface-interactive p-2.5">
           <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-danger" />
           <p className="text-xs text-danger">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="mb-3 flex items-start gap-2 rounded-lg border border-success/40 bg-success/10 p-2.5">
+        <div className="mb-3 flex items-start gap-2 rounded-lg border border-success bg-surface-interactive p-2.5">
           <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" />
           <p className="text-xs text-success">{success}</p>
         </div>
