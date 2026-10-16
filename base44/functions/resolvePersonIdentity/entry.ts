@@ -141,6 +141,11 @@ export default async function(req) {
         confidence_level: 'unverified',
         signals,
         reason: match.reason,
+        eligible_candidates: match.eligible_candidates || [],
+        eligibility_basis: match.eligibility_basis || [],
+        created_person_identity: false,
+        created_alias_ids: [],
+        read_only: readOnly,
       });
     }
 
@@ -176,6 +181,11 @@ export default async function(req) {
         confidence_level: confidenceLevelFromScore(confidence),
         signals,
         reason: match.reason,
+        eligible_candidates: match.eligible_candidates || [],
+        eligibility_basis: match.eligibility_basis || [],
+        created_person_identity: false,
+        created_alias_ids: [],
+        read_only: readOnly,
       });
     }
 
