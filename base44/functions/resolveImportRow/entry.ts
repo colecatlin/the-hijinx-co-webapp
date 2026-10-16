@@ -293,10 +293,23 @@ Deno.serve(async (req) => {
         confidence: identityConfidence,
         signals: identitySignals,
         reason: match.reason,
+        // Admin/import-audit diagnostics. REVIEW is only ever reached through
+        // eligible candidates, so this is the whole reason a row waits.
+        candidate_count: match.candidate_count,
+        tied_candidate_ids: match.tied_candidate_ids,
+        eligibility_basis: match.eligibility_basis,
+        eligible_candidates: (match.eligible_candidates || []).map((candidate) => ({
+          identity_id: candidate.identity_id,
+          racecore_id: candidate.racecore_id,
+          canonical_name: candidate.canonical_name,
+          eligibility_signals: candidate.eligibility_signals,
+          scoring_signals: candidate.scoring_signals,
+          score: candidate.score,
+        })),
       };
-      trace.push(`PersonIdentity: ${identityAction} (confidence ${identityConfidence})`);
+      trace.push(`PersonIdentity: ${identityAction} (confidence ${identityConfidence}, eligible candidates ${match.candidate_count}, basis ${(match.eligibility_basis || []).join('/') || 'none'})`);
       if (identityAction === 'BLOCKED') errors.push(`Identity BLOCKED: ${match.reason} for "${displayName}"`);
-      if (identityAction === 'REVIEW') warnings.push(`Identity REVIEW required for "${displayName}" (${match.reason}, confidence ${identityConfidence})`);
+      if (identityAction === 'REVIEW') warnings.push(`Identity REVIEW required for "${displayName}" — ${match.candidate_count} eligible candidate identities (${match.reason}, confidence ${identityConfidence})`);
     }
 
     // Driver

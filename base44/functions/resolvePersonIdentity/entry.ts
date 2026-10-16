@@ -12,9 +12,21 @@
  *
  * Input:  raw_driver_name (required), raw_dob, raw_license_number,
  *         raw_external_uid, raw_car_number, raw_team_name, raw_series_name,
- *         raw_season, source_type, source_name, source_record_id, import_run_id
+ *         raw_season, source_type, source_name, source_record_id, import_run_id,
+ *         resolution_mode ('commit' default | 'read_only')
  * Output: { action, identity_id, review_queue_id, evidence_id,
- *           confidence_score, confidence_level, signals, reason }
+ *           confidence_score, confidence_level, signals, reason,
+ *           eligible_candidates, eligibility_basis,
+ *           created_person_identity, created_alias_ids, read_only }
+ *
+ * resolution_mode 'read_only' decides and reports but writes NOTHING: no
+ * PersonIdentity, no IdentityAlias, no IdentityEvidence, no IdentityReviewQueue,
+ * no AuditLog. A dry run and a real import always reach the same decision
+ * because both run the one shared matcher; only the writes differ.
+ *
+ * created_person_identity / created_alias_ids tell the caller exactly what this
+ * call created, so a racer commit that stops half way can roll its own identity
+ * back instead of leaving an orphan behind.
  *
  * Actions: ATTACHED | REVIEW | NEW_IDENTITY | BLOCKED — admin only.
  */
@@ -48,7 +60,11 @@ export default async function(req) {
       source_name = 'Unknown source',
       source_record_id,
       import_run_id,
+      resolution_mode = 'commit',
     } = body;
+
+    // A read-only call must not be able to write, whatever the outcome.
+    const readOnly = resolution_mode === 'read_only';
 
     if (!raw_driver_name) {
       return Response.json({ error: 'raw_driver_name is required' }, { status: 400 });
@@ -75,7 +91,7 @@ export default async function(req) {
     const evidenceStatus = action === 'ATTACHED' ? 'attached'
       : action === 'NEW_IDENTITY' ? 'attached' : 'unresolved';
 
-    const evidenceRecord = await sr.entities.IdentityEvidence.create({
+    const evidenceRecord = readOnly ? { id: null } : await sr.entities.IdentityEvidence.create({
       identity_id: matchedIdentity?.id || null,
       status: evidenceStatus,
       source_type,
@@ -97,7 +113,7 @@ export default async function(req) {
 
     // ── BLOCKED — a trusted signal contradicts the record ───────────────────
     if (action === 'BLOCKED') {
-      const queueItem = await sr.entities.IdentityReviewQueue.create({
+      const queueItem = readOnly ? { id: null } : await sr.entities.IdentityReviewQueue.create({
         status: 'pending',
         priority: 'critical',
         candidate_a_identity_id: null,
@@ -130,7 +146,7 @@ export default async function(req) {
 
     // ── REVIEW — a human decides; nothing is attached and nothing is created ─
     if (action === 'REVIEW') {
-      const queueItem = await sr.entities.IdentityReviewQueue.create({
+      const queueItem = readOnly ? { id: null } : await sr.entities.IdentityReviewQueue.create({
         status: 'pending',
         priority: 'normal',
         candidate_a_identity_id: matchedIdentity?.id || null,
@@ -139,7 +155,9 @@ export default async function(req) {
         evidence_id: evidenceRecord.id,
         confidence_score: confidence,
         confidence_signals: signals,
-        conflict_type: 'name_only_match',
+        // Several eligible candidates is an ambiguity; one name-only candidate
+        // is a name decision for a human. (Matches the entity's own vocabulary.)
+        conflict_type: match.candidate_count > 1 ? 'multi_candidate' : 'name_ambiguous',
         import_run_id: import_run_id || null,
         series_context: raw_series_name || null,
         season_context: raw_season || null,
@@ -165,6 +183,24 @@ export default async function(req) {
     if (action === 'NEW_IDENTITY') {
       const isSurnameFirst = detectSurnameFirst(raw_driver_name);
 
+      if (readOnly) {
+        return Response.json({
+          action: 'NEW_IDENTITY',
+          identity_id: null,
+          review_queue_id: null,
+          evidence_id: null,
+          confidence_score: confidence,
+          confidence_level: confidenceLevelFromScore(confidence),
+          signals,
+          reason: match.reason,
+          eligible_candidates: match.eligible_candidates || [],
+          eligibility_basis: match.eligibility_basis || [],
+          created_person_identity: false,
+          created_alias_ids: [],
+          read_only: true,
+        });
+      }
+
       const newIdentity = await sr.entities.PersonIdentity.create({
         status: 'active',
         confidence_level: confidenceLevelFromScore(confidence),
@@ -176,7 +212,10 @@ export default async function(req) {
         data_source: source_name,
       });
 
-      await sr.entities.IdentityAlias.create({
+      // Track exactly what this call created, so the caller can roll its own
+      // partial racer back.
+      const createdAliasIds: string[] = [];
+      const primaryAlias = await sr.entities.IdentityAlias.create({
         identity_id: newIdentity.id,
         alias_name: raw_driver_name,
         alias_normalized: normalizedName,
@@ -187,10 +226,11 @@ export default async function(req) {
         is_primary: true,
         active: true,
       }).catch(() => null);
+      if (primaryAlias && primaryAlias.id) createdAliasIds.push(primaryAlias.id);
 
       if (isSurnameFirst) {
         const inverted = invertSurnameFirst(raw_driver_name);
-        await sr.entities.IdentityAlias.create({
+        const invertedAlias = await sr.entities.IdentityAlias.create({
           identity_id: newIdentity.id,
           alias_name: inverted,
           alias_normalized: normalizeIdentityName(inverted),
@@ -201,6 +241,7 @@ export default async function(req) {
           is_primary: false,
           active: true,
         }).catch(() => null);
+        if (invertedAlias && invertedAlias.id) createdAliasIds.push(invertedAlias.id);
       }
 
       if (evidenceRecord.id) {
@@ -231,10 +272,33 @@ export default async function(req) {
         confidence_level: confidenceLevelFromScore(confidence),
         signals,
         reason: match.reason,
+        eligible_candidates: match.eligible_candidates || [],
+        eligibility_basis: match.eligibility_basis || [],
+        created_person_identity: true,
+        created_alias_ids: createdAliasIds,
+        read_only: false,
       });
     }
 
     // ── ATTACHED — a trusted signal confirmed the match ────────────────────
+    if (readOnly) {
+      return Response.json({
+        action: 'ATTACHED',
+        identity_id: matchedIdentity.id,
+        review_queue_id: null,
+        evidence_id: null,
+        confidence_score: confidence,
+        confidence_level: confidenceLevelFromScore(confidence),
+        signals,
+        reason: match.reason,
+        eligible_candidates: match.eligible_candidates || [],
+        eligibility_basis: match.eligibility_basis || [],
+        created_person_identity: false,
+        created_alias_ids: [],
+        read_only: true,
+      });
+    }
+
     const existingAlias = await sr.entities.IdentityAlias
       .filter({ identity_id: matchedIdentity.id, alias_normalized: normalizedName }).catch(() => []);
 
@@ -288,6 +352,11 @@ export default async function(req) {
       confidence_level: confidenceLevelFromScore(confidence),
       signals,
       reason: match.reason,
+      eligible_candidates: match.eligible_candidates || [],
+      eligibility_basis: match.eligibility_basis || [],
+      created_person_identity: false,
+      created_alias_ids: [],
+      read_only: false,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

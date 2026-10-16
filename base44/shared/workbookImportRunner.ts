@@ -35,12 +35,73 @@ import { resolveSponsorOrganization } from './organizationResolution.ts';
 import { checkLocationPair } from './countryReference.ts';
 import { ensureIdWithDuplicateCheck } from './workbookSyncHelpers.ts';
 import { resolveRaceCoreId, isRaceCoreAttempt } from './racecoreRegistry.ts';
+import { compensatePartialRacerCreation, shouldCompensatePartialRacer } from './racerCreationCompensation.ts';
 
 const EXTRA_ORGANIZATION_FIELDS = [
   'industry', 'tagline', 'description',
   'location_city', 'location_state', 'location_country',
   'contact_email', 'logo_url', 'website_url',
 ];
+
+// ── Check mode is structurally read-only ─────────────────────────────────────
+// A check run reaches reads only. Every write through this client throws, so
+// "a check writes nothing" is enforced by the client the run is handed, not by
+// convention: no resolver, and no future edit to one, can mutate the platform
+// during a check.
+const READ_ONLY_ENTITY_METHODS = ['get', 'filter', 'list', 'count', 'aggregate', 'subscribe'];
+
+export function readOnlyServiceRoleEntities(sr: any) {
+  return new Proxy({}, {
+    get(_target, modelName) {
+      const model = sr.entities[modelName as string];
+      if (!model) return model;
+      return new Proxy({}, {
+        get(_modelTarget, method) {
+          if (typeof method !== 'string') return undefined;
+          if (READ_ONLY_ENTITY_METHODS.includes(method)) return model[method].bind(model);
+          throw new Error('Check mode is read-only: ' + String(modelName) + '.' + method + ' is not permitted.');
+        },
+      });
+    },
+  });
+}
+
+const REVIEW_NOTE = 'Possible match to a person already on the platform \u2014 needs review before creating.';
+
+/** The review message names how many legitimate candidates stand behind it. */
+function reviewNote(identity: any): string {
+  const count = (identity && identity.candidate_count) ||
+    (identity && identity.eligible_candidates && identity.eligible_candidates.length) || 0;
+  if (!count) return REVIEW_NOTE;
+  return REVIEW_NOTE + ' (' + count + (count === 1 ? ' candidate identity' : ' candidate identities') + ')';
+}
+
+/**
+ * Admin/import-audit diagnostics for one identity decision: which identities
+ * were eligible, on what signal, and with what score. Returned to the caller
+ * only — never written into the workbook.
+ */
+function identityDiagnostics(identity: any) {
+  if (!identity) return null;
+  return {
+    decision: identity.action || null,
+    reason: identity.reason || null,
+    confidence: identity.confidence || 0,
+    candidate_count: identity.candidate_count || 0,
+    eligibility_basis: identity.eligibility_basis || [],
+    signals: identity.signals || [],
+    candidates: (identity.eligible_candidates || []).map(function (candidate: any) {
+      return {
+        identity_id: candidate.identity_id,
+        racecore_id: candidate.racecore_id,
+        canonical_name: candidate.canonical_name,
+        eligibility_signals: candidate.eligibility_signals,
+        scoring_signals: candidate.scoring_signals,
+        score: candidate.score,
+      };
+    }),
+  };
+}
 
 /** Decide one typed row for the five core records that share the sync pipeline. */
 async function resolveCoreRecord(ctx, domain, payload, sheetRow) {
@@ -106,7 +167,13 @@ async function resolveCoreRecord(ctx, domain, payload, sheetRow) {
       return { action: 'skipped', note: 'Identity conflict — ' + (identity.reason || 'blocked') + '. Nothing was created.' };
     }
     if (identity.action === 'REVIEW') {
-      return { action: 'skipped', note: 'Possible match to a person already on the platform — needs review before creating.' };
+      // Reached only when the matcher found eligible candidates: an identity
+      // with no shared identity-bearing signal is never a candidate.
+      return {
+        action: 'skipped',
+        note: reviewNote(identity),
+        identity: identityDiagnostics(identity),
+      };
     }
   }
 
@@ -169,6 +236,11 @@ async function commitCoreRecord(ctx, domain, payload) {
     : '';
   let personIdentityId = null;
 
+  // What THIS commit created, so a racer that stops half way can be rolled back
+  // instead of leaving an orphan identity behind.
+  let createdIdentity: { created: boolean; alias_ids: string[]; evidence_id: string | null } =
+    { created: false, alias_ids: [], evidence_id: null };
+
   if (isRacer) {
     const identityReply = await ctx.base44.functions.invoke('resolvePersonIdentity', {
       raw_driver_name: displayName,
@@ -187,10 +259,61 @@ async function commitCoreRecord(ctx, domain, payload) {
       return { action: 'skipped', note: 'Identity conflict — ' + (identity.reason || 'blocked') + '. Nothing was created.' };
     }
     if (identity.action === 'REVIEW') {
-      return { action: 'skipped', note: 'Possible match to a person already on the platform — needs review before creating.' };
+      // The commit-side decision, reached only for a row the check also let
+      // through. The matcher's eligible candidates are the only reason this
+      // message can appear.
+      return {
+        action: 'skipped',
+        note: reviewNote(identity),
+        identity: identityDiagnostics(identity),
+      };
     }
     personIdentityId = identity.identity_id || null;
+    createdIdentity = {
+      created: identity.created_person_identity === true,
+      alias_ids: identity.created_alias_ids || [],
+      evidence_id: identity.evidence_id || null,
+    };
   }
+
+  /**
+   * Roll a racer commit back when it stopped short of a racer profile. Only
+   * ever removes what this commit created, and only when the identity owns no
+   * profile — an identity that has a profile is real racer state and is never
+   * touched.
+   */
+  const finishPartial = async (note: string, outcome: string = 'failed') => {
+    if (!isRacer || !createdIdentity.created) return { rolledBack: false, note: note };
+    try {
+      const profiles = await ctx.sr.entities.RacerProfile.filter({ person_identity_id: personIdentityId });
+      const shouldRollBack = shouldCompensatePartialRacer({
+        identityCreated: true,
+        outcome: outcome,
+        profileExists: (profiles || []).length > 0,
+      });
+      if (!shouldRollBack) return { rolledBack: false, note: note };
+      const result = await compensatePartialRacerCreation(ctx.sr, {
+        person_identity_id: personIdentityId,
+        created_alias_ids: createdIdentity.alias_ids,
+        evidence_id: createdIdentity.evidence_id,
+        reason: note,
+        import_run_id: ctx.importRunId,
+        actor: ctx.user,
+      });
+      if (result.rolled_back) {
+        return {
+          rolledBack: true,
+          note: note + ' The partial racer record was rolled back — nothing was left behind.',
+        };
+      }
+      return { rolledBack: false, note: note + ' (the partial record could not be rolled back: ' + result.reason + ')' };
+    } catch (error) {
+      return {
+        rolledBack: false,
+        note: note + ' (the partial record could not be rolled back: ' + ((error && error.message) || 'unknown error') + ')',
+      };
+    }
+  };
 
   const prepReply = await ctx.base44.functions.invoke('prepareSourcePayloadForSync', {
     entity_type: domain.pipelineType,
@@ -198,7 +321,8 @@ async function commitCoreRecord(ctx, domain, payload) {
   });
   const prepared = prepReply && prepReply.data;
   if (!prepared || !prepared.payload) {
-    return { action: 'failed', note: (prepared && prepared.error) || 'The row could not be prepared for import.' };
+    const guarded = await finishPartial((prepared && prepared.error) || 'The row could not be prepared for import.');
+    return { action: 'failed', note: guarded.note };
   }
 
   const syncReply = await ctx.base44.functions.invoke('syncSourceAndEntityRecord', {
@@ -209,7 +333,8 @@ async function commitCoreRecord(ctx, domain, payload) {
   });
   const synced = syncReply && syncReply.data;
   if (!synced || !synced.source_record) {
-    return { action: 'failed', note: (synced && synced.error) || 'The import pipeline did not return a record.' };
+    const guarded = await finishPartial((synced && synced.error) || 'The import pipeline did not return a record.');
+    return { action: 'failed', note: guarded.note };
   }
 
   // The record the sheet should carry is the record-type itself — Track,
@@ -223,7 +348,13 @@ async function commitCoreRecord(ctx, domain, payload) {
   // that ID as part of this row's own commit. Reading the resolver's result is
   // what keeps this run from minting a second ID on top of the one it assigned.
   if (isRacer) {
-    return settleRacerProfile(ctx, personIdentityId, displayName, record, created);
+    const settled = await settleRacerProfile(ctx, personIdentityId, displayName, record, created);
+    if (settled.action === 'created') return settled;
+    const guarded = await finishPartial(settled.note, settled.action);
+    if (guarded.note !== settled.note) {
+      return { action: settled.action, note: guarded.note, record: settled.record };
+    }
+    return settled;
   }
 
   // Non-racer records (tracks, teams, series, events): the sync pipeline creates
@@ -396,6 +527,11 @@ async function processRow(ctx, domain, fields, sheetRow) {
  * Run the workbook import. mode 'check' decides every row and writes nothing;
  * mode 'import' commits and stamps each row in place.
  *
+ * CHECK means CHECK: the reader is handed a read-only client, every create is
+ * disabled, and the tab bookkeeping is not persisted either. COMMIT means
+ * COMMIT: the mutation-capable client, the racer chain with rollback, and the
+ * row stamps.
+ *
  * settings.limit caps how many waiting rows each tab processes in one run, so a
  * large tab can be tried out on a handful of rows first. Omitted = every row.
  */
@@ -425,7 +561,8 @@ export async function runWorkbookImport(base44, input) {
 
   const ctx = {
     base44: base44,
-    sr: base44.asServiceRole,
+    // A check run is handed a read-only client: any write through it throws.
+    sr: commit ? base44.asServiceRole : readOnlyServiceRoleEntities(base44.asServiceRole),
     user: user,
     commit: commit,
     importRunId: 'workbook_' + Date.now(),
@@ -482,12 +619,16 @@ export async function runWorkbookImport(base44, input) {
       }
 
       if (outcome.action === 'skipped' || outcome.action === 'failed') {
-        problems.push({
+        const problem: any = {
           tab: domainDef.tab,
           sheet_row: row.sheet_row,
           action: outcome.action === 'failed' ? 'failed' : 'skipped',
           reason: outcome.note || '',
-        });
+        };
+        // Which identities were considered, on which signal, and at what score.
+        // Returned to the caller for admin audit; never written into the sheet.
+        if (outcome.identity) problem.identity = outcome.identity;
+        problems.push(problem);
       }
 
       if (commit && outcome.action !== 'create') {
@@ -527,12 +668,18 @@ export async function runWorkbookImport(base44, input) {
     };
   }
 
-  await mergeTabState(base44, config, stateByTab);
+  // A check records nothing — not even the tab bookkeeping it used to write.
+  // The state it observed is returned to the caller instead.
+  if (commit) {
+    await mergeTabState(base44, config, stateByTab);
+  }
 
   return {
     mode: commit ? 'import' : 'check',
+    read_only: !commit,
     counts: counts,
     tabs: tabResults,
+    tab_state: stateByTab,
     problems: problems,
   };
 }
