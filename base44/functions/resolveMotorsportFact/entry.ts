@@ -640,7 +640,8 @@ async function resolveRacerProfile(base44: any, ctx: FactContext): Promise<FactR
       display_name: racer.display_name,
       primary_discipline: racer.primary_discipline,
       hometown: hometown || undefined,
-      career_status: racer.career_status,
+      // career_status is withheld from the public deterministic answer: it is
+      // retained on the record but is not part of the public racer identity.
     },
     entities,
     evidence: [

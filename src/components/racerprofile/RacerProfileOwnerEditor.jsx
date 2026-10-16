@@ -1,14 +1,18 @@
 /**
  * RacerProfileOwnerEditor.jsx
  *
- * Phase 8+ — Owner-edit UI for RacerProfile public fields.
+ * Editor BODY for authorized racer profile management.
  *
- * Shows only for approved owners, approved managers, and platform admins.
- * Edits only approved RacerProfile fields via updateOwnedRacerProfile backend function.
- * Never writes to Driver. Never exposes protected PersonIdentity fields.
+ * PRESENTATION CHANGE ONLY: this component no longer renders as a dominant
+ * always-open public-profile panel and no longer gates or buttons itself. It is
+ * mounted by RacerEditControl (a small "Edit Profile" control gated on the
+ * server-computed can_manage flag) and rendered inside a dialog.
  *
- * Shows save success and validation errors.
+ * UNCHANGED: the writable field allow-list, the canonical owner-update call,
+ * the optimistic cache patch and its revert, error/success handling and the
+ * backend's own authorization (which remains the real gate).
  */
+
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -16,8 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Loader2, Pencil } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const EDITABLE_FIELDS = [
   { key: 'bio', label: 'Bio', type: 'textarea', placeholder: 'Tell your racing story...' },
@@ -38,20 +41,12 @@ const EDITABLE_FIELDS = [
   { key: 'racing_base_country', label: 'Racing Base Country', type: 'text', placeholder: 'Country' },
 ];
 
-export default function RacerProfileOwnerEditor({ racerProfile, identity, user, onUpdated, routeSlug }) {
+export default function RacerProfileOwnerEditor({ racerProfile, identity, user, onUpdated, onClose, routeSlug }) {
   const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-
-  // Authorization check — only show for approved owners, managers, and admins
-  const isOwner = identity?.claim_status === 'claimed' && identity?.owner_user_id === user?.id;
-  const isAdmin = user?.role === 'admin';
-  // Manager check would require collaborator data — for now, admin and owner are the primary gates
-  // The backend function does the full authorization check regardless
-  const canEdit = isOwner || isAdmin;
 
   useEffect(() => {
     if (racerProfile) {
@@ -62,8 +57,6 @@ export default function RacerProfileOwnerEditor({ racerProfile, identity, user, 
       setFormData(initial);
     }
   }, [racerProfile?.id]);
-
-  if (!canEdit) return null;
 
   const handleSave = async () => {
     setSaving(true);
@@ -100,10 +93,11 @@ export default function RacerProfileOwnerEditor({ racerProfile, identity, user, 
       const result = response.data || response;
       if (result.status === 'updated' || result.status === 'no_change') {
         setSuccess(result.message || 'Profile updated successfully.');
-        setIsEditing(false);
         if (onUpdated) onUpdated(result);
-        // Clear success after 3 seconds
-        setTimeout(() => setSuccess(null), 3000);
+        // Close after a short confirmation so the owner sees the result.
+        setTimeout(() => {
+          if (onClose) onClose();
+        }, 1200);
       } else {
         setError(result.message || 'Update failed.');
         // Revert optimistic update on failure
@@ -124,88 +118,75 @@ export default function RacerProfileOwnerEditor({ racerProfile, identity, user, 
   };
 
   const handleCancel = () => {
-    setIsEditing(false);
     setError(null);
-    // Reset form to current values
     const initial = {};
     for (const field of EDITABLE_FIELDS) {
       initial[field.key] = racerProfile[field.key] || '';
     }
     setFormData(initial);
+    if (onClose) onClose();
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/50">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Pencil className="w-4 h-4 text-gray-500" />
-          <h3 className="text-sm font-bold text-[#232323]">Edit My Profile</h3>
-          {isOwner && <Badge className="bg-teal-100 text-teal-700 text-xs">Owner</Badge>}
-          {isAdmin && <Badge className="bg-purple-100 text-purple-700 text-xs">Admin</Badge>}
-        </div>
-        {!isEditing && (
-          <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
-            Edit
-          </Button>
-        )}
-      </div>
-
+    <div>
       {error && (
-        <div className="flex items-start gap-2 mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-red-700">{error}</p>
+        <div className="mb-3 flex items-start gap-2 rounded-lg border border-danger/40 bg-danger/10 p-2.5">
+          <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-danger" />
+          <p className="text-xs text-danger">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="flex items-start gap-2 mb-3 p-2.5 bg-green-50 border border-green-200 rounded-lg">
-          <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-green-700">{success}</p>
+        <div className="mb-3 flex items-start gap-2 rounded-lg border border-success/40 bg-success/10 p-2.5">
+          <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-success" />
+          <p className="text-xs text-success">{success}</p>
         </div>
       )}
 
-      {isEditing ? (
-        <div className="space-y-3">
-          {EDITABLE_FIELDS.map(field => {
-            const fieldId = `owner-edit-${field.key}`;
-            return (
-              <div key={field.key}>
-                <Label htmlFor={fieldId} className="text-xs font-semibold text-gray-600 mb-1 block">{field.label}</Label>
-                {field.type === 'textarea' ? (
-                  <Textarea
-                    id={fieldId}
-                    value={formData[field.key] || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    placeholder={field.placeholder}
-                    className="text-sm"
-                    rows={3}
-                  />
-                ) : (
-                  <Input
-                    id={fieldId}
-                    value={formData[field.key] || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
-                    placeholder={field.placeholder}
-                    className="text-sm"
-                  />
-                )}
-              </div>
-            );
-          })}
-          <div className="flex gap-2 pt-2">
-            <Button size="sm" onClick={handleSave} disabled={saving}>
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <p className="text-xs text-gray-500">
-          Update your bio, tagline, social links, and location info. Protected fields (display name, slug, RaceCore ID) require admin assistance.
-        </p>
-      )}
+      <p className="mb-4 text-xs text-foreground-quiet">
+        Update your bio, tagline, social links, and location info. Protected fields (display name, slug, RaceCore ID)
+        require admin assistance.
+      </p>
+
+      <div className="space-y-3">
+        {EDITABLE_FIELDS.map((field) => {
+          const fieldId = `owner-edit-${field.key}`;
+          return (
+            <div key={field.key}>
+              <Label htmlFor={fieldId} className="mb-1 block text-xs font-semibold text-foreground-secondary">
+                {field.label}
+              </Label>
+              {field.type === 'textarea' ? (
+                <Textarea
+                  id={fieldId}
+                  value={formData[field.key] || ''}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                  placeholder={field.placeholder}
+                  className="text-sm"
+                  rows={3}
+                />
+              ) : (
+                <Input
+                  id={fieldId}
+                  value={formData[field.key] || ''}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, [field.key]: event.target.value }))}
+                  placeholder={field.placeholder}
+                  className="text-sm"
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex gap-2 pt-4">
+        <Button size="sm" onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleCancel} disabled={saving}>
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 }

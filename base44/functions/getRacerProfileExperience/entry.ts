@@ -324,7 +324,10 @@ export default async function(req) {
 
   // ── SEO METADATA ──
   const fullName = rp.display_name || '';
-  const description = [rp.career_status || 'Racing competitor', rp.primary_discipline, rp.hometown_city ? `from ${rp.hometown_city}` : ''].filter(Boolean).join(' · ');
+  // Public identity: discipline and place only. Career classification is retained
+  // on the record (canonical/admin/import use) but is not part of the public
+  // INDEX46 representation of a racer, so it is not composed into meta copy.
+  const description = [rp.primary_discipline, rp.hometown_city ? `from ${rp.hometown_city}` : ''].filter(Boolean).join(' · ');
   const heroImg = rp.hero_image_url || mediaEcosystem.hero_image_url || rp.profile_image_url;
   const seo = {
     title: `${fullName} — Racer Profile | INDEX46`,

@@ -20,7 +20,6 @@ import {
   AlertCircle, CheckCircle, AlertTriangle, Globe,
   Instagram, User, ArrowLeft
 } from 'lucide-react';
-import CareerStatusTag from '@/components/competition/CareerStatusTag';
 import CompetitionLevelBadge from '@/components/competition/CompetitionLevelBadge';
 import GeographicScopeTag from '@/components/competition/GeographicScopeTag';
 import StatsSection from '@/components/drivers/StatsSection';
@@ -213,7 +212,9 @@ export default function DriverProfile() {
   const racingBase = [driver.racing_base_city, driver.racing_base_state, driver.racing_base_country].filter(Boolean).join(', ');
   const heroImg = driver.hero_image_url || media?.hero_image_url || null;
   const profileImg = driver.profile_image_url || media?.headshot_url || null;
-  const driverDesc = [driver.career_status ? `${driver.career_status} driver` : 'Racing driver', driver.primary_discipline, hometown ? `from ${hometown}` : ''].filter(Boolean).join(' · ');
+  // Public identity: discipline and place only — career classification is not
+  // part of the public racer representation.
+  const driverDesc = [driver.primary_discipline ? `${driver.primary_discipline} racer` : 'Racing competitor', hometown ? `from ${hometown}` : ''].filter(Boolean).join(' · ');
 
   const isAdmin = user?.role === 'admin';
 
@@ -300,7 +301,6 @@ export default function DriverProfile() {
             <div className="flex-1 pb-1">
               <div className="flex items-center gap-3 flex-wrap mb-1">
                 <CountryFlag country={driver.hometown_country} />
-                {driver.career_status && <CareerStatusTag status={driver.career_status} size="sm" />}
                 {driver.racing_status && driver.racing_status !== 'Active' && (
                   <Badge className="bg-white/10 text-white/70 border border-white/20 text-xs">{driver.racing_status}</Badge>
                 )}

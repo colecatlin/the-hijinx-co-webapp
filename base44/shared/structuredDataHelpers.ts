@@ -77,7 +77,8 @@ export function buildPersonSchema(racer: any, canonicalBase?: string | null): Re
     name: racer.display_name,
     description: racer.bio || racer.tagline || undefined,
     image: racer.profile_image_url || racer.hero_image_url || undefined,
-    jobTitle: racer.career_status || undefined,
+    // jobTitle intentionally omitted: no legitimate public job title exists for a
+    // racer, and the career classification is not part of the public identity.
     knowsAbout: racer.primary_discipline || undefined,
     birthPlace,
     url: url || undefined,

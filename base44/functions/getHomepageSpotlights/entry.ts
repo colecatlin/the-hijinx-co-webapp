@@ -48,7 +48,9 @@ Deno.serve(async (req) => {
       return {
         id:                    driver.id,
         name:                  [driver.first_name, driver.last_name].filter(Boolean).join(' '),
-        subtitle:              [driver.career_status, driver.primary_discipline].filter(Boolean).join(' · ') || null,
+        // Public spotlight copy carries motorsports facts only (career
+        // classification is no longer part of the public racer identity).
+        subtitle:              driver.primary_discipline || null,
         image:                 driver.profile_image_url || driver.photo_url || null,
         slug:                  driver.slug || null,
         latest_activity_title: latestActivity?.title || null,

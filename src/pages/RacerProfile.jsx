@@ -1,60 +1,41 @@
 /**
  * RacerProfile.jsx
  *
- * Phase 7 — Canonical public racer profile page.
+ * Canonical public racer profile — /racers/:slug
  *
- * Loads a RacerProfile by slug and renders the full profile through
- * the modern identity chain:
- *   RacerProfile → PersonIdentity → SeasonParticipation → Entry → Results → Standings
+ * ARCHITECTURE (locked):
+ *   canonical RaceCore data
+ *     → getRacerProfileExperience   (single read: resolves, computes, projects)
+ *     → privacy-safe projections
+ *     → INDEX46 public presentation (five client-side views)
  *
- * Uses the compatibility adapter to reuse existing Driver-shaped
- * components (StatsSection, ResultsPanel, ProgramsTimeline, etc.)
- * without modification.
- *
- * Route: /racers/:slug
+ * The page performs NO browser-side entity queries and NO per-view fetching.
+ * Changing view is a presentation change, never a new profile resolution.
+ * The five views are client-side only: the route, canonical URL, slug
+ * resolution, historical aliases and the /drivers/:slug redirect are untouched.
  */
 
-import React, { useState, useMemo, useEffect, createContext, useContext } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, createContext, useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import SeoMeta, { buildEntityTitle, SITE_FALLBACK_IMAGE } from '@/components/system/seoMeta';
 import JsonLd from '@/components/shared/JsonLd';
-import EntityFactualSummary from '@/components/shared/EntityFactualSummary';
 import Analytics from '@/components/system/analyticsTracker';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { applyDefaultQueryOptions, applyExperienceQueryOptions } from '@/components/utils/queryDefaults';
-import { racerProfileToDriverShape, getRacerProfileUrl } from '@/components/racerprofile/racerProfileAdapter';
 import PageShell from '@/components/shared/PageShell';
 import MobileBackHeader from '@/components/shared/MobileBackHeader';
-import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  MapPin, ExternalLink, Calendar, Home,
-  Globe, Instagram, User, ArrowLeft, CheckCircle,
-} from 'lucide-react';
-import CareerStatusTag from '@/components/competition/CareerStatusTag';
-import StatsSection from '@/components/drivers/StatsSection';
-import { format, isValid } from 'date-fns';
-import SocialIconsDisplay from '@/components/teams/SocialIconsDisplay';
-import SocialShareButtons from '@/components/shared/SocialShareButtons';
-import CountryFlag from '@/components/shared/CountryFlag';
-import ResultsPanel from '@/components/results/ResultsPanel';
-import ProgramsTimeline from '@/components/drivers/ProgramsTimeline';
-import PublicMediaGallery from '@/components/media/PublicMediaGallery';
-import DriverCareerTab from '@/components/drivers/DriverCareerTab';
-import DriverSponsorsTab from '@/components/drivers/DriverSponsorsTab';
-import ClaimProfileButton from '@/components/identity/ClaimProfileButton';
-import RacerProfileOwnerEditor from '@/components/racerprofile/RacerProfileOwnerEditor';
-import CareerTimeline from '@/components/racerprofile/CareerTimeline';
-import AchievementsGrid from '@/components/racerprofile/AchievementsGrid';
-import TeamHistoryPanel from '@/components/racerprofile/TeamHistoryPanel';
-import VehicleHistoryPanel from '@/components/racerprofile/VehicleHistoryPanel';
-import ProfileCompletenessIndicator from '@/components/racerprofile/ProfileCompletenessIndicator';
-import StatisticsBreakdown from '@/components/racerprofile/StatisticsBreakdown';
 import EntityBreadcrumbs from '@/components/shared/EntityBreadcrumbs';
 import PullToRefresh from '@/components/shared/PullToRefresh';
-import TabScrollFade from '@/components/shared/TabScrollFade';
+import { EntityNotFound, EntityUnavailable } from '@/components/data/EntityNotFoundState';
+import { Skeleton } from '@/components/ui/skeleton';
+import RacerIdentityHeader from '@/components/racerprofile/RacerIdentityHeader';
+import RacerViewNav from '@/components/racerprofile/RacerViewNav';
+import OverviewView from '@/components/racerprofile/views/OverviewView';
+import RacingView from '@/components/racerprofile/views/RacingView';
+import CareerView from '@/components/racerprofile/views/CareerView';
+import MediaView from '@/components/racerprofile/views/MediaView';
+import PartnersView from '@/components/racerprofile/views/PartnersView';
 
 const DQ = applyDefaultQueryOptions();
 
@@ -69,36 +50,27 @@ export function RacerProfileRouteWrapper() {
   );
 }
 
-function safeDateFormat(dateStr, fmt = 'MMM d, yyyy') {
-  if (!dateStr) return 'TBA';
-  const d = new Date(dateStr);
-  return isValid(d) ? format(d, fmt) : 'TBA';
-}
-
-const TABS = [
-  { id: 'overview',  label: 'Overview' },
-  { id: 'career',    label: 'Career' },
-  { id: 'timeline',  label: 'Timeline' },
-  { id: 'stats',     label: 'Statistics' },
-  { id: 'achievements', label: 'Achievements' },
-  { id: 'schedule',  label: 'Schedule & Results' },
-  { id: 'media',     label: 'Media' },
-  { id: 'sponsors',  label: 'Sponsors' },
-];
-
 export default function RacerProfile() {
   const { slug: routeSlug } = useContext(RacerProfileRouteContext) || {};
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeView, setActiveView] = useState('overview');
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    setActiveTab('overview');
+    setActiveView('overview');
   }, [routeSlug]);
 
-  const { data: isAuthenticated } = useQuery({ queryKey: ['isAuthenticated'], queryFn: () => base44.auth.isAuthenticated(), ...DQ });
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me(), enabled: !!isAuthenticated, ...DQ });
+  const { data: isAuthenticated } = useQuery({
+    queryKey: ['isAuthenticated'],
+    queryFn: () => base44.auth.isAuthenticated(),
+    ...DQ,
+  });
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    enabled: !!isAuthenticated,
+    ...DQ,
+  });
 
   // The viewer's identity decides whether a draft profile may be shown, so the
   // experience request must not fire before that is known: on a cold page load
@@ -107,16 +79,17 @@ export default function RacerProfile() {
   const isAdminViewer = user?.role === 'admin';
   const viewerResolved = isAuthenticated !== undefined && (isAuthenticated === false || user !== undefined);
 
-  // Single source of truth: getRacerProfileExperience returns both the
-  // computed experience (timeline, stats, achievements) AND the raw page
-  // dataset (profile, identity, entries, results, etc.) so the page renders
-  // from one backend call instead of 17 client-side list queries.
+  // Single source of truth for the whole profile: the computed experience
+  // (timeline, statistics, achievements, history, partners, SEO) AND the
+  // public-safe page dataset that backs the five views.
   const { data: experienceData, isLoading } = useQuery({
     queryKey: ['racerProfileExperience', routeSlug, isAdminViewer],
-    queryFn: () => base44.functions.invoke('getRacerProfileExperience', { slug: routeSlug, allow_draft: isAdminViewer }),
+    queryFn: () =>
+      base44.functions.invoke('getRacerProfileExperience', { slug: routeSlug, allow_draft: isAdminViewer }),
     enabled: !!routeSlug && viewerResolved,
     ...applyExperienceQueryOptions(),
   });
+
   const experience = experienceData?.data || experienceData || null;
   const pageData = experience?.page_data || null;
 
@@ -129,21 +102,30 @@ export default function RacerProfile() {
   const entries = pageData?.entries ?? [];
   const results = pageData?.results ?? [];
   const standings = pageData?.standings ?? [];
-  const programs = pageData?.programs ?? [];
-  const careerEntries = pageData?.careerEntries ?? [];
-  const sponsors = pageData?.sponsors ?? [];
   const allSeries = pageData?.series ?? [];
   const allClasses = pageData?.classes ?? [];
   const allEvents = pageData?.events ?? [];
   const allTracks = pageData?.tracks ?? [];
   const allSessions = pageData?.sessions ?? [];
-  const allTeams = pageData?.teams ?? [];
 
-  // Build Driver-shaped object for compatibility with existing components
-  const driverShape = useMemo(
-    () => racerProfile ? racerProfileToDriverShape(racerProfile, legacyDriver) : null,
-    [racerProfile, legacyDriver]
-  );
+  const currentContext = experience?.current_context || pageData?.current_context || null;
+  const timeline = experience?.timeline ?? [];
+  const statistics = experience?.statistics ?? null;
+  const achievements = experience?.achievements ?? [];
+  const teamHistory = experience?.team_history ?? [];
+  const mediaEcosystem = experience?.media_ecosystem ?? null;
+  const sponsorshipData = experience?.sponsorships ?? [];
+  const sponsorPresentation = experience?.sponsor_presentation ?? null;
+
+  const galleryPhotos = mediaEcosystem?.gallery_photos || media?.gallery_urls || [];
+  const heroImage = racerProfile?.hero_image_url || mediaEcosystem?.hero_image_url || media?.hero_image_url || null;
+  const portraitImage = racerProfile?.profile_image_url || mediaEcosystem?.headshot_url || media?.headshot_url || null;
+  const highlightVideoUrl = media?.highlight_video_url || null;
+
+  // Profile management is gated by the SERVER-computed permission flag, which
+  // is true for an approved owner, an approved manager or an admin. The public
+  // page never exposes claim or ownership state.
+  const canManage = identity?.can_manage === true;
 
   useEffect(() => {
     if (racerProfile) {
@@ -157,10 +139,12 @@ export default function RacerProfile() {
 
   if (!routeSlug) {
     return (
-      <PageShell className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-12 text-center">
-          <p className="text-gray-500 mb-4">No racer specified.</p>
-          <Link to="/Directory?cat=racers" className="text-sm text-[#232323] underline">← Back to Racers</Link>
+      <PageShell className="bg-canvas">
+        <div className="mx-auto max-w-7xl px-6 py-12 text-center">
+          <p className="mb-4 text-foreground-secondary">No racer specified.</p>
+          <Link to="/Directory?cat=racers" className="text-sm text-motion underline">
+            ← Back to Racers
+          </Link>
         </div>
       </PageShell>
     );
@@ -168,9 +152,9 @@ export default function RacerProfile() {
 
   if (!viewerResolved || isLoading) {
     return (
-      <PageShell className="bg-white">
-        <Skeleton className="w-full h-[360px]" />
-        <div className="max-w-7xl mx-auto px-6 py-8 space-y-4">
+      <PageShell className="bg-canvas">
+        <Skeleton className="h-[360px] w-full" />
+        <div className="mx-auto max-w-7xl space-y-4 px-6 py-8">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-48 w-full" />
         </div>
@@ -184,503 +168,118 @@ export default function RacerProfile() {
   }
 
   const fullName = racerProfile.display_name || `${legacyDriver?.first_name || ''} ${legacyDriver?.last_name || ''}`;
-  const hometown = [racerProfile.hometown_city, racerProfile.hometown_state, racerProfile.hometown_country].filter(Boolean).join(', ');
-  const racingBase = [racerProfile.racing_base_city, racerProfile.racing_base_state, racerProfile.racing_base_country].filter(Boolean).join(', ');
-  const heroImg = racerProfile.hero_image_url || media?.hero_image_url || legacyDriver?.hero_image_url || null;
-  const profileImg = racerProfile.profile_image_url || media?.headshot_url || legacyDriver?.profile_image_url || null;
-  const racerDesc = [
-    racerProfile.career_status || legacyDriver?.career_status || 'Racing competitor',
-    racerProfile.primary_discipline || legacyDriver?.primary_discipline,
-    hometown ? `from ${hometown}` : '',
-  ].filter(Boolean).join(' · ');
-
-  const isAdmin = user?.role === 'admin';
-
-  // Build series list from programs (legacy compatibility)
-  const driverSeriesList = programs
-    .map(p => allSeries.find(s => s.id === p.series_id))
+  const hometown = [racerProfile.hometown_city, racerProfile.hometown_state, racerProfile.hometown_country]
     .filter(Boolean)
-    .filter((s, i, arr) => arr.findIndex(x => x.id === s.id) === i)
-    .sort((a, b) => (a.popularity_rank ?? 9999) - (b.popularity_rank ?? 9999));
-
-  const activeProgram = programs.find(p => p.status === 'active') || programs[0];
-  const primaryClass = (legacyDriver?.primary_class_id ? allClasses.find(c => c.id === legacyDriver.primary_class_id) : null)
-    || (activeProgram?.series_class_id ? allClasses.find(c => c.id === activeProgram.series_class_id) : null);
-  const className = primaryClass?.class_name || activeProgram?.class_name;
-
-  const driverTeam = legacyDriver?.team_id ? allTeams.find(t => t.id === legacyDriver.team_id) : null;
-
-  const yearsLabel = racerProfile.years_active_start
-    ? `${racerProfile.years_active_start} – ${racerProfile.years_active_end || 'Present'}`
-    : legacyDriver?.years_active_start
-    ? `${legacyDriver.years_active_start} – ${legacyDriver.years_active_end || 'Present'}`
-    : null;
-
-  // Official results
-  const officialSessionIds = new Set(allSessions.filter(s => ['Official', 'Locked'].includes(s.status)).map(s => s.id));
-  const officialResults = results.filter(r => officialSessionIds.has(r.session_id)).slice(0, 10);
-
-  // Upcoming/past entries
-  const upcomingEntries = entries
-    .filter(entry => { const event = allEvents.find(e => e.id === entry.event_id); return event && event.status !== 'completed'; })
-    .map(entry => { const event = allEvents.find(e => e.id === entry.event_id); const track = allTracks.find(t => t.id === event?.track_id); return { entry, event, track }; });
-
-  const pastEntries = entries
-    .filter(entry => { const event = allEvents.find(e => e.id === entry.event_id); return event && event.status === 'completed'; })
-    .map(entry => {
-      const event = allEvents.find(e => e.id === entry.event_id);
-      const track = allTracks.find(t => t.id === event?.track_id);
-      const officialSession = allSessions.find(s => s.event_id === event?.id && ['Official', 'Locked'].includes(s.status));
-      const resultData = officialSession ? results.find(r => r.session_id === officialSession.id && (r.entry_id === entry.id || r.driver_id === legacyDriver?.id)) : null;
-      return { entry, event, track, resultData };
-    });
-
-  // Season participation history
-  const participationHistory = participations.map(p => {
-    const series = allSeries.find(s => s.id === p.series_id);
-    const pStandings = standings.filter(s => s.participation_id === p.id);
-    return { participation: p, series, standings: pStandings };
-  });
+    .join(', ');
+  const racerDesc =
+    experience?.seo?.description ||
+    [racerProfile.primary_discipline, hometown ? `from ${hometown}` : ''].filter(Boolean).join(' · ');
 
   return (
-    <PageShell className="bg-white">
+    <PageShell className="bg-canvas">
       <SeoMeta
         title={buildEntityTitle(fullName, 'Racer Profile')}
         description={racerDesc}
-        image={heroImg || profileImg || SITE_FALLBACK_IMAGE}
+        image={heroImage || portraitImage || SITE_FALLBACK_IMAGE}
         type="profile"
       />
       <JsonLd data={experience?.seo?.structured_data} extra={experience?.seo?.structured_data_extra} />
-      <EntityFactualSummary type="racer" data={experience} />
 
-      <PullToRefresh onRefresh={async () => { await queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', routeSlug] }); }}>
-      <MobileBackHeader tone="light" title={fullName} to="/Directory?cat=racers" />
+      <PullToRefresh
+        onRefresh={async () => {
+          await queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', routeSlug] });
+        }}
+      >
+        <MobileBackHeader tone="dark" title={fullName} to="/Directory?cat=racers" />
 
-      {isAdmin && racerProfile.visibility !== 'live' && (
-        <div className="bg-yellow-50 border-b border-yellow-200 px-6 py-2 text-center">
-          <span className="text-xs font-semibold text-yellow-800 tracking-wide">ADMIN PREVIEW — This profile is {racerProfile.visibility} and not visible to the public.</span>
-        </div>
-      )}
-
-      {/* HERO */}
-      <div className="relative w-full h-[380px] bg-[#0A0A0A] overflow-hidden">
-        {heroImg ? (
-          <>
-            <img src={heroImg} alt={fullName} className="w-full h-full object-cover opacity-60" decoding="async" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-transparent" />
-          </>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-[#0A0A0A]" />
+        {isAdminViewer && racerProfile.visibility !== 'live' && (
+          <div className="border-b border-warning/40 bg-warning/10 px-6 py-2 text-center">
+            <span className="text-xs font-semibold tracking-wide text-warning">
+              ADMIN PREVIEW — This profile is {racerProfile.visibility} and not visible to the public.
+            </span>
+          </div>
         )}
-        <div className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto px-6 pb-8">
-          <div className="flex items-end gap-5">
-            <div className="flex-shrink-0 hidden sm:block">
-              {profileImg ? (
-                <img src={profileImg} alt={fullName} className="w-28 h-28 rounded-xl object-cover border-2 border-white/20 shadow-xl" loading="lazy" decoding="async" />
-              ) : (
-                <div className="w-28 h-28 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
-                  <User className="w-10 h-10 text-white/40" />
-                </div>
-              )}
-            </div>
-            <div className="flex-1 pb-1">
-              <div className="flex items-center gap-3 flex-wrap mb-1">
-                <CountryFlag country={racerProfile.hometown_country} />
-                {racerProfile.career_status && <CareerStatusTag status={racerProfile.career_status} size="sm" />}
-                {racerProfile.is_claimed && (
-                  <Badge className="bg-teal-500/20 text-teal-300 border border-teal-400/30 text-xs flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" /> Claimed
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-baseline gap-3 flex-wrap">
-                <h1 className="text-4xl md:text-5xl font-black text-white leading-none">{fullName}</h1>
-                {legacyDriver?.primary_number && (
-                  <span className="text-3xl font-black text-[#00FFDA] leading-none">#{legacyDriver.primary_number}</span>
-                )}
-              </div>
-              {racerProfile.tagline && (
-                <p className="text-white/60 mt-1.5 text-sm italic max-w-lg">{racerProfile.tagline}</p>
-              )}
-              <div className="flex flex-wrap gap-4 mt-3 text-sm text-white/60">
-                {(racerProfile.primary_discipline || legacyDriver?.primary_discipline) && <span>{racerProfile.primary_discipline || legacyDriver?.primary_discipline}</span>}
-                {hometown && <span className="flex items-center gap-1"><Home className="w-3 h-3" />{hometown}</span>}
-                {driverTeam && (
-                  <Link to={`/TeamProfile?slug=${driverTeam.canonical_slug || driverTeam.slug || driverTeam.id}`} className="hover:text-[#00FFDA] transition-colors font-medium text-white/80">
-                    {driverTeam.name}
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* IDENTITY BAR */}
-      <div className="bg-[#131313] border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex flex-wrap items-center gap-6 text-xs text-white/50">
-          {yearsLabel && <div><span className="text-white/40">Active: </span><span className="text-white/80">{yearsLabel}</span></div>}
-          {legacyDriver?.manufacturer && <div><span className="text-white/40">Manufacturer: </span><span className="text-white/80">{legacyDriver.manufacturer}</span></div>}
-          {driverSeriesList.length > 0 && <div><span className="text-white/40">Series: </span><span className="text-white/80">{driverSeriesList.map(s => s.name).join(', ')}</span></div>}
-          {className && <div><span className="text-white/40">Class: </span><span className="text-white/80">{className}</span></div>}
-          {racerProfile.nicknames?.length > 0 && <div><span className="text-white/40">Known As: </span><span className="text-white/80 italic">"{racerProfile.nicknames.join('", "')}"</span></div>}
-          {racingBase && <div><span className="text-white/40">Racing Base: </span><span className="text-white/80">{racingBase}</span></div>}
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6">
-        {/* ACTION ROW */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-4 pb-2">
+        <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-6">
           <EntityBreadcrumbs entityType="Racer" entityName={fullName} />
-          <div className="flex items-center gap-2 ml-auto">
-            <ClaimProfileButton identity={identity} racerProfileSlug={racerProfile.slug} />
-            <SocialShareButtons url={window.location.href} title={`${fullName} - Racer Profile`} description="" />
-          </div>
         </div>
 
-        {/* OWNER EDIT PANEL — only visible to approved owners, managers, and admins */}
-        {racerProfile && user && (
-          <RacerProfileOwnerEditor
+        <RacerIdentityHeader
+          experience={experience}
+          racerProfile={racerProfile}
+          identity={identity}
+          legacyDriver={legacyDriver}
+          media={media}
+          currentContext={currentContext}
+          user={user}
+          routeSlug={routeSlug}
+          canManage={canManage}
+          onEditSaved={() => queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', routeSlug] })}
+        />
+
+        <RacerViewNav active={activeView} onChange={setActiveView} />
+
+        {activeView === 'overview' && (
+          <OverviewView
+            racerName={fullName}
+            currentContext={currentContext}
+            timeline={timeline}
+            careerStats={careerStats}
+            statistics={statistics}
+            mediaEcosystem={mediaEcosystem}
+            media={media}
             racerProfile={racerProfile}
-            identity={identity}
-            user={user}
-            routeSlug={routeSlug}
-            onUpdated={() => {
-              queryClient.invalidateQueries({ queryKey: ['racerProfileExperience', routeSlug] });
-            }}
+            legacyDriver={legacyDriver}
+            sponsorships={sponsorshipData}
+            sponsorPresentation={sponsorPresentation}
           />
         )}
 
-        {/* TAB NAV */}
-        <div className="border-b border-gray-200 mt-2 mb-6 sticky top-14 z-30 bg-white">
-          <div className="flex gap-1 overflow-x-auto scrollbar-hide relative">
-            <TabScrollFade tone="light" />
-            {TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-3 text-xs font-semibold whitespace-nowrap transition-colors flex-shrink-0 ${
-                  activeTab === tab.id ? 'text-[#232323] border-b-2 border-[#00FFDA] -mb-px' : 'text-gray-400 hover:text-[#232323]'
-                }`}>
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* OVERVIEW */}
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12">
-            <div className="lg:col-span-2 space-y-8">
-              {(racerProfile.bio || hometown || racingBase || yearsLabel || racerProfile.primary_discipline) && (
-                <div>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">About</h2>
-                  {racerProfile.bio ? <p className="text-gray-700 leading-relaxed mb-4">{racerProfile.bio}</p> : <p className="text-gray-300 italic leading-relaxed mb-4">No bio added yet.</p>}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {hometown && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1 flex items-center gap-1"><Home className="w-3 h-3" /> Hometown</div>
-                        <div className="font-semibold text-[#232323] text-sm">{hometown}</div>
-                      </div>
-                    )}
-                    {racingBase && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1 flex items-center gap-1"><MapPin className="w-3 h-3" /> Racing Base</div>
-                        <div className="font-semibold text-[#232323] text-sm">{racingBase}</div>
-                      </div>
-                    )}
-                    {(racerProfile.primary_discipline || legacyDriver?.primary_discipline) && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Discipline</div>
-                        <div className="font-semibold text-[#232323] text-sm">{racerProfile.primary_discipline || legacyDriver?.primary_discipline}</div>
-                      </div>
-                    )}
-                    {yearsLabel && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Years Active</div>
-                        <div className="font-semibold text-[#232323] text-sm">{yearsLabel}</div>
-                      </div>
-                    )}
-                    {legacyDriver?.manufacturer && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Manufacturer</div>
-                        <div className="font-semibold text-[#232323] text-sm">{legacyDriver.manufacturer}</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Career Stats from PersonIdentity */}
-              {careerStats && (
-                <div>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Career Statistics</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-black text-[#232323]">{careerStats.career_starts ?? 0}</div>
-                      <div className="text-xs text-gray-500 uppercase">Starts</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-black text-[#232323]">{careerStats.career_wins ?? 0}</div>
-                      <div className="text-xs text-gray-500 uppercase">Wins</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-black text-[#232323]">{careerStats.career_podiums ?? 0}</div>
-                      <div className="text-xs text-gray-500 uppercase">Podiums</div>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-black text-[#232323]">{careerStats.career_points_total ?? 0}</div>
-                      <div className="text-xs text-gray-500 uppercase">Points</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Performance */}
-              {results.length > 0 && driverShape && (
-                <div>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Performance</h2>
-                  <StatsSection driver={driverShape} results={results} sessions={allSessions} events={allEvents} />
-                </div>
-              )}
-
-              {/* Programs */}
-              {programs.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Racing Programs</h2>
-                    <button onClick={() => setActiveTab('career')} className="text-xs text-gray-400 hover:text-[#232323] underline">View full career →</button>
-                  </div>
-                  <ProgramsTimeline programs={programs} teams={driverTeam ? [driverTeam] : []} allSeries={allSeries} allClasses={allClasses} />
-                </div>
-              )}
-
-              {/* Media Gallery */}
-              {media?.gallery_urls?.length > 0 && (
-                <div>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Gallery</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {media.gallery_urls.slice(0, 6).map((url, i) => (
-                      <img key={i} src={url} alt={`${fullName} gallery`} className="w-full aspect-square object-cover rounded-lg border border-gray-100" />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {experience?.profile_completeness && (
-                <ProfileCompletenessIndicator completeness={experience.profile_completeness} />
-              )}
-              {profileImg && (
-                <div className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
-                  <img src={profileImg} alt={fullName} className="w-full object-cover max-h-[360px]" />
-                </div>
-              )}
-
-              {(driverTeam || driverSeriesList.length > 0) && (
-                <div className="border border-gray-200 rounded-xl p-4 space-y-4">
-                  {driverTeam && (
-                    <div>
-                      <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Team</div>
-                      <Link to={`/TeamProfile?slug=${driverTeam.canonical_slug || driverTeam.slug || driverTeam.id}`} className="font-bold text-[#232323] hover:text-[#00FFDA] transition-colors">{driverTeam.name}</Link>
-                    </div>
-                  )}
-                  {driverSeriesList.length > 0 && (
-                    <div>
-                      <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Series</div>
-                      {driverSeriesList.map(s => (
-                        <Link key={s.id} to={`/series/${s.canonical_slug || s.slug || s.id}`} className="block font-semibold text-[#232323] hover:underline text-sm">{s.name}</Link>
-                      ))}
-                    </div>
-                  )}
-                  {className && (
-                    <div>
-                      <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Class</div>
-                      <span className="font-semibold text-[#232323] text-sm">{className}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Social Links */}
-              {(racerProfile.website_url || racerProfile.instagram_url || racerProfile.facebook_url || racerProfile.x_url || racerProfile.youtube_url || racerProfile.tiktok_url) && (
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-3">Links</div>
-                  <SocialIconsDisplay entity={racerProfile} />
-                </div>
-              )}
-
-              {/* Season Participation History */}
-              {participationHistory.length > 0 && (
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-3">Season History</div>
-                  <div className="space-y-3">
-                    {participationHistory.map(({ participation, series, standings: pStandings }) => (
-                      <div key={participation.id} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                        <div className="font-semibold text-sm text-[#232323]">{series?.name || '—'}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          {participation.season_year} · {participation.racer_type}
-                          {pStandings.length > 0 && ` · P${pStandings[0].position || pStandings[0].rank || '—'}`}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Upcoming */}
-              {upcomingEntries.length > 0 && (
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5"><Calendar className="w-3 h-3" /> Next Up</div>
-                  <div className="space-y-3">
-                    {upcomingEntries.slice(0, 3).map(({ entry, event, track }) => event && (
-                      <Link key={entry.id} to={`/EventProfile?id=${event.id}`} className="block border-b border-gray-100 pb-3 last:border-0 last:pb-0 hover:text-[#00FFDA] transition-colors">
-                        <div className="font-semibold text-sm text-[#232323] leading-snug">{event.name}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">{track?.name} · {safeDateFormat(event.event_date)}</div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+        {activeView === 'racing' && (
+          <RacingView
+            participations={participations}
+            results={results}
+            standings={standings}
+            entries={entries}
+            allEvents={allEvents}
+            allSessions={allSessions}
+            allTracks={allTracks}
+            allSeries={allSeries}
+            allClasses={allClasses}
+            statistics={statistics}
+            currentContext={currentContext}
+          />
         )}
 
-        {/* CAREER TAB */}
-        {activeTab === 'career' && (
-          <div className="pb-12 space-y-8">
-            <div>
-              <h2 className="text-2xl font-black text-[#232323] mb-6">Career History</h2>
-              {careerEntries.length > 0 && legacyDriver ? (
-                <DriverCareerTab driverId={legacyDriver.id} initialEntries={careerEntries} />
-              ) : (
-                <p className="text-gray-400 text-sm">No career history available.</p>
-              )}
-            </div>
-            {experience?.team_history?.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-black text-[#232323] mb-4">Team History</h2>
-                <TeamHistoryPanel teamHistory={experience.team_history} />
-              </div>
-            )}
-            {experience?.vehicle_history?.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-black text-[#232323] mb-4">Vehicle History</h2>
-                <VehicleHistoryPanel vehicleHistory={experience.vehicle_history} />
-              </div>
-            )}
-          </div>
+        {activeView === 'career' && (
+          <CareerView
+            statistics={statistics}
+            participations={participations}
+            teamHistory={teamHistory}
+            careerEntries={pageData?.careerEntries ?? []}
+            allSeries={allSeries}
+            allClasses={allClasses}
+            achievements={achievements}
+            galleryPhotos={galleryPhotos}
+            heroImage={heroImage}
+            portraitImage={portraitImage}
+            racerName={fullName}
+          />
         )}
 
-        {/* TIMELINE TAB */}
-        {activeTab === 'timeline' && (
-          <div className="pb-12">
-            <h2 className="text-2xl font-black text-[#232323] mb-6">Career Timeline</h2>
-            <CareerTimeline timeline={experience?.timeline || []} />
-          </div>
+        {activeView === 'media' && (
+          <MediaView
+            galleryPhotos={galleryPhotos}
+            heroImage={heroImage}
+            portraitImage={portraitImage}
+            highlightVideoUrl={highlightVideoUrl}
+            racerName={fullName}
+          />
         )}
 
-        {/* STATISTICS TAB */}
-        {activeTab === 'stats' && (
-          <div className="pb-12">
-            <h2 className="text-2xl font-black text-[#232323] mb-6">Statistics</h2>
-            <StatisticsBreakdown statistics={experience?.statistics} />
-          </div>
+        {activeView === 'partners' && (
+          <PartnersView sponsorships={sponsorshipData} sponsorPresentation={sponsorPresentation} />
         )}
-
-        {/* ACHIEVEMENTS TAB */}
-        {activeTab === 'achievements' && (
-          <div className="pb-12">
-            <h2 className="text-2xl font-black text-[#232323] mb-6">Achievements</h2>
-            <AchievementsGrid achievements={experience?.achievements || []} />
-          </div>
-        )}
-
-        {/* SCHEDULE & RESULTS TAB */}
-        {activeTab === 'schedule' && (
-          <div className="pb-12 space-y-8">
-            {pastEntries.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-black text-[#232323] mb-4">Past Events</h2>
-                <div className="space-y-3">
-                  {pastEntries.map(({ entry, event, track, resultData }) => event && (
-                    <Link key={entry.id} to={`/EventProfile?id=${event.id}`} className="block p-4 border border-gray-200 rounded-lg hover:border-[#00FFDA] hover:shadow-sm transition-all">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="font-semibold text-[#232323]">{event.name}</h4>
-                          <p className="text-sm text-gray-500">{track?.name} · {safeDateFormat(event.event_date)}</p>
-                        </div>
-                        <ExternalLink className="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" />
-                      </div>
-                      {resultData?.position && <Badge className="mt-2 bg-blue-100 text-blue-800 text-xs">Finished P{resultData.position}</Badge>}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-            {officialResults.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-black text-[#232323] mb-4">Official Results</h2>
-                <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>{['Event','Session','Finish','Pts'].map(h => <th key={h} className={`py-3 px-4 font-semibold text-gray-600 ${h==='Pts'?'text-right':'text-left'}`}>{h}</th>)}</tr>
-                    </thead>
-                    <tbody>
-                      {officialResults.map(result => {
-                        const session = allSessions.find(s => s.id === result.session_id);
-                        const event = allEvents.find(e => e.id === session?.event_id);
-                        return (
-                          <tr key={result.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-3 px-4">{event ? <Link to={`/EventProfile?id=${event.id}`} className="font-medium hover:underline">{event.name}</Link> : '—'}</td>
-                            <td className="py-3 px-4 text-gray-500">{session?.name || '—'}</td>
-                            <td className="py-3 px-4 font-semibold">{result.position ? `P${result.position}` : '—'}</td>
-                            <td className="py-3 px-4 text-right font-semibold">{result.points ?? '—'}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-            {driverShape && (
-              <div>
-                <h2 className="text-2xl font-black text-[#232323] mb-4">Standings & Rankings</h2>
-                <ResultsPanel
-                  driverId={driverShape.id}
-                  initialResults={results}
-                  initialStandings={standings}
-                  initialEvents={allEvents}
-                  initialSeries={allSeries}
-                  initialClasses={allClasses}
-                  initialPrograms={programs}
-                />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* MEDIA TAB */}
-        {activeTab === 'media' && (
-          <div className="pb-12">
-            <h2 className="text-2xl font-black text-[#232323] mb-6">Media</h2>
-            {legacyDriver && <PublicMediaGallery targetType="driver_gallery" targetEntityId={legacyDriver.id} title="" />}
-          </div>
-        )}
-
-        {/* SPONSORS TAB */}
-        {activeTab === 'sponsors' && (
-          <div className="pb-12">
-            <h2 className="text-2xl font-black text-[#232323] mb-6">Sponsors</h2>
-            {sponsors.length > 0 && legacyDriver ? (
-              <DriverSponsorsTab driverId={legacyDriver.id} initialSponsors={sponsors} />
-            ) : (
-              <p className="text-gray-400 text-sm">No sponsor information available.</p>
-            )}
-          </div>
-        )}
-      </div>
       </PullToRefresh>
     </PageShell>
   );

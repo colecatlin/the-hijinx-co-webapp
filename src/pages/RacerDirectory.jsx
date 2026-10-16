@@ -24,7 +24,6 @@ export default function RacerDirectory() {
   const [filters, setFilters] = useState({
     discipline: 'all',
     series: 'all',
-    career_status: 'all',
     state: 'all',
     country: 'all',
   });
@@ -167,7 +166,6 @@ export default function RacerDirectory() {
       }
 
       if (filters.discipline !== 'all' && (rp.primary_discipline || legacyDriver?.primary_discipline) !== filters.discipline) return false;
-      if (filters.career_status !== 'all' && (rp.career_status || legacyDriver?.career_status) !== filters.career_status) return false;
       if (filters.state !== 'all' && rp.hometown_state !== filters.state) return false;
       if (filters.country !== 'all' && rp.hometown_country !== filters.country) return false;
 
@@ -220,11 +218,6 @@ export default function RacerDirectory() {
                 { value: 'Drift', label: 'Drift' }, { value: 'Drag Racing', label: 'Drag' },
                 { value: 'Motorcycle', label: 'Motorcycle' }, { value: 'Karting', label: 'Karting' },
                 { value: 'Alternative', label: 'Alternative' },
-              ]},
-              { key: 'career_status', label: 'Career Level', options: [
-                { value: 'all', label: 'All Career Levels' },
-                { value: 'Novice', label: 'Novice' }, { value: 'Amateur', label: 'Amateur' },
-                { value: 'Semi-Professional', label: 'Semi-Professional' }, { value: 'Professional', label: 'Professional' },
               ]},
               { key: 'state', label: 'State', options: [{ value: 'all', label: 'All States' }, ...uniqueStates.map(s => ({ value: s, label: s }))] },
               { key: 'country', label: 'Country', options: [{ value: 'all', label: 'All Countries' }, ...uniqueCountries.map(c => ({ value: c, label: c }))] },
