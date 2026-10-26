@@ -185,6 +185,81 @@ export function toPublicCareerStats(stats: any) {
   };
 }
 
+/**
+ * Catalogue references.
+ *
+ * The public experience joins results, standings and entries to the series,
+ * class, event, track, session and team records they point at. Those joins need
+ * a public identifier and a display label — never the canonical record. Each
+ * builder below is the complete shape a public client may receive for that
+ * entity type; anything not listed here (contact details, access codes, import
+ * metadata, claim/ownership state, administrative fields) cannot be expressed.
+ */
+export function toPublicSeriesReference(series: any) {
+  if (!series || typeof series !== 'object') return null;
+  return {
+    id: series.id || null,
+    slug: series.slug || series.canonical_slug || null,
+    name: series.name || null,
+    logo_url: series.logo_url || null,
+  };
+}
+
+export function toPublicClassReference(seriesClass: any) {
+  if (!seriesClass || typeof seriesClass !== 'object') return null;
+  return {
+    id: seriesClass.id || null,
+    slug: seriesClass.slug || null,
+    series_id: seriesClass.series_id || null,
+    class_name: seriesClass.class_name || null,
+  };
+}
+
+export function toPublicEventReference(event: any) {
+  if (!event || typeof event !== 'object') return null;
+  return {
+    id: event.id || null,
+    slug: event.slug || event.canonical_slug || null,
+    name: event.name || null,
+    event_date: event.event_date || null,
+    season: event.season || null,
+    status: event.status || null,
+    series_id: event.series_id || null,
+    track_id: event.track_id || null,
+  };
+}
+
+export function toPublicTrackReference(track: any) {
+  if (!track || typeof track !== 'object') return null;
+  return {
+    id: track.id || null,
+    slug: track.slug || track.canonical_slug || null,
+    name: track.name || null,
+    location_city: track.location_city || null,
+    location_state: track.location_state || null,
+    location_country: track.location_country || null,
+  };
+}
+
+export function toPublicSessionReference(session: any) {
+  if (!session || typeof session !== 'object') return null;
+  return {
+    id: session.id || null,
+    event_id: session.event_id || null,
+    name: session.name || null,
+  };
+}
+
+export function toPublicTeamReference(team: any) {
+  if (!team || typeof team !== 'object') return null;
+  return {
+    id: team.id || null,
+    slug: team.slug || team.canonical_slug || null,
+    name: team.name || null,
+    logo_url: team.logo_url || null,
+  };
+}
+
 /** Fields that must never appear on a public racer response. */
 export const FORBIDDEN_PUBLIC_KEYS = [
   'date_of_birth',

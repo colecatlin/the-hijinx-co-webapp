@@ -22,6 +22,8 @@ import { buildPersonSchema, buildBreadcrumbSchema } from '../../shared/structure
 import {
   toPublicIdentity, toPublicRacerProfile, toPublicLegacyDriver, toPublicParticipation,
   toPublicEntry, toPublicResult, toPublicStanding, toPublicCareerStats,
+  toPublicSeriesReference, toPublicClassReference, toPublicEventReference,
+  toPublicTrackReference, toPublicSessionReference, toPublicTeamReference,
 } from '../../shared/racerPublicProjection.ts';
 
 export default async function(req) {
@@ -466,12 +468,14 @@ export default async function(req) {
         id: s.id, sponsor_name: s.sponsor_name, logo_url: s.logo_url, website_url: s.website_url,
         tier: s.tier, is_primary: s.is_primary, start_date: s.start_date, end_date: s.end_date, status: s.status,
       })),
-      series: ctx.allSeries,
-      classes: ctx.allClasses,
-      events: ctx.allEvents,
-      tracks: ctx.allTracks,
-      sessions: ctx.allSessions,
-      teams: ctx.allTeams,
+      // Catalogue references are projections, never raw canonical records: the
+      // public join needs an identifier and a display label, not the entity.
+      series: (ctx.allSeries || []).map(toPublicSeriesReference),
+      classes: (ctx.allClasses || []).map(toPublicClassReference),
+      events: (ctx.allEvents || []).map(toPublicEventReference),
+      tracks: (ctx.allTracks || []).map(toPublicTrackReference),
+      sessions: (ctx.allSessions || []).map(toPublicSessionReference),
+      teams: (ctx.allTeams || []).map(toPublicTeamReference),
       current_context: currentContext,
     },
   });
